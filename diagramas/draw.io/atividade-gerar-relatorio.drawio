@@ -190,6 +190,9 @@
             </Array>
           </mxGeometry>
         </mxCell>
+        <mxCell id="86fRKVhWkx9RXHk3TfbC-66" value="Diagrama atividades:&lt;div&gt;Gerar relatório&lt;/div&gt;" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;recursiveResize=0;container=1;collapsible=0;width=163;height=35;" vertex="1" parent="1">
+          <mxGeometry x="1" y="2" width="823" height="608" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>

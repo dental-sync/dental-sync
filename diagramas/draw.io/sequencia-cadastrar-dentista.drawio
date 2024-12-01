@@ -1,0 +1,127 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" version="25.0.1">
+  <diagram name="Page-1" id="myC7m-T4gbPf3_Z4dW4G">
+    <mxGraphModel dx="989" dy="1706" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-1" value="Actor" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" parent="1" vertex="1">
+          <mxGeometry x="60" y="20" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-8" value="" style="endArrow=none;html=1;rounded=0;dashed=1;dashPattern=8 8;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="75" y="360" as="sourcePoint" />
+            <mxPoint x="74.66" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-9" value=": Interface" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="220" y="25" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-10" value="" style="endArrow=none;html=1;rounded=0;dashed=1;dashPattern=8 8;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="270" y="360" as="sourcePoint" />
+            <mxPoint x="269.65999999999997" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-11" value="" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=block;endFill=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="90" y="170" as="sourcePoint" />
+            <mxPoint x="260" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-12" value="Preenche as informações do&amp;nbsp;&lt;div&gt;profissional a ser cadastrado e envia&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;" parent="1" vertex="1">
+          <mxGeometry x="98" y="141" width="150" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-13" value=": Servidor" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="450" y="25" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-14" value="" style="endArrow=none;html=1;rounded=0;dashed=1;dashPattern=8 8;" parent="1" source="Wmycd5_sgxw_gxinNrQH-17" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="500.05" y="500" as="sourcePoint" />
+            <mxPoint x="499.71" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-15" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="263" y="146" width="13" height="144" as="geometry" />
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-16" value="" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=block;endFill=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="290" y="169" as="sourcePoint" />
+            <mxPoint x="480" y="169" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-18" value="" style="endArrow=none;html=1;rounded=0;dashed=1;dashPattern=8 8;" parent="1" target="Wmycd5_sgxw_gxinNrQH-17" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="500" y="360" as="sourcePoint" />
+            <mxPoint x="499.71" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-17" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="493.5" y="160" width="13" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-19" value="enviarESalvar(Dentista dentista)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;" parent="1" vertex="1">
+          <mxGeometry x="312" y="145" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-20" value=": Banco de dados" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="670" y="25" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-21" value="" style="endArrow=none;html=1;rounded=0;dashed=1;dashPattern=8 8;" parent="1" source="Wmycd5_sgxw_gxinNrQH-23" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="720.05" y="500" as="sourcePoint" />
+            <mxPoint x="719.71" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-22" value="" style="endArrow=none;html=1;rounded=0;dashed=1;dashPattern=8 8;" parent="1" target="Wmycd5_sgxw_gxinNrQH-23" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="720" y="360" as="sourcePoint" />
+            <mxPoint x="719.71" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-23" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="713.5" y="170" width="13" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-24" value="" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=block;endFill=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="513.5" y="184" as="sourcePoint" />
+            <mxPoint x="703.5" y="184" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-25" value="salvarDentista()" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;" parent="1" vertex="1">
+          <mxGeometry x="580" y="160" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-26" value="" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=none;endFill=0;rounded=0;startArrow=block;startFill=1;dashed=1;" parent="1" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="517" y="233.5" as="sourcePoint" />
+            <mxPoint x="707" y="233.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-27" value="dentista" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;" parent="1" vertex="1">
+          <mxGeometry x="587" y="230.5" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-28" value="" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=none;endFill=0;rounded=0;startArrow=block;startFill=1;dashed=1;" parent="1" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="287" y="253" as="sourcePoint" />
+            <mxPoint x="477" y="253" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-29" value="dentista" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;" parent="1" vertex="1">
+          <mxGeometry x="357" y="250" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-30" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="68.5" y="130" width="13" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-31" value="" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=none;endFill=0;rounded=0;startArrow=block;startFill=1;dashed=1;" parent="1" edge="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="90" y="273" as="sourcePoint" />
+            <mxPoint x="258.5" y="273" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Wmycd5_sgxw_gxinNrQH-32" value="dentista" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;" parent="1" vertex="1">
+          <mxGeometry x="148" y="270" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="8heGfq5nRMpTXLTgtiw8-1" value="Diagrama de Sequência:&lt;div&gt;Cadastro de dentistas&lt;/div&gt;" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;recursiveResize=0;container=1;collapsible=0;width=160;" vertex="1" parent="1">
+          <mxGeometry x="40" y="-20" width="740" height="390" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

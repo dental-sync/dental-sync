@@ -6,6 +6,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,10 +30,12 @@ public abstract class BaseEntity {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    @Column(name = "created_by")
+    @ManyToOne
+    @JoinColumn(name = "created_by")
     private Usuario createdBy;
 
-    @Column(name = "updated_by")
+    @ManyToOne
+    @JoinColumn(name = "updated_by")
     private Usuario updatedBy;
 
 }

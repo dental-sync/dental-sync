@@ -21,21 +21,21 @@ public abstract class BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "criado_em")
+    private LocalDateTime criadoEm;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "atualizado_em")
+    private LocalDateTime atualizadoEm;
 
-    @Column(name = "is_active")
-    private Boolean isActive;
-
-    @ManyToOne
-    @JoinColumn(name = "created_by")
-    private Usuario createdBy;
+    @Column(name = "ativo")
+    private Boolean ativo;
 
     @ManyToOne
-    @JoinColumn(name = "updated_by")
-    private Usuario updatedBy;
+    @JoinColumn(name = "criado_por")
+    private Usuario criadoPor;
+
+    @ManyToOne
+    @JoinColumn(name = "atualizado_por")
+    private Usuario atualizadoPor;
 
 }

@@ -1,6 +1,7 @@
 package com.senac.dentalsync.core.controller;
 
 import com.senac.dentalsync.core.persistency.model.BaseEntity;
+import com.senac.dentalsync.core.persistency.dto.BaseDTO;
 import com.senac.dentalsync.core.service.BaseService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-public abstract class BaseController<T extends BaseEntity, ID> {
+public abstract class BaseController<T extends BaseEntity, D extends BaseDTO, ID> {
 
-    protected abstract BaseService<T, ID> getService();
+    protected abstract BaseService<T, D, ID> getService();
 
     @GetMapping
     public ResponseEntity<List<T>> findAll() {

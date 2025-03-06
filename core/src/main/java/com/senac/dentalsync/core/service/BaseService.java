@@ -1,5 +1,6 @@
 package com.senac.dentalsync.core.service;
 
+import com.senac.dentalsync.core.persistency.dto.BaseDTO;
 import com.senac.dentalsync.core.persistency.model.BaseEntity;
 import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class BaseService<T extends BaseEntity, ID> {
+public abstract class BaseService<T extends BaseEntity, D extends BaseDTO, ID> {
 
     protected abstract BaseRepository<T, ID> getRepository();
     
@@ -18,13 +19,13 @@ public abstract class BaseService<T extends BaseEntity, ID> {
 
     public T save(T entity) {
         if (entity.getId() == null) {
-            entity.setCreatedAt(LocalDateTime.now());
-            entity.setCreatedBy(getUsuarioLogado());
-            entity.setIsActive(true);
+            entity.setCriadoEm(LocalDateTime.now());
+            entity.setCriadoPor(getUsuarioLogado());
+            entity.setAtivo(true);
         }
         
-        entity.setUpdatedAt(LocalDateTime.now());
-        entity.setUpdatedBy(getUsuarioLogado());
+        entity.setAtualizadoEm(LocalDateTime.now());
+        entity.setAtualizadoPor(getUsuarioLogado());
         
         return getRepository().save(entity);
     }
@@ -45,9 +46,9 @@ public abstract class BaseService<T extends BaseEntity, ID> {
         Optional<T> entity = findById(id);
         if (entity.isPresent()) {
             T entityToUpdate = entity.get();
-            entityToUpdate.setIsActive(false);
-            entityToUpdate.setUpdatedAt(LocalDateTime.now());
-            entityToUpdate.setUpdatedBy(getUsuarioLogado());
+            entityToUpdate.setAtivo(false);
+            entityToUpdate.setAtualizadoEm(LocalDateTime.now());
+            entityToUpdate.setAtualizadoPor(getUsuarioLogado());
             getRepository().save(entityToUpdate);
         }
     }

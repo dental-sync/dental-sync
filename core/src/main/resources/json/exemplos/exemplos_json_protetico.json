@@ -1,0 +1,69 @@
+{
+  "exemplos": [
+    {
+      "descricao": "Criar novo protético",
+      "metodo": "POST",
+      "endpoint": "/proteticos",
+      "corpo": {
+        "nome": "João Silva",
+        "cro": "12345-SP",
+        "isAdmin": false,
+        "telefone": "(11) 98765-4321",
+        "email": "joao.silva@example.com",
+        "status": "ATIVO"
+      }
+    },
+    {
+      "descricao": "Criar outro protético",
+      "metodo": "POST",
+      "endpoint": "/proteticos",
+      "corpo": {
+        "nome": "Maria Oliveira",
+        "cro": "54321-RJ",
+        "isAdmin": true,
+        "telefone": "(21) 98765-4321",
+        "email": "maria.oliveira@example.com",
+        "status": "ATIVO"
+      }
+    },
+    {
+      "descricao": "Atualizar protético",
+      "metodo": "PUT",
+      "endpoint": "/proteticos/1",
+      "corpo": {
+        "nome": "João Silva Atualizado",
+        "cro": "12345-SP",
+        "isAdmin": true,
+        "telefone": "(11) 98765-4321",
+        "email": "joao.silva.atualizado@example.com",
+        "status": "ATIVO"
+      }
+    },
+    {
+      "descricao": "Protético com status INATIVO",
+      "metodo": "POST",
+      "endpoint": "/proteticos",
+      "corpo": {
+        "nome": "Carlos Santos",
+        "cro": "33333-MG",
+        "isAdmin": false,
+        "telefone": "(31) 98765-4321",
+        "email": "carlos.santos@example.com",
+        "status": "INATIVO"
+      }
+    },
+    {
+      "descricao": "Protético com status SUSPENSO",
+      "metodo": "POST",
+      "endpoint": "/proteticos",
+      "corpo": {
+        "nome": "Ana Ferreira",
+        "cro": "22222-RS",
+        "isAdmin": false,
+        "telefone": "(51) 98765-4321",
+        "email": "ana.ferreira@example.com",
+        "status": "SUSPENSO"
+      }
+    }
+  ]
+} 

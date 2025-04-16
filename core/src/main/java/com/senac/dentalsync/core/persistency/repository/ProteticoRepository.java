@@ -12,4 +12,4 @@ public interface ProteticoRepository extends BaseRepository<Protetico, Long> {
     Optional<Protetico> findByEmail(String email);
     Optional<Protetico> findByCro(String cro);
     List<Protetico> findByCroContaining(String cro);
-} 
+}

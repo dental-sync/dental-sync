@@ -1,0 +1,175 @@
+.editar-protetico-page {
+  padding: 20px;
+  height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.page-top {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.notification-container {
+  display: flex;
+  align-items: center;
+}
+
+.back-navigation {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  padding: 8px;
+  border-radius: 4px;
+  color: #666;
+}
+
+.back-button:hover {
+  background-color: #f0f0f0;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+.form-container {
+  display: flex;
+  justify-content: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.form-card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  width: 100%;
+}
+
+.form-section-title {
+  font-size: 18px;
+  margin-bottom: 24px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #555;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+  transition: border-color 0.3s;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: #7c68ee;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(124, 104, 238, 0.2);
+}
+
+.form-input::placeholder {
+  color: #aaa;
+}
+
+.input-error {
+  border-color: #ff4d4f;
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+}
+
+.error-message {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.help-text {
+  color: #888;
+  font-size: 12px;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+.form-actions {
+  margin-top: 30px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.save-button {
+  background-color: #7c68ee;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s;
+}
+
+.save-button:hover {
+  background-color: #6a56d6;
+}
+
+.save-button:disabled {
+  background-color: #a8a8a8;
+  cursor: not-allowed;
+}
+
+.save-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.loading,
+.error {
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  border-radius: 6px;
+  padding: 15px;
+  color: #ff4d4f;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.loading {
+  background-color: #f0f7ff;
+  border: 1px solid #d4e8ff;
+  color: #0070d6;
+} 

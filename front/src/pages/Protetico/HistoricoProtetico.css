@@ -1,0 +1,169 @@
+.historico-protetico-page {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9f9f9;
+}
+
+.page-top {
+  display: flex;
+  justify-content: flex-end;
+  padding: 15px 20px;
+}
+
+.notification-container {
+  margin-right: 5px;
+}
+
+.back-navigation {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 20px;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: #0070D6;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  flex-grow: 1;
+  text-align: center;
+  margin-right: 45px;
+}
+
+.content-container {
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px;
+  gap: 20px;
+}
+
+.info-card, .trabalhos-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  width: 100%;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 24px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.info-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-label {
+  font-weight: 500;
+  color: #555;
+  font-size: 14px;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #333;
+  text-align: right;
+}
+
+.trabalhos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trabalho-item {
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #eee;
+  background-color: #fafafa;
+}
+
+.trabalho-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.trabalho-tipo {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+}
+
+.trabalho-valor {
+  font-size: 16px;
+  font-weight: 500;
+  color: #0070D6;
+}
+
+.trabalho-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trabalho-detail {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.detail-label {
+  color: #666;
+}
+
+.detail-value {
+  color: #333;
+}
+
+/* Estilos para loading e erro */
+.loading, .error {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9f9f9;
+  font-size: 16px;
+}
+
+.loading {
+  color: #0070D6;
+}
+
+.error {
+  color: #e53e3e;
+  padding: 20px;
+  text-align: center;
+} 

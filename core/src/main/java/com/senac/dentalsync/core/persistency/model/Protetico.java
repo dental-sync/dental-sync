@@ -36,7 +36,6 @@ public class Protetico extends BaseEntity {
 
     private Boolean isAdmin;
 
-    @Pattern(regexp = "\\(\\d{2}\\)\\s\\d{4,5}-\\d{4}", message = "Formato de telefone inválido. Use o formato: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX")
     private String telefone;
 
     @Email(message = "Email inválido")

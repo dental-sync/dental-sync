@@ -115,9 +115,15 @@ const HistoricoProtetico = () => {
             
             {historico.map((item) => (
               <div key={item.id} className="historico-row">
-                <div className="historico-cell">{new Date(item.data).toLocaleDateString('pt-BR')}</div>
-                <div className="historico-cell">{item.descricao}</div>
-                <div className="historico-cell">{item.usuario}</div>
+                <div className="historico-cell" data-label="Data">
+                  {new Date(item.data).toLocaleDateString('pt-BR')}
+                </div>
+                <div className="historico-cell" data-label="Descrição">
+                  {item.descricao}
+                </div>
+                <div className="historico-cell" data-label="Usuário">
+                  {item.usuario}
+                </div>
               </div>
             ))}
           </div>

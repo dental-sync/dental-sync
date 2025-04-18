@@ -1,7 +1,7 @@
 .editar-protetico-page {
   padding: 20px;
-  height: 100vh;
-  background-color: #f5f5f5;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .page-top {
@@ -11,14 +11,13 @@
 }
 
 .notification-container {
-  display: flex;
-  align-items: center;
+  position: relative;
 }
 
 .back-navigation {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .back-button {
@@ -28,14 +27,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 10px;
   padding: 8px;
-  border-radius: 4px;
-  color: #666;
+  margin-right: 15px;
+  border-radius: 50%;
+  color: #333;
+  transition: background-color 0.3s;
 }
 
 .back-button:hover {
-  background-color: #f0f0f0;
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .page-title {
@@ -45,27 +45,29 @@
   color: #333;
 }
 
-.form-container {
-  display: flex;
-  justify-content: center;
-  max-width: 800px;
-  margin: 0 auto;
+.error-message {
+  background-color: #ffebee;
+  color: #d32f2f;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
 }
 
-.form-card {
+.success-message {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.protetico-form {
   background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   padding: 30px;
-  width: 100%;
-}
-
-.form-section-title {
-  font-size: 18px;
-  margin-bottom: 24px;
-  color: #333;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 12px;
 }
 
 .form-group {
@@ -76,100 +78,101 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #555;
+  color: #333;
 }
 
-.form-input,
-.form-select {
+.form-group input,
+.form-group select {
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 14px;
-  color: #333;
   transition: border-color 0.3s;
 }
 
-.form-input:focus,
-.form-select:focus {
-  border-color: #7c68ee;
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #2196f3;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(124, 104, 238, 0.2);
-}
-
-.form-input::placeholder {
-  color: #aaa;
 }
 
 .input-error {
-  border-color: #ff4d4f;
+  border-color: #d32f2f !important;
 }
 
-.input-error:focus {
-  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
-}
-
-.error-message {
-  color: #ff4d4f;
+.error-text {
+  color: #d32f2f;
   font-size: 12px;
   margin-top: 5px;
-}
-
-.help-text {
-  color: #888;
-  font-size: 12px;
-  margin-top: 5px;
-  font-style: italic;
 }
 
 .form-actions {
-  margin-top: 30px;
   display: flex;
   justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
 }
 
-.save-button {
-  background-color: #7c68ee;
-  color: white;
-  border: none;
-  border-radius: 6px;
+.btn-cancelar {
   padding: 12px 24px;
-  font-size: 14px;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #333;
   font-weight: 500;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   transition: background-color 0.3s;
 }
 
-.save-button:hover {
-  background-color: #6a56d6;
+.btn-cancelar:hover {
+  background-color: #f5f5f5;
 }
 
-.save-button:disabled {
-  background-color: #a8a8a8;
+.btn-salvar {
+  padding: 12px 24px;
+  background-color: #2196f3;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-salvar:hover {
+  background-color: #1976d2;
+}
+
+.btn-salvar:disabled {
+  background-color: #b3e5fc;
   cursor: not-allowed;
 }
 
-.save-button svg {
-  width: 16px;
-  height: 16px;
+/* Status colors */
+.status-ativo {
+  color: #2e7d32;
 }
 
-.loading,
-.error {
-  background-color: #fff2f0;
-  border: 1px solid #ffccc7;
-  border-radius: 6px;
-  padding: 15px;
-  color: #ff4d4f;
-  margin-bottom: 20px;
-  text-align: center;
+.status-inativo {
+  color: #d32f2f;
 }
 
-.loading {
-  background-color: #f0f7ff;
-  border: 1px solid #d4e8ff;
-  color: #0070d6;
+@media (max-width: 768px) {
+  .editar-protetico-page {
+    padding: 15px;
+  }
+  
+  .protetico-form {
+    padding: 20px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .btn-cancelar, 
+  .btn-salvar {
+    width: 100%;
+  }
 } 

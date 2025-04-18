@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './ProteticoPage.css';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
@@ -12,7 +12,13 @@ const ProteticoPage = () => {
   const [proteticos, setProteticos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filtros, setFiltros] = useState({
+    status: 'todos',
+    cargo: 'todos'
+  });
+
+  const filterRef = useRef(null);
   const navigate = useNavigate();
   
   // Buscar lista de protéticos da API
@@ -52,17 +58,66 @@ const ProteticoPage = () => {
     fetchProteticos();
   }, []);
 
-  // Filtrar protéticos conforme a busca
-  const proteticosFiltrados = searchQuery
-    ? proteticos.filter(protetico => 
-        protetico.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        protetico.cro?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        protetico.cargo?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : proteticos;
+  // Esconder o filtro ao clicar fora dele
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setIsFilterOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Filtrar protéticos conforme a busca e filtros aplicados
+  const proteticosFiltrados = proteticos
+    .filter(protetico => {
+      // Aplicar filtros de status
+      if (filtros.status !== 'todos' && protetico.status !== filtros.status) {
+        return false;
+      }
+      
+      // Aplicar filtros de cargo
+      if (filtros.cargo !== 'todos' && protetico.cargo !== filtros.cargo) {
+        return false;
+      }
+      
+      // Aplicar busca textual
+      if (searchQuery) {
+        return (
+          protetico.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          protetico.cro?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (protetico.id?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+      
+      return true;
+    });
 
   const handleSearch = (query) => {
     setSearchQuery(query);
+  };
+
+  const toggleFiltro = () => {
+    setIsFilterOpen(!isFilterOpen);
+  };
+
+  const handleFiltroChange = (e) => {
+    const { name, value } = e.target;
+    setFiltros({
+      ...filtros,
+      [name]: value
+    });
+  };
+
+  const handleLimparFiltros = () => {
+    setFiltros({
+      status: 'todos',
+      cargo: 'todos'
+    });
   };
 
   const handleExportar = () => {
@@ -89,11 +144,57 @@ const ProteticoPage = () => {
       <div className="page-header">
         <h1 className="page-title">Protéticos</h1>
         <div className="header-actions">
-          <ActionButton 
-            label="Filtrar" 
-            icon="filter"
-            onClick={() => console.log('Filtrar')} 
-          />
+          <div className="filter-container" ref={filterRef}>
+            <ActionButton 
+              label="Filtrar" 
+              icon="filter"
+              onClick={toggleFiltro} 
+              active={isFilterOpen || filtros.status !== 'todos' || filtros.cargo !== 'todos'}
+            />
+            
+            {isFilterOpen && (
+              <div className="filter-dropdown">
+                <h3>Filtros</h3>
+                
+                <div className="filter-group">
+                  <label htmlFor="status">Status</label>
+                  <select 
+                    id="status" 
+                    name="status" 
+                    value={filtros.status} 
+                    onChange={handleFiltroChange}
+                    className="filter-select"
+                  >
+                    <option value="todos">Todos</option>
+                    <option value="ATIVO">Ativo</option>
+                    <option value="INATIVO">Inativo</option>
+                  </select>
+                </div>
+                
+                <div className="filter-group">
+                  <label htmlFor="cargo">Cargo</label>
+                  <select 
+                    id="cargo" 
+                    name="cargo" 
+                    value={filtros.cargo} 
+                    onChange={handleFiltroChange}
+                    className="filter-select"
+                  >
+                    <option value="todos">Todos</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Protetico">Protetico</option>
+                  </select>
+                </div>
+                
+                <div className="filter-actions">
+                  <button onClick={handleLimparFiltros} className="clear-filter-button">
+                    Limpar filtros
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          
           <ActionButton 
             label="Exportar" 
             icon="export"
@@ -104,7 +205,7 @@ const ProteticoPage = () => {
       
       <div className="search-container">
         <SearchBar 
-          placeholder="Buscar por nome, CRO ou cargo..." 
+          placeholder="Buscar por ID, nome ou CRO..." 
           onSearch={handleSearch} 
         />
         <ActionButton 
@@ -120,6 +221,11 @@ const ProteticoPage = () => {
             Nenhum protético encontrado para a busca "{searchQuery}".
           </div>
         )}
+        {!searchQuery && proteticosFiltrados.length === 0 && filtros.status !== 'todos' || filtros.cargo !== 'todos' ? (
+          <div className="filter-info">
+            Nenhum protético encontrado com os filtros aplicados.
+          </div>
+        ) : null}
         <ProteticoTable proteticos={proteticosFiltrados} />
       </div>
     </div>

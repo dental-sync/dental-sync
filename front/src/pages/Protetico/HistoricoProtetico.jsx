@@ -16,30 +16,26 @@ const HistoricoProtetico = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Tenta buscar os dados do protético da API
-        const proteticoResp = await axios.get(`/api/proteticos/${id}`);
-        setProtetico(proteticoResp.data);
-        
-        // Tenta buscar o histórico do protético da API
-        const historicoResp = await axios.get(`/api/proteticos/${id}/historico`);
-        setHistorico(historicoResp.data);
-      } catch (err) {
-        console.error('Erro ao buscar dados da API:', err);
-        
-        // Se a API falhar, inicializa com dados vazios
+        // Buscar dados do protético
+        const proteticoResponse = await axios.get(`/api/proteticos/${id}`);
         setProtetico({
-          id: id,
-          nome: "Protético não encontrado",
-          email: "-",
-          telefone: "-",
-          cargo: "-",
-          cro: "-",
-          status: "INATIVO"
+          id: proteticoResponse.data.id,
+          nome: proteticoResponse.data.nome,
+          email: proteticoResponse.data.email,
+          telefone: proteticoResponse.data.telefone || '-',
+          cargo: proteticoResponse.data.isAdmin ? 'Admin' : 'Protetico',
+          cro: proteticoResponse.data.cro,
+          status: proteticoResponse.data.status
         });
         
-        setHistorico([]);
-        setError('Não foi possível carregar os dados. Tente novamente mais tarde.');
-      } finally {
+        // Buscar histórico do protético
+        const historicoResponse = await axios.get(`/api/proteticos/${id}/historico`);
+        setHistorico(historicoResponse.data);
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('Erro ao buscar dados:', err);
+        setError('Ocorreu um erro ao buscar os dados. Tente novamente mais tarde.');
         setLoading(false);
       }
     };

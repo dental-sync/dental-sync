@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.senac.dentalsync.core.persistency.model.Paciente;
 import com.senac.dentalsync.core.service.BaseService;
 import com.senac.dentalsync.core.service.PacienteService;
-import com.senac.dentalsync.core.service.ProteticoService;
 
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/paciente")
@@ -35,7 +33,7 @@ public class PacienteController extends BaseController<Paciente, Long> {
     
     @GetMapping("/nome/{nome}")
     public ResponseEntity<Paciente> findByNome(@PathVariable String nome) {
-        return pacienteService.findByEmail(nome)
+        return pacienteService.findByNome(nome)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

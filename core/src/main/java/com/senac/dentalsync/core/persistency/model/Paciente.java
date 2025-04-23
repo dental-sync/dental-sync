@@ -20,7 +20,7 @@ import jakarta.validation.constraints.Past;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Paciente")
+@Table(name = "paciente")
 public class Paciente extends BaseEntity {
 
     @Id

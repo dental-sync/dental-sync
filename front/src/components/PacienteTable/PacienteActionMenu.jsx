@@ -49,7 +49,7 @@ const PacienteActionMenu = ({ pacienteId, onPacienteDeleted }) => {
       console.log(`Iniciando exclusão do paciente ID ${pacienteId}`);
       
       //Adicionar cabeçalhos para debug
-      const response = await axios.delete(`http://localhost:8080/paciente/${pacienteId}`, {
+      const response = await axios.delete(`http://localhost:8080/paciente/excluir/${pacienteId}`, {
         headers: {
           'X-Debug': 'true',
           'Content-Type': 'application/json'

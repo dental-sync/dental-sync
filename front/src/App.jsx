@@ -8,6 +8,9 @@ import PacientePage from './pages/Protetico/Paciente/PacientePage'
 import CadastroPaciente from './pages/Protetico/Paciente/CadastroPaciente'
 import HistoricoPaciente from './pages/Protetico/Paciente/HistoricoPaciente'
 import EditarPaciente from './pages/Protetico/Paciente/EditarPaciente'
+import DentistaPage from './pages/Dentista/DentistaPage'
+import CadastroDentista from './pages/Dentista/CadastroDentista'
+import EditarDentista from './pages/Dentista/EditarDentista'
 import './App.css'
 
 function App() {
@@ -26,6 +29,9 @@ function App() {
             <Route path="/paciente/cadastro" element={<CadastroPaciente />} />
             <Route path="/paciente/historico/:id" element={<HistoricoPaciente />} />
             <Route path="/paciente/editar/:id" element={<EditarPaciente />} />
+            <Route path="/dentista" element={<DentistaPage />} />
+            <Route path="/dentista/cadastro" element={<CadastroDentista />} />
+            <Route path="/dentista/editar/:id" element={<EditarDentista />} />
           </Routes>
         </main>
       </div>

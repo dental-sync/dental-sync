@@ -1,0 +1,144 @@
+.dentista-table-container {
+  width: 100%;
+  overflow-x: auto;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dentista-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.dentista-table th,
+.dentista-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.dentista-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #444;
+  white-space: nowrap;
+}
+
+.dentista-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-ativo {
+  background-color: #e6f7e6;
+  color: #2e7d32;
+}
+
+.status-inativo {
+  background-color: #fde8e8;
+  color: #d32f2f;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.action-button:hover {
+  background-color: #f0f2f5;
+}
+
+.edit-button {
+  color: #3b82f6;
+}
+
+.delete-button {
+  color: #d32f2f;
+}
+
+.clinicas-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clinicas-select {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  min-width: 150px;
+}
+
+.clinicas-select:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+.nova-clinica-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3b82f6;
+  transition: background-color 0.2s;
+}
+
+.nova-clinica-button:hover {
+  background-color: #f0f2f5;
+}
+
+@media (max-width: 768px) {
+  .dentista-table th,
+  .dentista-table td {
+    padding: 8px 12px;
+  }
+  
+  .action-buttons {
+    gap: 4px;
+  }
+  
+  .action-button {
+    padding: 4px;
+  }
+
+  .clinicas-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .clinicas-select {
+    width: 100%;
+  }
+} 

@@ -42,8 +42,6 @@ public class Paciente extends BaseEntity {
 
     private Date ultimoPedido;
 
-    private enum status{
-        ATIVO, INATIVO
-    }
+    private boolean status;
 
 }

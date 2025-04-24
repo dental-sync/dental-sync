@@ -6,6 +6,8 @@ import com.senac.dentalsync.core.persistency.model.Paciente;
 import com.senac.dentalsync.core.persistency.repository.PacienteRepository;
 import com.senac.dentalsync.core.persistency.model.Usuario;
 import java.util.Optional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class PacienteService extends BaseService<Paciente, Long> {
@@ -35,5 +37,24 @@ public class PacienteService extends BaseService<Paciente, Long> {
 
     public Optional<Paciente> findByTelefone(String telefone) {
         return repository.findByTelefone(telefone);
+    }
+
+    public void deletePaciente(Long id) {
+        //Buscando um paciente pelo seu id.
+        Optional<Paciente> pacienteOpt = repository.findById(id);
+        
+        //Se o paciente não for encontrado, lança uma exceção.
+        if (pacienteOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado");
+        }
+        //Se o paciente for encontrado, pega o paciente.
+        Paciente paciente = pacienteOpt.get();
+        
+        //Verificar se o paciente já está inativo pelo campo isActive
+        if (paciente.getIsActive() != null && !paciente.getIsActive()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Paciente já está inativo");
+        }
+        
+        repository.deleteById(id);
     }
 }

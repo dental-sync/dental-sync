@@ -46,7 +46,7 @@ public abstract class BaseService<T extends BaseEntity, ID> {
         if (entity.isPresent()) {
             T entityToUpdate = entity.get();
             
-            // Garantir que todos os campos necessários estão preenchidos
+            //Garantir que todos os campos necessários estão preenchidos
             if (entityToUpdate.getCreatedAt() == null) {
                 entityToUpdate.setCreatedAt(LocalDateTime.now());
             }
@@ -55,7 +55,7 @@ public abstract class BaseService<T extends BaseEntity, ID> {
                 entityToUpdate.setCreatedBy(getUsuarioLogado());
             }
             
-            // Atualizar campos de exclusão lógica
+            //Atualizar campos de exclusão lógica
             entityToUpdate.setIsActive(false);
             entityToUpdate.setUpdatedAt(LocalDateTime.now());
             entityToUpdate.setUpdatedBy(getUsuarioLogado());

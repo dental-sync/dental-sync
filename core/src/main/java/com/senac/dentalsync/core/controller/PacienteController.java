@@ -2,14 +2,18 @@ package com.senac.dentalsync.core.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
 
 import com.senac.dentalsync.core.persistency.model.Paciente;
 import com.senac.dentalsync.core.service.BaseService;
 import com.senac.dentalsync.core.service.PacienteService;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RestController
@@ -44,4 +48,15 @@ public class PacienteController extends BaseController<Paciente, Long> {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-} 
+
+    @DeleteMapping("/excluir/{id}")
+    public ResponseEntity<Map<String, String>> excluirPaciente(@PathVariable Long id) {
+        pacienteService.deletePaciente(id);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Paciente excluído com sucesso");
+        response.put("status", "success");
+        
+        return ResponseEntity.ok(response);
+    }
+}

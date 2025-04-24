@@ -69,14 +69,16 @@ const PacienteActionMenu = ({ pacienteId, onPacienteDeleted }) => {
       }
       
       //Mensagem de sucesso
-      alert('Paciente excluído com sucesso!');
+      alert(response.data.message || 'Paciente excluído com sucesso!');
     } catch (error) {
       console.error(`Erro ao excluir paciente ${pacienteId}:`, error);
       console.error('Detalhes do erro:', error.response?.data || error.message);
       alert(`Erro ao excluir paciente: ${error.response?.data?.message || error.message}. Tente novamente.`);
       
-      //Mesmo com erro,será notificado o componente PAIZÃO para atualizar a lista
-      // }
+      //Mesmo com erro,será notificado o componente pai para atualizar a lista
+      if (onPacienteDeleted) {
+        onPacienteDeleted(pacienteId);
+      }
     } finally {
       setIsDeleting(false);
       setShowConfirmDialog(false);

@@ -22,7 +22,7 @@ const Sidebar = () => {
     location.pathname.includes('protetico') ? 'protetico' : 
     location.pathname.includes('kanban') ? 'kanban' :
     location.pathname.includes('pedidos') ? 'pedidos' :
-    location.pathname.includes('pacientes') ? 'pacientes' :
+    location.pathname.includes('paciente') ? 'pacientes' :
     location.pathname.includes('dentista') ? 'dentista' :
     location.pathname.includes('servicos') ? 'servicos' :
     location.pathname.includes('material') ? 'material' :
@@ -34,7 +34,7 @@ const Sidebar = () => {
   const menuItems = [
     { id: 'kanban', text: 'Kanban', icon: <KanbanIcon />, to: '/kanban' },
     { id: 'pedidos', text: 'Pedidos', icon: <PedidosIcon />, to: '/pedidos' },
-    { id: 'pacientes', text: 'Pacientes', icon: <PacientesIcon />, to: '/pacientes' },
+    { id: 'pacientes', text: 'Pacientes', icon: <PacientesIcon />, to: '/paciente' },
     { id: 'protetico', text: 'Protético', icon: <ProteticoIcon />, to: '/protetico' },
     { id: 'dentista', text: 'Dentista', icon: <DentistaIcon />, to: '/dentista' },
     { id: 'servicos', text: 'Serviços', icon: <ServicosIcon />, to: '/servicos' },

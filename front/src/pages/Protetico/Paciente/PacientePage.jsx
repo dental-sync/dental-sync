@@ -58,7 +58,8 @@ const PacientePage = () => {
             email: paciente.email || '-',
             dataNascimento: paciente.dataNascimento ? new Date(paciente.dataNascimento).toLocaleDateString('pt-BR') : '-',
             ultimoServico: paciente.ultimoPedido ? new Date(paciente.ultimoPedido).toLocaleDateString('pt-BR') : '-',
-            status: paciente.status || 'ATIVO'
+            status: typeof paciente.status === 'boolean' ? paciente.status : 
+                   paciente.status === true || paciente.status === 'true' || paciente.status === 'ATIVO'
           }));
           
           setPacientes(pacientesFormatados);
@@ -123,8 +124,11 @@ const PacientePage = () => {
   const pacientesFiltrados = pacientes
     .filter(paciente => {
       //Aplicar filtros de status
-      if (filtros.status !== 'todos' && paciente.status !== filtros.status) {
-        return false;
+      if (filtros.status !== 'todos') {
+        const statusValue = filtros.status === 'true';
+        if (paciente.status !== statusValue) {
+          return false;
+        }
       }
       
       //Aplicar busca textual
@@ -175,6 +179,31 @@ const PacientePage = () => {
     setRefreshData(prev => prev + 1);
   };
 
+  //Filtrar pacientes de acordo com os filtros aplicados
+  const filtrarPacientes = () => {
+    if (!pacientes || pacientes.length === 0) return [];
+    
+    let resultado = [...pacientes];
+    
+    //Aplicar filtro de status
+    if (filtros.status !== 'todos') {
+      const statusValue = filtros.status === 'true';
+      resultado = resultado.filter(paciente => paciente.status === statusValue);
+    }
+    
+    //Aplicar filtro de busca textual
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      resultado = resultado.filter(paciente => 
+        paciente.nome?.toLowerCase().includes(query) ||
+        paciente.email?.toLowerCase().includes(query) ||
+        paciente.telefone?.toLowerCase().includes(query)
+      );
+    }
+    
+    return resultado;
+  };
+
   if (loading) {
     return <div className="loading">Carregando pacientes...</div>;
   }
@@ -212,8 +241,8 @@ const PacientePage = () => {
                     className="filter-select"
                   >
                     <option value="todos">Todos</option>
-                    <option value="ATIVO">Ativo</option>
-                    <option value="INATIVO">Inativo</option>
+                    <option value="true">Ativo</option>
+                    <option value="false">Inativo</option>
                   </select>
                 </div>
                 

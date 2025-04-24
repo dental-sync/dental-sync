@@ -40,21 +40,21 @@ public class PacienteService extends BaseService<Paciente, Long> {
     }
 
     public void deletePaciente(Long id) {
-        //Buscando um paciente pelo seu id.
+        // Verificar se o paciente existe
         Optional<Paciente> pacienteOpt = repository.findById(id);
         
-        //Se o paciente não for encontrado, lança uma exceção.
         if (pacienteOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado");
         }
-        //Se o paciente for encontrado, pega o paciente.
+        
         Paciente paciente = pacienteOpt.get();
         
-        //Verificar se o paciente já está inativo pelo campo isActive
+        // Verificar se o paciente já está inativo pelo campo isActive
         if (paciente.getIsActive() != null && !paciente.getIsActive()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Paciente já está inativo");
         }
         
+        // Se chegou aqui, podemos excluir o paciente
         repository.deleteById(id);
     }
 }

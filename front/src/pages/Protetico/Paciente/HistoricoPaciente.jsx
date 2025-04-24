@@ -134,8 +134,8 @@ const HistoricoPaciente = () => {
       <div className="paciente-info-card">
         <div className="paciente-info-header">
           <h2>{paciente.nome}</h2>
-          <span className={`status-badge ${paciente.status === 'ATIVO' ? 'status-ativo' : 'status-inativo'}`}>
-            {paciente.status === 'ATIVO' ? 'Ativo' : 'Inativo'}
+          <span className={`status-badge ${paciente.status ? 'status-ativo' : 'status-inativo'}`}>
+            {paciente.status ? 'Ativo' : 'Inativo'}
           </span>
         </div>
         

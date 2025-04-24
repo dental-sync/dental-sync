@@ -2,27 +2,19 @@ import React from 'react';
 import './StatusBadge.css';
 
 const StatusBadge = ({ status }) => {
-  // Normalizar o valor do status para comparação case-insensitive
-  const normalizedStatus = status?.toUpperCase() || '';
+  //Verifica se o status é boolean ou string e normaliza
+  const isActive = typeof status === 'boolean' ? status : 
+                   status === true || status === 'true' || 
+                   status === 'ATIVO' || status === 'Ativo';
   
-  const getStatusClass = () => {
-    switch (normalizedStatus) {
-      case 'ATIVO':
-        return 'status-active';
-      case 'INATIVO':
-        return 'status-inactive';
-      default:
-        return 'status-default';
-    }
-  };
+  //Usar tanto as classes novas quanto as antigas para compatibilidade
+  const statusClass = isActive ? 'status-active status-ativo' : 'status-inactive status-inativo';
+  const displayText = isActive ? 'Ativo' : 'Inativo';
   
-  // Formatação do texto para exibição
-  const displayText = normalizedStatus === 'ATIVO' ? 'Ativo' :
-                      normalizedStatus === 'INATIVO' ? 'Inativo' : 
-                      status || 'Desconhecido';
+  console.log('Status value:', status, 'Type:', typeof status, 'Is Active:', isActive);
   
   return (
-    <span className={`status-badge ${getStatusClass()}`}>
+    <span className={`status-badge ${statusClass}`}>
       {displayText}
     </span>
   );

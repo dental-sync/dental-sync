@@ -12,7 +12,7 @@ const EditarPaciente = () => {
     email: '',
     telefone: '',
     dataNascimento: '',
-    status: 'ATIVO'
+    status: true
   });
   const [loading, setLoading] = useState(true);
   const [enviando, setEnviando] = useState(false);
@@ -24,12 +24,16 @@ const EditarPaciente = () => {
       setLoading(true);
       try {
         const response = await axios.get(`http://localhost:8080/paciente/${id}`);
+        const statusBoolean = typeof response.data.status === 'boolean' 
+          ? response.data.status 
+          : response.data.status === 'ATIVO' || response.data.status === true;
+          
         setFormData({
           nome: response.data.nome || '',
           email: response.data.email || '',
           telefone: response.data.telefone || '',
           dataNascimento: response.data.dataNascimento ? new Date(response.data.dataNascimento).toISOString().split('T')[0] : '',
-          status: response.data.status || 'ATIVO'
+          status: statusBoolean
         });
         setLoading(false);
       } catch (err) {
@@ -166,11 +170,16 @@ const EditarPaciente = () => {
           <select
             id="status"
             name="status"
-            value={formData.status}
-            onChange={handleChange}
+            value={formData.status.toString()}
+            onChange={(e) => {
+              setFormData({
+                ...formData,
+                status: e.target.value === 'true'
+              });
+            }}
           >
-            <option value="ATIVO">Ativo</option>
-            <option value="INATIVO">Inativo</option>
+            <option value="true">Ativo</option>
+            <option value="false">Inativo</option>
           </select>
         </div>
         

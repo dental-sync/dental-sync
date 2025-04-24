@@ -19,6 +19,16 @@
   color: #ef4444;
 }
 
+.status-ativo {
+  background-color: #e6f7ee;
+  color: #10b981;
+}
+
+.status-inativo {
+  background-color: #fef1f2;
+  color: #ef4444;
+}
+
 .status-default {
   background-color: #f1f5f9;
   color: #64748b;

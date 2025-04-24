@@ -83,7 +83,7 @@ const CadastroPaciente = () => {
         email: formData.email,
         telefone: formData.telefone,
         dataNascimento: formatDateForAPI(formData.dataNascimento),
-        status: 'ATIVO'
+        status: true
       };
       
       console.log('Enviando dados do paciente para API:', pacienteData);

@@ -28,11 +28,17 @@ const EditarPaciente = () => {
           ? response.data.status 
           : response.data.status === 'ATIVO' || response.data.status === true;
           
+        let dataFormatada = '';
+        if (response.data.dataNascimento) {
+          const dataOriginal = response.data.dataNascimento.split('T')[0];
+          dataFormatada = dataOriginal;
+        }
+          
         setFormData({
           nome: response.data.nome || '',
           email: response.data.email || '',
           telefone: response.data.telefone || '',
-          dataNascimento: response.data.dataNascimento ? new Date(response.data.dataNascimento).toISOString().split('T')[0] : '',
+          dataNascimento: dataFormatada,
           status: statusBoolean
         });
         setLoading(false);
@@ -57,8 +63,22 @@ const EditarPaciente = () => {
   const formatDateForAPI = (dateString) => {
     if (!dateString) return null;
     
-    const date = new Date(dateString);
-    return date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    //Mantém no formato ISO (YYYY-MM-DD) para evitar problemas com timezone
+    //O backend deve interpretar a data corretamente sem conversão adicional
+    return dateString;
+  };
+
+  const formatarDataBR = (dataString) => {
+    if (!dataString) return '';
+    
+    const partes = dataString.split('-');
+    if (partes.length !== 3) return dataString;
+    
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  };
+
+  const obterDataFormatadaBR = () => {
+    return formData.dataNascimento ? formatarDataBR(formData.dataNascimento) : '';
   };
 
   const handleSubmit = async (e) => {
@@ -67,18 +87,15 @@ const EditarPaciente = () => {
     setError(null);
     
     try {
-      //Preparar os dados para enviar para o backend
       const pacienteData = {
         ...formData,
         dataNascimento: formatDateForAPI(formData.dataNascimento)
       };
       
-      //Enviar a atualização para a API
       await axios.put(`http://localhost:8080/paciente/${id}`, pacienteData);
       
       setSuccess(true);
       setTimeout(() => {
-        //Navegação para a lista com sinal para atualizar
         navigate('/paciente', { state: { refresh: true } });
       }, 2000);
     } catch (err) {
@@ -156,13 +173,20 @@ const EditarPaciente = () => {
         
         <div className="form-group">
           <label htmlFor="dataNascimento">Data de Nascimento</label>
-          <input
-            type="date"
-            id="dataNascimento"
-            name="dataNascimento"
-            value={formData.dataNascimento}
-            onChange={handleChange}
-          />
+          <div className="data-nascimento-container">
+            <input
+              type="date"
+              id="dataNascimento"
+              name="dataNascimento"
+              value={formData.dataNascimento}
+              onChange={handleChange}
+            />
+            {formData.dataNascimento && (
+              <div className="data-formatada-br">
+                Formato BR: {obterDataFormatadaBR()}
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="form-group">

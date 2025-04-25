@@ -86,8 +86,27 @@ const HistoricoPaciente = () => {
   const formatarData = (dataString) => {
     if (!dataString) return '-';
     
-    const data = new Date(dataString);
-    return data.toLocaleDateString('pt-BR');
+    try {
+      //Trata a data vinda diretamente da API no formato ISO
+      if (dataString.includes('T')) {
+        const dataOriginal = dataString.split('T')[0];
+        const [ano, mes, dia] = dataOriginal.split('-');
+        return `${dia}/${mes}/${ano}`;
+      }
+      
+      //Trata datas sem timezone (formato YYYY-MM-DD)
+      if (dataString.includes('-') && dataString.split('-').length === 3) {
+        const [ano, mes, dia] = dataString.split('-');
+        return `${dia}/${mes}/${ano}`;
+      }
+      
+      //Fallback para outras situações
+      const data = new Date(dataString);
+      return data.toLocaleDateString('pt-BR');
+    } catch (err) {
+      console.error('Erro ao formatar data:', err);
+      return dataString;
+    }
   };
   
   const formatarValor = (valor) => {

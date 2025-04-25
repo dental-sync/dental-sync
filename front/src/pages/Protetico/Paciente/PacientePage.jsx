@@ -51,16 +51,27 @@ const PacientePage = () => {
           const response = await axios.get('http://localhost:8080/paciente');
           
           //Se a chamada for bem-sucedida, usar os dados da API (SÓ QUANDO FOR BEM-SUCEDIDA)
-          const pacientesFormatados = response.data.map(paciente => ({
-            id: paciente.id,
-            nome: paciente.nome,
-            telefone: paciente.telefone || '-',
-            email: paciente.email || '-',
-            dataNascimento: paciente.dataNascimento ? new Date(paciente.dataNascimento).toLocaleDateString('pt-BR') : '-',
-            ultimoServico: paciente.ultimoPedido ? new Date(paciente.ultimoPedido).toLocaleDateString('pt-BR') : '-',
-            status: typeof paciente.status === 'boolean' ? paciente.status : 
-                   paciente.status === true || paciente.status === 'true' || paciente.status === 'ATIVO'
-          }));
+          const pacientesFormatados = response.data.map(paciente => {
+            // Formatação correta da data para evitar problemas de fuso horário
+            let dataNascimentoFormatada = '-';
+            if (paciente.dataNascimento) {
+              // Pega apenas a parte da data (YYYY-MM-DD) sem considerar o timezone
+              const dataOriginal = paciente.dataNascimento.split('T')[0];
+              const [ano, mes, dia] = dataOriginal.split('-');
+              dataNascimentoFormatada = `${dia}/${mes}/${ano}`;
+            }
+            
+            return {
+              id: paciente.id,
+              nome: paciente.nome,
+              telefone: paciente.telefone || '-',
+              email: paciente.email || '-',
+              dataNascimento: dataNascimentoFormatada,
+              ultimoServico: paciente.ultimoPedido ? new Date(paciente.ultimoPedido).toLocaleDateString('pt-BR') : '-',
+              status: typeof paciente.status === 'boolean' ? paciente.status : 
+                     paciente.status === true || paciente.status === 'true' || paciente.status === 'ATIVO'
+            };
+          });
           
           setPacientes(pacientesFormatados);
           console.log('Dados de pacientes recebidos:', pacientesFormatados);

@@ -64,8 +64,24 @@ const CadastroPaciente = () => {
   const formatDateForAPI = (dateString) => {
     if (!dateString) return null;
     
-    const date = new Date(dateString);
-    return date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    //Mantém no formato ISO (YYYY-MM-DD) para evitar problemas com timezone
+    //O backend deve interpretar a data corretamente sem conversão adicional
+    return dateString;
+  };
+
+  //Função para formatar a data no formato brasileiro (DD/MM/YYYY)
+  const formatarDataBR = (dataString) => {
+    if (!dataString) return '';
+    
+    const partes = dataString.split('-');
+    if (partes.length !== 3) return dataString;
+    
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  };
+
+  //Função para exibir a data no formato brasileiro na interface
+  const obterDataFormatadaBR = () => {
+    return formData.dataNascimento ? formatarDataBR(formData.dataNascimento) : '';
   };
 
   const handleSubmit = async (e) => {
@@ -87,7 +103,7 @@ const CadastroPaciente = () => {
       };
       
       console.log('Enviando dados do paciente para API:', pacienteData);
-      await axios.post('/api/paciente', pacienteData);
+      await axios.post('http://localhost:8080/paciente', pacienteData);
       
       setSuccess(true);
       setTimeout(() => {
@@ -193,15 +209,22 @@ const CadastroPaciente = () => {
         
         <div className="form-group">
           <label htmlFor="dataNascimento">Data de Nascimento</label>
-          <input
-            type="date"
-            id="dataNascimento"
-            name="dataNascimento"
-            value={formData.dataNascimento}
-            onChange={handleChange}
-            className={errors.dataNascimento ? 'input-error' : ''}
-          />
-          {errors.dataNascimento && <div className="error-text">{errors.dataNascimento}</div>}
+          <div className="data-nascimento-container">
+            <input
+              type="date"
+              id="dataNascimento"
+              name="dataNascimento"
+              value={formData.dataNascimento}
+              onChange={handleChange}
+              className={errors.dataNascimento ? 'input-error' : ''}
+            />
+            {formData.dataNascimento && (
+              <div className="data-formatada-br">
+                Formato BR: {obterDataFormatadaBR()}
+              </div>
+            )}
+            {errors.dataNascimento && <div className="error-text">{errors.dataNascimento}</div>}
+          </div>
         </div>
         
         <div className="form-actions">

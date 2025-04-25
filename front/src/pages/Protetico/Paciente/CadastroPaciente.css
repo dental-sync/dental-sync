@@ -149,3 +149,15 @@
     width: 100%;
   }
 }
+
+.data-nascimento-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.data-formatada-br {
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #666;
+  font-style: italic;
+}

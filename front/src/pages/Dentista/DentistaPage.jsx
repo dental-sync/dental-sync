@@ -32,7 +32,7 @@ const DentistaPage = () => {
           cro: dentista.cro,
           telefone: dentista.telefone || '-',
           email: dentista.email || '-',
-          clinicas: dentista.clinicas?.map(clinica => clinica.nome).join(', ') || '-',
+          clinicas: dentista.clinicas || [],
           status: dentista.status ? 'ATIVO' : 'INATIVO'
         }));
         setDentistas(dentistasFormatados);

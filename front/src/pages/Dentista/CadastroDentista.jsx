@@ -183,19 +183,21 @@ const CadastroDentista = () => {
     setLoading(true);
     
     try {
-      let clinicaData;
+      let clinicasData = [];
       
       if (showNovaClinica) {
-        clinicaData = {
+        const novaClinica = {
           nome: formData.novaClinica.nome,
           cnpj: formData.novaClinica.cnpj
         };
+        const clinicaResponse = await axios.post('http://localhost:8080/clinicas', novaClinica);
+        clinicasData.push(clinicaResponse.data);
       } else {
         const clinicaSelecionada = clinicas.find(c => c.id === parseInt(formData.clinicaId));
         if (!clinicaSelecionada) {
           throw new Error('Clínica selecionada não encontrada');
         }
-        clinicaData = clinicaSelecionada;
+        clinicasData.push(clinicaSelecionada);
       }
       
       const dentistaData = {
@@ -203,7 +205,12 @@ const CadastroDentista = () => {
         cro: formData.cro,
         email: formData.email,
         telefone: formData.telefone,
-        clinica: clinicaData
+        clinicas: clinicasData.map(clinica => ({
+          id: clinica.id,
+          nome: clinica.nome,
+          cnpj: clinica.cnpj
+        })),
+        status: true
       };
       
       await axios.post('http://localhost:8080/dentistas', dentistaData);

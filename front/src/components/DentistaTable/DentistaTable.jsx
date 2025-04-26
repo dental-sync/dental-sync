@@ -1,27 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import './DentistaTable.css';
 import { useNavigate } from 'react-router-dom';
 
 const DentistaTable = ({ dentistas, onDentistaDeleted }) => {
   const navigate = useNavigate();
-  const [clinicas, setClinicas] = useState([]);
-  const [loadingClinicas, setLoadingClinicas] = useState(true);
-
-  useEffect(() => {
-    const fetchClinicas = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/clinicas');
-        const data = await response.json();
-        setClinicas(data);
-      } catch (error) {
-        console.error('Erro ao buscar clínicas:', error);
-      } finally {
-        setLoadingClinicas(false);
-      }
-    };
-
-    fetchClinicas();
-  }, []);
 
   const handleEdit = (id) => {
     navigate(`/dentista/editar/${id}`);
@@ -41,10 +23,6 @@ const DentistaTable = ({ dentistas, onDentistaDeleted }) => {
     }
   };
 
-  const handleNovaClinica = () => {
-    navigate('/clinica/cadastro');
-  };
-
   return (
     <div className="dentista-table-container">
       <table className="dentista-table">
@@ -54,7 +32,7 @@ const DentistaTable = ({ dentistas, onDentistaDeleted }) => {
             <th>CRO</th>
             <th>Email</th>
             <th>Telefone</th>
-            <th>Clínicas</th>
+            <th>Clínica</th>
             <th>Status</th>
             <th>Ações</th>
           </tr>
@@ -69,31 +47,15 @@ const DentistaTable = ({ dentistas, onDentistaDeleted }) => {
                 <td>{dentista.telefone}</td>
                 <td>
                   <div className="clinicas-cell">
-                    <select 
-                      className="clinicas-select"
-                      value={dentista.clinicas}
-                      disabled
-                    >
-                      {loadingClinicas ? (
-                        <option>Carregando clínicas...</option>
-                      ) : (
-                        clinicas.map(clinica => (
-                          <option key={clinica.id} value={clinica.id}>
-                            {clinica.nome}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                    <button 
-                      className="nova-clinica-button"
-                      onClick={handleNovaClinica}
-                      title="Cadastrar nova clínica"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                      </svg>
-                    </button>
+                    {dentista.clinicas && Array.isArray(dentista.clinicas) && dentista.clinicas.length > 0 ? (
+                      dentista.clinicas.map(clinica => (
+                        <span key={clinica.id} className="clinica-tag">
+                          {clinica.nome}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="no-clinicas">Nenhuma clínica associada</span>
+                    )}
                   </div>
                 </td>
                 <td>

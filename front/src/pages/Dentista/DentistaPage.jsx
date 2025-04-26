@@ -125,6 +125,10 @@ const DentistaPage = () => {
     setRefreshData(prev => prev + 1);
   };
 
+  const handleExportar = () => {
+    // Implemente a lógica para exportar os dentistas
+  };
+
   if (loading) {
     return <div className="loading">Carregando dentistas...</div>;
   }
@@ -178,16 +182,10 @@ const DentistaPage = () => {
             )}
           </div>
           
-          <ActionButton
-            label="Atualizar"
-            icon="refresh"
-            onClick={handleRefresh}
-          />
-          
-          <ActionButton
-            label="Novo"
-            icon="plus"
-            onClick={handleNovo}
+          <ActionButton 
+            label="Exportar" 
+            icon="export"
+            onClick={handleExportar} 
           />
         </div>
       </div>
@@ -196,6 +194,11 @@ const DentistaPage = () => {
         <SearchBar
           placeholder="Buscar dentistas..."
           onSearch={handleSearch}
+        />
+        <ActionButton
+          label="Novo"
+          variant="primary"
+          onClick={handleNovo}
         />
       </div>
       
@@ -208,11 +211,6 @@ const DentistaPage = () => {
         {!searchQuery && dentistasFiltrados.length === 0 && filtros.status !== 'todos' ? (
           <div className="filter-info">
             Nenhum dentista encontrado com os filtros aplicados.
-          </div>
-        ) : null}
-        {dentistasFiltrados.length === 0 && !error && filtros.status === 'todos' && !searchQuery ? (
-          <div className="empty-state">
-            <p>Nenhum dentista cadastrado. Clique em "Novo" para adicionar um dentista.</p>
           </div>
         ) : null}
         <DentistaTable 

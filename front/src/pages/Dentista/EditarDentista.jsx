@@ -194,8 +194,20 @@ const EditarDentista = () => {
       let clinicasDosDentista = [...formData.clinicasAssociadas];
       
       if (showNovaClinica) {
-        const clinicaResponse = await axios.post('http://localhost:8080/clinicas', formData.novaClinica);
-        clinicasDosDentista.push(clinicaResponse.data);
+        try {
+          const clinicaResponse = await axios.post('http://localhost:8080/clinicas', formData.novaClinica);
+          clinicasDosDentista.push(clinicaResponse.data);
+        } catch (error) {
+          if (error.response?.data === "CNPJ já cadastrado") {
+            setErrors({
+              ...errors,
+              'novaClinica.cnpj': 'Este CNPJ já está cadastrado'
+            });
+            setSaving(false);
+            return;
+          }
+          throw error;
+        }
       }
       
       const dentistaData = {
@@ -216,15 +228,22 @@ const EditarDentista = () => {
     } catch (error) {
       console.error('Erro ao atualizar dentista:', error);
       
-      if (error.response && error.response.data) {
-        if (error.response.data.errors) {
-          const apiErrors = {};
-          error.response.data.errors.forEach(err => {
-            apiErrors[err.field] = err.message;
-          });
-          setErrors(apiErrors);
-        } else if (error.response.data.message) {
-          setErrors({ general: error.response.data.message });
+      if (error.response) {
+        const errorMessage = error.response.data;
+        console.log('Mensagem de erro:', errorMessage);
+        
+        if (typeof errorMessage === 'string') {
+          if (errorMessage.includes("E-mail já cadastrado")) {
+            setErrors({ email: "E-mail já cadastrado" });
+          } else if (errorMessage.includes("CRO já cadastrado")) {
+            setErrors({ cro: "CRO já cadastrado" });
+          } else if (errorMessage === "CNPJ já cadastrado") {
+            setErrors({ 'novaClinica.cnpj': "Este CNPJ já está cadastrado" });
+          } else {
+            setErrors({ general: errorMessage });
+          }
+        } else if (errorMessage.message) {
+          setErrors({ general: errorMessage.message });
         } else {
           setErrors({ general: 'Ocorreu um erro ao atualizar o dentista. Tente novamente.' });
         }

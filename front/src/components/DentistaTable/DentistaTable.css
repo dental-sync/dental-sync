@@ -49,11 +49,23 @@
   font-style: italic;
 }
 
+.status-container {
+  position: relative;
+  display: inline-block;
+}
+
 .status-badge {
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 0.875rem;
   font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.status-badge:hover {
+  opacity: 0.9;
 }
 
 .status-ativo {
@@ -64,6 +76,40 @@
 .status-inativo {
   background-color: #f8d7da;
   color: #721c24;
+}
+
+.status-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-width: 100px;
+}
+
+.status-option {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.status-option:hover {
+  background-color: #f8f9fa;
+}
+
+.status-option.active {
+  background-color: #e9ecef;
+  font-weight: 500;
 }
 
 .action-buttons {

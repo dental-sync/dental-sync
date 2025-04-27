@@ -41,4 +41,11 @@ public class DentistaService extends BaseService<Dentista, Long> {
     public List<Dentista> findByCroContaining(String cro) {
         return dentistaRepository.findByCroContaining(cro);
     }
+
+    public Dentista updateStatus(Long id, Boolean status) {
+        Dentista dentista = dentistaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Dentista não encontrado"));
+        dentista.setStatus(status);
+        return dentistaRepository.save(dentista);
+    }
 } 

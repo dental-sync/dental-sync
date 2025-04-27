@@ -76,6 +76,16 @@ const DentistaPage = () => {
     }, 1000);
   };
 
+  const handleStatusChange = (dentistaId, newStatus) => {
+    setDentistas(prevDentistas =>
+      prevDentistas.map(dentista =>
+        dentista.id === dentistaId
+          ? { ...dentista, status: newStatus }
+          : dentista
+      )
+    );
+  };
+
   const dentistasFiltrados = dentistas
     .filter(dentista => {
       if (filtros.status !== 'todos' && dentista.status !== filtros.status) {
@@ -216,6 +226,7 @@ const DentistaPage = () => {
         <DentistaTable 
           dentistas={dentistasFiltrados} 
           onDentistaDeleted={handleDentistaDeleted}
+          onStatusChange={handleStatusChange}
         />
       </div>
     </div>

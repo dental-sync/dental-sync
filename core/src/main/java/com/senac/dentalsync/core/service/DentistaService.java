@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.senac.dentalsync.core.persistency.model.Dentista;
 import com.senac.dentalsync.core.persistency.model.Usuario;
@@ -52,5 +54,28 @@ public class DentistaService extends BaseService<Dentista, Long> {
     @Override
     public void delete(Long id) {
         dentistaRepository.deleteById(id);
+    }
+
+    @Override
+    public Dentista save(Dentista entity) {
+        // Verificar se já existe dentista com o mesmo CRO
+        if (entity.getId() == null) { // Apenas para novos cadastros
+            Optional<Dentista> dentistaComCro = dentistaRepository.findByCro(entity.getCro());
+            if (dentistaComCro.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CRO já cadastrado");
+            }
+
+            // Verificar se já existe dentista com o mesmo email
+            Optional<Dentista> dentistaComEmail = dentistaRepository.findByEmail(entity.getEmail());
+            if (dentistaComEmail.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail já cadastrado");
+            }
+        }
+        
+        try {
+            return super.save(entity);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 } 

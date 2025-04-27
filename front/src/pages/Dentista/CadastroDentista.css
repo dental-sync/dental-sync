@@ -186,4 +186,81 @@
   .btn-salvar {
     width: 100%;
   }
+}
+
+.clinicas-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clinicas-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.clinica-tag {
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.clinica-tag span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.remove-clinica {
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-clinica:hover {
+  color: #dc3545;
+}
+
+.clinica-options {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.clinica-options select {
+  flex: 1;
+  min-width: 200px;
+}
+
+.toggle-nova-clinica {
+  background-color: #e9ecef;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #495057;
+  transition: all 0.2s;
+}
+
+.toggle-nova-clinica:hover {
+  background-color: #dee2e6;
 } 

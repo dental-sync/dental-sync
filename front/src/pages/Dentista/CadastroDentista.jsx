@@ -11,10 +11,12 @@ const CadastroDentista = () => {
     telefone: '',
     email: '',
     clinicaId: '',
+    clinicasAssociadas: [],
     novaClinica: {
       nome: '',
       cnpj: ''
-    }
+    },
+    status: true
   });
   
   const [clinicas, setClinicas] = useState([]);
@@ -63,10 +65,6 @@ const CadastroDentista = () => {
       newErrors.telefone = 'O telefone é obrigatório';
     } else if (!/^\(\d{2}\)\s\d{5}-\d{4}$/.test(formData.telefone)) {
       newErrors.telefone = 'Formato de telefone inválido. Use o formato: (99) 99999-9999';
-    }
-
-    if (!showNovaClinica && !formData.clinicaId) {
-      newErrors.clinicaId = 'Selecione uma clínica ou cadastre uma nova';
     }
 
     if (showNovaClinica) {
@@ -161,18 +159,6 @@ const CadastroDentista = () => {
     }
   };
 
-  const handleToggleNovaClinica = () => {
-    setShowNovaClinica(!showNovaClinica);
-    setFormData({
-      ...formData,
-      clinicaId: '',
-      novaClinica: {
-        nome: '',
-        cnpj: ''
-      }
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -183,34 +169,20 @@ const CadastroDentista = () => {
     setLoading(true);
     
     try {
-      let clinicasData = [];
+      let clinicasDosDentista = [...formData.clinicasAssociadas];
       
       if (showNovaClinica) {
-        const novaClinica = {
-          nome: formData.novaClinica.nome,
-          cnpj: formData.novaClinica.cnpj
-        };
-        const clinicaResponse = await axios.post('http://localhost:8080/clinicas', novaClinica);
-        clinicasData.push(clinicaResponse.data);
-      } else {
-        const clinicaSelecionada = clinicas.find(c => c.id === parseInt(formData.clinicaId));
-        if (!clinicaSelecionada) {
-          throw new Error('Clínica selecionada não encontrada');
-        }
-        clinicasData.push(clinicaSelecionada);
+        const clinicaResponse = await axios.post('http://localhost:8080/clinicas', formData.novaClinica);
+        clinicasDosDentista.push(clinicaResponse.data);
       }
       
       const dentistaData = {
         nome: formData.nome,
         cro: formData.cro,
-        email: formData.email,
         telefone: formData.telefone,
-        clinicas: clinicasData.map(clinica => ({
-          id: clinica.id,
-          nome: clinica.nome,
-          cnpj: clinica.cnpj
-        })),
-        status: true
+        email: formData.email,
+        clinicas: clinicasDosDentista,
+        status: formData.status
       };
       
       await axios.post('http://localhost:8080/dentistas', dentistaData);
@@ -222,15 +194,20 @@ const CadastroDentista = () => {
     } catch (error) {
       console.error('Erro ao cadastrar dentista:', error);
       
-      if (error.response && error.response.data) {
-        if (error.response.data.errors) {
-          const apiErrors = {};
-          error.response.data.errors.forEach(err => {
-            apiErrors[err.field] = err.message;
-          });
-          setErrors(apiErrors);
-        } else if (error.response.data.message) {
-          setErrors({ general: error.response.data.message });
+      if (error.response) {
+        const errorMessage = error.response.data;
+        console.log('Mensagem de erro:', errorMessage);
+        
+        if (typeof errorMessage === 'string') {
+          if (errorMessage.includes("E-mail já cadastrado")) {
+            setErrors({ email: "E-mail já cadastrado" });
+          } else if (errorMessage.includes("CRO já cadastrado")) {
+            setErrors({ cro: "CRO já cadastrado" });
+          } else {
+            setErrors({ general: errorMessage });
+          }
+        } else if (errorMessage.message) {
+          setErrors({ general: errorMessage.message });
         } else {
           setErrors({ general: 'Ocorreu um erro ao cadastrar o dentista. Tente novamente.' });
         }
@@ -333,34 +310,65 @@ const CadastroDentista = () => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="clinicaId">Clínica</label>
-          <div className="clinica-container">
-            <select
-              id="clinicaId"
-              name="clinicaId"
-              value={formData.clinicaId}
-              onChange={handleChange}
-              className={errors.clinicaId ? 'input-error' : ''}
-              disabled={showNovaClinica}
-            >
-              <option value="">Selecione uma clínica</option>
-              {clinicas.map(clinica => (
-                <option key={clinica.id} value={clinica.id}>
-                  {clinica.nome}
-                </option>
+          <label htmlFor="clinicaId">Clínicas</label>
+          <div className="clinicas-container">
+            <div className="clinicas-tags">
+              {formData.clinicasAssociadas.map(clinica => (
+                <div key={clinica.id} className="clinica-tag">
+                  <span>{clinica.nome}</span>
+                  <button
+                    type="button"
+                    className="remove-clinica"
+                    onClick={() => {
+                      setFormData({
+                        ...formData,
+                        clinicasAssociadas: formData.clinicasAssociadas.filter(c => c.id !== clinica.id)
+                      });
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
               ))}
-            </select>
-            <button 
-              type="button"
-              className="nova-clinica-button"
-              onClick={handleToggleNovaClinica}
-              title={showNovaClinica ? "Selecionar clínica existente" : "Cadastrar nova clínica"}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-            </button>
+            </div>
+            <div className="clinica-options">
+              <select
+                id="clinicaId"
+                name="clinicaId"
+                value={formData.clinicaId}
+                onChange={(e) => {
+                  const clinicaId = e.target.value;
+                  if (clinicaId && !formData.clinicasAssociadas.some(c => c.id.toString() === clinicaId)) {
+                    const clinicaSelecionada = clinicas.find(c => c.id.toString() === clinicaId);
+                    if (clinicaSelecionada) {
+                      setFormData({
+                        ...formData,
+                        clinicasAssociadas: [...formData.clinicasAssociadas, clinicaSelecionada],
+                        clinicaId: ''
+                      });
+                    }
+                  }
+                }}
+                className={errors.clinicaId ? 'input-error' : ''}
+                disabled={showNovaClinica}
+              >
+                <option value="">Selecione uma clínica</option>
+                {clinicas
+                  .filter(clinica => !formData.clinicasAssociadas.some(c => c.id === clinica.id))
+                  .map(clinica => (
+                    <option key={clinica.id} value={clinica.id}>
+                      {clinica.nome}
+                    </option>
+                  ))}
+              </select>
+              <button
+                type="button"
+                className="toggle-nova-clinica"
+                onClick={() => setShowNovaClinica(!showNovaClinica)}
+              >
+                {showNovaClinica ? '←' : '+'}
+              </button>
+            </div>
           </div>
           {errors.clinicaId && <span className="error-text">{errors.clinicaId}</span>}
         </div>

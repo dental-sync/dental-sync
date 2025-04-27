@@ -11,8 +11,6 @@ import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.service.BaseService;
 import com.senac.dentalsync.core.service.ProteticoService;
 
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/proteticos")
 public class ProteticoController extends BaseController<Protetico, Long> {

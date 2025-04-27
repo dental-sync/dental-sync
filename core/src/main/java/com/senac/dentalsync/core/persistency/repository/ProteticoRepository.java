@@ -10,6 +10,7 @@ import com.senac.dentalsync.core.persistency.model.Protetico;
 @Repository
 public interface ProteticoRepository extends BaseRepository<Protetico, Long> {
     Optional<Protetico> findByEmail(String email);
-    Optional<Protetico> findByCro(String cro);
+    Optional<Protetico> findFirstByCro(String cro);
+    Optional<Protetico> findFirstByTelefone(String telefone);
     List<Protetico> findByCroContaining(String cro);
 }

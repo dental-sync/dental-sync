@@ -3,7 +3,9 @@ package com.senac.dentalsync.core.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,6 +13,7 @@ import com.senac.dentalsync.core.persistency.model.Dentista;
 import com.senac.dentalsync.core.service.BaseService;
 import com.senac.dentalsync.core.service.DentistaService;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -37,5 +40,15 @@ public class DentistaController extends BaseController<Dentista, Long> {
         return dentistaService.findByCro(cro)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Dentista> updateStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> status) {
+        try {
+            Dentista dentista = dentistaService.updateStatus(id, status.get("status"));
+            return ResponseEntity.ok(dentista);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 } 

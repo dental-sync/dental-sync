@@ -32,7 +32,7 @@ const DentistaPage = () => {
           cro: dentista.cro,
           telefone: dentista.telefone || '-',
           email: dentista.email || '-',
-          clinicas: dentista.clinicas?.map(clinica => clinica.nome).join(', ') || '-',
+          clinicas: dentista.clinicas || [],
           status: dentista.status ? 'ATIVO' : 'INATIVO'
         }));
         setDentistas(dentistasFormatados);
@@ -74,6 +74,16 @@ const DentistaPage = () => {
     setTimeout(() => {
       setRefreshData(prev => prev + 1);
     }, 1000);
+  };
+
+  const handleStatusChange = (dentistaId, newStatus) => {
+    setDentistas(prevDentistas =>
+      prevDentistas.map(dentista =>
+        dentista.id === dentistaId
+          ? { ...dentista, status: newStatus }
+          : dentista
+      )
+    );
   };
 
   const dentistasFiltrados = dentistas
@@ -123,6 +133,10 @@ const DentistaPage = () => {
 
   const handleRefresh = () => {
     setRefreshData(prev => prev + 1);
+  };
+
+  const handleExportar = () => {
+    // Implemente a lógica para exportar os dentistas
   };
 
   if (loading) {
@@ -178,16 +192,10 @@ const DentistaPage = () => {
             )}
           </div>
           
-          <ActionButton
-            label="Atualizar"
-            icon="refresh"
-            onClick={handleRefresh}
-          />
-          
-          <ActionButton
-            label="Novo"
-            icon="plus"
-            onClick={handleNovo}
+          <ActionButton 
+            label="Exportar" 
+            icon="export"
+            onClick={handleExportar} 
           />
         </div>
       </div>
@@ -196,6 +204,11 @@ const DentistaPage = () => {
         <SearchBar
           placeholder="Buscar dentistas..."
           onSearch={handleSearch}
+        />
+        <ActionButton
+          label="Novo"
+          variant="primary"
+          onClick={handleNovo}
         />
       </div>
       
@@ -210,14 +223,10 @@ const DentistaPage = () => {
             Nenhum dentista encontrado com os filtros aplicados.
           </div>
         ) : null}
-        {dentistasFiltrados.length === 0 && !error && filtros.status === 'todos' && !searchQuery ? (
-          <div className="empty-state">
-            <p>Nenhum dentista cadastrado. Clique em "Novo" para adicionar um dentista.</p>
-          </div>
-        ) : null}
         <DentistaTable 
           dentistas={dentistasFiltrados} 
           onDentistaDeleted={handleDentistaDeleted}
+          onStatusChange={handleStatusChange}
         />
       </div>
     </div>

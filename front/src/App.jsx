@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import Sidebar from './components/Sidebar/Sidebar'
 import ProteticoPage from './pages/Protetico/ProteticoPage'
 import CadastroProtetico from './pages/Protetico/CadastroProtetico'
@@ -34,6 +36,7 @@ function App() {
             <Route path="/dentista/editar/:id" element={<EditarDentista />} />
           </Routes>
         </main>
+        <ToastContainer position="top-right" autoClose={3000} />
       </div>
     </Router>
   )

@@ -26,6 +26,6 @@ public class Clinica extends BaseEntity {
     private String nome;
 
     @NotBlank(message = "O CNPJ é obrigatório")
-    @Pattern(regexp = "\\d{2}\\.?\\d{3}\\.?\\d{3}\\/?\\d{4}\\-?\\d{2}", message = "Formato de CNPJ inválido")
+    @Pattern(regexp = "\\d{2}\\.\\d{3}\\.\\d{3}\\/\\d{4}-\\d{2}", message = "Formato de CNPJ inválido. Use o formato: XX.XXX.XXX/YYYY-ZZ")
     private String cnpj;
 } 

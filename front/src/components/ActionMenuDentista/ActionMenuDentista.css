@@ -21,13 +21,13 @@
 
 .action-menu-dropdown {
   position: absolute;
-  top: 100%;
+  top: 30px;
   right: 0;
   background-color: white;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  z-index: 9999;
   min-width: 120px;
 }
 

@@ -1,32 +1,46 @@
 .dentista-table-container {
   width: 100%;
-  overflow-x: auto;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   margin-top: 20px;
+  overflow-y: visible;
+  position: relative;
+  z-index: 10;
 }
 
 .dentista-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  min-height: 100px;
 }
 
 .dentista-table th,
 .dentista-table td {
-  padding: 12px 15px;
+  padding: 12px 16px;
   text-align: left;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #eee;
 }
 
 .dentista-table th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  color: #495057;
+  background-color: #f9f9f9;
+  font-weight: 500;
+  color: #666;
+  font-size: 14px;
 }
 
-.dentista-table tr:hover {
-  background-color: #f8f9fa;
+.dentista-table tr:last-child td {
+  border-bottom: none;
+}
+
+.dentista-table td {
+  font-size: 14px;
+  color: #333;
+  position: relative;
+}
+
+.dentista-table td:last-child {
+  z-index: 30;
 }
 
 .clinicas-cell {
@@ -56,7 +70,7 @@
 
 .status-badge {
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 12px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -69,13 +83,13 @@
 }
 
 .status-ativo {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: #e8f5e9;
+  color: #2e7d32;
 }
 
 .status-inativo {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: #ffebee;
+  color: #c62828;
 }
 
 .status-dropdown {
@@ -142,12 +156,9 @@
 }
 
 .empty-row {
+  height: 60px;
   text-align: center;
-}
-
-.empty-message {
-  color: #6c757d;
-  padding: 20px;
+  color: #888;
   font-style: italic;
 }
 

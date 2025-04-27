@@ -1,5 +1,5 @@
 .editar-dentista-page {
-  padding: 20px;
+  padding: 10px;
   max-width: 800px;
   margin: 0 auto;
 }
@@ -13,7 +13,7 @@
 .back-navigation {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .back-button {
@@ -41,13 +41,13 @@
 
 .dentista-form {
   background: white;
-  padding: 20px;
+  padding: 15px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .form-group label {

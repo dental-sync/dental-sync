@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CadastroDentista.css';
-import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import axios from 'axios';
 
 const CadastroDentista = () => {
@@ -224,204 +223,200 @@ const CadastroDentista = () => {
   };
 
   return (
-    <div className="cadastro-dentista-page">
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
-        </div>
-      </div>
-      
-      <div className="back-navigation">
-        <button onClick={handleVoltar} className="back-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <h1 className="page-title">Cadastro de Dentista</h1>
-      </div>
-      
-      {success && (
-        <div className="success-message">
-          Dentista cadastrado com sucesso!
-        </div>
-      )}
-      
-      {errors.general && (
-        <div className="error-message">
-          {errors.general}
-        </div>
-      )}
-      
-      <form onSubmit={handleSubmit} className="dentista-form">
-        <div className="form-group">
-          <label htmlFor="nome">Nome Completo</label>
-          <input
-            type="text"
-            id="nome"
-            name="nome"
-            value={formData.nome}
-            onChange={handleChange}
-            className={errors.nome ? 'input-error' : ''}
-            required
-          />
-          {errors.nome && <span className="error-text">{errors.nome}</span>}
+    <div className="dentista-page">
+      <div className="cadastro-dentista-page">
+        <div className="back-navigation">
+          <button onClick={handleVoltar} className="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <h1 className="page-title">Cadastro de Dentista</h1>
         </div>
         
-        <div className="form-group">
-          <label htmlFor="cro">CRO</label>
-          <input
-            type="text"
-            id="cro"
-            name="cro"
-            value={formData.cro}
-            onChange={handleChange}
-            className={errors.cro ? 'input-error' : ''}
-            required
-          />
-          {errors.cro && <span className="error-text">{errors.cro}</span>}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className={errors.email ? 'input-error' : ''}
-            required
-          />
-          {errors.email && <span className="error-text">{errors.email}</span>}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="telefone">Telefone</label>
-          <input
-            type="tel"
-            id="telefone"
-            name="telefone"
-            value={formData.telefone}
-            onChange={handleChange}
-            className={errors.telefone ? 'input-error' : ''}
-            required
-          />
-          {errors.telefone && <span className="error-text">{errors.telefone}</span>}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="clinicaId">Clínicas</label>
-          <div className="clinicas-container">
-            <div className="clinicas-tags">
-              {formData.clinicasAssociadas.map(clinica => (
-                <div key={clinica.id} className="clinica-tag">
-                  <span>{clinica.nome}</span>
-                  <button
-                    type="button"
-                    className="remove-clinica"
-                    onClick={() => {
-                      setFormData({
-                        ...formData,
-                        clinicasAssociadas: formData.clinicasAssociadas.filter(c => c.id !== clinica.id)
-                      });
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-            <div className="clinica-options">
-              <select
-                id="clinicaId"
-                name="clinicaId"
-                value={formData.clinicaId}
-                onChange={(e) => {
-                  const clinicaId = e.target.value;
-                  if (clinicaId && !formData.clinicasAssociadas.some(c => c.id.toString() === clinicaId)) {
-                    const clinicaSelecionada = clinicas.find(c => c.id.toString() === clinicaId);
-                    if (clinicaSelecionada) {
-                      setFormData({
-                        ...formData,
-                        clinicasAssociadas: [...formData.clinicasAssociadas, clinicaSelecionada],
-                        clinicaId: ''
-                      });
-                    }
-                  }
-                }}
-                className={errors.clinicaId ? 'input-error' : ''}
-                disabled={showNovaClinica}
-              >
-                <option value="">Selecione uma clínica</option>
-                {clinicas
-                  .filter(clinica => !formData.clinicasAssociadas.some(c => c.id === clinica.id))
-                  .map(clinica => (
-                    <option key={clinica.id} value={clinica.id}>
-                      {clinica.nome}
-                    </option>
-                  ))}
-              </select>
-              <button
-                type="button"
-                className="toggle-nova-clinica"
-                onClick={() => setShowNovaClinica(!showNovaClinica)}
-              >
-                {showNovaClinica ? '←' : '+'}
-              </button>
-            </div>
+        {success && (
+          <div className="success-message">
+            Dentista cadastrado com sucesso!
           </div>
-          {errors.clinicaId && <span className="error-text">{errors.clinicaId}</span>}
-        </div>
-
-        {showNovaClinica && (
-          <>
-            <div className="form-group">
-              <label htmlFor="novaClinica.nome">Nome da Clínica</label>
-              <input
-                type="text"
-                id="novaClinica.nome"
-                name="novaClinica.nome"
-                value={formData.novaClinica.nome}
-                onChange={handleChange}
-                className={errors['novaClinica.nome'] ? 'input-error' : ''}
-                required
-              />
-              {errors['novaClinica.nome'] && <span className="error-text">{errors['novaClinica.nome']}</span>}
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="novaClinica.cnpj">CNPJ</label>
-              <input
-                type="text"
-                id="novaClinica.cnpj"
-                name="novaClinica.cnpj"
-                value={formData.novaClinica.cnpj}
-                onChange={handleChange}
-                className={errors['novaClinica.cnpj'] ? 'input-error' : ''}
-                required
-              />
-              {errors['novaClinica.cnpj'] && <span className="error-text">{errors['novaClinica.cnpj']}</span>}
-            </div>
-          </>
         )}
         
-        <div className="form-actions">
-          <button
-            type="button"
-            className="btn-cancelar"
-            onClick={handleVoltar}
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            className="btn-salvar"
-            disabled={loading}
-          >
-            {loading ? 'Salvando...' : 'Salvar'}
-          </button>
-        </div>
-      </form>
+        {errors.general && (
+          <div className="error-message">
+            {errors.general}
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit} className="dentista-form">
+          <div className="form-group">
+            <label htmlFor="nome">Nome Completo</label>
+            <input
+              type="text"
+              id="nome"
+              name="nome"
+              value={formData.nome}
+              onChange={handleChange}
+              className={errors.nome ? 'input-error' : ''}
+              required
+            />
+            {errors.nome && <span className="error-text">{errors.nome}</span>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="cro">CRO</label>
+            <input
+              type="text"
+              id="cro"
+              name="cro"
+              value={formData.cro}
+              onChange={handleChange}
+              className={errors.cro ? 'input-error' : ''}
+              required
+            />
+            {errors.cro && <span className="error-text">{errors.cro}</span>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={errors.email ? 'input-error' : ''}
+              required
+            />
+            {errors.email && <span className="error-text">{errors.email}</span>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="telefone">Telefone</label>
+            <input
+              type="tel"
+              id="telefone"
+              name="telefone"
+              value={formData.telefone}
+              onChange={handleChange}
+              className={errors.telefone ? 'input-error' : ''}
+              required
+            />
+            {errors.telefone && <span className="error-text">{errors.telefone}</span>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="clinicaId">Clínicas</label>
+            <div className="clinicas-container">
+              <div className="clinicas-tags">
+                {formData.clinicasAssociadas.map(clinica => (
+                  <div key={clinica.id} className="clinica-tag">
+                    <span>{clinica.nome}</span>
+                    <button
+                      type="button"
+                      className="remove-clinica"
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          clinicasAssociadas: formData.clinicasAssociadas.filter(c => c.id !== clinica.id)
+                        });
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="clinica-options">
+                <select
+                  id="clinicaId"
+                  name="clinicaId"
+                  value={formData.clinicaId}
+                  onChange={(e) => {
+                    const clinicaId = e.target.value;
+                    if (clinicaId && !formData.clinicasAssociadas.some(c => c.id.toString() === clinicaId)) {
+                      const clinicaSelecionada = clinicas.find(c => c.id.toString() === clinicaId);
+                      if (clinicaSelecionada) {
+                        setFormData({
+                          ...formData,
+                          clinicasAssociadas: [...formData.clinicasAssociadas, clinicaSelecionada],
+                          clinicaId: ''
+                        });
+                      }
+                    }
+                  }}
+                  className={errors.clinicaId ? 'input-error' : ''}
+                  disabled={showNovaClinica}
+                >
+                  <option value="">Selecione uma clínica</option>
+                  {clinicas
+                    .filter(clinica => !formData.clinicasAssociadas.some(c => c.id === clinica.id))
+                    .map(clinica => (
+                      <option key={clinica.id} value={clinica.id}>
+                        {clinica.nome}
+                      </option>
+                    ))}
+                </select>
+                <button
+                  type="button"
+                  className="toggle-nova-clinica"
+                  onClick={() => setShowNovaClinica(!showNovaClinica)}
+                >
+                  {showNovaClinica ? '←' : '+'}
+                </button>
+              </div>
+            </div>
+            {errors.clinicaId && <span className="error-text">{errors.clinicaId}</span>}
+          </div>
+
+          {showNovaClinica && (
+            <>
+              <div className="form-group">
+                <label htmlFor="novaClinica.nome">Nome da Clínica</label>
+                <input
+                  type="text"
+                  id="novaClinica.nome"
+                  name="novaClinica.nome"
+                  value={formData.novaClinica.nome}
+                  onChange={handleChange}
+                  className={errors['novaClinica.nome'] ? 'input-error' : ''}
+                  required
+                />
+                {errors['novaClinica.nome'] && <span className="error-text">{errors['novaClinica.nome']}</span>}
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="novaClinica.cnpj">CNPJ</label>
+                <input
+                  type="text"
+                  id="novaClinica.cnpj"
+                  name="novaClinica.cnpj"
+                  value={formData.novaClinica.cnpj}
+                  onChange={handleChange}
+                  className={errors['novaClinica.cnpj'] ? 'input-error' : ''}
+                  required
+                />
+                {errors['novaClinica.cnpj'] && <span className="error-text">{errors['novaClinica.cnpj']}</span>}
+              </div>
+            </>
+          )}
+          
+          <div className="form-actions">
+            <button
+              type="button"
+              className="btn-cancelar"
+              onClick={handleVoltar}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="btn-salvar"
+              disabled={loading}
+            >
+              {loading ? 'Salvando...' : 'Salvar'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

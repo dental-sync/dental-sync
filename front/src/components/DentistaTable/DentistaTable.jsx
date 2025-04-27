@@ -5,14 +5,16 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import ActionMenuDentista from '../ActionMenuDentista/ActionMenuDentista';
 
-const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange }) => {
+function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
   const navigate = useNavigate();
   const [showStatusDropdown, setShowStatusDropdown] = useState(null);
   const [expandedClinicas, setExpandedClinicas] = useState({});
   const dropdownRefs = useRef({});
+  const statusDropdownRefs = useRef({});
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Fechar dropdown de clínicas
       Object.keys(expandedClinicas).forEach(dentistaId => {
         const dropdown = dropdownRefs.current[dentistaId];
         if (dropdown && !dropdown.contains(event.target)) {
@@ -22,13 +24,21 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange }) => {
           }));
         }
       });
+
+      // Fechar dropdown de status
+      if (showStatusDropdown) {
+        const statusDropdown = statusDropdownRefs.current[showStatusDropdown];
+        if (statusDropdown && !statusDropdown.contains(event.target)) {
+          setShowStatusDropdown(null);
+        }
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [expandedClinicas]);
+  }, [expandedClinicas, showStatusDropdown]);
 
   const handleEdit = (id) => {
     navigate(`/dentista/editar/${id}`);
@@ -84,6 +94,7 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange }) => {
       <table className="dentista-table">
         <thead>
           <tr>
+            <th>ID</th>
             <th>Nome</th>
             <th>CRO</th>
             <th>Email</th>
@@ -97,6 +108,7 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange }) => {
           {dentistas.length > 0 ? (
             dentistas.map((dentista) => (
               <tr key={dentista.id}>
+                <td>{dentista.id}</td>
                 <td>{dentista.nome}</td>
                 <td>{dentista.cro}</td>
                 <td>{dentista.email}</td>
@@ -129,7 +141,10 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange }) => {
                   </div>
                 </td>
                 <td>
-                  <div className="status-container">
+                  <div 
+                    ref={el => statusDropdownRefs.current[dentista.id] = el}
+                    className="status-container"
+                  >
                     <button
                       className={`status-badge status-${dentista.status.toLowerCase()}`}
                       onClick={() => handleStatusClick(dentista.id)}
@@ -168,6 +183,6 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange }) => {
       </table>
     </div>
   );
-};
+}
 
 export default DentistaTable; 

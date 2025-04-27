@@ -214,4 +214,45 @@
   .btn-salvar, .btn-cancelar {
     width: 100%;
   }
+}
+
+.clinicas-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.clinicas-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.clinica-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #e3f2fd;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.remove-clinica {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  line-height: 1;
+}
+
+.remove-clinica:hover {
+  color: #f44336;
+}
+
+.clinica-options {
+  display: flex;
+  gap: 8px;
 } 

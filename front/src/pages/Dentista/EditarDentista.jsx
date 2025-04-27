@@ -13,6 +13,7 @@ const EditarDentista = () => {
     telefone: '',
     email: '',
     clinicaId: '',
+    clinicasAssociadas: [],
     novaClinica: {
       nome: '',
       cnpj: ''
@@ -42,7 +43,7 @@ const EditarDentista = () => {
           cro: dentista.cro,
           telefone: dentista.telefone,
           email: dentista.email,
-          clinicaId: dentista.clinicas?.[0]?.id || '',
+          clinicasAssociadas: dentista.clinicas || [],
           status: dentista.status
         });
         
@@ -83,10 +84,6 @@ const EditarDentista = () => {
       newErrors.telefone = 'O telefone é obrigatório';
     } else if (!/^\(\d{2}\)\s\d{5}-\d{4}$/.test(formData.telefone)) {
       newErrors.telefone = 'Formato de telefone inválido. Use o formato: (99) 99999-9999';
-    }
-
-    if (!showNovaClinica && !formData.clinicaId) {
-      newErrors.clinicaId = 'Selecione uma clínica ou crie uma nova';
     }
 
     if (showNovaClinica) {
@@ -195,16 +192,11 @@ const EditarDentista = () => {
     setSaving(true);
     
     try {
-      let clinicasDosDentista = [];
+      let clinicasDosDentista = [...formData.clinicasAssociadas];
       
       if (showNovaClinica) {
         const clinicaResponse = await axios.post('http://localhost:8080/clinicas', formData.novaClinica);
-        clinicasDosDentista = [clinicaResponse.data];
-      } else if (formData.clinicaId) {
-        const clinicaSelecionada = clinicas.find(c => c.id.toString() === formData.clinicaId.toString());
-        if (clinicaSelecionada) {
-          clinicasDosDentista = [clinicaSelecionada];
-        }
+        clinicasDosDentista.push(clinicaResponse.data);
       }
       
       const dentistaData = {
@@ -340,30 +332,65 @@ const EditarDentista = () => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="clinicaId">Clínica</label>
-          <div className="clinica-options">
-            <select
-              id="clinicaId"
-              name="clinicaId"
-              value={formData.clinicaId}
-              onChange={handleChange}
-              className={errors.clinicaId ? 'input-error' : ''}
-              disabled={showNovaClinica}
-            >
-              <option value="">Selecione uma clínica</option>
-              {clinicas.map(clinica => (
-                <option key={clinica.id} value={clinica.id}>
-                  {clinica.nome}
-                </option>
+          <label htmlFor="clinicaId">Clínicas</label>
+          <div className="clinicas-container">
+            <div className="clinicas-tags">
+              {formData.clinicasAssociadas.map(clinica => (
+                <div key={clinica.id} className="clinica-tag">
+                  <span>{clinica.nome}</span>
+                  <button
+                    type="button"
+                    className="remove-clinica"
+                    onClick={() => {
+                      setFormData({
+                        ...formData,
+                        clinicasAssociadas: formData.clinicasAssociadas.filter(c => c.id !== clinica.id)
+                      });
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
               ))}
-            </select>
-            <button
-              type="button"
-              className="toggle-nova-clinica"
-              onClick={() => setShowNovaClinica(!showNovaClinica)}
-            >
-              {showNovaClinica ? '←' : '+'}
-            </button>
+            </div>
+            <div className="clinica-options">
+              <select
+                id="clinicaId"
+                name="clinicaId"
+                value={formData.clinicaId}
+                onChange={(e) => {
+                  const clinicaId = e.target.value;
+                  if (clinicaId && !formData.clinicasAssociadas.some(c => c.id.toString() === clinicaId)) {
+                    const clinicaSelecionada = clinicas.find(c => c.id.toString() === clinicaId);
+                    if (clinicaSelecionada) {
+                      setFormData({
+                        ...formData,
+                        clinicasAssociadas: [...formData.clinicasAssociadas, clinicaSelecionada],
+                        clinicaId: ''
+                      });
+                    }
+                  }
+                }}
+                className={errors.clinicaId ? 'input-error' : ''}
+                disabled={showNovaClinica}
+              >
+                <option value="">Selecione uma clínica</option>
+                {clinicas
+                  .filter(clinica => !formData.clinicasAssociadas.some(c => c.id === clinica.id))
+                  .map(clinica => (
+                    <option key={clinica.id} value={clinica.id}>
+                      {clinica.nome}
+                    </option>
+                  ))}
+              </select>
+              <button
+                type="button"
+                className="toggle-nova-clinica"
+                onClick={() => setShowNovaClinica(!showNovaClinica)}
+              >
+                {showNovaClinica ? '←' : '+'}
+              </button>
+            </div>
           </div>
           {errors.clinicaId && <span className="error-text">{errors.clinicaId}</span>}
         </div>

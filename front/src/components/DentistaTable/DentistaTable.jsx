@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './DentistaTable.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,6 +8,27 @@ import ActionMenuDentista from '../ActionMenuDentista/ActionMenuDentista';
 const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange }) => {
   const navigate = useNavigate();
   const [showStatusDropdown, setShowStatusDropdown] = useState(null);
+  const [expandedClinicas, setExpandedClinicas] = useState({});
+  const dropdownRefs = useRef({});
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      Object.keys(expandedClinicas).forEach(dentistaId => {
+        const dropdown = dropdownRefs.current[dentistaId];
+        if (dropdown && !dropdown.contains(event.target)) {
+          setExpandedClinicas(prev => ({
+            ...prev,
+            [dentistaId]: false
+          }));
+        }
+      });
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [expandedClinicas]);
 
   const handleEdit = (id) => {
     navigate(`/dentista/editar/${id}`);
@@ -51,6 +72,13 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange }) => {
     }
   };
 
+  const toggleClinicas = (dentistaId) => {
+    setExpandedClinicas(prev => ({
+      ...prev,
+      [dentistaId]: !prev[dentistaId]
+    }));
+  };
+
   return (
     <div className="dentista-table-container">
       <table className="dentista-table">
@@ -74,15 +102,29 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange }) => {
                 <td>{dentista.email}</td>
                 <td>{dentista.telefone}</td>
                 <td>
-                  <div className="clinicas-cell">
-                    {dentista.clinicas && Array.isArray(dentista.clinicas) && dentista.clinicas.length > 0 ? (
-                      dentista.clinicas.map(clinica => (
-                        <span key={clinica.id} className="clinica-tag">
-                          {clinica.nome}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="no-clinicas">Nenhuma clínica associada</span>
+                  <div 
+                    ref={el => dropdownRefs.current[dentista.id] = el}
+                    className={`clinicas-dropdown ${expandedClinicas[dentista.id] ? 'active' : ''}`}
+                  >
+                    <button
+                      className="clinicas-toggle"
+                      onClick={() => toggleClinicas(dentista.id)}
+                    >
+                      <span>
+                        {dentista.clinicas?.length > 0 
+                          ? `${dentista.clinicas[0].nome}${dentista.clinicas?.length > 1 ? '...' : ''}`
+                          : 'Nenhuma clínica'
+                        }
+                      </span>
+                    </button>
+                    {expandedClinicas[dentista.id] && dentista.clinicas?.length > 0 && (
+                      <div className="clinicas-list">
+                        {dentista.clinicas.map((clinica) => (
+                          <div key={clinica.id} className="clinica-item">
+                            {clinica.nome}
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </td>

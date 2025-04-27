@@ -48,4 +48,9 @@ public class DentistaService extends BaseService<Dentista, Long> {
         dentista.setStatus(status);
         return dentistaRepository.save(dentista);
     }
+
+    @Override
+    public void delete(Long id) {
+        dentistaRepository.deleteById(id);
+    }
 } 

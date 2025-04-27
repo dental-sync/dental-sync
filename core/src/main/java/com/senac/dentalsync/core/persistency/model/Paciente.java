@@ -1,20 +1,16 @@
 package com.senac.dentalsync.core.persistency.model;
 
-
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-
 import java.sql.Date;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import jakarta.validation.constraints.Past;
 
 @Data
 @Entity
@@ -23,14 +19,11 @@ import jakarta.validation.constraints.Past;
 @Table(name = "paciente")
 public class Paciente extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @NotBlank(message = "O nome é obrigatório")
     private String nome;
 
-    @NotBlank(message = "O número de telefone é obrigatório")
+    @NotBlank(message = "O telefone é obrigatório")
+    @Pattern(regexp = "\\(\\d{2}\\)\\s\\d{5}-\\d{4}", message = "Formato de telefone inválido. Use o formato: (99) 99999-9999")
     private String telefone;
     
     @NotBlank(message = "O e-mail é obrigatório")
@@ -43,5 +36,4 @@ public class Paciente extends BaseEntity {
     private Date ultimoPedido;
 
     private boolean status;
-
 }

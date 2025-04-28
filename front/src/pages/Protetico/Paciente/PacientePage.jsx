@@ -58,8 +58,8 @@ const PacientePage = () => {
             email: paciente.email || '-',
             dataNascimento: paciente.dataNascimento ? new Date(paciente.dataNascimento).toLocaleDateString('pt-BR') : '-',
             ultimoServico: paciente.ultimoPedido ? new Date(paciente.ultimoPedido).toLocaleDateString('pt-BR') : '-',
-            status: typeof paciente.status === 'boolean' ? paciente.status : 
-                   paciente.status === true || paciente.status === 'true' || paciente.status === 'ATIVO'
+            status: typeof paciente.isActive === 'boolean' ? paciente.isActive : 
+                   paciente.isActive === true || paciente.isActive === 'true' || paciente.isActive === 'ATIVO'
           }));
           
           setPacientes(pacientesFormatados);

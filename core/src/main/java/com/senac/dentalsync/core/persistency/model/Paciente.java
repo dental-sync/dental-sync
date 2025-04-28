@@ -34,6 +34,4 @@ public class Paciente extends BaseEntity {
     private Date dataNascimento;
 
     private Date ultimoPedido;
-
-    private boolean status;
 }

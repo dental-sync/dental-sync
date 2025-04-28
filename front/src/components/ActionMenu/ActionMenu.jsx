@@ -4,9 +4,11 @@ import './ActionMenu.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
 const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
@@ -53,9 +55,7 @@ const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
   }, []);
 
   const handleVerHistorico = () => {
-    // Desativado temporariamente
-    toast.info('Histórico temporariamente indisponível');
-    // navigate(`/protetico/historico/${proteticoId}`);
+    navigate(`/protetico/historico/${proteticoId}`);
     setIsOpen(false);
   };
 
@@ -65,37 +65,41 @@ const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
   };
 
   const handleExcluir = () => {
-    console.log(`Excluir protético ${proteticoId}`);
+    if (isActive) {
+      toast.warning('Não é possível excluir um protético ativo. Desative-o primeiro.');
+      setIsOpen(false);
+      return;
+    }
+    
+    // Abrir modal de confirmação
+    setIsDeleteModalOpen(true);
     setIsOpen(false);
   };
   
-  const handleToggleStatus = async () => {
+  const handleConfirmDelete = async () => {
     try {
-      const newStatus = !isActive;
-      console.log(`Atualizando status do protético ${proteticoId} para ${newStatus ? 'Ativo' : 'Inativo'}`);
+      // Chamada para o endpoint de exclusão
+      const response = await axios.delete(`http://localhost:8080/proteticos/${proteticoId}`);
       
-      const requestBody = { isActive: newStatus };
-      console.log('Corpo da requisição:', JSON.stringify(requestBody));
-      
-      const response = await axios.patch(`http://localhost:8080/proteticos/${proteticoId}`, requestBody);
-      
-      console.log('Resposta da API:', response);
-      
-      if (response.status === 200) {
-        // Notificar o componente pai sobre a mudança de status
+      if (response.status === 200 || response.status === 204) {
+        toast.success('Protético excluído com sucesso!');
+        // Forçar atualização da lista
         if (onStatusChange) {
-          onStatusChange(proteticoId, newStatus);
+          onStatusChange(proteticoId, null);
         }
-        toast.success(`Status atualizado com sucesso para ${newStatus ? 'Ativo' : 'Inativo'}`);
       }
-      
-      setIsOpen(false);
     } catch (error) {
-      console.error('Erro ao alterar status do protético:', error);
-      toast.error('Erro ao alterar status. Tente novamente.');
+      console.error('Erro ao excluir protético:', error);
+      toast.error(error.response?.data?.message || 'Erro ao excluir protético. Tente novamente.');
+    } finally {
+      setIsDeleteModalOpen(false);
     }
   };
-
+  
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+  };
+  
   // Renderizar o dropdown no final do body
   const renderDropdown = () => {
     if (!isOpen) return null;
@@ -112,10 +116,10 @@ const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
       >
         <ul>
           <li onClick={handleEditar}>Editar</li>
-          <li onClick={handleToggleStatus}>
-            {isActive ? 'Desativar' : 'Ativar'}
-          </li>
-          <li onClick={handleExcluir} className="delete-option">Excluir</li>
+          <li onClick={handleVerHistorico}>Histórico</li>
+          {!isActive && (
+            <li onClick={handleExcluir} className="delete-option">Excluir</li>
+          )}
         </ul>
       </div>
     );
@@ -141,6 +145,14 @@ const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
       </button>
       
       {renderDropdown()}
+      
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Protético"
+        message="Tem certeza que deseja excluir este protético? Esta ação não pode ser desfeita."
+      />
     </div>
   );
 };

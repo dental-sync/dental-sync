@@ -3,6 +3,8 @@ package com.senac.dentalsync.core.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,8 @@ import jakarta.validation.ValidationException;
 
 @Service
 public class ProteticoService extends BaseService<Protetico, Long> {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProteticoService.class);
 
     @Autowired
     private ProteticoRepository proteticoRepository;
@@ -90,5 +94,38 @@ public class ProteticoService extends BaseService<Protetico, Long> {
         
         protetico.setIsActive(isActive);
         return save(protetico);
+    }
+    
+    /**
+     * Exclui fisicamente um protético do banco de dados.
+     * Verifica se o protético existe e se está inativo antes de excluí-lo.
+     * 
+     * @param id ID do protético a ser excluído
+     * @throws ValidationException se o protético não existir ou estiver ativo
+     */
+    public void deleteProtetico(Long id) {
+        logger.info("Iniciando processo de exclusão do protético ID: {}", id);
+        
+        // Verificar se o protético existe
+        Protetico protetico = findById(id)
+            .orElseThrow(() -> {
+                logger.error("Protético não encontrado com ID: {}", id);
+                return new ValidationException("Protético não encontrado com ID: " + id);
+            });
+        
+        // Verificar se o protético está ativo
+        if (protetico.getIsActive() != null && protetico.getIsActive()) {
+            logger.error("Não é possível excluir um protético ativo. ID: {}", id);
+            throw new ValidationException("Não é possível excluir um protético ativo. Desative-o primeiro.");
+        }
+        
+        try {
+            // Excluir o protético fisicamente
+            proteticoRepository.deleteById(id);
+            logger.info("Protético excluído com sucesso. ID: {}", id);
+        } catch (Exception e) {
+            logger.error("Erro ao excluir protético: {}", e.getMessage(), e);
+            throw new ValidationException("Erro ao excluir protético: " + e.getMessage());
+        }
     }
 } 

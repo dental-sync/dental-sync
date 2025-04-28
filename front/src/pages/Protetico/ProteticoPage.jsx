@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './ProteticoPage.css';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
@@ -14,6 +14,7 @@ const ProteticoPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [proteticos, setProteticos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -22,45 +23,100 @@ const ProteticoPage = () => {
     cargo: 'todos'
   });
   const [refreshFlag, setRefreshFlag] = useState(0);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalElements, setTotalElements] = useState(0);
+  const pageSize = 20;
 
+  const observer = useRef();
   const filterRef = useRef(null);
   const navigate = useNavigate();
   
-  // Buscar lista de protéticos da API
-  useEffect(() => {
-    const fetchProteticos = async () => {
-      try {
+  // Callback para elemento de observação do scroll
+  const lastProteticoElementRef = useCallback(node => {
+    if (loading || loadingMore) return;
+    
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMoreProteticos();
+      }
+    }, { threshold: 0.8 });
+    
+    if (node) observer.current.observe(node);
+  }, [loading, loadingMore, hasMore]);
+  
+  // Função para carregar mais protéticos (próxima página)
+  const loadMoreProteticos = async () => {
+    if (!hasMore || loadingMore) return;
+    
+    try {
+      setLoadingMore(true);
+      const nextPage = page + 1;
+      await fetchProteticos(nextPage);
+      setPage(nextPage);
+    } catch (err) {
+      console.error('Erro ao carregar mais protéticos:', err);
+      toast.error('Não foi possível carregar mais protéticos.');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+  
+  // Buscar lista de protéticos da API de forma paginada
+  const fetchProteticos = async (pageNum = 0) => {
+    try {
+      if (pageNum === 0) {
         setLoading(true);
+        setProteticos([]);
+      }
+      
+      try {
+        const response = await axios.get(`http://localhost:8080/proteticos/paginado?page=${pageNum}&size=${pageSize}`);
         
-        try {
-          const response = await axios.get('http://localhost:8080/proteticos');
-          
-          // Se a chamada for bem-sucedida, usar os dados da API
-          const proteticosFormatados = response.data.map(protetico => ({
-            id: protetico.id,
-            nome: protetico.nome,
-            cro: protetico.cro,
-            cargo: protetico.isAdmin ? 'Admin' : 'Técnico',
-            telefone: protetico.telefone || '-',
-            status: protetico.isActive ? 'ATIVO' : 'INATIVO'
-          }));
-          
-          setProteticos(proteticosFormatados);
-        } catch (apiErr) {
-          console.error('Não foi possível acessar a API:', apiErr);
-          // Inicializar com array vazio em caso de erro
+        // Se a chamada for bem-sucedida, usar os dados da API
+        const responseData = response.data;
+        const proteticosFormatados = responseData.content.map(protetico => ({
+          id: protetico.id,
+          nome: protetico.nome,
+          cro: protetico.cro,
+          cargo: protetico.isAdmin ? 'Admin' : 'Técnico',
+          telefone: protetico.telefone || '-',
+          status: protetico.isActive ? 'ATIVO' : 'INATIVO'
+        }));
+        
+        // Atualizar lista de protéticos (adicionar à lista existente se não for a primeira página)
+        setProteticos(prev => pageNum === 0 ? proteticosFormatados : [...prev, ...proteticosFormatados]);
+        
+        // Atualizar informações de paginação
+        setTotalElements(responseData.totalElements);
+        setHasMore(!responseData.last);
+      } catch (apiErr) {
+        console.error('Não foi possível acessar a API:', apiErr);
+        if (pageNum === 0) {
+          // Inicializar com array vazio em caso de erro na primeira página
           setProteticos([]);
         }
-        
+        toast.error('Erro ao buscar protéticos. Por favor, tente novamente.');
+      }
+      
+      if (pageNum === 0) {
         setLoading(false);
-      } catch (err) {
-        console.error('Erro ao buscar protéticos:', err);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar protéticos:', err);
+      if (pageNum === 0) {
         setProteticos([]);
         setLoading(false);
       }
-    };
-    
-    fetchProteticos();
+    }
+  };
+  
+  // Efeito para carregar a primeira página
+  useEffect(() => {
+    setPage(0);
+    fetchProteticos(0);
   }, [refreshFlag]);
 
   // Esconder dropdown de filtro ao clicar fora dele
@@ -249,7 +305,11 @@ const ProteticoPage = () => {
         <ProteticoTable 
           proteticos={proteticosFiltrados} 
           onStatusChange={handleStatusChange}
+          lastProteticoRef={lastProteticoElementRef}
         />
+        {loadingMore && (
+          <div className="loading-more">Carregando mais protéticos...</div>
+        )}
       </div>
     </div>
   );

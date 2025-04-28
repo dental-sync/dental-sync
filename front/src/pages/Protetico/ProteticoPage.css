@@ -232,4 +232,54 @@
 /* Para garantir que outros elementos não afetem o dropdown */
 .protetico-table {
   isolation: isolate;
+}
+
+/* Estilos para a exportação */
+.export-container {
+  position: relative;
+}
+
+.export-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 180px;
+  margin-top: 8px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  z-index: 1000;
+}
+
+.export-dropdown h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+.export-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.export-option {
+  padding: 8px 12px;
+  background: none;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  text-align: left;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.export-option:hover {
+  background-color: #f0f7ff;
+  border-color: #91d5ff;
+  color: #0070D6;
 } 

@@ -4,9 +4,10 @@ import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
 import ProteticoTable from '../../components/ProteticoTable/ProteticoTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const ProteticoPage = () => {
@@ -15,6 +16,7 @@ const ProteticoPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [filtros, setFiltros] = useState({
     status: 'todos',
     cargo: 'todos'
@@ -61,7 +63,7 @@ const ProteticoPage = () => {
     fetchProteticos();
   }, [refreshFlag]);
 
-  // Esconder o filtro ao clicar fora dele
+  // Esconder dropdown de filtro ao clicar fora dele
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (filterRef.current && !filterRef.current.contains(event.target)) {
@@ -106,6 +108,16 @@ const ProteticoPage = () => {
 
   const toggleFiltro = () => {
     setIsFilterOpen(!isFilterOpen);
+    setIsExportOpen(false); // Fechar o outro dropdown
+  };
+
+  const toggleExport = () => {
+    setIsExportOpen(!isExportOpen);
+    setIsFilterOpen(false); // Fechar o outro dropdown
+  };
+
+  const handleCloseExport = () => {
+    setIsExportOpen(false);
   };
 
   const handleFiltroChange = (e) => {
@@ -121,11 +133,6 @@ const ProteticoPage = () => {
       status: 'todos',
       cargo: 'todos'
     });
-  };
-
-  const handleExportar = () => {
-    console.log('Exportando dados...');
-    // Implementação futura: exportação para CSV ou PDF
   };
 
   const handleNovo = () => {
@@ -204,10 +211,14 @@ const ProteticoPage = () => {
             )}
           </div>
           
-          <ActionButton 
-            label="Exportar" 
-            icon="export"
-            onClick={handleExportar} 
+          <ExportDropdown 
+            data={proteticosFiltrados}
+            headers={['ID', 'Nome', 'CRO', 'Cargo', 'Telefone', 'Status']}
+            fields={['id', 'nome', 'cro', 'cargo', 'telefone', 'status']}
+            filename="proteticos"
+            isOpen={isExportOpen}
+            toggleExport={toggleExport}
+            onCloseDropdown={handleCloseExport}
           />
         </div>
       </div>

@@ -82,11 +82,11 @@ const CadastroPaciente = () => {
         email: formData.email,
         telefone: formData.telefone,
         dataNascimento: formatDateForAPI(formData.dataNascimento),
-        status: true
+        isActive: true
       };
       
       console.log('Enviando dados do paciente para API:', pacienteData);
-      await axios.post('/api/paciente', pacienteData);
+      await axios.post('http://localhost:8080/paciente', pacienteData);
       
       setSuccess(true);
       setTimeout(() => {

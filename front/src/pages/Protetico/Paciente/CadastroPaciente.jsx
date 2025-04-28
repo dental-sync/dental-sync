@@ -63,8 +63,15 @@ const CadastroPaciente = () => {
   const formatDateForAPI = (dateString) => {
     if (!dateString) return null;
     
-    const date = new Date(dateString);
-    return date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    // Criar a data a partir da string, que já estará no formato YYYY-MM-DD do input
+    // Isso garante que a data seja interpretada no fuso horário local
+    const [year, month, day] = dateString.split('-');
+    
+    // Horário específico para garantir que date seja interpretado como horário em Brasília
+    const date = new Date(year, month - 1, day, 12, 0, 0);
+    
+    // Formatar como YYYY-MM-DD para enviar à API
+    return `${year}-${month}-${day}`;
   };
 
   const handleSubmit = async (e) => {

@@ -83,4 +83,12 @@ public class ProteticoService extends BaseService<Protetico, Long> {
     public List<Protetico> findByCroContaining(String cro) {
         return proteticoRepository.findByCroContaining(cro);
     }
+    
+    public Protetico updateStatus(Long id, Boolean isActive) {
+        Protetico protetico = findById(id)
+            .orElseThrow(() -> new ValidationException("Protético não encontrado com ID: " + id));
+        
+        protetico.setIsActive(isActive);
+        return save(protetico);
+    }
 } 

@@ -18,6 +18,13 @@ const HistoricoProtetico = () => {
       try {
         // Buscar dados do protético
         const proteticoResponse = await axios.get(`/api/proteticos/${id}`);
+        
+        // Verificar o status baseado no isActive
+        let statusText = "INATIVO";
+        if (proteticoResponse.data.isActive === true) {
+          statusText = "ATIVO";
+        }
+        
         setProtetico({
           id: proteticoResponse.data.id,
           nome: proteticoResponse.data.nome,
@@ -25,12 +32,15 @@ const HistoricoProtetico = () => {
           telefone: proteticoResponse.data.telefone || '-',
           cargo: proteticoResponse.data.isAdmin ? 'Admin' : 'Protetico',
           cro: proteticoResponse.data.cro,
-          status: proteticoResponse.data.status
+          status: statusText
         });
         
-        // Buscar histórico do protético
-        const historicoResponse = await axios.get(`/api/proteticos/${id}/historico`);
-        setHistorico(historicoResponse.data);
+        // Comentado temporariamente a busca do histórico
+        // const historicoResponse = await axios.get(`/api/proteticos/${id}/historico`);
+        // setHistorico(historicoResponse.data);
+        
+        // Exibir mensagem de aviso
+        setError('Ocorreu um erro ao buscar os dados. Funcionalidade temporariamente indisponível.');
         
         setLoading(false);
       } catch (err) {

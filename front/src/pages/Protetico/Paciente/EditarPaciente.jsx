@@ -12,7 +12,7 @@ const EditarPaciente = () => {
     email: '',
     telefone: '',
     dataNascimento: '',
-    status: true
+    isActive: true
   });
   const [loading, setLoading] = useState(true);
   const [enviando, setEnviando] = useState(false);
@@ -24,17 +24,33 @@ const EditarPaciente = () => {
       setLoading(true);
       try {
         const response = await axios.get(`http://localhost:8080/paciente/${id}`);
-        const statusBoolean = typeof response.data.status === 'boolean' 
-          ? response.data.status 
-          : response.data.status === 'ATIVO' || response.data.status === true;
+        console.log('Dados recebidos do servidor:', response.data);
+        
+        // Verificar se isActive existe e processar adequadamente
+        const isActiveValue = typeof response.data.isActive === 'boolean' 
+          ? response.data.isActive 
+          : (response.data.isActive === 'true' || response.data.isActive === true);
+        
+        // Formatar data de nascimento  
+        let dataNascimentoFormatada = '';
+        if (response.data.dataNascimento) {
+          // Formato vindo da API pode variar, então tratamos isso
+          const data = new Date(response.data.dataNascimento);
+          const ano = data.getFullYear();
+          // getMonth() retorna 0-11, então adicionamos 1 para ter mês correto
+          const mes = String(data.getMonth() + 1).padStart(2, '0');
+          const dia = String(data.getDate()).padStart(2, '0');
+          dataNascimentoFormatada = `${ano}-${mes}-${dia}`;
+        }
           
         setFormData({
           nome: response.data.nome || '',
           email: response.data.email || '',
           telefone: response.data.telefone || '',
-          dataNascimento: response.data.dataNascimento ? new Date(response.data.dataNascimento).toISOString().split('T')[0] : '',
-          status: statusBoolean
+          dataNascimento: dataNascimentoFormatada,
+          isActive: isActiveValue
         });
+        
         setLoading(false);
       } catch (err) {
         console.error('Erro ao buscar dados do paciente:', err);
@@ -56,9 +72,7 @@ const EditarPaciente = () => {
 
   const formatDateForAPI = (dateString) => {
     if (!dateString) return null;
-    
-    const date = new Date(dateString);
-    return date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    return dateString; // Envia a data exatamente como está no formato YYYY-MM-DD
   };
 
   const handleSubmit = async (e) => {
@@ -67,18 +81,24 @@ const EditarPaciente = () => {
     setError(null);
     
     try {
-      //Preparar os dados para enviar para o backend
+      // Preparar os dados para enviar para o backend
       const pacienteData = {
         ...formData,
         dataNascimento: formatDateForAPI(formData.dataNascimento)
       };
       
-      //Enviar a atualização para a API
-      await axios.put(`http://localhost:8080/paciente/${id}`, pacienteData);
+      // Certificar-se de que isActive é boolean
+      pacienteData.isActive = Boolean(pacienteData.isActive);
+      
+      console.log('Enviando dados para a API:', pacienteData);
+      
+      // Enviar a atualização para a API
+      const response = await axios.put(`http://localhost:8080/paciente/${id}`, pacienteData);
+      console.log('Resposta da API:', response.data);
       
       setSuccess(true);
       setTimeout(() => {
-        //Navegação para a lista com sinal para atualizar
+        // Navegação para a lista com sinal para atualizar
         navigate('/paciente', { state: { refresh: true } });
       }, 2000);
     } catch (err) {
@@ -91,6 +111,15 @@ const EditarPaciente = () => {
 
   const handleVoltar = () => {
     navigate('/paciente');
+  };
+
+  const handleStatusChange = (e) => {
+    const value = e.target.value === 'true';
+    setFormData({
+      ...formData,
+      isActive: value,
+      status: value ? 'ATIVO' : 'INATIVO'
+    });
   };
 
   if (loading) {
@@ -161,17 +190,12 @@ const EditarPaciente = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="status">Status</label>
+            <label htmlFor="isActive">Status</label>
             <select
-              id="status"
-              name="status"
-              value={formData.status.toString()}
-              onChange={(e) => {
-                setFormData({
-                  ...formData,
-                  status: e.target.value === 'true'
-                });
-              }}
+              id="isActive"
+              name="isActive"
+              value={formData.isActive.toString()}
+              onChange={handleStatusChange}
             >
               <option value="true">Ativo</option>
               <option value="false">Inativo</option>

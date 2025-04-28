@@ -73,12 +73,29 @@ public class PacienteService extends BaseService<Paciente, Long> {
         
         Paciente paciente = pacienteOpt.get();
         
-        // Verificar se o paciente já está inativo pelo campo isActive
-        if (paciente.getIsActive() != null && !paciente.getIsActive()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Paciente já está inativo");
+        // Verificar se o paciente está ativo
+        if (paciente.getIsActive() != null && paciente.getIsActive()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível excluir um paciente ativo. Desative-o primeiro.");
         }
         
         // Se chegou aqui, podemos excluir o paciente
         repository.deleteById(id);
+    }
+    
+    public Paciente updateStatus(Long id, Boolean isActive) {
+        // Verificar se o paciente existe
+        Optional<Paciente> pacienteOpt = repository.findById(id);
+        
+        if (pacienteOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado");
+        }
+        
+        Paciente paciente = pacienteOpt.get();
+        
+        // Atualizar o status
+        paciente.setIsActive(isActive);
+        
+        // Salvar as alterações
+        return repository.save(paciente);
     }
 }

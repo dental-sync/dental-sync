@@ -22,10 +22,62 @@ const CadastroProtetico = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    
+    if (name === 'telefone') {
+      // Aplicar máscara de telefone (99) 99999-9999
+      const cleaned = value.replace(/\D/g, '');
+      let formatted = '';
+      
+      if (cleaned.length <= 11) {
+        if (cleaned.length > 0) formatted += '(';
+        if (cleaned.length > 0) formatted += cleaned.substring(0, 2);
+        if (cleaned.length > 2) formatted += ') ';
+        if (cleaned.length > 2) formatted += cleaned.substring(2, 7);
+        if (cleaned.length > 7) formatted += '-';
+        if (cleaned.length > 7) formatted += cleaned.substring(7, 11);
+        
+        setFormData({
+          ...formData,
+          [name]: formatted
+        });
+      }
+    } else if (name === 'cro') {
+      // Aplicar máscara para CRO
+      const upperValue = value.toUpperCase();
+      
+      // Verificar o formato CRO-XX NNNNNN
+      const croPrefixMatch = upperValue.match(/^(CRO-[A-Z]{0,2})/);
+      
+      if (croPrefixMatch) {
+        // Formato começa com CRO-XX
+        const prefix = croPrefixMatch[0];
+        const rest = upperValue.substring(prefix.length).replace(/\D/g, '');
+        
+        if (rest) {
+          setFormData({
+            ...formData,
+            [name]: `${prefix} ${rest}`
+          });
+        } else {
+          setFormData({
+            ...formData,
+            [name]: prefix
+          });
+        }
+      } else {
+        // Permitir apenas letras para o estado ou números para o registro
+        setFormData({
+          ...formData,
+          [name]: upperValue
+        });
+      }
+    } else {
+      // Para outros campos, sem máscara
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
     
     // Limpar erro do campo quando o usuário digita
     if (errors[name]) {
@@ -44,6 +96,25 @@ const CadastroProtetico = () => {
     if (!formData.email) newErrors.email = 'Email é obrigatório';
     if (!formData.cro) newErrors.cro = 'CRO é obrigatório';
     if (!formData.cargo) newErrors.cargo = 'Cargo é obrigatório';
+    
+    // Validar tamanho do nome
+    if (formData.nome && formData.nome.length > 255) {
+      newErrors.nome = 'O nome não pode ter mais de 255 caracteres';
+    }
+    
+    // Validar formato do telefone
+    if (formData.telefone) {
+      const telefoneClean = formData.telefone.replace(/\D/g, '');
+      if (telefoneClean.length !== 11) {
+        newErrors.telefone = 'Telefone deve conter 11 dígitos (DDD + número)';
+      }
+    }
+    
+    // Validar formato de CRO
+    const croRegex = /(CRO-[A-Z]{2}\s?\d{1,6})|(\d{1,6}\s?CRO-[A-Z]{2})/;
+    if (formData.cro && !croRegex.test(formData.cro)) {
+      newErrors.cro = 'Formato de CRO inválido. Use o formato: CRO-XX NNNNNN ou NNNNNN CRO-XX';
+    }
     
     // Validar senha
     if (!formData.senha) {
@@ -160,6 +231,8 @@ const CadastroProtetico = () => {
             value={formData.nome}
             onChange={handleChange}
             className={errors.nome ? 'input-error' : ''}
+            maxLength={255}
+            placeholder="Digite o nome completo"
           />
           {errors.nome && <div className="error-text">{errors.nome}</div>}
         </div>
@@ -173,6 +246,8 @@ const CadastroProtetico = () => {
             value={formData.email}
             onChange={handleChange}
             className={errors.email ? 'input-error' : ''}
+            maxLength={100}
+            placeholder="exemplo@email.com"
           />
           {errors.email && <div className="error-text">{errors.email}</div>}
         </div>
@@ -185,7 +260,10 @@ const CadastroProtetico = () => {
             name="telefone"
             value={formData.telefone}
             onChange={handleChange}
+            className={errors.telefone ? 'input-error' : ''}
+            placeholder="(00) 00000-0000"
           />
+          {errors.telefone && <div className="error-text">{errors.telefone}</div>}
         </div>
         
         <div className="form-group">
@@ -213,8 +291,10 @@ const CadastroProtetico = () => {
             value={formData.cro}
             onChange={handleChange}
             className={errors.cro ? 'input-error' : ''}
+            placeholder="CRO-XX 000000"
           />
           {errors.cro && <div className="error-text">{errors.cro}</div>}
+          <small className="input-help">Formato: CRO-XX NNNNNN (ex: CRO-SP 123456)</small>
         </div>
         
         <div className="form-group">
@@ -226,6 +306,8 @@ const CadastroProtetico = () => {
             value={formData.senha}
             onChange={handleChange}
             className={errors.senha ? 'input-error' : ''}
+            placeholder="Mínimo de 6 caracteres"
+            minLength={6}
           />
           {errors.senha && <div className="error-text">{errors.senha}</div>}
         </div>
@@ -239,6 +321,7 @@ const CadastroProtetico = () => {
             value={formData.confirmarSenha}
             onChange={handleChange}
             className={errors.confirmarSenha ? 'input-error' : ''}
+            placeholder="Repita a senha"
           />
           {errors.confirmarSenha && <div className="error-text">{errors.confirmarSenha}</div>}
         </div>

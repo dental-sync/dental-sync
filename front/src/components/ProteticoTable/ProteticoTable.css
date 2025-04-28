@@ -41,7 +41,7 @@
 }
 
 .protetico-table td:last-child {
-  z-index: 20;
+  position: relative;
 }
 
 .empty-row {

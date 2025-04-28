@@ -1,81 +1,219 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import './EditarProtetico.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
 const EditarProtetico = () => {
-  const { id } = useParams();
   const navigate = useNavigate();
+  const { id } = useParams();
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
     telefone: '',
     cargo: '',
     cro: '',
-    status: 'ATIVO'
+    senha: '',
+    confirmarSenha: ''
   });
-  const [loading, setLoading] = useState(true);
-  const [enviando, setEnviando] = useState(false);
-  const [error, setError] = useState(null);
+  
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     const fetchProtetico = async () => {
-      setLoading(true);
       try {
         const response = await axios.get(`/api/proteticos/${id}`);
+        const protetico = response.data;
+        
         setFormData({
-          nome: response.data.nome || '',
-          email: response.data.email || '',
-          telefone: response.data.telefone || '',
-          cargo: response.data.isAdmin ? 'Admin' : 'Protetico',
-          cro: response.data.cro || '',
-          status: response.data.status || 'ATIVO'
+          nome: protetico.nome || '',
+          email: protetico.email || '',
+          telefone: protetico.telefone || '',
+          cargo: protetico.isAdmin ? 'Admin' : 'Protetico',
+          cro: protetico.cro || '',
+          senha: '',
+          confirmarSenha: ''
         });
-        setLoading(false);
-      } catch (err) {
-        console.error('Erro ao buscar dados do protético:', err);
-        setError('Não foi possível carregar os dados do protético. Tente novamente mais tarde.');
-        setLoading(false);
+      } catch (error) {
+        console.error('Erro ao buscar dados do protético:', error);
+        setErrors({ general: 'Erro ao carregar dados do protético. Tente novamente.' });
+      } finally {
+        setLoadingData(false);
       }
     };
-
+    
     fetchProtetico();
   }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    
+    if (name === 'telefone') {
+      // Aplicar máscara de telefone (99) 99999-9999
+      const cleaned = value.replace(/\D/g, '');
+      let formatted = '';
+      
+      if (cleaned.length <= 11) {
+        if (cleaned.length > 0) formatted += '(';
+        if (cleaned.length > 0) formatted += cleaned.substring(0, 2);
+        if (cleaned.length > 2) formatted += ') ';
+        if (cleaned.length > 2) formatted += cleaned.substring(2, 7);
+        if (cleaned.length > 7) formatted += '-';
+        if (cleaned.length > 7) formatted += cleaned.substring(7, 11);
+        
+        setFormData({
+          ...formData,
+          [name]: formatted
+        });
+      }
+    } else if (name === 'cro') {
+      // Aplicar máscara para CRO
+      const upperValue = value.toUpperCase();
+      
+      // Verificar o formato CRO-XX NNNNNN
+      const croPrefixMatch = upperValue.match(/^(CRO-[A-Z]{0,2})/);
+      
+      if (croPrefixMatch) {
+        // Formato começa com CRO-XX
+        const prefix = croPrefixMatch[0];
+        const rest = upperValue.substring(prefix.length).replace(/\D/g, '');
+        
+        if (rest) {
+          setFormData({
+            ...formData,
+            [name]: `${prefix} ${rest}`
+          });
+        } else {
+          setFormData({
+            ...formData,
+            [name]: prefix
+          });
+        }
+      } else {
+        // Permitir apenas letras para o estado ou números para o registro
+        setFormData({
+          ...formData,
+          [name]: upperValue
+        });
+      }
+    } else {
+      // Para outros campos, sem máscara
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+    
+    // Limpar erro do campo quando o usuário digita
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: ''
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Validar campos obrigatórios
+    if (!formData.nome) newErrors.nome = 'Nome é obrigatório';
+    if (!formData.email) newErrors.email = 'Email é obrigatório';
+    if (!formData.cro) newErrors.cro = 'CRO é obrigatório';
+    if (!formData.cargo) newErrors.cargo = 'Cargo é obrigatório';
+    
+    // Validar tamanho do nome
+    if (formData.nome && formData.nome.length > 255) {
+      newErrors.nome = 'O nome não pode ter mais de 255 caracteres';
+    }
+    
+    // Validar formato do telefone
+    if (formData.telefone) {
+      const telefoneClean = formData.telefone.replace(/\D/g, '');
+      if (telefoneClean.length !== 11) {
+        newErrors.telefone = 'Telefone deve conter 11 dígitos (DDD + número)';
+      }
+    }
+    
+    // Validar formato de CRO
+    const croRegex = /(CRO-[A-Z]{2}\s?\d{1,6})|(\d{1,6}\s?CRO-[A-Z]{2})/;
+    if (formData.cro && !croRegex.test(formData.cro)) {
+      newErrors.cro = 'Formato de CRO inválido. Use o formato: CRO-XX NNNNNN ou NNNNNN CRO-XX';
+    }
+    
+    // Validar senha apenas se foi preenchida
+    if (formData.senha && formData.senha.length < 6) {
+      newErrors.senha = 'A senha deve ter pelo menos 6 caracteres';
+    }
+    
+    // Validar confirmação de senha
+    if (formData.senha && formData.senha !== formData.confirmarSenha) {
+      newErrors.confirmarSenha = 'As senhas não coincidem';
+    }
+    
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.email && !emailRegex.test(formData.email)) {
+      newErrors.email = 'Formato de email inválido';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setEnviando(true);
-    setError(null);
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    setLoading(true);
     
     try {
-      // Preparar os dados para enviar para o backend
       const proteticoData = {
-        ...formData,
+        nome: formData.nome,
+        email: formData.email,
+        telefone: formData.telefone || null,
+        cro: formData.cro,
         isAdmin: formData.cargo === 'Admin'
       };
       
-      // Enviar a atualização para a API
+      // Incluir senha apenas se foi preenchida
+      if (formData.senha) {
+        proteticoData.senha = formData.senha;
+      }
+      
       await axios.put(`/api/proteticos/${id}`, proteticoData);
       
       setSuccess(true);
       setTimeout(() => {
         navigate('/protetico');
       }, 2000);
-    } catch (err) {
-      console.error('Erro ao atualizar protético:', err);
-      setError('Ocorreu um erro ao salvar as alterações. Tente novamente.');
+    } catch (error) {
+      console.error('Erro ao atualizar protético:', error);
+      
+      if (error.response && error.response.data) {
+        // Tratamento de erros específicos da API
+        if (error.response.data.errors) {
+          const apiErrors = {};
+          error.response.data.errors.forEach(err => {
+            apiErrors[err.field] = err.message;
+          });
+          setErrors(apiErrors);
+        } else if (error.response.data.message) {
+          setErrors({ general: error.response.data.message });
+        } else {
+          setErrors({ general: 'Ocorreu um erro ao atualizar o protético. Tente novamente.' });
+        }
+      } else {
+        setErrors({ general: 'Erro de conexão. Verifique sua internet e tente novamente.' });
+      }
     } finally {
-      setEnviando(false);
+      setLoading(false);
     }
   };
 
@@ -83,8 +221,12 @@ const EditarProtetico = () => {
     navigate('/protetico');
   };
 
-  if (loading) {
-    return <div className="loading">Carregando...</div>;
+  if (loadingData) {
+    return (
+      <div className="editar-protetico-page">
+        <div className="loading">Carregando dados...</div>
+      </div>
+    );
   }
 
   return (
@@ -104,8 +246,17 @@ const EditarProtetico = () => {
         <h1 className="page-title">Editar Protético</h1>
       </div>
       
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">Protético atualizado com sucesso!</div>}
+      {success && (
+        <div className="success-message">
+          Protético atualizado com sucesso!
+        </div>
+      )}
+      
+      {errors.general && (
+        <div className="error-message">
+          {errors.general}
+        </div>
+      )}
       
       <form onSubmit={handleSubmit} className="protetico-form">
         <div className="form-group">
@@ -116,8 +267,11 @@ const EditarProtetico = () => {
             name="nome"
             value={formData.nome}
             onChange={handleChange}
-            required
+            className={errors.nome ? 'input-error' : ''}
+            maxLength={255}
+            placeholder="Digite o nome completo"
           />
+          {errors.nome && <div className="error-text">{errors.nome}</div>}
         </div>
         
         <div className="form-group">
@@ -128,8 +282,11 @@ const EditarProtetico = () => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            required
+            className={errors.email ? 'input-error' : ''}
+            maxLength={100}
+            placeholder="exemplo@email.com"
           />
+          {errors.email && <div className="error-text">{errors.email}</div>}
         </div>
         
         <div className="form-group">
@@ -140,7 +297,10 @@ const EditarProtetico = () => {
             name="telefone"
             value={formData.telefone}
             onChange={handleChange}
+            className={errors.telefone ? 'input-error' : ''}
+            placeholder="(00) 00000-0000"
           />
+          {errors.telefone && <div className="error-text">{errors.telefone}</div>}
         </div>
         
         <div className="form-group">
@@ -150,12 +310,13 @@ const EditarProtetico = () => {
             name="cargo"
             value={formData.cargo}
             onChange={handleChange}
-            required
+            className={errors.cargo ? 'input-error' : ''}
           >
             <option value="">Selecione um cargo</option>
             <option value="Admin">Admin</option>
             <option value="Protetico">Protetico</option>
           </select>
+          {errors.cargo && <div className="error-text">{errors.cargo}</div>}
         </div>
         
         <div className="form-group">
@@ -166,29 +327,48 @@ const EditarProtetico = () => {
             name="cro"
             value={formData.cro}
             onChange={handleChange}
-            required
+            className={errors.cro ? 'input-error' : ''}
+            placeholder="CRO-XX 000000"
           />
+          {errors.cro && <div className="error-text">{errors.cro}</div>}
+          <small className="input-help">Formato: CRO-XX NNNNNN (ex: CRO-SP 123456)</small>
         </div>
         
         <div className="form-group">
-          <label htmlFor="status">Status</label>
-          <select
-            id="status"
-            name="status"
-            value={formData.status}
+          <label htmlFor="senha">Nova Senha (opcional)</label>
+          <input
+            type="password"
+            id="senha"
+            name="senha"
+            value={formData.senha}
             onChange={handleChange}
-          >
-            <option value="ATIVO">Ativo</option>
-            <option value="INATIVO">Inativo</option>
-          </select>
+            className={errors.senha ? 'input-error' : ''}
+            placeholder="Deixe em branco para manter a senha atual"
+            minLength={6}
+          />
+          {errors.senha && <div className="error-text">{errors.senha}</div>}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="confirmarSenha">Confirmar Nova Senha</label>
+          <input
+            type="password"
+            id="confirmarSenha"
+            name="confirmarSenha"
+            value={formData.confirmarSenha}
+            onChange={handleChange}
+            className={errors.confirmarSenha ? 'input-error' : ''}
+            placeholder="Repita a nova senha"
+          />
+          {errors.confirmarSenha && <div className="error-text">{errors.confirmarSenha}</div>}
         </div>
         
         <div className="form-actions">
           <button type="button" onClick={handleVoltar} className="btn-cancelar">
             Cancelar
           </button>
-          <button type="submit" className="btn-salvar" disabled={enviando}>
-            {enviando ? 'Salvando...' : 'Salvar Alterações'}
+          <button type="submit" className="btn-salvar" disabled={loading}>
+            {loading ? 'Salvando...' : 'Salvar Alterações'}
           </button>
         </div>
       </form>

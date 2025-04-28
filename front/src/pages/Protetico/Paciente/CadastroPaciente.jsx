@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import './CadastroPaciente.css';
-import NotificationBell from '../../../components/NotificationBell/NotificationBell';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -123,96 +122,92 @@ const CadastroPaciente = () => {
   };
 
   return (
-    <div className="cadastro-paciente-page">
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
-        </div>
-      </div>
-      
-      <div className="back-navigation">
-        <button onClick={handleVoltar} className="back-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <h1 className="page-title">Cadastro de Paciente</h1>
-      </div>
-      
-      {success && (
-        <div className="success-message">
-          Paciente cadastrado com sucesso!
-        </div>
-      )}
-      
-      {errors.general && (
-        <div className="error-message">
-          {errors.general}
-        </div>
-      )}
-      
-      <form onSubmit={handleSubmit} className="paciente-form">
-        <div className="form-group">
-          <label htmlFor="nome">Nome Completo</label>
-          <input
-            type="text"
-            id="nome"
-            name="nome"
-            value={formData.nome}
-            onChange={handleChange}
-            className={errors.nome ? 'input-error' : ''}
-          />
-          {errors.nome && <div className="error-text">{errors.nome}</div>}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className={errors.email ? 'input-error' : ''}
-          />
-          {errors.email && <div className="error-text">{errors.email}</div>}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="telefone">Telefone</label>
-          <input
-            type="tel"
-            id="telefone"
-            name="telefone"
-            value={formData.telefone}
-            onChange={handleChange}
-            className={errors.telefone ? 'input-error' : ''}
-          />
-          {errors.telefone && <div className="error-text">{errors.telefone}</div>}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="dataNascimento">Data de Nascimento</label>
-          <input
-            type="date"
-            id="dataNascimento"
-            name="dataNascimento"
-            value={formData.dataNascimento}
-            onChange={handleChange}
-            className={errors.dataNascimento ? 'input-error' : ''}
-          />
-          {errors.dataNascimento && <div className="error-text">{errors.dataNascimento}</div>}
-        </div>
-        
-        <div className="form-actions">
-          <button type="button" onClick={handleVoltar} className="btn-cancelar">
-            Cancelar
+    <div className="paciente-page">
+      <div className="cadastro-paciente-page">
+        <div className="back-navigation">
+          <button onClick={handleVoltar} className="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
           </button>
-          <button type="submit" className="btn-cadastrar" disabled={loading}>
-            {loading ? 'Cadastrando...' : 'Cadastrar Paciente'}
-          </button>
+          <h1 className="page-title">Cadastro de Paciente</h1>
         </div>
-      </form>
+        
+        {success && (
+          <div className="success-message">
+            Paciente cadastrado com sucesso!
+          </div>
+        )}
+        
+        {errors.general && (
+          <div className="error-message">
+            {errors.general}
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit} className="paciente-form">
+          <div className="form-group">
+            <label htmlFor="nome">Nome Completo</label>
+            <input
+              type="text"
+              id="nome"
+              name="nome"
+              value={formData.nome}
+              onChange={handleChange}
+              className={errors.nome ? 'input-error' : ''}
+            />
+            {errors.nome && <div className="error-text">{errors.nome}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={errors.email ? 'input-error' : ''}
+            />
+            {errors.email && <div className="error-text">{errors.email}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="telefone">Telefone</label>
+            <input
+              type="tel"
+              id="telefone"
+              name="telefone"
+              value={formData.telefone}
+              onChange={handleChange}
+              className={errors.telefone ? 'input-error' : ''}
+            />
+            {errors.telefone && <div className="error-text">{errors.telefone}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="dataNascimento">Data de Nascimento</label>
+            <input
+              type="date"
+              id="dataNascimento"
+              name="dataNascimento"
+              value={formData.dataNascimento}
+              onChange={handleChange}
+              className={errors.dataNascimento ? 'input-error' : ''}
+            />
+            {errors.dataNascimento && <div className="error-text">{errors.dataNascimento}</div>}
+          </div>
+          
+          <div className="form-actions">
+            <button type="button" onClick={handleVoltar} className="btn-cancelar">
+              Cancelar
+            </button>
+            <button type="submit" className="btn-cadastrar" disabled={loading}>
+              {loading ? 'Cadastrando...' : 'Cadastrar Paciente'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

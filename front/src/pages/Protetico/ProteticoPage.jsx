@@ -6,6 +6,8 @@ import ProteticoTable from '../../components/ProteticoTable/ProteticoTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProteticoPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,6 +19,7 @@ const ProteticoPage = () => {
     status: 'todos',
     cargo: 'todos'
   });
+  const [refreshFlag, setRefreshFlag] = useState(0);
 
   const filterRef = useRef(null);
   const navigate = useNavigate();
@@ -28,7 +31,7 @@ const ProteticoPage = () => {
         setLoading(true);
         
         try {
-          const response = await axios.get('/api/proteticos');
+          const response = await axios.get('http://localhost:8080/proteticos');
           
           // Se a chamada for bem-sucedida, usar os dados da API
           const proteticosFormatados = response.data.map(protetico => ({
@@ -37,7 +40,7 @@ const ProteticoPage = () => {
             cro: protetico.cro,
             cargo: protetico.isAdmin ? 'Admin' : 'Técnico',
             telefone: protetico.telefone || '-',
-            status: protetico.status || 'ATIVO'
+            status: protetico.isActive ? 'ATIVO' : 'INATIVO'
           }));
           
           setProteticos(proteticosFormatados);
@@ -56,7 +59,7 @@ const ProteticoPage = () => {
     };
     
     fetchProteticos();
-  }, []);
+  }, [refreshFlag]);
 
   // Esconder o filtro ao clicar fora dele
   useEffect(() => {
@@ -129,12 +132,18 @@ const ProteticoPage = () => {
     navigate('/protetico/cadastro');
   };
 
+  // Função para forçar atualização da listagem
+  const handleStatusChange = () => {
+    setRefreshFlag(prev => prev + 1);
+  };
+
   if (loading) {
     return <div className="loading">Carregando protéticos...</div>;
   }
 
   return (
     <div className="protetico-page">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="page-top">
         <div className="notification-container">
           <NotificationBell count={2} />
@@ -226,7 +235,10 @@ const ProteticoPage = () => {
             Nenhum protético encontrado com os filtros aplicados.
           </div>
         ) : null}
-        <ProteticoTable proteticos={proteticosFiltrados} />
+        <ProteticoTable 
+          proteticos={proteticosFiltrados} 
+          onStatusChange={handleStatusChange}
+        />
       </div>
     </div>
   );

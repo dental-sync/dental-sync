@@ -1,11 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './ActionMenu.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
-const ActionMenu = ({ proteticoId }) => {
+const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const isActive = proteticoStatus === true || 
+                  proteticoStatus === 'true' ||
+                  proteticoStatus === 'ATIVO' ||
+                  proteticoStatus === 'Ativo';
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -38,6 +44,33 @@ const ActionMenu = ({ proteticoId }) => {
     console.log(`Excluir protético ${proteticoId}`);
     setIsOpen(false);
   };
+  
+  const handleToggleStatus = async () => {
+    try {
+      const newStatus = !isActive;
+      console.log(`Atualizando status do protético ${proteticoId} para ${newStatus ? 'Ativo' : 'Inativo'}`);
+      
+      const requestBody = { isActive: newStatus };
+      console.log('Corpo da requisição:', JSON.stringify(requestBody));
+      
+      const response = await axios.patch(`http://localhost:8080/proteticos/${proteticoId}`, requestBody);
+      
+      console.log('Resposta da API:', response);
+      
+      if (response.status === 200) {
+        // Notificar o componente pai sobre a mudança de status
+        if (onStatusChange) {
+          onStatusChange(proteticoId, newStatus);
+        }
+        toast.success(`Status atualizado com sucesso para ${newStatus ? 'Ativo' : 'Inativo'}`);
+      }
+      
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Erro ao alterar status do protético:', error);
+      toast.error('Erro ao alterar status. Tente novamente.');
+    }
+  };
 
   return (
     <div className="action-menu" ref={dropdownRef}>
@@ -54,6 +87,9 @@ const ActionMenu = ({ proteticoId }) => {
           <ul>
             <li onClick={handleVerHistorico}>Ver histórico</li>
             <li onClick={handleEditar}>Editar</li>
+            <li onClick={handleToggleStatus}>
+              {isActive ? 'Desativar' : 'Ativar'}
+            </li>
             <li onClick={handleExcluir} className="delete-option">Excluir</li>
           </ul>
         </div>

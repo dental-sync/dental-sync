@@ -18,10 +18,34 @@ const CadastroPaciente = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    
+    if (name === "telefone") {
+      // Remove todos os caracteres não numéricos
+      const numericValue = value.replace(/\D/g, '');
+      
+      // Aplica a máscara conforme o usuário digita
+      let formattedValue = '';
+      
+      if (numericValue.length <= 2) {
+        formattedValue = numericValue.length ? `(${numericValue}` : '';
+      } else if (numericValue.length <= 7) {
+        formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(2)}`;
+      } else {
+        formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(
+          2, 7
+        )}-${numericValue.slice(7, 11)}`;
+      }
+      
+      setFormData({
+        ...formData,
+        [name]: formattedValue
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
     
     //Limpar erro do campo quando o usuário digita
     if (errors[name]) {

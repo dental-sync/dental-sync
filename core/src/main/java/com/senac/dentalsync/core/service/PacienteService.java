@@ -39,6 +39,30 @@ public class PacienteService extends BaseService<Paciente, Long> {
         return repository.findByTelefone(telefone);
     }
 
+    @Override
+    public Paciente save(Paciente entity) {
+        // Verificações somente para novos pacientes
+        if (entity.getId() == null) {
+            // Verificar se já existe paciente com o mesmo email
+            Optional<Paciente> pacienteComEmail = repository.findByEmail(entity.getEmail());
+            if (pacienteComEmail.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail já cadastrado");
+            }
+            
+            // Verificar se já existe paciente com o mesmo telefone
+            Optional<Paciente> pacienteComTelefone = repository.findByTelefone(entity.getTelefone());
+            if (pacienteComTelefone.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telefone já cadastrado");
+            }
+        }
+        
+        try {
+            return super.save(entity);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
     public void deletePaciente(Long id) {
         // Verificar se o paciente existe
         Optional<Paciente> pacienteOpt = repository.findById(id);
@@ -49,12 +73,29 @@ public class PacienteService extends BaseService<Paciente, Long> {
         
         Paciente paciente = pacienteOpt.get();
         
-        // Verificar se o paciente já está inativo pelo campo isActive
-        if (paciente.getIsActive() != null && !paciente.getIsActive()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Paciente já está inativo");
+        // Verificar se o paciente está ativo
+        if (paciente.getIsActive() != null && paciente.getIsActive()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível excluir um paciente ativo. Desative-o primeiro.");
         }
         
         // Se chegou aqui, podemos excluir o paciente
         repository.deleteById(id);
+    }
+    
+    public Paciente updateStatus(Long id, Boolean isActive) {
+        // Verificar se o paciente existe
+        Optional<Paciente> pacienteOpt = repository.findById(id);
+        
+        if (pacienteOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado");
+        }
+        
+        Paciente paciente = pacienteOpt.get();
+        
+        // Atualizar o status
+        paciente.setIsActive(isActive);
+        
+        // Salvar as alterações
+        return repository.save(paciente);
     }
 }

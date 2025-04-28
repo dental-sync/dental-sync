@@ -6,7 +6,7 @@ import axios from 'axios';
 const CadastroDentista = () => {
   const [formData, setFormData] = useState({
     nome: '',
-    cro: '',
+    cro: 'CRO-',
     telefone: '',
     email: '',
     clinicaId: '',
@@ -51,7 +51,7 @@ const CadastroDentista = () => {
     if (!formData.cro.trim()) {
       newErrors.cro = 'O CRO é obrigatório';
     } else if (!/^CRO-[A-Z]{2}-[A-Z]{2,3}-\d{4,5}$/.test(formData.cro)) {
-      newErrors.cro = 'Formato de CRO inválido. Use o formato: CRO-SC-CD-12345 ou CRO-SC-TPD-1234';
+      newErrors.cro = 'CRO incorreto. Digite o padrão correto: CRO-XX-XXX-XXXXX';
     }
     
     if (!formData.email.trim()) {
@@ -85,17 +85,20 @@ const CadastroDentista = () => {
     const { name, value } = e.target;
     
     if (name === 'cro') {
-      const formattedValue = value
-        .toUpperCase()
-        .replace(/[^A-Z0-9-]/g, '')
-        .replace(/^CRO-?([A-Z]{2})?-?([A-Z]{2,3})?-?(\d+)?$/, (match, estado, categoria, numero) => {
-          let result = 'CRO';
-          if (estado) result += `-${estado}`;
-          if (categoria) result += `-${categoria}`;
-          if (numero) result += `-${numero.substring(0, 5)}`;
-          return result;
-        })
-        .substring(0, 15);
+      // Garante que o valor sempre começa com CRO-
+      let formattedValue = value;
+      if (!value.startsWith('CRO-')) {
+        formattedValue = 'CRO-' + value.replace(/^CRO-?/, '');
+      }
+      
+      // Remove caracteres inválidos e converte para maiúsculo
+      formattedValue = formattedValue.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+      
+      // Limita o tamanho máximo do CRO
+      if (formattedValue.length > 16) { // CRO-XX-XXX-XXXXX = 16 caracteres
+        formattedValue = formattedValue.substring(0, 16);
+      }
+      
       setFormData({
         ...formData,
         [name]: formattedValue
@@ -270,6 +273,7 @@ const CadastroDentista = () => {
               value={formData.nome}
               onChange={handleChange}
               className={errors.nome ? 'input-error' : ''}
+              placeholder="Digite o nome completo"
               required
             />
             {errors.nome && <span className="error-text">{errors.nome}</span>}
@@ -284,9 +288,11 @@ const CadastroDentista = () => {
               value={formData.cro}
               onChange={handleChange}
               className={errors.cro ? 'input-error' : ''}
+              placeholder="XX-XXX-XXXXX"
               required
             />
             {errors.cro && <span className="error-text">{errors.cro}</span>}
+            <span className="info-text">Formato: CRO-XX-XXX-XXXXX</span>
           </div>
           
           <div className="form-group">
@@ -298,6 +304,7 @@ const CadastroDentista = () => {
               value={formData.email}
               onChange={handleChange}
               className={errors.email ? 'input-error' : ''}
+              placeholder="exemplo@email.com"
               required
             />
             {errors.email && <span className="error-text">{errors.email}</span>}
@@ -312,6 +319,7 @@ const CadastroDentista = () => {
               value={formData.telefone}
               onChange={handleChange}
               className={errors.telefone ? 'input-error' : ''}
+              placeholder="(00) 00000-0000"
               required
             />
             {errors.telefone && <span className="error-text">{errors.telefone}</span>}
@@ -392,6 +400,7 @@ const CadastroDentista = () => {
                   value={formData.novaClinica.nome}
                   onChange={handleChange}
                   className={errors['novaClinica.nome'] ? 'input-error' : ''}
+                  placeholder="Digite o nome da clínica"
                   required
                 />
                 {errors['novaClinica.nome'] && <span className="error-text">{errors['novaClinica.nome']}</span>}
@@ -406,6 +415,7 @@ const CadastroDentista = () => {
                   value={formData.novaClinica.cnpj}
                   onChange={handleChange}
                   className={errors['novaClinica.cnpj'] ? 'input-error' : ''}
+                  placeholder="XX.XXX.XXX/YYYY-ZZ"
                   required
                 />
                 {errors['novaClinica.cnpj'] && <span className="error-text">{errors['novaClinica.cnpj']}</span>}

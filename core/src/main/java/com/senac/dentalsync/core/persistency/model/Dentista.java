@@ -24,7 +24,7 @@ public class Dentista extends BaseEntity {
     private String nome;
 
     @NotBlank(message = "O CRO é obrigatório")
-    @Pattern(regexp = "CRO-[A-Z]{2}-[A-Z]{2,3}-\\d{4,5}", message = "Formato de CRO inválido. Use o formato: CRO-SC-CD-12345 ou CRO-SC-TPD-1234")
+    @Pattern(regexp = "CRO-[A-Z]{2}-[A-Z]{2,3}-\\d{4,5}", message = "Formato de CRO inválido. Use o formato: CRO-XX-XXX-XXXXX")
     private String cro;
 
     @ManyToMany

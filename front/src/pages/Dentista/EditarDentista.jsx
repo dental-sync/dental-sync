@@ -8,7 +8,7 @@ const EditarDentista = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nome: '',
-    cro: '',
+    cro: 'CRO-',
     telefone: '',
     email: '',
     clinicaId: '',
@@ -70,7 +70,7 @@ const EditarDentista = () => {
     if (!formData.cro.trim()) {
       newErrors.cro = 'O CRO é obrigatório';
     } else if (!/^CRO-[A-Z]{2}-[A-Z]{2,3}-\d{4,5}$/.test(formData.cro)) {
-      newErrors.cro = 'Formato de CRO inválido. Use o formato: CRO-SC-CD-12345 ou CRO-SC-TPD-1234';
+      newErrors.cro = 'CRO incorreto. Digite o padrão correto: CRO-XX-XXX-XXXXX';
     }
     
     if (!formData.email.trim()) {
@@ -137,17 +137,20 @@ const EditarDentista = () => {
     }
     
     if (name === 'cro') {
-      const formattedValue = value
-        .toUpperCase()
-        .replace(/[^A-Z0-9-]/g, '')
-        .replace(/^CRO-?([A-Z]{2})?-?([A-Z]{2,3})?-?(\d+)?$/, (match, estado, categoria, numero) => {
-          let result = 'CRO';
-          if (estado) result += `-${estado}`;
-          if (categoria) result += `-${categoria}`;
-          if (numero) result += `-${numero.substring(0, 5)}`;
-          return result;
-        })
-        .substring(0, 15);
+      // Garante que o valor sempre começa com CRO-
+      let formattedValue = value;
+      if (!value.startsWith('CRO-')) {
+        formattedValue = 'CRO-' + value.replace(/^CRO-?/, '');
+      }
+      
+      // Remove caracteres inválidos e converte para maiúsculo
+      formattedValue = formattedValue.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+      
+      // Limita o tamanho máximo do CRO
+      if (formattedValue.length > 16) { // CRO-XX-XXX-XXXXX = 16 caracteres
+        formattedValue = formattedValue.substring(0, 16);
+      }
+      
       setFormData({
         ...formData,
         [name]: formattedValue
@@ -297,6 +300,7 @@ const EditarDentista = () => {
               value={formData.nome}
               onChange={handleChange}
               className={errors.nome ? 'input-error' : ''}
+              placeholder="Digite o nome completo"
               required
             />
             {errors.nome && <span className="error-text">{errors.nome}</span>}
@@ -311,9 +315,11 @@ const EditarDentista = () => {
               value={formData.cro}
               onChange={handleChange}
               className={errors.cro ? 'input-error' : ''}
+              placeholder="XX-XXX-XXXXX"
               required
             />
             {errors.cro && <span className="error-text">{errors.cro}</span>}
+            <span className="info-text">Formato: CRO-XX-XXX-XXXXX</span>
           </div>
           
           <div className="form-group">
@@ -325,6 +331,7 @@ const EditarDentista = () => {
               value={formData.email}
               onChange={handleChange}
               className={errors.email ? 'input-error' : ''}
+              placeholder="exemplo@email.com"
               required
             />
             {errors.email && <span className="error-text">{errors.email}</span>}
@@ -333,12 +340,13 @@ const EditarDentista = () => {
           <div className="form-group">
             <label htmlFor="telefone">Telefone</label>
             <input
-              type="text"
+              type="tel"
               id="telefone"
               name="telefone"
               value={formData.telefone}
               onChange={handleChange}
               className={errors.telefone ? 'input-error' : ''}
+              placeholder="(00) 00000-0000"
               required
             />
             {errors.telefone && <span className="error-text">{errors.telefone}</span>}
@@ -407,9 +415,9 @@ const EditarDentista = () => {
             </div>
             {errors.clinicaId && <span className="error-text">{errors.clinicaId}</span>}
           </div>
-          
+
           {showNovaClinica && (
-            <div className="nova-clinica-form">
+            <>
               <div className="form-group">
                 <label htmlFor="novaClinica.nome">Nome da Clínica</label>
                 <input
@@ -419,6 +427,7 @@ const EditarDentista = () => {
                   value={formData.novaClinica.nome}
                   onChange={handleChange}
                   className={errors['novaClinica.nome'] ? 'input-error' : ''}
+                  placeholder="Digite o nome da clínica"
                   required
                 />
                 {errors['novaClinica.nome'] && <span className="error-text">{errors['novaClinica.nome']}</span>}
@@ -433,11 +442,12 @@ const EditarDentista = () => {
                   value={formData.novaClinica.cnpj}
                   onChange={handleChange}
                   className={errors['novaClinica.cnpj'] ? 'input-error' : ''}
+                  placeholder="XX.XXX.XXX/YYYY-ZZ"
                   required
                 />
                 {errors['novaClinica.cnpj'] && <span className="error-text">{errors['novaClinica.cnpj']}</span>}
               </div>
-            </div>
+            </>
           )}
           
           <div className="form-group">
@@ -454,10 +464,10 @@ const EditarDentista = () => {
           </div>
           
           <div className="form-actions">
-            <button type="button" onClick={handleVoltar} className="cancel-button">
+            <button type="button" onClick={handleVoltar} className="btn-cancelar">
               Cancelar
             </button>
-            <button type="submit" className="save-button" disabled={saving}>
+            <button type="submit" className="btn-salvar" disabled={saving}>
               {saving ? 'Salvando...' : 'Salvar'}
             </button>
           </div>

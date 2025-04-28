@@ -47,7 +47,7 @@ public class DentistaService extends BaseService<Dentista, Long> {
     public Dentista updateStatus(Long id, Boolean status) {
         Dentista dentista = dentistaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Dentista não encontrado"));
-        dentista.setStatus(status);
+        dentista.setIsActive(status);
         return dentistaRepository.save(dentista);
     }
 

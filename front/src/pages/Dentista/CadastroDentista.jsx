@@ -15,7 +15,7 @@ const CadastroDentista = () => {
       nome: '',
       cnpj: ''
     },
-    status: true
+    isActive: true
   });
   
   const [clinicas, setClinicas] = useState([]);
@@ -193,7 +193,7 @@ const CadastroDentista = () => {
         telefone: formData.telefone,
         email: formData.email,
         clinicas: clinicasDosDentista,
-        status: formData.status
+        isActive: formData.isActive
       };
       
       await axios.post('http://localhost:8080/dentistas', dentistaData);

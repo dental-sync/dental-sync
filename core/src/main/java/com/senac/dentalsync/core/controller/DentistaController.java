@@ -45,7 +45,7 @@ public class DentistaController extends BaseController<Dentista, Long> {
     @PatchMapping("/{id}")
     public ResponseEntity<Dentista> updateStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> status) {
         try {
-            Dentista dentista = dentistaService.updateStatus(id, status.get("status"));
+            Dentista dentista = dentistaService.updateStatus(id, status.get("isActive"));
             return ResponseEntity.ok(dentista);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();

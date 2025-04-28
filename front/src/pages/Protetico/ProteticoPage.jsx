@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './ProteticoPage.css';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
@@ -9,115 +9,55 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useInfiniteScroll from '../../hooks/useInfiniteScroll';
 
 const ProteticoPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [proteticos, setProteticos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [filtros, setFiltros] = useState({
     status: 'todos',
     cargo: 'todos'
   });
-  const [refreshFlag, setRefreshFlag] = useState(0);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [totalElements, setTotalElements] = useState(0);
-  const pageSize = 20;
-
-  const observer = useRef();
+  
   const filterRef = useRef(null);
   const navigate = useNavigate();
   
-  // Callback para elemento de observação do scroll
-  const lastProteticoElementRef = useCallback(node => {
-    if (loading || loadingMore) return;
-    
-    if (observer.current) observer.current.disconnect();
-    
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMoreProteticos();
-      }
-    }, { threshold: 0.8 });
-    
-    if (node) observer.current.observe(node);
-  }, [loading, loadingMore, hasMore]);
-  
-  // Função para carregar mais protéticos (próxima página)
-  const loadMoreProteticos = async () => {
-    if (!hasMore || loadingMore) return;
-    
+  // Função para buscar protéticos da API
+  const fetchProteticosData = async (pageNum, pageSize) => {
     try {
-      setLoadingMore(true);
-      const nextPage = page + 1;
-      await fetchProteticos(nextPage);
-      setPage(nextPage);
-    } catch (err) {
-      console.error('Erro ao carregar mais protéticos:', err);
-      toast.error('Não foi possível carregar mais protéticos.');
-    } finally {
-      setLoadingMore(false);
+      const response = await axios.get(`http://localhost:8080/proteticos/paginado?page=${pageNum}&size=${pageSize}`);
+      
+      const responseData = response.data;
+      const proteticosFormatados = responseData.content.map(protetico => ({
+        id: protetico.id,
+        nome: protetico.nome,
+        cro: protetico.cro,
+        cargo: protetico.isAdmin ? 'Admin' : 'Protetico',
+        telefone: protetico.telefone || '-',
+        status: protetico.isActive ? 'ATIVO' : 'INATIVO'
+      }));
+      
+      return {
+        content: proteticosFormatados,
+        totalElements: responseData.totalElements,
+        last: responseData.last
+      };
+    } catch (error) {
+      console.error('Não foi possível acessar a API:', error);
+      toast.error('Erro ao buscar protéticos. Por favor, tente novamente.');
+      throw error;
     }
   };
   
-  // Buscar lista de protéticos da API de forma paginada
-  const fetchProteticos = async (pageNum = 0) => {
-    try {
-      if (pageNum === 0) {
-        setLoading(true);
-        setProteticos([]);
-      }
-      
-      try {
-        const response = await axios.get(`http://localhost:8080/proteticos/paginado?page=${pageNum}&size=${pageSize}`);
-        
-        // Se a chamada for bem-sucedida, usar os dados da API
-        const responseData = response.data;
-        const proteticosFormatados = responseData.content.map(protetico => ({
-          id: protetico.id,
-          nome: protetico.nome,
-          cro: protetico.cro,
-          cargo: protetico.isAdmin ? 'Admin' : 'Técnico',
-          telefone: protetico.telefone || '-',
-          status: protetico.isActive ? 'ATIVO' : 'INATIVO'
-        }));
-        
-        // Atualizar lista de protéticos (adicionar à lista existente se não for a primeira página)
-        setProteticos(prev => pageNum === 0 ? proteticosFormatados : [...prev, ...proteticosFormatados]);
-        
-        // Atualizar informações de paginação
-        setTotalElements(responseData.totalElements);
-        setHasMore(!responseData.last);
-      } catch (apiErr) {
-        console.error('Não foi possível acessar a API:', apiErr);
-        if (pageNum === 0) {
-          // Inicializar com array vazio em caso de erro na primeira página
-          setProteticos([]);
-        }
-        toast.error('Erro ao buscar protéticos. Por favor, tente novamente.');
-      }
-      
-      if (pageNum === 0) {
-        setLoading(false);
-      }
-    } catch (err) {
-      console.error('Erro ao buscar protéticos:', err);
-      if (pageNum === 0) {
-        setProteticos([]);
-        setLoading(false);
-      }
-    }
-  };
-  
-  // Efeito para carregar a primeira página
-  useEffect(() => {
-    setPage(0);
-    fetchProteticos(0);
-  }, [refreshFlag]);
+  // Usar o hook de paginação infinita
+  const {
+    data: proteticos,
+    loading,
+    loadingMore,
+    lastElementRef: lastProteticoElementRef,
+    refresh: refreshProteticos
+  } = useInfiniteScroll(fetchProteticosData);
 
   // Esconder dropdown de filtro ao clicar fora dele
   useEffect(() => {
@@ -197,7 +137,7 @@ const ProteticoPage = () => {
 
   // Função para forçar atualização da listagem
   const handleStatusChange = () => {
-    setRefreshFlag(prev => prev + 1);
+    refreshProteticos();
   };
 
   if (loading) {
@@ -297,11 +237,11 @@ const ProteticoPage = () => {
             Nenhum protético encontrado para a busca "{searchQuery}".
           </div>
         )}
-        {!searchQuery && proteticosFiltrados.length === 0 && filtros.status !== 'todos' || filtros.cargo !== 'todos' ? (
+        {!searchQuery && proteticosFiltrados.length === 0 && (filtros.status !== 'todos' || filtros.cargo !== 'todos') && (
           <div className="filter-info">
             Nenhum protético encontrado com os filtros aplicados.
           </div>
-        ) : null}
+        )}
         <ProteticoTable 
           proteticos={proteticosFiltrados} 
           onStatusChange={handleStatusChange}

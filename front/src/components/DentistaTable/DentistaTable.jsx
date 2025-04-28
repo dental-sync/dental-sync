@@ -120,7 +120,7 @@ function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
             ))
           ) : (
             <tr>
-              <td colSpan="8" className="empty-row">Nenhum dentista encontrado</td>
+              <td colSpan="8" className="empty-row"></td>
             </tr>
           )}
         </tbody>

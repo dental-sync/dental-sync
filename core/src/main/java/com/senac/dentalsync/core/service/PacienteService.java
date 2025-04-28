@@ -39,6 +39,30 @@ public class PacienteService extends BaseService<Paciente, Long> {
         return repository.findByTelefone(telefone);
     }
 
+    @Override
+    public Paciente save(Paciente entity) {
+        // Verificações somente para novos pacientes
+        if (entity.getId() == null) {
+            // Verificar se já existe paciente com o mesmo email
+            Optional<Paciente> pacienteComEmail = repository.findByEmail(entity.getEmail());
+            if (pacienteComEmail.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail já cadastrado");
+            }
+            
+            // Verificar se já existe paciente com o mesmo telefone
+            Optional<Paciente> pacienteComTelefone = repository.findByTelefone(entity.getTelefone());
+            if (pacienteComTelefone.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telefone já cadastrado");
+            }
+        }
+        
+        try {
+            return super.save(entity);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
     public void deletePaciente(Long id) {
         // Verificar se o paciente existe
         Optional<Paciente> pacienteOpt = repository.findById(id);

@@ -38,6 +38,4 @@ public class Dentista extends BaseEntity {
     @NotBlank(message = "O email é obrigatório")
     @Pattern(regexp = "^[^\\s@]+@[^\\s@]+\\.com$", message = "O email deve terminar com .com")
     private String email;
-    
-    private Boolean status;
 } 

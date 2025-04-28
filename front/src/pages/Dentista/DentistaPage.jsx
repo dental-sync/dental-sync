@@ -14,7 +14,7 @@ const DentistaPage = () => {
   const [error, setError] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filtros, setFiltros] = useState({
-    status: 'todos'
+    isActive: 'todos'
   });
   const [refreshData, setRefreshData] = useState(0);
   const filterRef = useRef(null);
@@ -33,7 +33,7 @@ const DentistaPage = () => {
           telefone: dentista.telefone || '-',
           email: dentista.email || '-',
           clinicas: dentista.clinicas || [],
-          status: dentista.status ? 'ATIVO' : 'INATIVO'
+          isActive: dentista.isActive ? 'ATIVO' : 'INATIVO'
         }));
         setDentistas(dentistasFormatados);
       } catch (err) {
@@ -80,7 +80,7 @@ const DentistaPage = () => {
     setDentistas(prevDentistas =>
       prevDentistas.map(dentista =>
         dentista.id === dentistaId
-          ? { ...dentista, status: newStatus }
+          ? { ...dentista, isActive: newStatus }
           : dentista
       )
     );
@@ -88,7 +88,7 @@ const DentistaPage = () => {
 
   const dentistasFiltrados = dentistas
     .filter(dentista => {
-      if (filtros.status !== 'todos' && dentista.status !== filtros.status) {
+      if (filtros.isActive !== 'todos' && dentista.isActive !== filtros.isActive) {
         return false;
       }
       
@@ -123,7 +123,7 @@ const DentistaPage = () => {
 
   const handleLimparFiltros = () => {
     setFiltros({
-      status: 'todos'
+      isActive: 'todos'
     });
   };
 
@@ -159,18 +159,18 @@ const DentistaPage = () => {
               label="Filtrar" 
               icon="filter"
               onClick={toggleFiltro} 
-              active={isFilterOpen || filtros.status !== 'todos'}
+              active={isFilterOpen || filtros.isActive !== 'todos'}
             />
             
             {isFilterOpen && (
               <div className="filter-dropdown">
                 <h3>Filtros</h3>
                 <div className="filter-group">
-                  <label htmlFor="status">Status</label>
+                  <label htmlFor="isActive">Status</label>
                   <select
-                    id="status"
-                    name="status"
-                    value={filtros.status}
+                    id="isActive"
+                    name="isActive"
+                    value={filtros.isActive}
                     onChange={handleFiltroChange}
                     className="filter-select"
                   >
@@ -202,7 +202,7 @@ const DentistaPage = () => {
       
       <div className="search-container">
         <SearchBar
-          placeholder="Buscar dentistas..."
+          placeholder="Buscar por ID, nome, CRO, e-mail ou telefone..."
           onSearch={handleSearch}
         />
         <ActionButton
@@ -218,7 +218,7 @@ const DentistaPage = () => {
             Nenhum dentista encontrado para a busca "{searchQuery}".
           </div>
         )}
-        {!searchQuery && dentistasFiltrados.length === 0 && filtros.status !== 'todos' ? (
+        {!searchQuery && dentistasFiltrados.length === 0 && filtros.isActive !== 'todos' ? (
           <div className="filter-info">
             Nenhum dentista encontrado com os filtros aplicados.
           </div>

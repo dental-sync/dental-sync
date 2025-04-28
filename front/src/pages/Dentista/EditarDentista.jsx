@@ -17,7 +17,7 @@ const EditarDentista = () => {
       nome: '',
       cnpj: ''
     },
-    status: true
+    isActive: true
   });
   
   const [clinicas, setClinicas] = useState([]);
@@ -43,7 +43,7 @@ const EditarDentista = () => {
           telefone: dentista.telefone,
           email: dentista.email,
           clinicasAssociadas: dentista.clinicas || [],
-          status: dentista.status
+          isActive: dentista.isActive
         });
         
         setClinicas(clinicasResponse.data);
@@ -216,7 +216,7 @@ const EditarDentista = () => {
         telefone: formData.telefone,
         email: formData.email,
         clinicas: clinicasDosDentista,
-        status: formData.status
+        isActive: formData.isActive
       };
       
       await axios.put(`http://localhost:8080/dentistas/${id}`, dentistaData);
@@ -441,11 +441,11 @@ const EditarDentista = () => {
           )}
           
           <div className="form-group">
-            <label htmlFor="status">Status</label>
+            <label htmlFor="isActive">Status</label>
             <select
-              id="status"
-              name="status"
-              value={formData.status}
+              id="isActive"
+              name="isActive"
+              value={formData.isActive}
               onChange={handleChange}
             >
               <option value={true}>Ativo</option>

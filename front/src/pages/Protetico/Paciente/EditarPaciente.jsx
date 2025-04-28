@@ -98,100 +98,96 @@ const EditarPaciente = () => {
   }
 
   return (
-    <div className="editar-paciente-page">
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
-        </div>
-      </div>
-      
-      <div className="back-navigation">
-        <button onClick={handleVoltar} className="back-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <h1 className="page-title">Editar Paciente</h1>
-      </div>
-      
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">Paciente atualizado com sucesso!</div>}
-      
-      <form onSubmit={handleSubmit} className="paciente-form">
-        <div className="form-group">
-          <label htmlFor="nome">Nome Completo</label>
-          <input
-            type="text"
-            id="nome"
-            name="nome"
-            value={formData.nome}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="telefone">Telefone</label>
-          <input
-            type="tel"
-            id="telefone"
-            name="telefone"
-            value={formData.telefone}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="dataNascimento">Data de Nascimento</label>
-          <input
-            type="date"
-            id="dataNascimento"
-            name="dataNascimento"
-            value={formData.dataNascimento}
-            onChange={handleChange}
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="status">Status</label>
-          <select
-            id="status"
-            name="status"
-            value={formData.status.toString()}
-            onChange={(e) => {
-              setFormData({
-                ...formData,
-                status: e.target.value === 'true'
-              });
-            }}
-          >
-            <option value="true">Ativo</option>
-            <option value="false">Inativo</option>
-          </select>
-        </div>
-        
-        <div className="form-actions">
-          <button type="button" onClick={handleVoltar} className="btn-cancelar">
-            Cancelar
+    <div className="paciente-page">
+      <div className="editar-paciente-page">
+        <div className="back-navigation">
+          <button onClick={handleVoltar} className="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
           </button>
-          <button type="submit" className="btn-salvar" disabled={enviando}>
-            {enviando ? 'Salvando...' : 'Salvar Alterações'}
-          </button>
+          <h1 className="page-title">Editar Paciente</h1>
         </div>
-      </form>
+        
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">Paciente atualizado com sucesso!</div>}
+        
+        <form onSubmit={handleSubmit} className="paciente-form">
+          <div className="form-group">
+            <label htmlFor="nome">Nome Completo</label>
+            <input
+              type="text"
+              id="nome"
+              name="nome"
+              value={formData.nome}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="telefone">Telefone</label>
+            <input
+              type="tel"
+              id="telefone"
+              name="telefone"
+              value={formData.telefone}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="dataNascimento">Data de Nascimento</label>
+            <input
+              type="date"
+              id="dataNascimento"
+              name="dataNascimento"
+              value={formData.dataNascimento}
+              onChange={handleChange}
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="status">Status</label>
+            <select
+              id="status"
+              name="status"
+              value={formData.status.toString()}
+              onChange={(e) => {
+                setFormData({
+                  ...formData,
+                  status: e.target.value === 'true'
+                });
+              }}
+            >
+              <option value="true">Ativo</option>
+              <option value="false">Inativo</option>
+            </select>
+          </div>
+          
+          <div className="form-actions">
+            <button type="button" onClick={handleVoltar} className="btn-cancelar">
+              Cancelar
+            </button>
+            <button type="submit" className="btn-salvar" disabled={enviando}>
+              {enviando ? 'Salvando...' : 'Salvar Alterações'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

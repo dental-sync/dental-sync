@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.senac.dentalsync.core.persistency.model.Clinica;
 import com.senac.dentalsync.core.persistency.model.Usuario;
@@ -28,6 +30,23 @@ public class ClinicaService extends BaseService<Clinica, Long> {
     @Override
     protected Usuario getUsuarioLogado() {
         return usuarioService.getUsuarioLogado();
+    }
+    
+    @Override
+    public Clinica save(Clinica entity) {
+        // Verificar se já existe clínica com o mesmo CNPJ
+        if (entity.getId() == null) { // Apenas para novos cadastros
+            Optional<Clinica> clinicaComCnpj = clinicaRepository.findByCnpj(entity.getCnpj());
+            if (clinicaComCnpj.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CNPJ já cadastrado");
+            }
+        }
+        
+        try {
+            return super.save(entity);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
     
     public Optional<Clinica> findByNome(String nome) {

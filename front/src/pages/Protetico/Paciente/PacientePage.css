@@ -1,14 +1,18 @@
 .paciente-page {
   padding: 20px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f5f5f5;
 }
 
 .page-top {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 20px;
+}
+
+.notification-container {
+  display: flex;
+  align-items: center;
 }
 
 .page-header {
@@ -21,18 +25,23 @@
 .page-title {
   font-size: 24px;
   font-weight: 600;
+  color: #333;
   margin: 0;
 }
 
 .header-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .search-container {
   display: flex;
-  gap: 10px;
+  gap: 16px;
   margin-bottom: 20px;
+}
+
+.search-container > *:first-child {
+  flex-grow: 1;
 }
 
 .table-section {
@@ -56,41 +65,46 @@
 
 .filter-dropdown {
   position: absolute;
-  width: 250px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  padding: 16px;
-  z-index: 1001;
-  margin-top: 5px;
   top: 100%;
   right: 0;
+  width: 250px;
+  margin-top: 8px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  z-index: 1000;
 }
 
 .filter-dropdown h3 {
   margin-top: 0;
   margin-bottom: 16px;
   font-size: 16px;
+  color: #333;
   font-weight: 600;
 }
 
 .filter-group {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .filter-group label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-size: 14px;
+  color: #555;
   font-weight: 500;
 }
 
 .filter-select {
   width: 100%;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 14px;
+  color: #333;
+  background-color: white;
+  cursor: pointer;
 }
 
 .filter-actions {
@@ -102,16 +116,15 @@
 .clear-filter-button {
   background: none;
   border: none;
-  color: #3b82f6;
-  cursor: pointer;
+  color: #0070D6;
   font-size: 14px;
-  font-weight: 500;
+  cursor: pointer;
   padding: 6px 12px;
   border-radius: 4px;
 }
 
 .clear-filter-button:hover {
-  background-color: #f5f8ff;
+  background-color: #f0f7ff;
 }
 
 .search-info, .filter-info {
@@ -181,4 +194,37 @@
   .search-container {
     flex-direction: column;
   }
+}
+
+/* Estilos específicos para o botão Novo */
+.search-container .action-button.primary {
+  background-color: #0070D6;
+  color: white;
+  border-color: #0070D6;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  padding: 8px 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-container .action-button.primary:hover {
+  background-color: #005bb9;
+  border-color: #005bb9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-container .action-button.primary:active {
+  background-color: #004c99;
+  border-color: #004c99;
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.search-container .action-button.primary svg {
+  width: 16px;
+  height: 16px;
 }

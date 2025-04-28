@@ -30,7 +30,7 @@ const PacienteTable = ({ pacientes = [], onPacienteDeleted }) => {
                 <td>{paciente.dataNascimento}</td>
                 <td>{paciente.ultimoServico}</td>
                 <td>
-                  <StatusBadge status={paciente.status} />
+                  <StatusBadge status={paciente.isActive !== undefined ? paciente.isActive : paciente.status} />
                 </td>
                 <td>
                   <PacienteActionMenu 

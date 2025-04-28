@@ -17,7 +17,7 @@ const EditarDentista = () => {
       nome: '',
       cnpj: ''
     },
-    status: true
+    isActive: true
   });
   
   const [clinicas, setClinicas] = useState([]);
@@ -43,7 +43,7 @@ const EditarDentista = () => {
           telefone: dentista.telefone,
           email: dentista.email,
           clinicasAssociadas: dentista.clinicas || [],
-          status: dentista.status
+          isActive: dentista.isActive
         });
         
         setClinicas(clinicasResponse.data);
@@ -194,8 +194,20 @@ const EditarDentista = () => {
       let clinicasDosDentista = [...formData.clinicasAssociadas];
       
       if (showNovaClinica) {
-        const clinicaResponse = await axios.post('http://localhost:8080/clinicas', formData.novaClinica);
-        clinicasDosDentista.push(clinicaResponse.data);
+        try {
+          const clinicaResponse = await axios.post('http://localhost:8080/clinicas', formData.novaClinica);
+          clinicasDosDentista.push(clinicaResponse.data);
+        } catch (error) {
+          if (error.response?.data === "CNPJ já cadastrado") {
+            setErrors({
+              ...errors,
+              'novaClinica.cnpj': 'Este CNPJ já está cadastrado'
+            });
+            setSaving(false);
+            return;
+          }
+          throw error;
+        }
       }
       
       const dentistaData = {
@@ -204,7 +216,7 @@ const EditarDentista = () => {
         telefone: formData.telefone,
         email: formData.email,
         clinicas: clinicasDosDentista,
-        status: formData.status
+        isActive: formData.isActive
       };
       
       await axios.put(`http://localhost:8080/dentistas/${id}`, dentistaData);
@@ -216,15 +228,22 @@ const EditarDentista = () => {
     } catch (error) {
       console.error('Erro ao atualizar dentista:', error);
       
-      if (error.response && error.response.data) {
-        if (error.response.data.errors) {
-          const apiErrors = {};
-          error.response.data.errors.forEach(err => {
-            apiErrors[err.field] = err.message;
-          });
-          setErrors(apiErrors);
-        } else if (error.response.data.message) {
-          setErrors({ general: error.response.data.message });
+      if (error.response) {
+        const errorMessage = error.response.data;
+        console.log('Mensagem de erro:', errorMessage);
+        
+        if (typeof errorMessage === 'string') {
+          if (errorMessage.includes("E-mail já cadastrado")) {
+            setErrors({ email: "E-mail já cadastrado" });
+          } else if (errorMessage.includes("CRO já cadastrado")) {
+            setErrors({ cro: "CRO já cadastrado" });
+          } else if (errorMessage === "CNPJ já cadastrado") {
+            setErrors({ 'novaClinica.cnpj': "Este CNPJ já está cadastrado" });
+          } else {
+            setErrors({ general: errorMessage });
+          }
+        } else if (errorMessage.message) {
+          setErrors({ general: errorMessage.message });
         } else {
           setErrors({ general: 'Ocorreu um erro ao atualizar o dentista. Tente novamente.' });
         }
@@ -422,11 +441,11 @@ const EditarDentista = () => {
           )}
           
           <div className="form-group">
-            <label htmlFor="status">Status</label>
+            <label htmlFor="isActive">Status</label>
             <select
-              id="status"
-              name="status"
-              value={formData.status}
+              id="isActive"
+              name="isActive"
+              value={formData.isActive}
               onChange={handleChange}
             >
               <option value={true}>Ativo</option>

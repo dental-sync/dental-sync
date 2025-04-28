@@ -67,7 +67,7 @@ function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
       const statusBoolean = newStatus === 'ATIVO';
       
       await axios.patch(`http://localhost:8080/dentistas/${dentistaId}`, {
-        status: statusBoolean
+        isActive: statusBoolean
       });
       
       // Atualiza o estado local com o novo status em string
@@ -146,21 +146,21 @@ function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
                     className="status-container"
                   >
                     <button
-                      className={`status-badge status-${dentista.status.toLowerCase()}`}
+                      className={`status-badge status-${dentista.isActive.toLowerCase()}`}
                       onClick={() => handleStatusClick(dentista.id)}
                     >
-                      {dentista.status}
+                      {dentista.isActive}
                     </button>
                     {showStatusDropdown === dentista.id && (
                       <div className="status-dropdown">
                         <button
-                          className={`status-option ${dentista.status === 'ATIVO' ? 'active' : ''}`}
+                          className={`status-option ${dentista.isActive === 'ATIVO' ? 'active' : ''}`}
                           onClick={() => handleStatusChange(dentista.id, 'ATIVO')}
                         >
                           Ativo
                         </button>
                         <button
-                          className={`status-option ${dentista.status === 'INATIVO' ? 'active' : ''}`}
+                          className={`status-option ${dentista.isActive === 'INATIVO' ? 'active' : ''}`}
                           onClick={() => handleStatusChange(dentista.id, 'INATIVO')}
                         >
                           Inativo

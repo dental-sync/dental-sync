@@ -2,11 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import './PacienteActionMenu.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import ConfirmDialog from '../ConfirmDialog/ConfirmDialog';
+import { toast } from 'react-toastify';
+import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
 const PacienteActionMenu = ({ pacienteId, onPacienteDeleted }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
@@ -39,54 +40,33 @@ const PacienteActionMenu = ({ pacienteId, onPacienteDeleted }) => {
   };
 
   const handleExcluir = () => {
-    setShowConfirmDialog(true);
+    setShowDeleteModal(true);
     setIsOpen(false);
   };
 
-  const confirmarExclusao = async () => {
+  const handleConfirmDelete = async () => {
     try {
       setIsDeleting(true);
       console.log(`Iniciando exclusão do paciente ID ${pacienteId}`);
       
-      //Adicionar cabeçalhos para debug
-      const response = await axios.delete(`http://localhost:8080/paciente/excluir/${pacienteId}`, {
-        headers: {
-          'X-Debug': 'true',
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await axios.delete(`http://localhost:8080/paciente/excluir/${pacienteId}`);
       
-      console.log('Resposta completa da exclusão:', {
-        status: response.status,
-        statusText: response.statusText,
-        data: response.data,
-        headers: response.headers,
-      });
+      console.log('Resposta da exclusão:', response.data);
       
-      //Notificar o componente pai que o paciente foi excluído
+      // Notificar o componente pai que o paciente foi excluído
       if (onPacienteDeleted) {
         onPacienteDeleted(pacienteId);
       }
       
-      //Mensagem de sucesso
-      alert(response.data.message || 'Paciente excluído com sucesso!');
+      // Mensagem de sucesso usando toast
+      toast.success('Paciente excluído com sucesso!');
     } catch (error) {
-      console.error(`Erro ao excluir paciente ${pacienteId}:`, error);
-      console.error('Detalhes do erro:', error.response?.data || error.message);
-      alert(`Erro ao excluir paciente: ${error.response?.data?.message || error.message}. Tente novamente.`);
-      
-      //Mesmo com erro,será notificado o componente pai para atualizar a lista
-      if (onPacienteDeleted) {
-        onPacienteDeleted(pacienteId);
-      }
+      console.error('Erro ao excluir paciente:', error);
+      toast.error('Erro ao excluir paciente. Tente novamente.');
     } finally {
       setIsDeleting(false);
-      setShowConfirmDialog(false);
+      setShowDeleteModal(false);
     }
-  };
-
-  const cancelarExclusao = () => {
-    setShowConfirmDialog(false);
   };
 
   return (
@@ -111,12 +91,12 @@ const PacienteActionMenu = ({ pacienteId, onPacienteDeleted }) => {
         )}
       </div>
 
-      <ConfirmDialog
-        isOpen={showConfirmDialog}
-        title="Confirmar exclusão"
-        message="Tem certeza que deseja excluir este paciente? Esta ação não pode ser desfeita."
-        onConfirm={confirmarExclusao}
-        onCancel={cancelarExclusao}
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir permanentemente este paciente? Esta ação não poderá ser desfeita."
       />
     </>
   );

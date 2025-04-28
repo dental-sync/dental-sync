@@ -4,13 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import ActionMenuDentista from '../ActionMenuDentista/ActionMenuDentista';
+import StatusBadge from '../StatusBadge/StatusBadge';
 
 function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
   const navigate = useNavigate();
-  const [showStatusDropdown, setShowStatusDropdown] = useState(null);
   const [expandedClinicas, setExpandedClinicas] = useState({});
   const dropdownRefs = useRef({});
-  const statusDropdownRefs = useRef({});
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -24,58 +23,22 @@ function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
           }));
         }
       });
-
-      // Fechar dropdown de status
-      if (showStatusDropdown) {
-        const statusDropdown = statusDropdownRefs.current[showStatusDropdown];
-        if (statusDropdown && !statusDropdown.contains(event.target)) {
-          setShowStatusDropdown(null);
-        }
-      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [expandedClinicas, showStatusDropdown]);
-
-  const handleEdit = (id) => {
-    navigate(`/dentista/editar/${id}`);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Tem certeza que deseja excluir este dentista?')) {
-      try {
-        await axios.delete(`http://localhost:8080/dentistas/${id}`);
-        onDentistaDeleted(id);
-        toast.success('Dentista excluído com sucesso!');
-      } catch (error) {
-        console.error('Erro ao excluir dentista:', error);
-        toast.error('Erro ao excluir dentista. Tente novamente.');
-      }
-    }
-  };
-
-  const handleStatusClick = (id) => {
-    setShowStatusDropdown(showStatusDropdown === id ? null : id);
-  };
+  }, [expandedClinicas]);
 
   const handleStatusChange = async (dentistaId, newStatus) => {
     try {
-      // Converte o status de string para booleano
-      const statusBoolean = newStatus === 'ATIVO';
-      
       await axios.patch(`http://localhost:8080/dentistas/${dentistaId}`, {
-        isActive: statusBoolean
+        isActive: newStatus
       });
       
-      // Atualiza o estado local com o novo status em string
-      onStatusChange(dentistaId, newStatus);
-      setShowStatusDropdown(null);
-      
-      // Mostra mensagem de sucesso
-      toast.success(`Dentista ${newStatus.toLowerCase()} com sucesso!`);
+      onStatusChange(dentistaId, newStatus ? 'ATIVO' : 'INATIVO');
+      toast.success(`Dentista ${newStatus ? 'ativado' : 'inativado'} com sucesso!`);
     } catch (error) {
       console.error('Erro ao alterar status:', error);
       toast.error('Erro ao alterar status. Tente novamente.');
@@ -141,42 +104,23 @@ function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
                   </div>
                 </td>
                 <td>
-                  <div 
-                    ref={el => statusDropdownRefs.current[dentista.id] = el}
-                    className="status-container"
-                  >
-                    <button
-                      className={`status-badge status-${dentista.isActive.toLowerCase()}`}
-                      onClick={() => handleStatusClick(dentista.id)}
-                    >
-                      {dentista.isActive}
-                    </button>
-                    {showStatusDropdown === dentista.id && (
-                      <div className="status-dropdown">
-                        <button
-                          className={`status-option ${dentista.isActive === 'ATIVO' ? 'active' : ''}`}
-                          onClick={() => handleStatusChange(dentista.id, 'ATIVO')}
-                        >
-                          Ativo
-                        </button>
-                        <button
-                          className={`status-option ${dentista.isActive === 'INATIVO' ? 'active' : ''}`}
-                          onClick={() => handleStatusChange(dentista.id, 'INATIVO')}
-                        >
-                          Inativo
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  <StatusBadge
+                    status={dentista.isActive === 'ATIVO'}
+                    onClick={(newStatus) => handleStatusChange(dentista.id, newStatus)}
+                  />
                 </td>
                 <td>
-                  <ActionMenuDentista dentistaId={dentista.id} onDentistaDeleted={onDentistaDeleted} />
+                  <ActionMenuDentista 
+                    dentistaId={dentista.id} 
+                    onDentistaDeleted={onDentistaDeleted}
+                    isActive={dentista.isActive === 'ATIVO'}
+                  />
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="7" className="empty-row">Nenhum dentista encontrado</td>
+              <td colSpan="8" className="empty-row"></td>
             </tr>
           )}
         </tbody>

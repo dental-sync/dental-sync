@@ -1,0 +1,712 @@
+{
+  "info": {
+    "name": "Dental Sync - Testes de Carga",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Protéticos - Inserção em Massa",
+      "item": [
+        {
+          "name": "Criar Protético 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Marina Oliveira Santos\",\n    \"email\": \"marina.santos@exemplo.com\",\n    \"telefone\": \"(11) 98765-4322\",\n    \"cro\": \"CRO-SP 123457\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Rodrigo Mendes Costa\",\n    \"email\": \"rodrigo.costa@exemplo.com\",\n    \"telefone\": \"(11) 97654-3211\",\n    \"cro\": \"CRO-SP 234568\",\n    \"isAdmin\": true\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Patrícia Alves Lima\",\n    \"email\": \"patricia.lima@exemplo.com\",\n    \"telefone\": \"(11) 96543-2110\",\n    \"cro\": \"CRO-SP 345679\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 4",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Lucas Nunes Ferreira\",\n    \"email\": \"lucas.ferreira@exemplo.com\",\n    \"telefone\": \"(11) 95432-1099\",\n    \"cro\": \"CRO-RJ 456790\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 5",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Bianca Torres Oliveira\",\n    \"email\": \"bianca.oliveira@exemplo.com\",\n    \"telefone\": \"(11) 94321-0988\",\n    \"cro\": \"CRO-RJ 567891\",\n    \"isAdmin\": true\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 6",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Thiago Costa Martins\",\n    \"email\": \"thiago.martins@exemplo.com\",\n    \"telefone\": \"(11) 93210-9877\",\n    \"cro\": \"CRO-MG 678902\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 7",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Fernanda Lopes Silva\",\n    \"email\": \"fernanda.silva@exemplo.com\",\n    \"telefone\": \"(21) 98765-4322\",\n    \"cro\": \"CRO-MG 789013\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 8",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Paulo Rocha Santos\",\n    \"email\": \"paulo.santos@exemplo.com\",\n    \"telefone\": \"(21) 97654-3211\",\n    \"cro\": \"CRO-RS 890124\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 9",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Marcela Vieira Oliveira\",\n    \"email\": \"marcela.oliveira@exemplo.com\",\n    \"telefone\": \"(21) 96543-2110\",\n    \"cro\": \"CRO-RS 901235\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 10",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Roberto Souza Lima\",\n    \"email\": \"roberto.lima@exemplo.com\",\n    \"telefone\": \"(21) 95432-1099\",\n    \"cro\": \"CRO-PR 012346\",\n    \"isAdmin\": true\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 11",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Luisa Pereira Castro\",\n    \"email\": \"luisa.castro@exemplo.com\",\n    \"telefone\": \"(31) 98765-4321\",\n    \"cro\": \"CRO-SC 123789\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 12",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Marcos Ribeiro Gomes\",\n    \"email\": \"marcos.gomes@exemplo.com\",\n    \"telefone\": \"(31) 97654-3210\",\n    \"cro\": \"CRO-SC 234890\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 13",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Natália Costa Almeida\",\n    \"email\": \"natalia.almeida@exemplo.com\",\n    \"telefone\": \"(31) 96543-2109\",\n    \"cro\": \"CRO-SC 345901\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 14",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Victor Lima Rodrigues\",\n    \"email\": \"victor.rodrigues@exemplo.com\",\n    \"telefone\": \"(31) 95432-1098\",\n    \"cro\": \"CRO-PR 456012\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 15",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Juliana Silva Santos\",\n    \"email\": \"juliana.santos@exemplo.com\",\n    \"telefone\": \"(31) 94321-0987\",\n    \"cro\": \"CRO-PR 567123\",\n    \"isAdmin\": true\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 16",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Ricardo Martins Barbosa\",\n    \"email\": \"ricardo.barbosa@exemplo.com\",\n    \"telefone\": \"(47) 98765-4321\",\n    \"cro\": \"CRO-BA 678234\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 17",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Aline Costa Fernandes\",\n    \"email\": \"aline.fernandes@exemplo.com\",\n    \"telefone\": \"(47) 97654-3210\",\n    \"cro\": \"CRO-BA 789345\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 18",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Felipe Santos Oliveira\",\n    \"email\": \"felipe.oliveira@exemplo.com\",\n    \"telefone\": \"(47) 96543-2109\",\n    \"cro\": \"CRO-BA 890456\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 19",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Amanda Oliveira Alves\",\n    \"email\": \"amanda.alves@exemplo.com\",\n    \"telefone\": \"(47) 95432-1098\",\n    \"cro\": \"CRO-GO 901567\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 20",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Leonardo Silva Mendes\",\n    \"email\": \"leonardo.mendes@exemplo.com\",\n    \"telefone\": \"(47) 94321-0987\",\n    \"cro\": \"CRO-GO 012678\",\n    \"isAdmin\": true\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 21",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Camila Ferreira Sousa\",\n    \"email\": \"camila.sousa@exemplo.com\",\n    \"telefone\": \"(85) 98765-4321\",\n    \"cro\": \"CRO-GO 123789\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 22",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"André Castro Ribeiro\",\n    \"email\": \"andre.ribeiro@exemplo.com\",\n    \"telefone\": \"(85) 97654-3210\",\n    \"cro\": \"CRO-PE 234890\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 23",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Mariana Gomes Oliveira\",\n    \"email\": \"mariana.oliveira@exemplo.com\",\n    \"telefone\": \"(85) 96543-2109\",\n    \"cro\": \"CRO-PE 345901\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 24",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Gustavo Almeida Rocha\",\n    \"email\": \"gustavo.rocha@exemplo.com\",\n    \"telefone\": \"(85) 95432-1098\",\n    \"cro\": \"CRO-PE 456012\",\n    \"isAdmin\": false\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        },
+        {
+          "name": "Criar Protético 25",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Carolina Santos Campos\",\n    \"email\": \"carolina.campos@exemplo.com\",\n    \"telefone\": \"(85) 94321-0987\",\n    \"cro\": \"CRO-CE 567123\",\n    \"isAdmin\": true\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/proteticos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["proteticos"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dentistas - Inserção em Massa",
+      "item": [
+        {
+          "name": "Criar Dentista 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Dra. Laura Cardoso\",\n    \"email\": \"laura.cardoso@exemplo.com\",\n    \"telefone\": \"(11) 98123-4567\",\n    \"cro\": \"CRO-SP 654321\",\n    \"especialidade\": \"Ortodontia\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/dentistas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["dentistas"]
+            }
+          }
+        },
+        {
+          "name": "Criar Dentista 2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Dr. Miguel Alves\",\n    \"email\": \"miguel.alves@exemplo.com\",\n    \"telefone\": \"(11) 97234-5678\",\n    \"cro\": \"CRO-SP 765432\",\n    \"especialidade\": \"Endodontia\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/dentistas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["dentistas"]
+            }
+          }
+        },
+        {
+          "name": "Criar Dentista 3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Dra. Sofia Mendes\",\n    \"email\": \"sofia.mendes@exemplo.com\",\n    \"telefone\": \"(11) 96345-6789\",\n    \"cro\": \"CRO-RJ 876543\",\n    \"especialidade\": \"Implantodontia\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/dentistas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["dentistas"]
+            }
+          }
+        },
+        {
+          "name": "Criar Dentista 4",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Dr. Rafael Costa\",\n    \"email\": \"rafael.costa@exemplo.com\",\n    \"telefone\": \"(21) 95456-7890\",\n    \"cro\": \"CRO-RJ 987654\",\n    \"especialidade\": \"Periodontia\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/dentistas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["dentistas"]
+            }
+          }
+        },
+        {
+          "name": "Criar Dentista 5",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Dra. Beatriz Oliveira\",\n    \"email\": \"beatriz.oliveira@exemplo.com\",\n    \"telefone\": \"(21) 94567-8901\",\n    \"cro\": \"CRO-MG 098765\",\n    \"especialidade\": \"Odontopediatria\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/dentistas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["dentistas"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Run Collection",
+      "description": "Para executar todos os requests em sequência, use a função 'Run Collection' do Postman"
+    }
+  ]
+} 

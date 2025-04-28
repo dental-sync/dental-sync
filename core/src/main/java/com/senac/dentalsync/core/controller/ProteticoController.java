@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,8 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.senac.dentalsync.core.persistency.model.Protetico;
+import com.senac.dentalsync.core.persistency.repository.ProteticoRepository;
 import com.senac.dentalsync.core.service.BaseService;
 import com.senac.dentalsync.core.service.ProteticoService;
+import jakarta.validation.ValidationException;
 
 @RestController
 @RequestMapping("/proteticos")
@@ -25,6 +28,9 @@ public class ProteticoController extends BaseController<Protetico, Long> {
 
     @Autowired
     private ProteticoService proteticoService;
+    
+    @Autowired
+    private ProteticoRepository proteticoRepository;
     
     @Override
     protected BaseService<Protetico, Long> getService() {
@@ -66,6 +72,25 @@ public class ProteticoController extends BaseController<Protetico, Long> {
         } catch (Exception e) {
             logger.error("Erro ao atualizar status do protético: {}", e.getMessage(), e);
             return ResponseEntity.notFound().build();
+        }
+    }
+    
+    @Override
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        try {
+            logger.info("Recebida solicitação para excluir protético ID: {}", id);
+            
+            // Delegar toda a lógica para o serviço
+            proteticoService.deleteProtetico(id);
+            
+            return ResponseEntity.noContent().build();
+        } catch (ValidationException e) {
+            logger.error("Erro de validação ao excluir protético: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            logger.error("Erro ao excluir protético: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 } 

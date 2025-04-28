@@ -4,64 +4,62 @@ import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
 import ProteticoTable from '../../components/ProteticoTable/ProteticoTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useInfiniteScroll from '../../hooks/useInfiniteScroll';
 
 const ProteticoPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [proteticos, setProteticos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [filtros, setFiltros] = useState({
     status: 'todos',
     cargo: 'todos'
   });
-  const [refreshFlag, setRefreshFlag] = useState(0);
-
+  
   const filterRef = useRef(null);
   const navigate = useNavigate();
   
-  // Buscar lista de protéticos da API
-  useEffect(() => {
-    const fetchProteticos = async () => {
-      try {
-        setLoading(true);
-        
-        try {
-          const response = await axios.get('http://localhost:8080/proteticos');
-          
-          // Se a chamada for bem-sucedida, usar os dados da API
-          const proteticosFormatados = response.data.map(protetico => ({
-            id: protetico.id,
-            nome: protetico.nome,
-            cro: protetico.cro,
-            cargo: protetico.isAdmin ? 'Admin' : 'Técnico',
-            telefone: protetico.telefone || '-',
-            status: protetico.isActive ? 'ATIVO' : 'INATIVO'
-          }));
-          
-          setProteticos(proteticosFormatados);
-        } catch (apiErr) {
-          console.error('Não foi possível acessar a API:', apiErr);
-          // Inicializar com array vazio em caso de erro
-          setProteticos([]);
-        }
-        
-        setLoading(false);
-      } catch (err) {
-        console.error('Erro ao buscar protéticos:', err);
-        setProteticos([]);
-        setLoading(false);
-      }
-    };
-    
-    fetchProteticos();
-  }, [refreshFlag]);
+  // Função para buscar protéticos da API
+  const fetchProteticosData = async (pageNum, pageSize) => {
+    try {
+      const response = await axios.get(`http://localhost:8080/proteticos/paginado?page=${pageNum}&size=${pageSize}`);
+      
+      const responseData = response.data;
+      const proteticosFormatados = responseData.content.map(protetico => ({
+        id: protetico.id,
+        nome: protetico.nome,
+        cro: protetico.cro,
+        cargo: protetico.isAdmin ? 'Admin' : 'Protetico',
+        telefone: protetico.telefone || '-',
+        status: protetico.isActive ? 'ATIVO' : 'INATIVO'
+      }));
+      
+      return {
+        content: proteticosFormatados,
+        totalElements: responseData.totalElements,
+        last: responseData.last
+      };
+    } catch (error) {
+      console.error('Não foi possível acessar a API:', error);
+      toast.error('Erro ao buscar protéticos. Por favor, tente novamente.');
+      throw error;
+    }
+  };
+  
+  // Usar o hook de paginação infinita
+  const {
+    data: proteticos,
+    loading,
+    loadingMore,
+    lastElementRef: lastProteticoElementRef,
+    refresh: refreshProteticos
+  } = useInfiniteScroll(fetchProteticosData);
 
-  // Esconder o filtro ao clicar fora dele
+  // Esconder dropdown de filtro ao clicar fora dele
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (filterRef.current && !filterRef.current.contains(event.target)) {
@@ -106,6 +104,16 @@ const ProteticoPage = () => {
 
   const toggleFiltro = () => {
     setIsFilterOpen(!isFilterOpen);
+    setIsExportOpen(false); // Fechar o outro dropdown
+  };
+
+  const toggleExport = () => {
+    setIsExportOpen(!isExportOpen);
+    setIsFilterOpen(false); // Fechar o outro dropdown
+  };
+
+  const handleCloseExport = () => {
+    setIsExportOpen(false);
   };
 
   const handleFiltroChange = (e) => {
@@ -123,18 +131,13 @@ const ProteticoPage = () => {
     });
   };
 
-  const handleExportar = () => {
-    console.log('Exportando dados...');
-    // Implementação futura: exportação para CSV ou PDF
-  };
-
   const handleNovo = () => {
     navigate('/protetico/cadastro');
   };
 
   // Função para forçar atualização da listagem
   const handleStatusChange = () => {
-    setRefreshFlag(prev => prev + 1);
+    refreshProteticos();
   };
 
   if (loading) {
@@ -204,10 +207,14 @@ const ProteticoPage = () => {
             )}
           </div>
           
-          <ActionButton 
-            label="Exportar" 
-            icon="export"
-            onClick={handleExportar} 
+          <ExportDropdown 
+            data={proteticosFiltrados}
+            headers={['ID', 'Nome', 'CRO', 'Cargo', 'Telefone', 'Status']}
+            fields={['id', 'nome', 'cro', 'cargo', 'telefone', 'status']}
+            filename="proteticos"
+            isOpen={isExportOpen}
+            toggleExport={toggleExport}
+            onCloseDropdown={handleCloseExport}
           />
         </div>
       </div>
@@ -230,15 +237,19 @@ const ProteticoPage = () => {
             Nenhum protético encontrado para a busca "{searchQuery}".
           </div>
         )}
-        {!searchQuery && proteticosFiltrados.length === 0 && filtros.status !== 'todos' || filtros.cargo !== 'todos' ? (
+        {!searchQuery && proteticosFiltrados.length === 0 && (filtros.status !== 'todos' || filtros.cargo !== 'todos') && (
           <div className="filter-info">
             Nenhum protético encontrado com os filtros aplicados.
           </div>
-        ) : null}
+        )}
         <ProteticoTable 
           proteticos={proteticosFiltrados} 
           onStatusChange={handleStatusChange}
+          lastProteticoRef={lastProteticoElementRef}
         />
+        {loadingMore && (
+          <div className="loading-more">Carregando mais protéticos...</div>
+        )}
       </div>
     </div>
   );

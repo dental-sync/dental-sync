@@ -14,7 +14,8 @@ const EditarProtetico = () => {
     cargo: '',
     cro: '',
     senha: '',
-    confirmarSenha: ''
+    confirmarSenha: '',
+    isActive: true
   });
   
   const [errors, setErrors] = useState({});
@@ -25,7 +26,7 @@ const EditarProtetico = () => {
   useEffect(() => {
     const fetchProtetico = async () => {
       try {
-        const response = await axios.get(`/api/proteticos/${id}`);
+        const response = await axios.get(`http://localhost:8080/proteticos/${id}`);
         const protetico = response.data;
         
         setFormData({
@@ -35,7 +36,8 @@ const EditarProtetico = () => {
           cargo: protetico.isAdmin ? 'Admin' : 'Protetico',
           cro: protetico.cro || '',
           senha: '',
-          confirmarSenha: ''
+          confirmarSenha: '',
+          isActive: protetico.isActive
         });
       } catch (error) {
         console.error('Erro ao buscar dados do protético:', error);
@@ -174,6 +176,11 @@ const EditarProtetico = () => {
     setLoading(true);
     
     try {
+      // Primeiro, buscar o status atual do protético
+      const statusResponse = await axios.get(`http://localhost:8080/proteticos/${id}`);
+      const currentStatus = statusResponse.data.isActive;
+
+      // Preparar dados para atualização
       const proteticoData = {
         nome: formData.nome,
         email: formData.email,
@@ -187,7 +194,15 @@ const EditarProtetico = () => {
         proteticoData.senha = formData.senha;
       }
       
-      await axios.put(`/api/proteticos/${id}`, proteticoData);
+      console.log('Dados enviados para atualização:', proteticoData);
+      const response = await axios.put(`http://localhost:8080/proteticos/${id}`, proteticoData);
+      console.log('Resposta da API:', response.data);
+      
+      // Restaurar o status original se necessário
+      if (response.data.isActive !== currentStatus) {
+        console.log(`Restaurando status original: ${currentStatus}`);
+        await axios.patch(`http://localhost:8080/proteticos/${id}`, { isActive: currentStatus });
+      }
       
       setSuccess(true);
       setTimeout(() => {

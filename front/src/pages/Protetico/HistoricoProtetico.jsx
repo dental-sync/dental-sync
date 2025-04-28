@@ -17,7 +17,7 @@ const HistoricoProtetico = () => {
       setLoading(true);
       try {
         // Buscar dados do protético
-        const proteticoResponse = await axios.get(`/api/proteticos/${id}`);
+        const proteticoResponse = await axios.get(`http://localhost:8080/proteticos/${id}`);
         
         // Verificar o status baseado no isActive
         let statusText = "INATIVO";
@@ -36,11 +36,8 @@ const HistoricoProtetico = () => {
         });
         
         // Comentado temporariamente a busca do histórico
-        // const historicoResponse = await axios.get(`/api/proteticos/${id}/historico`);
+        // const historicoResponse = await axios.get(`http://localhost:8080/proteticos/${id}/historico`);
         // setHistorico(historicoResponse.data);
-        
-        // Exibir mensagem de aviso
-        setError('Ocorreu um erro ao buscar os dados. Funcionalidade temporariamente indisponível.');
         
         setLoading(false);
       } catch (err) {

@@ -11,21 +11,3 @@ public class CoreApplication {
 	}
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

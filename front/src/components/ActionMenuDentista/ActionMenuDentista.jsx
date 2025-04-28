@@ -5,7 +5,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
-const ActionMenuDentista = ({ dentistaId, onDentistaDeleted }) => {
+const ActionMenuDentista = ({ dentistaId, onDentistaDeleted, isActive }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const dropdownRef = useRef(null);
@@ -71,7 +71,7 @@ const ActionMenuDentista = ({ dentistaId, onDentistaDeleted }) => {
             <ul>
               <li onClick={handleVerHistorico}>Histórico</li>
               <li onClick={handleEditar}>Editar</li>
-              <li onClick={handleExcluir} className="delete-option">Excluir</li>
+              {!isActive && <li onClick={handleExcluir} className="delete-option">Excluir</li>}
             </ul>
           </div>
         )}

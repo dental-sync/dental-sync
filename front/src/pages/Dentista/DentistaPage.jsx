@@ -202,7 +202,7 @@ const DentistaPage = () => {
       
       <div className="search-container">
         <SearchBar
-          placeholder="Buscar dentistas..."
+          placeholder="Buscar por ID, nome, CRO, e-mail ou telefone..."
           onSearch={handleSearch}
         />
         <ActionButton

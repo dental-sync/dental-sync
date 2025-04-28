@@ -295,11 +295,6 @@ const PacientePage = () => {
             Nenhum paciente encontrado com os filtros aplicados.
           </div>
         ) : null}
-        {pacientesFiltrados.length === 0 && !error && filtros.status === 'todos' && !searchQuery ? (
-          <div className="empty-state">
-            <p>Nenhum paciente cadastrado. Clique em "Novo" para adicionar um paciente.</p>
-          </div>
-        ) : null}
         <PacienteTable 
           pacientes={pacientesFiltrados} 
           onPacienteDeleted={handlePacienteDeleted}

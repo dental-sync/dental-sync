@@ -1,0 +1,246 @@
+import React, { useState } from 'react';
+import './CadastroPaciente.css';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const CadastroPaciente = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    nome: '',
+    email: '',
+    telefone: '',
+    dataNascimento: ''
+  });
+  
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === "telefone") {
+      // Remove todos os caracteres não numéricos
+      const numericValue = value.replace(/\D/g, '');
+      
+      // Aplica a máscara conforme o usuário digita
+      let formattedValue = '';
+      
+      if (numericValue.length <= 2) {
+        formattedValue = numericValue.length ? `(${numericValue}` : '';
+      } else if (numericValue.length <= 7) {
+        formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(2)}`;
+      } else {
+        formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(
+          2, 7
+        )}-${numericValue.slice(7, 11)}`;
+      }
+      
+      setFormData({
+        ...formData,
+        [name]: formattedValue
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+    
+    //Limpar erro do campo quando o usuário digita
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: ''
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    //Validar campos obrigatórios
+    if (!formData.nome) newErrors.nome = 'Nome é obrigatório';
+    if (!formData.email) newErrors.email = 'Email é obrigatório';
+    if (!formData.telefone) newErrors.telefone = 'Telefone é obrigatório';
+    
+    //Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.email && !emailRegex.test(formData.email)) {
+      newErrors.email = 'Formato de email inválido';
+    }
+    
+    //Validar data de nascimento (não pode ser no futuro)
+    if (formData.dataNascimento) {
+      const dataNascimento = new Date(formData.dataNascimento);
+      const today = new Date();
+      
+      if (dataNascimento > today) {
+        newErrors.dataNascimento = 'A data de nascimento não pode ser no futuro';
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const formatDateForAPI = (dateString) => {
+    if (!dateString) return null;
+    
+    // Criar a data a partir da string, que já estará no formato YYYY-MM-DD do input
+    // Isso garante que a data seja interpretada no fuso horário local
+    const [year, month, day] = dateString.split('-');
+    
+    // Horário específico para garantir que date seja interpretado como horário em Brasília
+    const date = new Date(year, month - 1, day, 12, 0, 0);
+    
+    // Formatar como YYYY-MM-DD para enviar à API
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const pacienteData = {
+        nome: formData.nome,
+        email: formData.email,
+        telefone: formData.telefone,
+        dataNascimento: formatDateForAPI(formData.dataNascimento),
+        isActive: true
+      };
+      
+      console.log('Enviando dados do paciente para API:', pacienteData);
+      await axios.post('http://localhost:8080/paciente', pacienteData);
+      
+      setSuccess(true);
+      setTimeout(() => {
+        //Navegação para a lista com sinal para atualizar
+        navigate('/paciente', { state: { refresh: true } });
+      }, 2000);
+    } catch (error) {
+      console.error('Erro ao cadastrar paciente:', error);
+      
+      if (error.response && error.response.data) {
+        //Tratamento de erros específicos da API
+        if (error.response.data.errors) {
+          const apiErrors = {};
+          error.response.data.errors.forEach(err => {
+            apiErrors[err.field] = err.message;
+          });
+          setErrors(apiErrors);
+        } else if (error.response.data.message) {
+          setErrors({ general: error.response.data.message });
+        } else {
+          setErrors({ general: 'Ocorreu um erro ao cadastrar o paciente. Tente novamente.' });
+        }
+      } else {
+        setErrors({ general: 'Erro de conexão. Verifique sua internet e tente novamente.' });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVoltar = () => {
+    navigate('/paciente');
+  };
+
+  return (
+    <div className="paciente-page">
+      <div className="cadastro-paciente-page">
+        <div className="back-navigation">
+          <button onClick={handleVoltar} className="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <h1 className="page-title">Cadastro de Paciente</h1>
+        </div>
+        
+        {success && (
+          <div className="success-message">
+            Paciente cadastrado com sucesso!
+          </div>
+        )}
+        
+        {errors.general && (
+          <div className="error-message">
+            {errors.general}
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit} className="paciente-form">
+          <div className="form-group">
+            <label htmlFor="nome">Nome Completo</label>
+            <input
+              type="text"
+              id="nome"
+              name="nome"
+              value={formData.nome}
+              onChange={handleChange}
+              className={errors.nome ? 'input-error' : ''}
+            />
+            {errors.nome && <div className="error-text">{errors.nome}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={errors.email ? 'input-error' : ''}
+            />
+            {errors.email && <div className="error-text">{errors.email}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="telefone">Telefone</label>
+            <input
+              type="tel"
+              id="telefone"
+              name="telefone"
+              value={formData.telefone}
+              onChange={handleChange}
+              className={errors.telefone ? 'input-error' : ''}
+            />
+            {errors.telefone && <div className="error-text">{errors.telefone}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="dataNascimento">Data de Nascimento</label>
+            <input
+              type="date"
+              id="dataNascimento"
+              name="dataNascimento"
+              value={formData.dataNascimento}
+              onChange={handleChange}
+              className={errors.dataNascimento ? 'input-error' : ''}
+            />
+            {errors.dataNascimento && <div className="error-text">{errors.dataNascimento}</div>}
+          </div>
+          
+          <div className="form-actions">
+            <button type="button" onClick={handleVoltar} className="btn-cancelar">
+              Cancelar
+            </button>
+            <button type="submit" className="btn-cadastrar" disabled={loading}>
+              {loading ? 'Cadastrando...' : 'Cadastrar Paciente'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default CadastroPaciente;

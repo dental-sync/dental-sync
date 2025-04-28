@@ -37,7 +37,7 @@
   color: #64748b;
 }
 
-/* Container para o dropdown */
+/* Container para o badge */
 .status-container {
   position: relative;
   display: inline-block;
@@ -45,16 +45,13 @@
 
 /* Estilo para o dropdown */
 .status-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 4px;
   background-color: white;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 100;
-  min-width: 100px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  min-width: 120px;
+  overflow: hidden;
 }
 
 /* Opções dentro do dropdown */

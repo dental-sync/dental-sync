@@ -61,6 +61,11 @@ const CadastroPaciente = () => {
     
     //Validar campos obrigatórios
     if (!formData.nome) newErrors.nome = 'Nome é obrigatório';
+    // Verificar se o nome contém pelo menos um sobrenome
+    else if (!formData.nome.trim().includes(' ') || formData.nome.trim().split(' ').some(part => part.length === 0)) {
+      newErrors.nome = 'Por favor, informe o nome e sobrenome';
+    }
+    
     if (!formData.email) newErrors.email = 'Email é obrigatório';
     if (!formData.telefone) newErrors.telefone = 'Telefone é obrigatório';
     

@@ -1,12 +1,15 @@
 package com.senac.dentalsync.core.controller;
 
 import java.util.Map;
+import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +22,7 @@ import com.senac.dentalsync.core.persistency.repository.ProteticoRepository;
 import com.senac.dentalsync.core.service.BaseService;
 import com.senac.dentalsync.core.service.ProteticoService;
 import jakarta.validation.ValidationException;
+import jakarta.validation.ConstraintViolationException;
 
 @RestController
 @RequestMapping("/proteticos")
@@ -92,5 +96,49 @@ public class ProteticoController extends BaseController<Protetico, Long> {
             logger.error("Erro ao excluir protético: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+    
+    /**
+     * Handler para tratar exceções de validação de constraints
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<?> handleConstraintViolationException(ConstraintViolationException e) {
+        logger.error("Erro de validação de constraints: {}", e.getMessage(), e);
+        
+        Map<String, String> response = new HashMap<>();
+        
+        e.getConstraintViolations().forEach(violation -> {
+            String field = violation.getPropertyPath().toString();
+            String message = violation.getMessage();
+            
+            // Mensagem específica para email inválido
+            if (field.equals("email") && message.contains("Email inv")) {
+                message = "Email inválido. Verifique o formato e tente novamente.";
+            }
+            
+            response.put("field", field);
+            response.put("message", message);
+            
+            logger.debug("Violação de validação: campo={}, mensagem={}", field, message);
+        });
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+    
+    /**
+     * Handler para tratar exceções gerais que contenham mensagem de email inválido
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleGenericException(Exception e) {
+        logger.error("Erro ao processar requisição: {}", e.getMessage(), e);
+        
+        if (e.getMessage() != null && e.getMessage().contains("Email inv")) {
+            Map<String, String> response = new HashMap<>();
+            response.put("field", "email");
+            response.put("message", "Email inválido. Verifique o formato e tente novamente.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 } 

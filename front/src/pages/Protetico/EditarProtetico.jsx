@@ -174,6 +174,7 @@ const EditarProtetico = () => {
     }
     
     setLoading(true);
+    setErrors({});
     
     try {
       // Primeiro, buscar o status atual do protético
@@ -211,17 +212,40 @@ const EditarProtetico = () => {
     } catch (error) {
       console.error('Erro ao atualizar protético:', error);
       
-      if (error.response && error.response.data) {
-        // Tratamento de erros específicos da API
-        if (error.response.data.errors) {
+      // Resetar estado de sucesso em caso de erro
+      setSuccess(false);
+      
+      if (error.response) {
+        // Capturar erros de validação de e-mail
+        const errorResponseData = error.response.data || {};
+        const errorMessage = errorResponseData.message || '';
+        
+        // Verificar diferentes padrões de erro que indicam problemas com o email
+        if (
+          (error.response.status === 500 && 
+            (errorMessage.includes('Email inv') || 
+             errorMessage.includes('ConstraintViolationException') || 
+             errorMessage.includes('propertyPath=email')))
+        ) {
+          setErrors(prev => ({
+            ...prev,
+            email: 'Email inválido. Verifique o formato e tente novamente.'
+          }));
+        }
+        // Verificar outros erros específicos da API
+        else if (errorResponseData.errors) {
           const apiErrors = {};
-          error.response.data.errors.forEach(err => {
+          errorResponseData.errors.forEach(err => {
             apiErrors[err.field] = err.message;
           });
           setErrors(apiErrors);
-        } else if (error.response.data.message) {
-          setErrors({ general: error.response.data.message });
-        } else {
+        } 
+        // Mensagem de erro específica
+        else if (errorResponseData.message) {
+          setErrors({ general: errorResponseData.message });
+        } 
+        // Mensagem de erro genérica
+        else {
           setErrors({ general: 'Ocorreu um erro ao atualizar o protético. Tente novamente.' });
         }
       } else {
@@ -270,6 +294,13 @@ const EditarProtetico = () => {
       {errors.general && (
         <div className="error-message">
           {errors.general}
+        </div>
+      )}
+      
+      {errors.serverValidation && (
+        <div className="server-validation-error">
+          <div className="error-title">Erro de validação:</div>
+          <div className="error-message">{errors.serverValidation}</div>
         </div>
       )}
       

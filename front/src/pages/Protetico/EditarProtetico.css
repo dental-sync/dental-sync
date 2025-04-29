@@ -78,6 +78,27 @@
   font-weight: 500;
 }
 
+.server-validation-error {
+  background-color: #ffebee;
+  color: #b71c1c;
+  border: 1px solid #ef9a9a;
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.server-validation-error .error-title {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.server-validation-error .error-message {
+  font-size: 14px;
+}
+
 .protetico-form {
   background-color: white;
   border-radius: 8px;

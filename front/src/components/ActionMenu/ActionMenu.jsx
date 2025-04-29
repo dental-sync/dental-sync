@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
+import { formatProteticoId } from '../../utils/formatters';
 
 const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
   const [isOpen, setIsOpen] = useState(false);

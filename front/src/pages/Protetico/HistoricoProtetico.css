@@ -166,6 +166,12 @@
   color: #333;
 }
 
+.protetico-id {
+  font-family: 'Roboto Mono', monospace, sans-serif;
+  font-weight: 500;
+  color: #333;
+}
+
 @media (max-width: 768px) {
   .historico-protetico-page {
     padding: 15px;

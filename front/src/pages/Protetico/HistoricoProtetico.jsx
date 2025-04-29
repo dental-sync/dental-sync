@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './HistoricoProtetico.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import axios from 'axios';
+import { formatProteticoId } from '../../utils/formatters';
 
 const HistoricoProtetico = () => {
   const { id } = useParams();
@@ -27,6 +28,7 @@ const HistoricoProtetico = () => {
         
         setProtetico({
           id: proteticoResponse.data.id,
+          idFormatado: formatProteticoId(proteticoResponse.data.id),
           nome: proteticoResponse.data.nome,
           email: proteticoResponse.data.email,
           telefone: proteticoResponse.data.telefone || '-',
@@ -81,6 +83,10 @@ const HistoricoProtetico = () => {
         <div className="protetico-info">
           <h2>{protetico.nome}</h2>
           <div className="protetico-details">
+            <div className="detail-item">
+              <span className="detail-label">ID:</span>
+              <span className="detail-value protetico-id">{protetico.idFormatado}</span>
+            </div>
             <div className="detail-item">
               <span className="detail-label">Email:</span>
               <span className="detail-value">{protetico.email}</span>

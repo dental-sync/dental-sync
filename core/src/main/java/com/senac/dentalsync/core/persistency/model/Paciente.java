@@ -20,7 +20,10 @@ import lombok.NoArgsConstructor;
 public class Paciente extends BaseEntity {
 
     @NotBlank(message = "O nome é obrigatório")
-    @Pattern(regexp = "^[\\p{L}\\s]{2,}(\\s[\\p{L}\\s]{2,})+$", message = "Por favor, informe o nome e sobrenome")
+    @Pattern(
+    regexp = "^[\\p{L}]{2,}(?:\\s[\\p{L}]{2,})+$",
+    message = "Por favor, informe nome e sobrenome válidos"
+)
     private String nome;
 
     @NotBlank(message = "O telefone é obrigatório")

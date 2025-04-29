@@ -51,6 +51,49 @@
   border-radius: 4px;
   margin-bottom: 20px;
   text-align: center;
+  position: relative;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-message::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background-color: #c0392b;
+  border-radius: 4px 0 0 4px;
+}
+
+.error-message p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.error-message ul {
+  margin: 10px 0 0 0;
+  padding-left: 20px;
+  text-align: left;
+}
+
+.error-message li {
+  margin-bottom: 5px;
+}
+
+.error-message li:last-child {
+  margin-bottom: 0;
 }
 
 .dentista-form {
@@ -120,7 +163,7 @@
 }
 
 .info-text {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #666;
   margin-top: 0.25rem;
   display: block;

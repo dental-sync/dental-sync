@@ -4,6 +4,7 @@ import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
 import DentistaTable from '../../components/DentistaTable/DentistaTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
@@ -13,6 +14,7 @@ const DentistaPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [filtros, setFiltros] = useState({
     isActive: 'todos'
   });
@@ -139,6 +141,15 @@ const DentistaPage = () => {
     // Implemente a lógica para exportar os dentistas
   };
 
+  const toggleExport = () => {
+    setIsExportOpen(!isExportOpen);
+    setIsFilterOpen(false); // Fechar o outro dropdown
+  };
+
+  const handleCloseExport = () => {
+    setIsExportOpen(false);
+  };
+
   if (loading) {
     return <div className="loading">Carregando dentistas...</div>;
   }
@@ -192,10 +203,14 @@ const DentistaPage = () => {
             )}
           </div>
           
-          <ActionButton 
-            label="Exportar" 
-            icon="export"
-            onClick={handleExportar} 
+          <ExportDropdown 
+            data={dentistasFiltrados}
+            headers={['ID', 'Nome', 'CRO', 'Email', 'Telefone', 'Status']}
+            fields={['id', 'nome', 'cro', 'email', 'telefone', 'isActive']}
+            filename="dentistas"
+            isOpen={isExportOpen}
+            toggleExport={toggleExport}
+            onCloseDropdown={handleCloseExport}
           />
         </div>
       </div>

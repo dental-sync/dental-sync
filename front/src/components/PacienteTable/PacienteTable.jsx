@@ -51,7 +51,7 @@ const PacienteTable = ({ pacientes = [], onPacienteDeleted, onStatusChange }) =>
   };
 
   return (
-    <div className="table-container">
+    <div className="paciente-table-container">
       <table className="paciente-table">
         <thead>
           <tr>
@@ -93,7 +93,7 @@ const PacienteTable = ({ pacientes = [], onPacienteDeleted, onStatusChange }) =>
             ))
           ) : (
             <tr className="empty-row">
-              <td colSpan="8" className="empty-message">Nenhum paciente encontrado</td>
+              <td colSpan="8"></td>
             </tr>
           )}
         </tbody>

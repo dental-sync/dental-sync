@@ -99,6 +99,32 @@ public class ProteticoController extends BaseController<Protetico, Long> {
     }
     
     /**
+     * Handler para tratar exceções específicas de validação
+     */
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<?> handleValidationException(ValidationException e) {
+        logger.error("Erro de validação: {}", e.getMessage());
+        
+        Map<String, Object> response = new HashMap<>();
+        String mensagem = e.getMessage();
+        
+        // Tratamento específico para email duplicado
+        if (mensagem != null && 
+            (mensagem.contains("email") || mensagem.contains("E-mail")) && 
+            (mensagem.contains("existe") || mensagem.contains("cadastrado"))) {
+            
+            response.put("field", "email");
+            response.put("message", "Este e-mail já está cadastrado no sistema. Por favor, utilize outro e-mail.");
+            logger.debug("Email duplicado detectado: {}", mensagem);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        
+        // Tratamento para outros casos de validação
+        response.put("message", mensagem);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+    
+    /**
      * Handler para tratar exceções de validação de constraints
      */
     @ExceptionHandler(ConstraintViolationException.class)
@@ -132,13 +158,32 @@ public class ProteticoController extends BaseController<Protetico, Long> {
     public ResponseEntity<?> handleGenericException(Exception e) {
         logger.error("Erro ao processar requisição: {}", e.getMessage(), e);
         
-        if (e.getMessage() != null && e.getMessage().contains("Email inv")) {
-            Map<String, String> response = new HashMap<>();
-            response.put("field", "email");
-            response.put("message", "Email inválido. Verifique o formato e tente novamente.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        Map<String, Object> response = new HashMap<>();
+        
+        // Verificar se a exceção está relacionada a email
+        if (e.getMessage() != null) {
+            String mensagem = e.getMessage();
+            
+            // Email inválido
+            if (mensagem.contains("Email inv") || mensagem.contains("email inv")) {
+                response.put("field", "email");
+                response.put("message", "Email inválido. Verifique o formato e tente novamente.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+            
+            // Email duplicado
+            if ((mensagem.contains("email") || mensagem.contains("E-mail")) && 
+                (mensagem.contains("existe") || mensagem.contains("cadastrado") || 
+                 mensagem.contains("duplicate") || mensagem.contains("duplicidade"))) {
+                
+                response.put("field", "email");
+                response.put("message", "Este e-mail já está cadastrado no sistema. Por favor, utilize outro e-mail.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
         }
         
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        // Para outros erros, retornar erro interno
+        response.put("message", "Ocorreu um erro no servidor. Por favor, tente novamente mais tarde.");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 } 

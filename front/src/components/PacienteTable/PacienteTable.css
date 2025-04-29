@@ -1,51 +1,58 @@
-.table-container {
+.paciente-table-container {
   width: 100%;
-  overflow-x: auto;
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-top: 20px;
+  overflow-y: visible;
+  position: relative;
+  z-index: 10;
+  overflow-x: auto;
 }
 
 .paciente-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
+  min-height: 100px;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .paciente-table th,
 .paciente-table td {
-  padding: 14px 12px;
+  padding: 12px 15px;
   text-align: left;
-  font-size: 14px;
-  border-bottom: 1px solid #eaeaea;
+  border-bottom: 1px solid #ddd;
 }
 
 .paciente-table th {
-  background-color: #f9f9fb;
+  background-color: #f8f9fa;
   font-weight: 600;
-  color: #444;
+  color: #333;
   position: sticky;
   top: 0;
   z-index: 1;
 }
 
 .paciente-table tbody tr:hover {
-  background-color: #f5f8ff;
+  background-color: #f5f5f5;
 }
 
-.paciente-table th:first-child,
-.paciente-table td:first-child {
-  padding-left: 20px;
+.paciente-table tr:last-child td {
+  border-bottom: none;
 }
 
-.paciente-table th:last-child,
+.paciente-table td {
+  font-size: 14px;
+  color: #333;
+  position: relative;
+}
+
 .paciente-table td:last-child {
-  padding-right: 20px;
-  width: 80px;
-  text-align: center;
+  z-index: 30;
 }
 
-/* Larguras de coluna */
+/* Larguras de coluna - mantive pois é necessário para a tabela de pacientes*/
 .paciente-table th:nth-child(1), .paciente-table td:nth-child(1) { width: 80px; } /* ID */
 .paciente-table th:nth-child(2), .paciente-table td:nth-child(2) { width: 200px; } /* Nome */
 .paciente-table th:nth-child(3), .paciente-table td:nth-child(3) { width: 140px; } /* Telefone */
@@ -55,15 +62,35 @@
 .paciente-table th:nth-child(7), .paciente-table td:nth-child(7) { width: 100px; } /* Status */
 .paciente-table th:nth-child(8), .paciente-table td:nth-child(8) { width: 80px; } /* Ações */
 
-.empty-row .empty-message {
+.empty-row {
   text-align: center;
-  padding: 40px 0;
   color: #888;
   font-style: italic;
 }
 
-@media (max-width: 1024px) {
-  .paciente-table {
-    min-width: 1000px;
+.empty-row td {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #888;
+  font-style: italic;
+  padding: 20px;
+  width: 100%;
+  height: 100px;
+}
+
+/* Ajustando a responsividade para ficar igual ao DentistaTable */
+@media (max-width: 768px) {
+  .paciente-table th,
+  .paciente-table td {
+    padding: 8px 12px;
+  }
+  
+  .action-buttons {
+    gap: 4px;
+  }
+  
+  .action-button {
+    padding: 4px;
   }
 } 

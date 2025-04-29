@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,10 +22,11 @@ public class Dentista extends BaseEntity {
 
     @NotBlank(message = "O nome é obrigatório")
     @Pattern(regexp = "^[\\p{L}\\s]{2,}(\\s[\\p{L}\\s]{2,})+$", message = "Por favor, informe o nome e sobrenome")
+    @Size(max = 255, message = "O nome não pode ultrapassar 255 caracteres")
     private String nome;
 
     @NotBlank(message = "O CRO é obrigatório")
-    @Pattern(regexp = "CRO-[A-Z]{2}-[A-Z]{2,3}-\\d{4,5}", message = "Formato de CRO inválido. Use o formato: CRO-XX-XXX-XXXXX")
+    @Pattern(regexp = "CRO-[A-Z]{2}-[A-Z0-9]{1,20}", message = "Formato de CRO inválido. Use o formato: CRO-UF-NÚMERO")
     private String cro;
 
     @ManyToMany
@@ -37,5 +39,6 @@ public class Dentista extends BaseEntity {
     @Email(message = "Email inválido")
     @NotBlank(message = "O email é obrigatório")
     @Pattern(regexp = "^[^\\s@]+@[^\\s@]+\\.com$", message = "O email deve terminar com .com")
+    @Size(max = 255, message = "O email não pode ultrapassar 255 caracteres")
     private String email;
 } 

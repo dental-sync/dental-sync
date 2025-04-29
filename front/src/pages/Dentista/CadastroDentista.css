@@ -61,6 +61,49 @@
   border-radius: 4px;
   margin-bottom: 20px;
   text-align: center;
+  position: relative;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-message::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background-color: #c0392b;
+  border-radius: 4px 0 0 4px;
+}
+
+.error-message p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.error-message ul {
+  margin: 10px 0 0 0;
+  padding-left: 20px;
+  text-align: left;
+}
+
+.error-message li {
+  margin-bottom: 5px;
+}
+
+.error-message li:last-child {
+  margin-bottom: 0;
 }
 
 .dentista-form {
@@ -107,22 +150,20 @@
   color: #999;
 }
 
-.form-group input[name="cro"] + .error-text {
-  bottom: -20px;
-  left: -5px;
+.form-group input[name="cro"] {
+  margin-bottom: 0.5rem;
 }
 
 .error-text {
-  color: #e74c3c;
-  font-size: 14px;
-  margin-top: 8px;
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
   display: block;
-  position: absolute;
-  bottom: -10px;
-  left: 0;
-  width: 100%;
-  padding: 0 5px;
-  box-sizing: border-box;
+  position: relative;
+}
+
+.form-group input[name="cro"] + .error-text {
+  margin-bottom: -0.5rem;
 }
 
 .input-error {
@@ -251,10 +292,11 @@
 }
 
 .info-text {
-  font-size: 0.8rem;
-  color: #666;
-  margin-top: 0.25rem;
+  color: #6c757d;
+  font-size: 0.75rem;
+  margin-top: 1.5rem;
   display: block;
+  position: relative;
 }
 
 @media (max-width: 768px) {

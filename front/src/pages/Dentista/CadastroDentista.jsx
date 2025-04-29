@@ -46,18 +46,24 @@ const CadastroDentista = () => {
       newErrors.nome = 'O nome é obrigatório';
     } else if (formData.nome.trim().split(' ').length < 2) {
       newErrors.nome = 'Por favor, informe o nome e sobrenome';
+    } else if (formData.nome.length > 255) {
+      newErrors.nome = 'O nome não pode ultrapassar 255 caracteres';
+    } else if (/\d/.test(formData.nome)) {
+      newErrors.nome = 'O nome não pode conter números';
     }
     
     if (!formData.cro.trim()) {
       newErrors.cro = 'O CRO é obrigatório';
-    } else if (!/^CRO-[A-Z]{2}-[A-Z]{2,3}-\d{4,5}$/.test(formData.cro)) {
-      newErrors.cro = 'CRO incorreto. Digite o padrão correto: CRO-XX-XXX-XXXXX';
+    } else if (!/^CRO-[A-Z]{2}-\d{1,20}$/.test(formData.cro)) {
+      newErrors.cro = 'CRO incorreto. Digite o padrão correto: CRO-UF-NÚMERO';
     }
     
     if (!formData.email.trim()) {
       newErrors.email = 'O email é obrigatório';
     } else if (!/^[^\s@]+@[^\s@]+\.com$/.test(formData.email)) {
       newErrors.email = 'Formato de email inválido. O email deve terminar com .com';
+    } else if (formData.email.length > 255) {
+      newErrors.email = 'O email não pode ultrapassar 255 caracteres';
     }
     
     if (!formData.telefone.trim()) {
@@ -84,6 +90,16 @@ const CadastroDentista = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     
+    if (name === 'nome') {
+      // Remove números do nome
+      const nomeSemNumeros = value.replace(/[0-9]/g, '');
+      setFormData({
+        ...formData,
+        [name]: nomeSemNumeros
+      });
+      return;
+    }
+    
     if (name === 'cro') {
       // Garante que o valor sempre começa com CRO-
       let formattedValue = value;
@@ -94,9 +110,14 @@ const CadastroDentista = () => {
       // Remove caracteres inválidos e converte para maiúsculo
       formattedValue = formattedValue.toUpperCase().replace(/[^A-Z0-9-]/g, '');
       
+      // Adiciona hífen após a sigla do estado (após 6 caracteres: CRO-XX)
+      if (formattedValue.length > 6 && formattedValue.charAt(6) !== '-') {
+        formattedValue = formattedValue.substring(0, 6) + '-' + formattedValue.substring(6);
+      }
+      
       // Limita o tamanho máximo do CRO
-      if (formattedValue.length > 16) { // CRO-XX-XXX-XXXXX = 16 caracteres
-        formattedValue = formattedValue.substring(0, 16);
+      if (formattedValue.length > 26) { // CRO-XX-XXXXXXXXXX = 26 caracteres
+        formattedValue = formattedValue.substring(0, 26);
       }
       
       setFormData({
@@ -171,34 +192,69 @@ const CadastroDentista = () => {
     setLoading(true);
     
     try {
-      let clinicasDosDentista = [...formData.clinicasAssociadas];
+      // Primeiro verifica se o CRO e email já existem
+      const [croResponse, emailResponse] = await Promise.all([
+        axios.get(`http://localhost:8080/dentistas/cro/${formData.cro}`).catch(() => ({ data: null })),
+        axios.get(`http://localhost:8080/dentistas/email/${formData.email}`).catch(() => ({ data: null }))
+      ]);
+
+      if (croResponse.data) {
+        setErrors({ cro: "CRO já cadastrado" });
+        setLoading(false);
+        return;
+      }
+
+      if (emailResponse.data) {
+        setErrors({ email: "E-mail já cadastrado" });
+        setLoading(false);
+        return;
+      }
+
+      // Se chegou aqui, o CRO e email são únicos
+      // Agora verifica a clínica se houver nova
+      let novaClinica = null;
       
       if (showNovaClinica) {
         try {
+          // Verifica se o CNPJ já existe
+          const cnpjResponse = await axios.get(`http://localhost:8080/clinicas/cnpj/${formData.novaClinica.cnpj}`).catch(() => ({ data: null }));
+          
+          if (cnpjResponse.data) {
+            setErrors({ 'novaClinica.cnpj': 'CNPJ já cadastrado' });
+            setLoading(false);
+            return;
+          }
+          
+          // Se o CNPJ não existe, tenta cadastrar a clínica
           const clinicaResponse = await axios.post('http://localhost:8080/clinicas', formData.novaClinica);
-          clinicasDosDentista.push(clinicaResponse.data);
+          novaClinica = clinicaResponse.data;
         } catch (error) {
           if (error.response?.data === "CNPJ já cadastrado") {
             setErrors({
               ...errors,
-              'novaClinica.cnpj': 'Este CNPJ já está cadastrado'
+              'novaClinica.cnpj': 'CNPJ já cadastrado'
             });
-            setLoading(false);
-            return;
+          } else {
+            setErrors({ 'novaClinica.cnpj': 'CNPJ já cadastrado' });
           }
-          throw error;
+          setLoading(false);
+          return;
         }
       }
-      
+
+      // Se chegou aqui, tanto o dentista quanto a clínica estão ok
+      // Agora tenta cadastrar o dentista
       const dentistaData = {
         nome: formData.nome,
         cro: formData.cro,
         telefone: formData.telefone,
         email: formData.email,
-        clinicas: clinicasDosDentista,
+        clinicas: novaClinica 
+          ? [...formData.clinicasAssociadas, novaClinica]
+          : formData.clinicasAssociadas,
         isActive: formData.isActive
       };
-      
+
       await axios.post('http://localhost:8080/dentistas', dentistaData);
       
       setSuccess(true);
@@ -213,15 +269,7 @@ const CadastroDentista = () => {
         console.log('Mensagem de erro:', errorMessage);
         
         if (typeof errorMessage === 'string') {
-          if (errorMessage.includes("E-mail já cadastrado")) {
-            setErrors({ email: "E-mail já cadastrado" });
-          } else if (errorMessage.includes("CRO já cadastrado")) {
-            setErrors({ cro: "CRO já cadastrado" });
-          } else if (errorMessage === "CNPJ já cadastrado") {
-            setErrors({ 'novaClinica.cnpj': "Este CNPJ já está cadastrado" });
-          } else {
-            setErrors({ general: errorMessage });
-          }
+          setErrors({ general: errorMessage });
         } else if (errorMessage.message) {
           setErrors({ general: errorMessage.message });
         } else {
@@ -259,7 +307,15 @@ const CadastroDentista = () => {
         
         {errors.general && (
           <div className="error-message">
-            {errors.general}
+            <p>{errors.general}</p>
+          </div>
+        )}
+        
+        {Object.keys(errors).length > 0 && !errors.general && (
+          <div className="error-message">
+            {Object.entries(errors).map(([key, value]) => (
+              <p key={key}>{value}</p>
+            ))}
           </div>
         )}
         
@@ -292,7 +348,7 @@ const CadastroDentista = () => {
               required
             />
             {errors.cro && <span className="error-text">{errors.cro}</span>}
-            <span className="info-text">Formato: CRO-XX-XXX-XXXXX</span>
+            <span className="info-text">Formato: CRO-UF-NÚMERO</span>
           </div>
           
           <div className="form-group">

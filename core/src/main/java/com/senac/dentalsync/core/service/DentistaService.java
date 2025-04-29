@@ -58,18 +58,21 @@ public class DentistaService extends BaseService<Dentista, Long> {
 
     @Override
     public Dentista save(Dentista entity) {
-        // Verificar se já existe dentista com o mesmo CRO
-        if (entity.getId() == null) { // Apenas para novos cadastros
-            Optional<Dentista> dentistaComCro = dentistaRepository.findByCro(entity.getCro());
-            if (dentistaComCro.isPresent()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CRO já cadastrado");
-            }
+        // Validar se o nome contém números
+        if (entity.getNome().matches(".*\\d.*")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O nome não pode conter números");
+        }
 
-            // Verificar se já existe dentista com o mesmo email
-            Optional<Dentista> dentistaComEmail = dentistaRepository.findByEmail(entity.getEmail());
-            if (dentistaComEmail.isPresent()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail já cadastrado");
-            }
+        // Verificar se já existe dentista com o mesmo CRO
+        Optional<Dentista> dentistaComCro = dentistaRepository.findByCro(entity.getCro());
+        if (dentistaComCro.isPresent() && !dentistaComCro.get().getId().equals(entity.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CRO já cadastrado");
+        }
+
+        // Verificar se já existe dentista com o mesmo email
+        Optional<Dentista> dentistaComEmail = dentistaRepository.findByEmail(entity.getEmail());
+        if (dentistaComEmail.isPresent() && !dentistaComEmail.get().getId().equals(entity.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail já cadastrado");
         }
         
         try {

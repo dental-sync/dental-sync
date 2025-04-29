@@ -10,6 +10,7 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
+import { formatProteticoId, extractProteticoId } from '../../utils/formatters';
 
 const ProteticoPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,6 +32,7 @@ const ProteticoPage = () => {
       const responseData = response.data;
       const proteticosFormatados = responseData.content.map(protetico => ({
         id: protetico.id,
+        idFormatado: formatProteticoId(protetico.id),
         nome: protetico.nome,
         cro: protetico.cro,
         cargo: protetico.isAdmin ? 'Admin' : 'Protetico',
@@ -88,10 +90,26 @@ const ProteticoPage = () => {
       
       // Aplicar busca textual
       if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        
+        // Verificar se a busca corresponde a um ID formatado (PT001)
+        const searchFormatted = searchLower.replace(/\s+/g, '');
+        const isProteticoIdSearch = searchFormatted.startsWith('pt');
+        
+        if (isProteticoIdSearch) {
+          // Extrair o número do ID da busca (se for algo como PT001)
+          const searchNumericId = extractProteticoId(searchFormatted);
+          if (searchNumericId !== null) {
+            return protetico.id === searchNumericId;
+          }
+        }
+        
+        // Busca padrão em outros campos
         return (
-          protetico.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          protetico.cro?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (protetico.id?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase())
+          protetico.nome?.toLowerCase().includes(searchLower) ||
+          protetico.cro?.toLowerCase().includes(searchLower) ||
+          protetico.idFormatado?.toLowerCase().includes(searchLower) ||
+          (protetico.id?.toString() || '').toLowerCase().includes(searchLower)
         );
       }
       
@@ -208,7 +226,10 @@ const ProteticoPage = () => {
           </div>
           
           <ExportDropdown 
-            data={proteticosFiltrados}
+            data={proteticosFiltrados.map(p => ({
+              ...p,
+              id: p.idFormatado // Substituir ID numerico pelo ID formatado
+            }))}
             headers={['ID', 'Nome', 'CRO', 'Cargo', 'Telefone', 'Status']}
             fields={['id', 'nome', 'cro', 'cargo', 'telefone', 'status']}
             filename="proteticos"
@@ -221,7 +242,7 @@ const ProteticoPage = () => {
       
       <div className="search-container">
         <SearchBar 
-          placeholder="Buscar por ID, nome ou CRO..." 
+          placeholder="Buscar por ID (PT001), nome ou CRO..." 
           onSearch={handleSearch} 
         />
         <ActionButton 

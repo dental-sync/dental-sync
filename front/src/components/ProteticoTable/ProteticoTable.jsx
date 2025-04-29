@@ -4,6 +4,7 @@ import StatusBadge from '../StatusBadge/StatusBadge';
 import ActionMenu from '../ActionMenu/ActionMenu';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { formatProteticoId, limitText } from '../../utils/formatters';
 
 const ProteticoTable = ({ proteticos = [], onStatusChange, lastProteticoRef }) => {
   const [localProteticos, setLocalProteticos] = useState(proteticos);
@@ -81,8 +82,10 @@ const ProteticoTable = ({ proteticos = [], onStatusChange, lastProteticoRef }) =
             
             return (
               <tr key={protetico.id} ref={isLastItem ? lastProteticoRef : null}>
-                <td>{protetico.id}</td>
-                <td className="protetico-name">{protetico.nome}</td>
+                <td className="protetico-id">{formatProteticoId(protetico.id)}</td>
+                <td className="protetico-name" title={protetico.nome}>
+                  {limitText(protetico.nome)}
+                </td>
                 <td>{protetico.cro}</td>
                 <td>{protetico.cargo}</td>
                 <td>{protetico.telefone}</td>

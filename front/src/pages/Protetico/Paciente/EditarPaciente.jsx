@@ -17,6 +17,7 @@ const EditarPaciente = () => {
   const [loading, setLoading] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
@@ -68,6 +69,14 @@ const EditarPaciente = () => {
       ...formData,
       [name]: value
     });
+    
+    // Limpar erro do campo quando o usuário digita
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: ''
+      });
+    }
   };
 
   const formatDateForAPI = (dateString) => {
@@ -75,8 +84,43 @@ const EditarPaciente = () => {
     return dateString; // Envia a data exatamente como está no formato YYYY-MM-DD
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Validar nome completo
+    if (!formData.nome) {
+      newErrors.nome = 'Nome é obrigatório';
+    } else if (!formData.nome.trim().includes(' ') || formData.nome.trim().split(' ').some(part => part.length === 0)) {
+      newErrors.nome = 'Por favor, informe o nome e sobrenome';
+    }
+    
+    // Validar email
+    if (!formData.email) {
+      newErrors.email = 'Email é obrigatório';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        newErrors.email = 'Formato de email inválido';
+      }
+    }
+    
+    // Validar telefone
+    if (!formData.telefone) {
+      newErrors.telefone = 'Telefone é obrigatório';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validar formulário antes de enviar
+    if (!validateForm()) {
+      return;
+    }
+    
     setEnviando(true);
     setError(null);
     
@@ -150,8 +194,9 @@ const EditarPaciente = () => {
               name="nome"
               value={formData.nome}
               onChange={handleChange}
-              required
+              className={errors.nome ? 'input-error' : ''}
             />
+            {errors.nome && <div className="error-text">{errors.nome}</div>}
           </div>
           
           <div className="form-group">
@@ -162,8 +207,9 @@ const EditarPaciente = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              required
+              className={errors.email ? 'input-error' : ''}
             />
+            {errors.email && <div className="error-text">{errors.email}</div>}
           </div>
           
           <div className="form-group">
@@ -174,8 +220,9 @@ const EditarPaciente = () => {
               name="telefone"
               value={formData.telefone}
               onChange={handleChange}
-              required
+              className={errors.telefone ? 'input-error' : ''}
             />
+            {errors.telefone && <div className="error-text">{errors.telefone}</div>}
           </div>
           
           <div className="form-group">

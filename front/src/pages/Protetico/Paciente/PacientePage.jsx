@@ -5,6 +5,7 @@ import SearchBar from '../../../components/SearchBar/SearchBar'; //barra de busc
 import ActionButton from '../../../components/ActionButton/ActionButton'; //botões com ícones (ActionButton [componente])
 import PacienteTable from '../../../components/PacienteTable/PacienteTable'; //tabela de pacientes (PacienteTable [componente])
 import NotificationBell from '../../../components/NotificationBell/NotificationBell'; //sininho de notificações (NotificationBell [componente])
+import ExportDropdown from '../../../components/ExportDropdown/ExportDropdown'; //componente de exportação de dados
 import { useNavigate, useLocation } from 'react-router-dom'; //navegação e controle de rota (useNavigate [hook], useLocation [hook])
 import axios from 'axios'; //para fazer requisições HTTP (axios [biblioteca]) 
 
@@ -22,6 +23,7 @@ const PacientePage = () => {
 
   //carregar os filtros
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   //Filtros aplicados na tabela
   const [filtros, setFiltros] = useState({
@@ -150,6 +152,16 @@ const PacientePage = () => {
 
   const toggleFiltro = () => {
     setIsFilterOpen(!isFilterOpen);
+    setIsExportOpen(false); // Fechar o outro dropdown
+  };
+
+  const toggleExport = () => {
+    setIsExportOpen(!isExportOpen);
+    setIsFilterOpen(false); // Fechar o outro dropdown
+  };
+
+  const handleCloseExport = () => {
+    setIsExportOpen(false);
   };
 
   const handleFiltroChange = (e) => {
@@ -164,11 +176,6 @@ const PacientePage = () => {
     setFiltros({
       status: 'todos'
     });
-  };
-
-  const handleExportar = () => {
-    console.log('Exportando dados...');
-    //Implementação futura: exportação para CSV ou PDF
   };
 
   const handleNovo = () => {
@@ -255,10 +262,17 @@ const PacientePage = () => {
             )}
           </div>
           
-          <ActionButton 
-            label="Exportar" 
-            icon="export"
-            onClick={handleExportar} 
+          <ExportDropdown 
+            data={pacientesFiltrados.map(paciente => ({
+              ...paciente,
+              status: paciente.status === true ? 'ATIVO' : 'INATIVO'
+            }))}
+            headers={['ID', 'Nome', 'Telefone', 'Email', 'Data de Nascimento', 'Último Serviço', 'Status']}
+            fields={['id', 'nome', 'telefone', 'email', 'dataNascimento', 'ultimoServico', 'status']}
+            filename="pacientes"
+            isOpen={isExportOpen}
+            toggleExport={toggleExport}
+            onCloseDropdown={handleCloseExport}
           />
         </div>
       </div>

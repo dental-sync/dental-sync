@@ -34,7 +34,6 @@ const DentistaPage = () => {
           cro: dentista.cro,
           telefone: dentista.telefone || '-',
           email: dentista.email || '-',
-          clinicas: dentista.clinicas || [],
           isActive: dentista.isActive ? 'ATIVO' : 'INATIVO'
         }));
         setDentistas(dentistasFormatados);

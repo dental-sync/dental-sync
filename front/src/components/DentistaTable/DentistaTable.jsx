@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import './DentistaTable.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,28 +8,6 @@ import StatusBadge from '../StatusBadge/StatusBadge';
 
 function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
   const navigate = useNavigate();
-  const [expandedClinicas, setExpandedClinicas] = useState({});
-  const dropdownRefs = useRef({});
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Fechar dropdown de clínicas
-      Object.keys(expandedClinicas).forEach(dentistaId => {
-        const dropdown = dropdownRefs.current[dentistaId];
-        if (dropdown && !dropdown.contains(event.target)) {
-          setExpandedClinicas(prev => ({
-            ...prev,
-            [dentistaId]: false
-          }));
-        }
-      });
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [expandedClinicas]);
 
   const handleStatusChange = async (dentistaId, newStatus) => {
     try {
@@ -45,13 +23,6 @@ function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
     }
   };
 
-  const toggleClinicas = (dentistaId) => {
-    setExpandedClinicas(prev => ({
-      ...prev,
-      [dentistaId]: !prev[dentistaId]
-    }));
-  };
-
   return (
     <div className="dentista-table-container">
       <table className="dentista-table">
@@ -62,7 +33,6 @@ function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
             <th>CRO</th>
             <th>Email</th>
             <th>Telefone</th>
-            <th>Clínicas</th>
             <th>Status</th>
             <th>Ações</th>
           </tr>
@@ -76,33 +46,6 @@ function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
                 <td>{dentista.cro}</td>
                 <td>{dentista.email}</td>
                 <td>{dentista.telefone}</td>
-                <td>
-                  <div 
-                    ref={el => dropdownRefs.current[dentista.id] = el}
-                    className={`clinicas-dropdown ${expandedClinicas[dentista.id] ? 'active' : ''}`}
-                  >
-                    <button
-                      className="clinicas-toggle"
-                      onClick={() => toggleClinicas(dentista.id)}
-                    >
-                      <span>
-                        {dentista.clinicas?.length > 0 
-                          ? `${dentista.clinicas[0].nome}${dentista.clinicas?.length > 1 ? '...' : ''}`
-                          : 'Nenhuma clínica'
-                        }
-                      </span>
-                    </button>
-                    {expandedClinicas[dentista.id] && dentista.clinicas?.length > 0 && (
-                      <div className="clinicas-list">
-                        {dentista.clinicas.map((clinica) => (
-                          <div key={clinica.id} className="clinica-item">
-                            {clinica.nome}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </td>
                 <td>
                   <StatusBadge
                     status={dentista.isActive === 'ATIVO'}
@@ -120,7 +63,7 @@ function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
             ))
           ) : (
             <tr>
-              <td colSpan="8" className="empty-row"></td>
+              <td colSpan="7" className="empty-row"></td>
             </tr>
           )}
         </tbody>

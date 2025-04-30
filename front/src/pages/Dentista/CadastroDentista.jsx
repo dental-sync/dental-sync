@@ -68,8 +68,8 @@ const CadastroDentista = () => {
     
     if (!formData.telefone.trim()) {
       newErrors.telefone = 'O telefone é obrigatório';
-    } else if (!/^\(\d{2}\)\s\d{5}-\d{4}$/.test(formData.telefone)) {
-      newErrors.telefone = 'Formato de telefone inválido. Use o formato: (99) 99999-9999';
+    } else if (!/^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(formData.telefone)) {
+      newErrors.telefone = 'Formato de telefone inválido. Use o formato: (99) 99999-9999 para celular ou (99) 9999-9999 para fixo';
     }
 
     if (showNovaClinica) {
@@ -128,11 +128,26 @@ const CadastroDentista = () => {
     }
     
     if (name === 'telefone') {
-      const formattedValue = value
-        .replace(/\D/g, '')
-        .replace(/^(\d{2})(\d)/g, '($1) $2')
-        .replace(/(\d{5})(\d)/, '$1-$2')
-        .substring(0, 15);
+      const digits = value.replace(/\D/g, '');
+      let formattedValue = '';
+      
+      if (digits.length > 0) {
+        // Limita a 11 dígitos (2 do DDD + 9 do número)
+        const limitedDigits = digits.substring(0, 11);
+        
+        // Adiciona o DDD
+        formattedValue = `(${limitedDigits.substring(0, 2)}`;
+        
+        if (limitedDigits.length > 2) {
+          // Adiciona o espaço após o DDD
+          formattedValue += ') ';
+          
+          // Adiciona os números após o DDD
+          const remainingDigits = limitedDigits.substring(2);
+          formattedValue += remainingDigits;
+        }
+      }
+      
       setFormData({
         ...formData,
         [name]: formattedValue
@@ -178,6 +193,42 @@ const CadastroDentista = () => {
       setErrors({
         ...errors,
         [name]: ''
+      });
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === 'telefone') {
+      const digits = value.replace(/\D/g, '');
+      let formattedValue = '';
+      
+      if (digits.length > 0) {
+        // Adiciona o DDD
+        formattedValue = `(${digits.substring(0, 2)}`;
+        
+        if (digits.length > 2) {
+          // Adiciona o espaço após o DDD
+          formattedValue += ') ';
+          
+          // Adiciona os números após o DDD
+          const remainingDigits = digits.substring(2);
+          
+          if (remainingDigits.length >= 8) {
+            // Identifica se é fixo (8 dígitos) ou celular (9 dígitos)
+            const isCelular = remainingDigits.length >= 9;
+            const splitPoint = isCelular ? 5 : 4;
+            formattedValue += `${remainingDigits.substring(0, splitPoint)}-${remainingDigits.substring(splitPoint, splitPoint + 4)}`;
+          } else {
+            formattedValue += remainingDigits;
+          }
+        }
+      }
+      
+      setFormData({
+        ...formData,
+        [name]: formattedValue
       });
     }
   };
@@ -374,6 +425,7 @@ const CadastroDentista = () => {
               name="telefone"
               value={formData.telefone}
               onChange={handleChange}
+              onBlur={handleBlur}
               className={errors.telefone ? 'input-error' : ''}
               placeholder="(00) 00000-0000"
               required

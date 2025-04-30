@@ -401,7 +401,7 @@ const EditarDentista = () => {
         
         <form onSubmit={handleSubmit} className="dentista-form">
           <div className="form-group">
-            <label htmlFor="nome">Nome Completo</label>
+            <label htmlFor="nome" className="required">Nome Completo</label>
             <input
               type="text"
               id="nome"
@@ -416,7 +416,7 @@ const EditarDentista = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="cro">CRO</label>
+            <label htmlFor="cro" className="required">CRO</label>
             <input
               type="text"
               id="cro"
@@ -432,7 +432,7 @@ const EditarDentista = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email" className="required">Email</label>
             <input
               type="email"
               id="email"
@@ -447,7 +447,7 @@ const EditarDentista = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="telefone">Telefone</label>
+            <label htmlFor="telefone" className="required">Telefone</label>
             <input
               type="tel"
               id="telefone"

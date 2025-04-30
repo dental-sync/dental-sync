@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import ActionMenuDentista from '../ActionMenuDentista/ActionMenuDentista';
 import StatusBadge from '../StatusBadge/StatusBadge';
 
-function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
+const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfig, onSort }) => {
   const navigate = useNavigate();
 
   const handleStatusChange = async (dentistaId, newStatus) => {
@@ -23,13 +23,38 @@ function DentistaTable({ dentistas, onDentistaDeleted, onStatusChange }) {
     }
   };
 
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) {
+      return (
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M7 3v18M17 3v18M3 7h18M3 17h18"/>
+        </svg>
+      );
+    }
+    return sortConfig.direction === 'ascending' ? (
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 15l-6-6-6 6"/>
+      </svg>
+    ) : (
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 9l6 6 6-6"/>
+      </svg>
+    );
+  };
+
   return (
     <div className="dentista-table-container">
       <table className="dentista-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Nome</th>
+            <th className="sortable-header" onClick={() => onSort('id')}>
+              ID
+              <div className="sort-icon">{getSortIcon('id')}</div>
+            </th>
+            <th className="sortable-header" onClick={() => onSort('nome')}>
+              Nome
+              <div className="sort-icon">{getSortIcon('nome')}</div>
+            </th>
             <th>CRO</th>
             <th>Email</th>
             <th>Telefone</th>

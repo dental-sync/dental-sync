@@ -20,6 +20,10 @@ const DentistaPage = () => {
   });
   const [refreshData, setRefreshData] = useState(0);
   const [toastMessage, setToastMessage] = useState(null);
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'ascending'
+  });
   const filterRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -169,6 +173,41 @@ const DentistaPage = () => {
     setIsExportOpen(false);
   };
 
+  const handleSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedDentistas = React.useMemo(() => {
+    let sortableDentistas = [...dentistasFiltrados];
+    if (sortConfig.key) {
+      sortableDentistas.sort((a, b) => {
+        // Para ordenação de IDs (números)
+        if (sortConfig.key === 'id') {
+          return sortConfig.direction === 'ascending'
+            ? a.id - b.id
+            : b.id - a.id;
+        }
+        
+        // Para ordenação de strings (nome)
+        const aValue = String(a[sortConfig.key]).toLowerCase();
+        const bValue = String(b[sortConfig.key]).toLowerCase();
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableDentistas;
+  }, [dentistasFiltrados, sortConfig]);
+
   if (loading) {
     return <div className="loading">Carregando dentistas...</div>;
   }
@@ -264,9 +303,11 @@ const DentistaPage = () => {
           </div>
         ) : null}
         <DentistaTable 
-          dentistas={dentistasFiltrados} 
+          dentistas={sortedDentistas} 
           onDentistaDeleted={handleDentistaDeleted}
           onStatusChange={handleStatusChange}
+          sortConfig={sortConfig}
+          onSort={handleSort}
         />
       </div>
     </div>

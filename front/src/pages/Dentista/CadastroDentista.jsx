@@ -308,10 +308,7 @@ const CadastroDentista = () => {
 
       await axios.post('http://localhost:8080/dentistas', dentistaData);
       
-      setSuccess(true);
-      setTimeout(() => {
-        navigate('/dentista', { state: { refresh: true } });
-      }, 2000);
+      navigate('/dentista', { state: { success: 'Dentista cadastrado com sucesso!' } });
     } catch (error) {
       console.error('Erro ao cadastrar dentista:', error);
       

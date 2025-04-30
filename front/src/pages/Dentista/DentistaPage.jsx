@@ -19,6 +19,7 @@ const DentistaPage = () => {
     isActive: 'todos'
   });
   const [refreshData, setRefreshData] = useState(0);
+  const [toastMessage, setToastMessage] = useState(null);
   const filterRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,10 +51,29 @@ const DentistaPage = () => {
   }, [refreshData]);
 
   useEffect(() => {
-    if (location.state && location.state.refresh) {
-      setRefreshData(prev => prev + 1);
+    if (location.state) {
+      if (location.state.success) {
+        setToastMessage(location.state.success);
+        setRefreshData(prev => prev + 1);
+        const timer = setTimeout(() => {
+          setToastMessage(null);
+          window.history.replaceState({}, document.title);
+        }, 3000);
+        return () => clearTimeout(timer);
+      } else if (location.state.refresh) {
+        setRefreshData(prev => prev + 1);
+      }
     }
   }, [location.state]);
+
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => {
+        setToastMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -160,6 +180,12 @@ const DentistaPage = () => {
           <NotificationBell count={2} />
         </div>
       </div>
+      
+      {toastMessage && (
+        <div className="toast-message">
+          {toastMessage}
+        </div>
+      )}
       
       <div className="page-header">
         <h1 className="page-title">Dentistas</h1>

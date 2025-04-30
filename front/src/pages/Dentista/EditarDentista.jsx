@@ -333,10 +333,7 @@ const EditarDentista = () => {
 
       await axios.put(`http://localhost:8080/dentistas/${id}`, dentistaData);
       
-      setSuccess(true);
-      setTimeout(() => {
-        navigate('/dentista', { state: { refresh: true } });
-      }, 2000);
+      navigate('/dentista', { state: { success: 'Dentista atualizado com sucesso!' } });
     } catch (error) {
       console.error('Erro ao atualizar dentista:', error);
       

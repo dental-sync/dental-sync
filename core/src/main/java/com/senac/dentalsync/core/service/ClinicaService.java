@@ -12,6 +12,7 @@ import com.senac.dentalsync.core.persistency.model.Clinica;
 import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.ClinicaRepository;
+import com.senac.dentalsync.core.util.CNPJValidator;
 
 @Service
 public class ClinicaService extends BaseService<Clinica, Long> {
@@ -34,7 +35,15 @@ public class ClinicaService extends BaseService<Clinica, Long> {
     
     @Override
     public Clinica save(Clinica entity) {
-        // Verificar se já existe clínica com o mesmo CNPJ
+        // Remove caracteres não numéricos do CNPJ para validação
+        String cnpjNumerico = entity.getCnpj().replaceAll("\\D", "");
+        
+        // Valida o CNPJ
+        if (!CNPJValidator.isValid(cnpjNumerico)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CNPJ inválido");
+        }
+        
+        // Verifica se já existe clínica com o mesmo CNPJ
         if (entity.getId() == null) { // Apenas para novos cadastros
             Optional<Clinica> clinicaComCnpj = clinicaRepository.findByCnpj(entity.getCnpj());
             if (clinicaComCnpj.isPresent()) {

@@ -118,6 +118,8 @@
   margin-bottom: 25px;
   position: relative;
   min-height: 85px;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-group label {
@@ -126,6 +128,14 @@
   font-weight: 500;
   color: #333;
   font-size: 16px;
+}
+
+.form-group label.required::after {
+  content: '*';
+  color: #e74c3c;
+  margin-left: 4px;
+  font-size: 18px;
+  vertical-align: middle;
 }
 
 .form-group input,
@@ -157,13 +167,16 @@
 .error-text {
   color: #dc3545;
   font-size: 0.875rem;
-  margin-top: 0.25rem;
+  margin-top: 0.04rem;
   display: block;
   position: relative;
 }
 
 .form-group input[name="cro"] + .error-text {
-  margin-bottom: -0.5rem;
+  margin-top: 0;
+  position: absolute;
+  bottom: -28px;
+  left: 1px;
 }
 
 .input-error {

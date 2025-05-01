@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CadastroDentista.css';
 import axios from 'axios';
+import ModalCadastroClinica from '../../components/ModalCadastroClinica';
 
 const CadastroDentista = () => {
   const [formData, setFormData] = useState({
@@ -11,10 +12,6 @@ const CadastroDentista = () => {
     email: '',
     clinicaId: '',
     clinicasAssociadas: [],
-    novaClinica: {
-      nome: '',
-      cnpj: ''
-    },
     isActive: true
   });
   
@@ -22,7 +19,7 @@ const CadastroDentista = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState({});
-  const [showNovaClinica, setShowNovaClinica] = useState(false);
+  const [showModalClinica, setShowModalClinica] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,19 +65,8 @@ const CadastroDentista = () => {
     
     if (!formData.telefone.trim()) {
       newErrors.telefone = 'O telefone é obrigatório';
-    } else if (!/^\(\d{2}\)\s\d{5}-\d{4}$/.test(formData.telefone)) {
-      newErrors.telefone = 'Formato de telefone inválido. Use o formato: (99) 99999-9999';
-    }
-
-    if (showNovaClinica) {
-      if (!formData.novaClinica.nome.trim()) {
-        newErrors['novaClinica.nome'] = 'O nome da clínica é obrigatório';
-      }
-      if (!formData.novaClinica.cnpj.trim()) {
-        newErrors['novaClinica.cnpj'] = 'O CNPJ é obrigatório';
-      } else if (!/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(formData.novaClinica.cnpj)) {
-        newErrors['novaClinica.cnpj'] = 'Formato de CNPJ inválido. Use o formato: XX.XXX.XXX/YYYY-ZZ';
-      }
+    } else if (!/^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(formData.telefone)) {
+      newErrors.telefone = 'Formato de telefone inválido. Use o formato: (99) 99999-9999 para celular ou (99) 9999-9999 para fixo';
     }
     
     setErrors(newErrors);
@@ -128,11 +114,26 @@ const CadastroDentista = () => {
     }
     
     if (name === 'telefone') {
-      const formattedValue = value
-        .replace(/\D/g, '')
-        .replace(/^(\d{2})(\d)/g, '($1) $2')
-        .replace(/(\d{5})(\d)/, '$1-$2')
-        .substring(0, 15);
+      const digits = value.replace(/\D/g, '');
+      let formattedValue = '';
+      
+      if (digits.length > 0) {
+        // Limita a 11 dígitos (2 do DDD + 9 do número)
+        const limitedDigits = digits.substring(0, 11);
+        
+        // Adiciona o DDD
+        formattedValue = `(${limitedDigits.substring(0, 2)}`;
+        
+        if (limitedDigits.length > 2) {
+          // Adiciona o espaço após o DDD
+          formattedValue += ') ';
+          
+          // Adiciona os números após o DDD
+          const remainingDigits = limitedDigits.substring(2);
+          formattedValue += remainingDigits;
+        }
+      }
+      
       setFormData({
         ...formData,
         [name]: formattedValue
@@ -140,44 +141,51 @@ const CadastroDentista = () => {
       return;
     }
     
-    if (name.startsWith('novaClinica.')) {
-      const field = name.split('.')[1];
-      setFormData({
-        ...formData,
-        novaClinica: {
-          ...formData.novaClinica,
-          [field]: value
-        }
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value
-      });
-    }
-    
-    if (name === 'novaClinica.cnpj') {
-      const formattedValue = value
-        .replace(/\D/g, '')
-        .replace(/^(\d{2})(\d)/, '$1.$2')
-        .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-        .replace(/\.(\d{3})(\d)/, '.$1/$2')
-        .replace(/(\d{4})(\d)/, '$1-$2')
-        .substring(0, 18);
-      setFormData({
-        ...formData,
-        novaClinica: {
-          ...formData.novaClinica,
-          cnpj: formattedValue
-        }
-      });
-      return;
-    }
+    setFormData({
+      ...formData,
+      [name]: value
+    });
     
     if (errors[name]) {
       setErrors({
         ...errors,
         [name]: ''
+      });
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === 'telefone') {
+      const digits = value.replace(/\D/g, '');
+      let formattedValue = '';
+      
+      if (digits.length > 0) {
+        // Adiciona o DDD
+        formattedValue = `(${digits.substring(0, 2)}`;
+        
+        if (digits.length > 2) {
+          // Adiciona o espaço após o DDD
+          formattedValue += ') ';
+          
+          // Adiciona os números após o DDD
+          const remainingDigits = digits.substring(2);
+          
+          if (remainingDigits.length >= 8) {
+            // Identifica se é fixo (8 dígitos) ou celular (9 dígitos)
+            const isCelular = remainingDigits.length >= 9;
+            const splitPoint = isCelular ? 5 : 4;
+            formattedValue += `${remainingDigits.substring(0, splitPoint)}-${remainingDigits.substring(splitPoint, splitPoint + 4)}`;
+          } else {
+            formattedValue += remainingDigits;
+          }
+        }
+      }
+      
+      setFormData({
+        ...formData,
+        [name]: formattedValue
       });
     }
   };
@@ -211,56 +219,19 @@ const CadastroDentista = () => {
       }
 
       // Se chegou aqui, o CRO e email são únicos
-      // Agora verifica a clínica se houver nova
-      let novaClinica = null;
-      
-      if (showNovaClinica) {
-        try {
-          // Verifica se o CNPJ já existe
-          const cnpjResponse = await axios.get(`http://localhost:8080/clinicas/cnpj/${formData.novaClinica.cnpj}`).catch(() => ({ data: null }));
-          
-          if (cnpjResponse.data) {
-            setErrors({ 'novaClinica.cnpj': 'CNPJ já cadastrado' });
-            setLoading(false);
-            return;
-          }
-          
-          // Se o CNPJ não existe, tenta cadastrar a clínica
-          const clinicaResponse = await axios.post('http://localhost:8080/clinicas', formData.novaClinica);
-          novaClinica = clinicaResponse.data;
-        } catch (error) {
-          if (error.response?.data === "CNPJ já cadastrado") {
-            setErrors({
-              ...errors,
-              'novaClinica.cnpj': 'CNPJ já cadastrado'
-            });
-          } else {
-            setErrors({ 'novaClinica.cnpj': 'CNPJ já cadastrado' });
-          }
-          setLoading(false);
-          return;
-        }
-      }
-
-      // Se chegou aqui, tanto o dentista quanto a clínica estão ok
       // Agora tenta cadastrar o dentista
       const dentistaData = {
         nome: formData.nome,
         cro: formData.cro,
         telefone: formData.telefone,
         email: formData.email,
-        clinicas: novaClinica 
-          ? [...formData.clinicasAssociadas, novaClinica]
-          : formData.clinicasAssociadas,
+        clinicas: formData.clinicasAssociadas,
         isActive: formData.isActive
       };
 
       await axios.post('http://localhost:8080/dentistas', dentistaData);
       
-      setSuccess(true);
-      setTimeout(() => {
-        navigate('/dentista', { state: { refresh: true } });
-      }, 2000);
+      navigate('/dentista', { state: { success: 'Dentista cadastrado com sucesso!' } });
     } catch (error) {
       console.error('Erro ao cadastrar dentista:', error);
       
@@ -285,6 +256,15 @@ const CadastroDentista = () => {
 
   const handleVoltar = () => {
     navigate('/dentista');
+  };
+
+  const handleClinicaSuccess = (novaClinica) => {
+    setClinicas([...clinicas, novaClinica]);
+    setFormData({
+      ...formData,
+      clinicasAssociadas: [...formData.clinicasAssociadas, novaClinica]
+    });
+    setShowModalClinica(false);
   };
 
   return (
@@ -321,7 +301,7 @@ const CadastroDentista = () => {
         
         <form onSubmit={handleSubmit} className="dentista-form">
           <div className="form-group">
-            <label htmlFor="nome">Nome Completo</label>
+            <label htmlFor="nome" className="required">Nome Completo</label>
             <input
               type="text"
               id="nome"
@@ -336,7 +316,7 @@ const CadastroDentista = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="cro">CRO</label>
+            <label htmlFor="cro" className="required">CRO</label>
             <input
               type="text"
               id="cro"
@@ -352,7 +332,7 @@ const CadastroDentista = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email" className="required">Email</label>
             <input
               type="email"
               id="email"
@@ -367,13 +347,14 @@ const CadastroDentista = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="telefone">Telefone</label>
+            <label htmlFor="telefone" className="required">Telefone</label>
             <input
               type="tel"
               id="telefone"
               name="telefone"
               value={formData.telefone}
               onChange={handleChange}
+              onBlur={handleBlur}
               className={errors.telefone ? 'input-error' : ''}
               placeholder="(00) 00000-0000"
               required
@@ -422,7 +403,6 @@ const CadastroDentista = () => {
                     }
                   }}
                   className={errors.clinicaId ? 'input-error' : ''}
-                  disabled={showNovaClinica}
                 >
                   <option value="">Selecione uma clínica</option>
                   {clinicas
@@ -436,48 +416,14 @@ const CadastroDentista = () => {
                 <button
                   type="button"
                   className="toggle-nova-clinica"
-                  onClick={() => setShowNovaClinica(!showNovaClinica)}
+                  onClick={() => setShowModalClinica(true)}
                 >
-                  {showNovaClinica ? '←' : '+'}
+                  +
                 </button>
               </div>
             </div>
             {errors.clinicaId && <span className="error-text">{errors.clinicaId}</span>}
           </div>
-
-          {showNovaClinica && (
-            <>
-              <div className="form-group">
-                <label htmlFor="novaClinica.nome">Nome da Clínica</label>
-                <input
-                  type="text"
-                  id="novaClinica.nome"
-                  name="novaClinica.nome"
-                  value={formData.novaClinica.nome}
-                  onChange={handleChange}
-                  className={errors['novaClinica.nome'] ? 'input-error' : ''}
-                  placeholder="Digite o nome da clínica"
-                  required
-                />
-                {errors['novaClinica.nome'] && <span className="error-text">{errors['novaClinica.nome']}</span>}
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="novaClinica.cnpj">CNPJ</label>
-                <input
-                  type="text"
-                  id="novaClinica.cnpj"
-                  name="novaClinica.cnpj"
-                  value={formData.novaClinica.cnpj}
-                  onChange={handleChange}
-                  className={errors['novaClinica.cnpj'] ? 'input-error' : ''}
-                  placeholder="XX.XXX.XXX/YYYY-ZZ"
-                  required
-                />
-                {errors['novaClinica.cnpj'] && <span className="error-text">{errors['novaClinica.cnpj']}</span>}
-              </div>
-            </>
-          )}
           
           <div className="form-actions">
             <button
@@ -497,6 +443,12 @@ const CadastroDentista = () => {
           </div>
         </form>
       </div>
+
+      <ModalCadastroClinica
+        isOpen={showModalClinica}
+        onClose={() => setShowModalClinica(false)}
+        onSuccess={handleClinicaSuccess}
+      />
     </div>
   );
 };

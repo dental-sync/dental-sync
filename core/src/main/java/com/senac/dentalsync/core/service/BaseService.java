@@ -30,7 +30,8 @@ public abstract class BaseService<T extends BaseEntity, ID> {
     }
 
     public List<T> findAll() {
-        return getRepository().findAll();
+        List<T> list = getRepository().findAll();
+        return list;
     }
 
     public Page<T> findAll(Pageable pageable) {

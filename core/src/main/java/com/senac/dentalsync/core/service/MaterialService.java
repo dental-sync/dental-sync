@@ -25,6 +25,15 @@ public class MaterialService extends BaseService<Material, Long> {
     public Usuario getUsuarioLogado() {
         return usuarioService.getUsuarioLogado();
     }
+
+    public Material updateStatus(Long id, Boolean status) {
+        Material material = materialRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Material não encontrado"));
+        material.setIsActive(status);
+        return materialRepository.save(material);
+    }
     
-    
+    public void delete(Long id) {
+        materialRepository.deleteById(id);
+    }
 }

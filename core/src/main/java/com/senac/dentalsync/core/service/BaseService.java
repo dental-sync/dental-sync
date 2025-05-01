@@ -47,20 +47,24 @@ public abstract class BaseService<T extends BaseEntity, ID> {
         if (entity.isPresent()) {
             T entityToUpdate = entity.get();
             
-            //Garantir que todos os campos necessários estão preenchidos
-            if (entityToUpdate.getCreatedAt() == null) {
-                entityToUpdate.setCreatedAt(LocalDateTime.now());
-            }
+            // Para softdelete, descomentar o código abaixo.
             
-            if (entityToUpdate.getCreatedBy() == null) {
-                entityToUpdate.setCreatedBy(getUsuarioLogado());
-            }
+            // //Garantir que todos os campos necessários estão preenchidos
+            // if (entityToUpdate.getCreatedAt() == null) {
+            //     entityToUpdate.setCreatedAt(LocalDateTime.now());
+            // }
             
-            //Atualizar campos de exclusão lógica
-            entityToUpdate.setIsActive(false);
-            entityToUpdate.setUpdatedAt(LocalDateTime.now());
-            entityToUpdate.setUpdatedBy(getUsuarioLogado());
-            getRepository().save(entityToUpdate);
+            // if (entityToUpdate.getCreatedBy() == null) {
+            //     entityToUpdate.setCreatedBy(getUsuarioLogado());
+            // }
+            
+            // //Atualizar campos de exclusão lógica
+            // entityToUpdate.setIsActive(false);
+            // entityToUpdate.setUpdatedAt(LocalDateTime.now());
+            // entityToUpdate.setUpdatedBy(getUsuarioLogado());
+            // getRepository().save(entityToUpdate);
+
+            getRepository().delete(entityToUpdate);
         }
     }
 } 

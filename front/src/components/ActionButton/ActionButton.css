@@ -13,6 +13,8 @@
   height: 36px;
   gap: 8px;
   transition: all 0.2s ease;
+  position: relative;
+  z-index: 10;
 }
 
 .action-button svg {
@@ -28,11 +30,23 @@
   background-color: #0070D6;
   color: white;
   border-color: #0070D6;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  z-index: 20;
 }
 
 .action-button.primary:hover {
   background-color: #005bb9;
   border-color: #005bb9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-button.primary:active {
+  background-color: #004c99;
+  border-color: #004c99;
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .action-button.active {
@@ -52,6 +66,7 @@
   color: white !important;
   border-color: #0070D6 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: 20;
 }
 
 .action-button.novo-button:hover {

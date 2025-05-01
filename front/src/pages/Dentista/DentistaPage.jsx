@@ -268,7 +268,7 @@ const DentistaPage = () => {
           </div>
           
           <ExportDropdown 
-            data={dentistasFiltrados}
+            data={sortedDentistas}
             headers={['ID', 'Nome', 'CRO', 'Email', 'Telefone', 'Status']}
             fields={['id', 'nome', 'cro', 'email', 'telefone', 'isActive']}
             filename="dentistas"

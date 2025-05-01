@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ModalCadastroClinica.css';
 
 const ModalCadastroClinica = ({ isOpen, onClose, onSuccess }) => {
@@ -8,6 +8,17 @@ const ModalCadastroClinica = ({ isOpen, onClose, onSuccess }) => {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  // Limpa os campos quando o modal é fechado
+  useEffect(() => {
+    if (!isOpen) {
+      setFormData({
+        nome: '',
+        cnpj: ''
+      });
+      setErrors({});
+    }
+  }, [isOpen]);
 
   const validateCNPJ = (cnpj) => {
     // Remove caracteres não numéricos
@@ -172,6 +183,7 @@ const ModalCadastroClinica = ({ isOpen, onClose, onSuccess }) => {
               value={formData.nome}
               onChange={handleChange}
               className={errors.nome ? 'input-error' : ''}
+              placeholder="Digite o nome da clínica"
             />
           </div>
           

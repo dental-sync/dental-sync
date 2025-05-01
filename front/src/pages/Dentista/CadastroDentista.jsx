@@ -264,6 +264,7 @@ const CadastroDentista = () => {
       ...formData,
       clinicasAssociadas: [...formData.clinicasAssociadas, novaClinica]
     });
+    setShowModalClinica(false);
   };
 
   return (

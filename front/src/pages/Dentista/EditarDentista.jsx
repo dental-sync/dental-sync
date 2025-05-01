@@ -285,6 +285,7 @@ const EditarDentista = () => {
       ...formData,
       clinicasAssociadas: [...formData.clinicasAssociadas, novaClinica]
     });
+    setShowModalClinica(false);
   };
 
   if (loading) {

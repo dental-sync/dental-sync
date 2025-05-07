@@ -115,12 +115,12 @@ const PacienteActionMenu = ({ pacienteId, pacienteStatus, onPacienteDeleted, onS
         onPacienteDeleted(pacienteId);
       }
       
-      // Mensagem de sucesso usando toast
       toast.success('Paciente excluído com sucesso!');
+      
     } catch (error) {
       console.error('Erro ao excluir paciente:', error.response?.data || error.message);
       
-      // Exibir mensagem de erro específica se disponível
+      // Exibir mensagem de erro
       const errorMessage = error.response?.data?.message || 'Erro ao excluir paciente. Tente novamente.';
       toast.error(errorMessage);
     } finally {
@@ -146,7 +146,9 @@ const PacienteActionMenu = ({ pacienteId, pacienteStatus, onPacienteDeleted, onS
         <ul>
           <li onClick={handleVerHistorico}>Ver histórico</li>
           <li onClick={handleEditar}>Editar</li>
-          <li onClick={handleExcluir} className="delete-option">Excluir</li>
+          {!isActive && (
+            <li onClick={handleExcluir} className="delete-option">Excluir</li>
+          )}
         </ul>
       </div>
     );

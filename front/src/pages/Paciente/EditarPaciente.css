@@ -1,19 +1,20 @@
-.editar-paciente-page {
-  padding: 10px;
-  max-width: 800px;
-  margin: 0 auto;
+.editar-paciente-container {
+  padding: 20px;
 }
 
-.paciente-page {
+.editar-paciente-page {
   padding: 20px;
-  min-height: 100vh;
-  background-color: #f5f5f5;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
 }
 
 .back-navigation {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 30px;
 }
 
 .back-button {
@@ -32,9 +33,10 @@
 }
 
 .page-title {
-  font-size: 24px;
+  font-size: 32px;
   color: #333;
   margin: 0;
+  font-weight: 600;
 }
 
 .success-message {
@@ -47,97 +49,213 @@
 }
 
 .error-message {
-  padding: 12px 16px;
-  background-color: #fde8e8;
-  border: 1px solid #f5b7b7;
-  border-radius: 6px;
-  color: #d32f2f;
+  background: #e74c3c;
+  color: white;
+  padding: 15px;
+  border-radius: 4px;
   margin-bottom: 20px;
+  text-align: center;
+  position: relative;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-message::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background-color: #c0392b;
+  border-radius: 4px 0 0 4px;
 }
 
 .paciente-form {
   background: white;
-  padding: 15px;
+  padding: 40px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex: 1;
+}
+
+.form-row {
+  margin-bottom: 20px;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 25px;
+  position: relative;
+  min-height: 85px;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-weight: 500;
   color: #333;
+  font-size: 16px;
 }
 
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: 10px;
+  padding: 14px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 16px;
   transition: border-color 0.3s;
+  background-color: #f8f9fa;
 }
 
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
   border-color: #4a90e2;
+  background-color: white;
 }
 
-.loading {
+.form-group input::placeholder {
+  color: #999;
+}
+
+.error-text {
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: 5px;
+  display: block;
+}
+
+.input-error {
+  border-color: #e74c3c !important;
+}
+
+/* Status toggle styles */
+.status-group {
+  margin-bottom: 30px;
+}
+
+.status-options {
   display: flex;
-  justify-content: center;
+  gap: 15px;
+}
+
+.status-option {
+  display: flex;
   align-items: center;
-  height: 200px;
-  font-size: 18px;
-  color: #666;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.status-option input {
+  margin-right: 8px;
+  width: auto;
+}
+
+.status-option.active {
+  background-color: #f8f9fa;
+  border-color: #4a90e2;
+}
+
+.status-text {
+  font-weight: 500;
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 15px;
-  margin-top: 30px;
+  margin-top: 40px;
 }
 
-.btn-cancelar {
-  padding: 10px 20px;
-  background: #f0f0f0;
+.form-button {
+  padding: 12px 20px;
   border: none;
   border-radius: 4px;
-  cursor: pointer;
   font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.form-button.secondary {
+  background-color: #f5f5f5;
   color: #333;
-  transition: background-color 0.3s;
 }
 
-.btn-cancelar:hover {
-  background: #e0e0e0;
+.form-button.secondary:hover {
+  background-color: #e1e1e1;
 }
 
-.btn-salvar {
-  padding: 10px 20px;
-  background: #4a90e2;
+.form-button.primary {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.form-button.primary:hover {
+  background-color: #3a80d2;
+}
+
+.form-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status-toggle-button {
+  padding: 12px 20px;
   border: none;
   border-radius: 4px;
-  cursor: pointer;
   font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.status-toggle-button.active {
+  background-color: #e74c3c;
   color: white;
-  transition: background-color 0.3s;
 }
 
-.btn-salvar:hover {
-  background: #357abd;
+.status-toggle-button.active:hover {
+  background-color: #c0392b;
 }
 
-.btn-salvar:disabled {
-  background: #a0c4f0;
+.status-toggle-button.inactive {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.status-toggle-button.inactive:hover {
+  background-color: #27ae60;
+}
+
+.status-toggle-button:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 18px;
+  color: #333;
 }
 
 @media (max-width: 768px) {
@@ -146,14 +264,14 @@
   }
   
   .paciente-form {
-    padding: 15px;
+    padding: 20px;
   }
   
   .form-actions {
     flex-direction: column;
   }
   
-  .btn-salvar, .btn-cancelar {
+  .form-button, .status-toggle-button {
     width: 100%;
   }
 }

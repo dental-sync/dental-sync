@@ -8,7 +8,7 @@
 
 body {
   font-family: 'Inter', 'Segoe UI', 'Roboto', Arial, sans-serif;
-  color: var(--sidebar-text-color);
+  color: var(--text-color);
   background-color: #f5f7fa;
 }
 
@@ -27,12 +27,14 @@ body {
   flex: 1;
   margin-left: var(--sidebar-width);
   overflow-y: auto;
-  background-color: white;
+  background-color: var(--background-color);
+  position: relative;
+  z-index: 1;
 }
 
 h1 {
   font-size: 24px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-color);
   margin: 0;
 } 

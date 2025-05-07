@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.senac.dentalsync.core.persistency.model.Paciente;
 import com.senac.dentalsync.core.service.BaseService;
 import com.senac.dentalsync.core.service.PacienteService;
+
+import jakarta.validation.Valid;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,21 +32,21 @@ public class PacienteController extends BaseController<Paciente, Long> {
     }
     
     @GetMapping("/email/{email}")
-    public ResponseEntity<Paciente> findByEmail(@PathVariable String email) {
+    public ResponseEntity<Paciente> findByEmail(@PathVariable @Valid String email) {
         return pacienteService.findByEmail(email)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
     
     @GetMapping("/nome/{nome}")
-    public ResponseEntity<Paciente> findByNome(@PathVariable String nome) {
+    public ResponseEntity<Paciente> findByNome(@PathVariable @Valid String nome) {
         return pacienteService.findByNome(nome)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/telefone/{telefone}")
-    public ResponseEntity<Paciente> findByTelefone(@PathVariable String telefone) {
+    public ResponseEntity<Paciente> findByTelefone(@PathVariable @Valid String telefone) {
         return pacienteService.findByTelefone(telefone)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

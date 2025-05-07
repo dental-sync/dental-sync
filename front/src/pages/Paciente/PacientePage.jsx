@@ -1,48 +1,44 @@
 //importa funções do React e bibliotecas externas
 import React, { useState, useEffect, useRef } from 'react';
 import './PacientePage.css'; //estilo(style [css]) específico da página
-import SearchBar from '../../../components/SearchBar/SearchBar'; //barra de busca personalizada (SearchBar [componente])
-import ActionButton from '../../../components/ActionButton/ActionButton'; //botões com ícones (ActionButton [componente])
-import PacienteTable from '../../../components/PacienteTable/PacienteTable'; //tabela de pacientes (PacienteTable [componente])
-import NotificationBell from '../../../components/NotificationBell/NotificationBell'; //sininho de notificações (NotificationBell [componente])
-import ExportDropdown from '../../../components/ExportDropdown/ExportDropdown'; //componente de exportação de dados
+import SearchBar from '../../components/SearchBar/SearchBar'; //barra de busca personalizada (SearchBar [componente])
+import ActionButton from '../../components/ActionButton/ActionButton'; //botões com ícones (ActionButton [componente])
+import PacienteTable from '../../components/PacienteTable/PacienteTable'; //tabela de pacientes (PacienteTable [componente])
+import NotificationBell from '../../components/NotificationBell/NotificationBell'; //sininho de notificações (NotificationBell [componente])
+import ExportDropdown from '../../components/ExportDropdown/ExportDropdown'; //componente de exportação de dados
 import { useNavigate, useLocation } from 'react-router-dom'; //navegação e controle de rota (useNavigate [hook], useLocation [hook])
 import axios from 'axios'; //para fazer requisições HTTP (axios [biblioteca]) 
-
+import { toast } from 'react-toastify';
 
 const PacientePage = () => {
-  //Estado para busca textual
+  
   const [searchQuery, setSearchQuery] = useState('');
 
-  //Lista de pacientes retornados pela API
+  
   const [pacientes, setPacientes] = useState([]);
 
-  //Tratamento de erro e carregamento
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  //carregar os filtros
+  
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
 
-  //Filtros aplicados na tabela
+  
   const [filtros, setFiltros] = useState({
-    status: 'todos'
+    isActive: 'todos'
   });
 
-  //Controle de quando a lista deve ser atualizada
   const [refreshData, setRefreshData] = useState(0);
-
-  //Ref para detectar clique fora do filtro
+  
   const filterRef = useRef(null);
 
-  //Hook para navegação
   const navigate = useNavigate();
 
-  //Hook para acesso ao estado de navegação
+  
   const location = useLocation();
   
-  //Buscar lista de pacientes da API
+ 
   useEffect(() => {
     const fetchPacientes = async () => {
       try {
@@ -52,25 +48,49 @@ const PacientePage = () => {
           console.log('Buscando dados de pacientes da API...');
           const response = await axios.get('http://localhost:8080/paciente');
           
-          //Se a chamada for bem-sucedida, usar os dados da API (SÓ QUANDO FOR BEM-SUCEDIDA)
-          const pacientesFormatados = response.data.map(paciente => ({
-            id: paciente.id,
-            nome: paciente.nome,
-            telefone: paciente.telefone || '-',
-            email: paciente.email || '-',
-            dataNascimento: paciente.dataNascimento ? new Date(paciente.dataNascimento).toLocaleDateString('pt-BR') : '-',
-            ultimoServico: paciente.ultimoPedido ? new Date(paciente.ultimoPedido).toLocaleDateString('pt-BR') : '-',
-            status: typeof paciente.isActive === 'boolean' ? paciente.isActive : 
-                   paciente.isActive === true || paciente.isActive === 'true' || paciente.isActive === 'ATIVO'
-          }));
+          
+          const pacientesFormatados = response.data.map(paciente => {
+            // Para garantir que não haja problemas com fuso horário, vamos processar manualmente a data
+            let dataFormatada = '-';
+            if (paciente.dataNascimento) {
+              // A data vem no formato ISO do backend (YYYY-MM-DD)
+              const [ano, mes, dia] = paciente.dataNascimento.split('-');
+              dataFormatada = `${dia}/${mes}/${ano}`;
+            }
+            
+            let ultimoServicoFormatado = '-';
+            if (paciente.ultimoPedido) {
+              const [ano, mes, dia] = paciente.ultimoPedido.split('-');
+              ultimoServicoFormatado = `${dia}/${mes}/${ano}`;
+            }
+            
+            return {
+              id: paciente.id,
+              nome: paciente.nome,
+              telefone: paciente.telefone || '-',
+              email: paciente.email || '-',
+              dataNascimento: dataFormatada,
+              ultimoServico: ultimoServicoFormatado,
+              isActive: paciente.isActive ? 'ATIVO' : 'INATIVO'
+            };
+          });
           
           setPacientes(pacientesFormatados);
           console.log('Dados de pacientes recebidos:', pacientesFormatados);
         } catch (apiErr) {
           console.error('Não foi possível acessar a API:', apiErr);
-          // Inicializar com array vazio em caso de erro
+         
           setPacientes([]);
           setError('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.');
+          
+          toast.error('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.', {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: false
+          });
         }
         
         setLoading(false);
@@ -79,21 +99,49 @@ const PacientePage = () => {
         setPacientes([]);
         setLoading(false);
         setError('Ocorreu um erro inesperado. Tente novamente mais tarde.');
+        
+        toast.error('Ocorreu um erro inesperado. Tente novamente mais tarde.', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false
+        });
       }
     };
     
     fetchPacientes();
   }, [refreshData]);
   
-  //Verificar se há parâmetro de atualização na URL
+ 
   useEffect(() => {
-    
-    if (location.state && location.state.refresh) {
-      setRefreshData(prev => prev + 1);
+    if (location.state && location.state.success) {
+      // Limpa o estado imediatamente para evitar que o toast apareça novamente
+      const successMessage = location.state.success;
+      const shouldRefresh = location.state.refresh;
+      
+      // Limpa o estado ANTES de mostrar o toast
+      window.history.replaceState({}, document.title);
+      
+      // Usa um ID único para o toast para evitar duplicação
+      toast.success(successMessage, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        toastId: `success-${Date.now()}`
+      });
+      
+      // Se é necessário atualizar os dados, fazemos após limpar o estado
+      if (shouldRefresh) {
+        setRefreshData(prev => prev + 1);
+      }
     }
-  }, [location.state]);
-
-  //Esconder o filtro ao clicar fora dele
+  }, [location]);
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (filterRef.current && !filterRef.current.contains(event.target)) {
@@ -107,33 +155,38 @@ const PacientePage = () => {
     };
   }, []);
 
-  //Lidar com a exclusão de um paciente
   const handlePacienteDeleted = (pacienteId) => {
-   
-
+    // Primeiro, remover o paciente do estado local para atualização imediata da UI
     setPacientes(prevPacientes => 
       prevPacientes.filter(paciente => paciente.id !== pacienteId)
     );
     
-    //Forçar uma nova busca de dados do servidor após um curto atraso
-    //Isso garantirá que a lista esteja sincronizada com o banco de dados
-    setTimeout(() => {
-      setRefreshData(prev => prev + 1);
-    }, 1000);
+    // Forçar um refresh dos dados para sincronizar com o banco
+    setRefreshData(prev => prev + 1);
   };
 
  
+  const handleStatusChange = (pacienteId, newStatus) => {
+    // Atualizar o status do paciente na lista
+    if (newStatus !== null) {
+      setPacientes(prevPacientes =>
+        prevPacientes.map(paciente =>
+          paciente.id === pacienteId
+            ? { ...paciente, isActive: newStatus }
+            : paciente
+        )
+      );
+    }
+  };
+ 
   const pacientesFiltrados = pacientes
     .filter(paciente => {
-      //Aplicar filtros de status
-      if (filtros.status !== 'todos') {
-        const statusValue = filtros.status === 'true';
-        if (paciente.status !== statusValue) {
-          return false;
-        }
+      
+      if (filtros.isActive !== 'todos' && paciente.isActive !== filtros.isActive) {
+        return false;
       }
       
-      //Aplicar busca textual
+      
       if (searchQuery) {
         return (
           paciente.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -152,12 +205,12 @@ const PacientePage = () => {
 
   const toggleFiltro = () => {
     setIsFilterOpen(!isFilterOpen);
-    setIsExportOpen(false); // Fechar o outro dropdown
+    setIsExportOpen(false); //Fechar o outro dropdown
   };
 
   const toggleExport = () => {
     setIsExportOpen(!isExportOpen);
-    setIsFilterOpen(false); // Fechar o outro dropdown
+    setIsFilterOpen(false); //Fechar o outro dropdown
   };
 
   const handleCloseExport = () => {
@@ -174,7 +227,7 @@ const PacientePage = () => {
 
   const handleLimparFiltros = () => {
     setFiltros({
-      status: 'todos'
+      isActive: 'todos'
     });
   };
 
@@ -184,31 +237,6 @@ const PacientePage = () => {
   
   const handleRefresh = () => {
     setRefreshData(prev => prev + 1);
-  };
-
-  //Filtrar pacientes de acordo com os filtros aplicados
-  const filtrarPacientes = () => {
-    if (!pacientes || pacientes.length === 0) return [];
-    
-    let resultado = [...pacientes];
-    
-    //Aplicar filtro de status
-    if (filtros.status !== 'todos') {
-      const statusValue = filtros.status === 'true';
-      resultado = resultado.filter(paciente => paciente.status === statusValue);
-    }
-    
-    //Aplicar filtro de busca textual
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      resultado = resultado.filter(paciente => 
-        paciente.nome?.toLowerCase().includes(query) ||
-        paciente.email?.toLowerCase().includes(query) ||
-        paciente.telefone?.toLowerCase().includes(query)
-      );
-    }
-    
-    return resultado;
   };
 
   if (loading) {
@@ -231,31 +259,33 @@ const PacientePage = () => {
               label="Filtrar" 
               icon="filter"
               onClick={toggleFiltro} 
-              active={isFilterOpen || filtros.status !== 'todos'}
+              active={isFilterOpen || filtros.isActive !== 'todos'}
             />
             
             {isFilterOpen && (
               <div className="filter-dropdown">
                 <h3>Filtros</h3>
-                
                 <div className="filter-group">
-                  <label htmlFor="status">Status</label>
-                  <select 
-                    id="status" 
-                    name="status" 
-                    value={filtros.status} 
+                  <label htmlFor="isActive">Status</label>
+                  <select
+                    id="isActive"
+                    name="isActive"
+                    value={filtros.isActive}
                     onChange={handleFiltroChange}
                     className="filter-select"
                   >
                     <option value="todos">Todos</option>
-                    <option value="true">Ativo</option>
-                    <option value="false">Inativo</option>
+                    <option value="ATIVO">Ativo</option>
+                    <option value="INATIVO">Inativo</option>
                   </select>
                 </div>
-                
                 <div className="filter-actions">
-                  <button onClick={handleLimparFiltros} className="clear-filter-button">
-                    Limpar filtros
+                  <button
+                    type="button"
+                    className="clear-filter-button"
+                    onClick={handleLimparFiltros}
+                  >
+                    Limpar Filtros
                   </button>
                 </div>
               </div>
@@ -263,12 +293,9 @@ const PacientePage = () => {
           </div>
           
           <ExportDropdown 
-            data={pacientesFiltrados.map(paciente => ({
-              ...paciente,
-              status: paciente.status === true ? 'ATIVO' : 'INATIVO'
-            }))}
-            headers={['ID', 'Nome', 'Telefone', 'Email', 'Data de Nascimento', 'Último Serviço', 'Status']}
-            fields={['id', 'nome', 'telefone', 'email', 'dataNascimento', 'ultimoServico', 'status']}
+            data={pacientesFiltrados}
+            headers={['ID', 'Nome', 'Email', 'Telefone', 'Data de Nascimento', 'Último Serviço', 'Status']}
+            fields={['id', 'nome', 'email', 'telefone', 'dataNascimento', 'ultimoServico', 'isActive']}
             filename="pacientes"
             isOpen={isExportOpen}
             toggleExport={toggleExport}
@@ -277,22 +304,13 @@ const PacientePage = () => {
         </div>
       </div>
       
-      {error && (
-        <div className="error-message">
-          {error}
-          <button onClick={handleRefresh} className="refresh-button">
-            Tentar novamente
-          </button>
-        </div>
-      )}
-      
       <div className="search-container">
         <SearchBar 
-          placeholder="Buscar por nome, e-mail ou telefone..." 
+          placeholder="Buscar por nome, email, telefone..."
           onSearch={handleSearch} 
         />
-        <ActionButton 
-          label="Novo" 
+        <ActionButton
+          label="Novo"
           variant="primary"
           onClick={handleNovo}
         />
@@ -304,7 +322,7 @@ const PacientePage = () => {
             Nenhum paciente encontrado para a busca "{searchQuery}".
           </div>
         )}
-        {!searchQuery && pacientesFiltrados.length === 0 && filtros.status !== 'todos' ? (
+        {!searchQuery && pacientesFiltrados.length === 0 && filtros.isActive !== 'todos' ? (
           <div className="filter-info">
             Nenhum paciente encontrado com os filtros aplicados.
           </div>
@@ -312,6 +330,7 @@ const PacientePage = () => {
         <PacienteTable 
           pacientes={pacientesFiltrados} 
           onPacienteDeleted={handlePacienteDeleted}
+          onStatusChange={handleStatusChange}
         />
       </div>
     </div>

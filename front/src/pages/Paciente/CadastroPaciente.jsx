@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './CadastroPaciente.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const CadastroPaciente = () => {
   const navigate = useNavigate();
@@ -14,7 +15,6 @@ const CadastroPaciente = () => {
   
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,6 +40,14 @@ const CadastroPaciente = () => {
         ...formData,
         [name]: formattedValue
       });
+    } else if (name === "nome") {
+      // Remove todos os números do valor digitado
+      const lettersOnlyValue = value.replace(/\d/g, '');
+      
+      setFormData({
+        ...formData,
+        [name]: lettersOnlyValue
+      });
     } else {
       setFormData({
         ...formData,
@@ -59,28 +67,39 @@ const CadastroPaciente = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    //Validar campos obrigatórios
-    if (!formData.nome) newErrors.nome = 'Nome é obrigatório';
+    // Validar campos obrigatórios com trim para garantir que não haja espaços em branco
+    const nomeTrimmed = formData.nome.trim();
+    const emailTrimmed = formData.email.trim();
+    
+    if (!nomeTrimmed) newErrors.nome = 'Nome é obrigatório';
     // Verificar se o nome contém pelo menos um sobrenome
-    else if (!formData.nome.trim().includes(' ') || formData.nome.trim().split(' ').some(part => part.length === 0)) {
+    else if (!nomeTrimmed.includes(' ') || nomeTrimmed.split(' ').some(part => part.length === 0)) {
       newErrors.nome = 'Por favor, informe o nome e sobrenome';
     }
+    // Verificar se o nome contém números
+    else if (/\d/.test(nomeTrimmed)) {
+      newErrors.nome = 'O nome não pode conter números';
+    }
     
-    if (!formData.email) newErrors.email = 'Email é obrigatório';
+    if (!emailTrimmed) newErrors.email = 'Email é obrigatório';
     if (!formData.telefone) newErrors.telefone = 'Telefone é obrigatório';
     
     //Validar formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) {
+    if (emailTrimmed && !emailRegex.test(emailTrimmed)) {
       newErrors.email = 'Formato de email inválido';
     }
     
     //Validar data de nascimento (não pode ser no futuro)
     if (formData.dataNascimento) {
-      const dataNascimento = new Date(formData.dataNascimento);
-      const today = new Date();
+      // Comparar diretamente a string de data com a data atual formatada em ISO
+      const hoje = new Date();
+      const anoHoje = hoje.getFullYear();
+      const mesHoje = String(hoje.getMonth() + 1).padStart(2, '0');
+      const diaHoje = String(hoje.getDate()).padStart(2, '0');
+      const dataHojeISO = `${anoHoje}-${mesHoje}-${diaHoje}`;
       
-      if (dataNascimento > today) {
+      if (formData.dataNascimento > dataHojeISO) {
         newErrors.dataNascimento = 'A data de nascimento não pode ser no futuro';
       }
     }
@@ -92,19 +111,19 @@ const CadastroPaciente = () => {
   const formatDateForAPI = (dateString) => {
     if (!dateString) return null;
     
-    // Criar a data a partir da string, que já estará no formato YYYY-MM-DD do input
-    // Isso garante que a data seja interpretada no fuso horário local
-    const [year, month, day] = dateString.split('-');
-    
-    // Horário específico para garantir que date seja interpretado como horário em Brasília
-    const date = new Date(year, month - 1, day, 12, 0, 0);
-    
-    // Formatar como YYYY-MM-DD para enviar à API
-    return `${year}-${month}-${day}`;
+    // Retorna diretamente a string ISO do input de data HTML (yyyy-MM-dd)
+    return dateString;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Aplicar trim() no nome e email antes da validação
+    setFormData(prev => ({
+      ...prev,
+      nome: prev.nome.trim(),
+      email: prev.email.trim()
+    }));
     
     if (!validateForm()) {
       return;
@@ -114,21 +133,28 @@ const CadastroPaciente = () => {
     
     try {
       const pacienteData = {
-        nome: formData.nome,
-        email: formData.email,
+        nome: formData.nome.trim(),
+        email: formData.email.trim(),
         telefone: formData.telefone,
         dataNascimento: formatDateForAPI(formData.dataNascimento),
         isActive: true
       };
       
+      console.log('Data de nascimento original do input:', formData.dataNascimento);
+      console.log('Data de nascimento formatada para API:', pacienteData.dataNascimento);
       console.log('Enviando dados do paciente para API:', pacienteData);
       await axios.post('http://localhost:8080/paciente', pacienteData);
       
-      setSuccess(true);
-      setTimeout(() => {
-        //Navegação para a lista com sinal para atualizar
-        navigate('/paciente', { state: { refresh: true } });
-      }, 2000);
+      // Limpa qualquer estado de navegação existente
+      window.history.replaceState({}, document.title);
+      
+      // Navegar para a página de listagem com mensagem de sucesso e flag de refresh
+      navigate('/paciente', { 
+        state: { 
+          success: `Paciente cadastrado com sucesso!`,
+          refresh: true 
+        } 
+      });
     } catch (error) {
       console.error('Erro ao cadastrar paciente:', error);
       
@@ -141,12 +167,12 @@ const CadastroPaciente = () => {
           });
           setErrors(apiErrors);
         } else if (error.response.data.message) {
-          setErrors({ general: error.response.data.message });
+          toast.error(error.response.data.message);
         } else {
-          setErrors({ general: 'Ocorreu um erro ao cadastrar o paciente. Tente novamente.' });
+          toast.error('Ocorreu um erro ao cadastrar o paciente. Tente novamente.');
         }
       } else {
-        setErrors({ general: 'Erro de conexão. Verifique sua internet e tente novamente.' });
+        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
       }
     } finally {
       setLoading(false);
@@ -168,18 +194,6 @@ const CadastroPaciente = () => {
           </button>
           <h1 className="page-title">Cadastro de Paciente</h1>
         </div>
-        
-        {success && (
-          <div className="success-message">
-            Paciente cadastrado com sucesso!
-          </div>
-        )}
-        
-        {errors.general && (
-          <div className="error-message">
-            {errors.general}
-          </div>
-        )}
         
         <form onSubmit={handleSubmit} className="paciente-form">
           <div className="form-group">

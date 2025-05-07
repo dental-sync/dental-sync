@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './HistoricoPaciente.css';
-import NotificationBell from '../../../components/NotificationBell/NotificationBell';
+import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import axios from 'axios';
 
 const HistoricoPaciente = () => {

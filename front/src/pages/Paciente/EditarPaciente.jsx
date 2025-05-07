@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './EditarPaciente.css';
-import NotificationBell from '../../../components/NotificationBell/NotificationBell';
+import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const EditarPaciente = () => {
   const { id } = useParams();
@@ -15,10 +16,8 @@ const EditarPaciente = () => {
     isActive: true
   });
   const [loading, setLoading] = useState(true);
-  const [enviando, setEnviando] = useState(false);
-  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     const fetchPaciente = async () => {
@@ -27,21 +26,18 @@ const EditarPaciente = () => {
         const response = await axios.get(`http://localhost:8080/paciente/${id}`);
         console.log('Dados recebidos do servidor:', response.data);
         
-        // Verificar se isActive existe e processar adequadamente
+       
         const isActiveValue = typeof response.data.isActive === 'boolean' 
           ? response.data.isActive 
           : (response.data.isActive === 'true' || response.data.isActive === true);
         
-        // Formatar data de nascimento  
+        
         let dataNascimentoFormatada = '';
         if (response.data.dataNascimento) {
-          // Formato vindo da API pode variar, então tratamos isso
-          const data = new Date(response.data.dataNascimento);
-          const ano = data.getFullYear();
-          // getMonth() retorna 0-11, então adicionamos 1 para ter mês correto
-          const mes = String(data.getMonth() + 1).padStart(2, '0');
-          const dia = String(data.getDate()).padStart(2, '0');
-          dataNascimentoFormatada = `${ano}-${mes}-${dia}`;
+          // A data vem no formato ISO do backend, pronta para o input type="date"
+          dataNascimentoFormatada = response.data.dataNascimento;
+          console.log('Data recebida do backend:', response.data.dataNascimento);
+          console.log('Data formatada para o formulário:', dataNascimentoFormatada);
         }
           
         setFormData({
@@ -55,7 +51,7 @@ const EditarPaciente = () => {
         setLoading(false);
       } catch (err) {
         console.error('Erro ao buscar dados do paciente:', err);
-        setError('Não foi possível carregar os dados do paciente. Tente novamente mais tarde.');
+        toast.error('Não foi possível carregar os dados do paciente. Tente novamente mais tarde.');
         setLoading(false);
       }
     };
@@ -65,12 +61,27 @@ const EditarPaciente = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
     
-    // Limpar erro do campo quando o usuário digita
+    if (name === 'isActive') {
+      setFormData({
+        ...formData,
+        [name]: value === 'true'
+      });
+    } else if (name === 'nome') {
+      // Remove todos os números do valor digitado
+      const lettersOnlyValue = value.replace(/\d/g, '');
+      
+      setFormData({
+        ...formData,
+        [name]: lettersOnlyValue
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+    
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -81,30 +92,35 @@ const EditarPaciente = () => {
 
   const formatDateForAPI = (dateString) => {
     if (!dateString) return null;
-    return dateString; // Envia a data exatamente como está no formato YYYY-MM-DD
+    
+    // Retorna diretamente a string ISO do input de data HTML (yyyy-MM-dd)
+    return dateString;
   };
 
   const validateForm = () => {
     const newErrors = {};
     
-    // Validar nome completo
-    if (!formData.nome) {
+    // Validar campos obrigatórios com trim para garantir que não haja espaços em branco
+    const nomeTrimmed = formData.nome.trim();
+    const emailTrimmed = formData.email.trim();
+    
+    if (!nomeTrimmed) {
       newErrors.nome = 'Nome é obrigatório';
-    } else if (!formData.nome.trim().includes(' ') || formData.nome.trim().split(' ').some(part => part.length === 0)) {
+    } else if (!nomeTrimmed.includes(' ') || nomeTrimmed.split(' ').some(part => part.length === 0)) {
       newErrors.nome = 'Por favor, informe o nome e sobrenome';
+    } else if (/\d/.test(nomeTrimmed)) {
+      newErrors.nome = 'O nome não pode conter números';
     }
     
-    // Validar email
-    if (!formData.email) {
+    if (!emailTrimmed) {
       newErrors.email = 'Email é obrigatório';
     } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.email)) {
+      if (!emailRegex.test(emailTrimmed)) {
         newErrors.email = 'Formato de email inválido';
       }
     }
     
-    // Validar telefone
     if (!formData.telefone) {
       newErrors.telefone = 'Telefone é obrigatório';
     }
@@ -116,40 +132,54 @@ const EditarPaciente = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validar formulário antes de enviar
+    // Aplicar trim() no nome e email antes da validação
+    setFormData(prev => ({
+      ...prev,
+      nome: prev.nome.trim(),
+      email: prev.email.trim()
+    }));
+    
     if (!validateForm()) {
       return;
     }
     
-    setEnviando(true);
-    setError(null);
+    setSaving(true);
     
     try {
-      // Preparar os dados para enviar para o backend
+      // Preparar os dados para enviar para o backen
       const pacienteData = {
         ...formData,
+        nome: formData.nome.trim(),
+        email: formData.email.trim(),
         dataNascimento: formatDateForAPI(formData.dataNascimento)
       };
       
       // Certificar-se de que isActive é boolean
       pacienteData.isActive = Boolean(pacienteData.isActive);
       
+      console.log('Data de nascimento do formulário:', formData.dataNascimento);
+      console.log('Data de nascimento formatada para API:', pacienteData.dataNascimento);
       console.log('Enviando dados para a API:', pacienteData);
       
       // Enviar a atualização para a API
       const response = await axios.put(`http://localhost:8080/paciente/${id}`, pacienteData);
       console.log('Resposta da API:', response.data);
       
-      setSuccess(true);
-      setTimeout(() => {
-        // Navegação para a lista com sinal para atualizar
-        navigate('/paciente', { state: { refresh: true } });
-      }, 2000);
+      // Limpa qualquer estado de navegação existente
+      window.history.replaceState({}, document.title);
+      
+      // Navegar para a página de listagem com mensagem de sucesso
+      navigate('/paciente', { 
+        state: { 
+          success: `Paciente atualizado com sucesso!`,
+          refresh: true
+        } 
+      });
     } catch (err) {
       console.error('Erro ao atualizar paciente:', err);
-      setError('Ocorreu um erro ao salvar as alterações. Tente novamente.');
+      toast.error('Ocorreu um erro ao salvar as alterações. Tente novamente.');
     } finally {
-      setEnviando(false);
+      setSaving(false);
     }
   };
 
@@ -157,13 +187,30 @@ const EditarPaciente = () => {
     navigate('/paciente');
   };
 
-  const handleStatusChange = (e) => {
-    const value = e.target.value === 'true';
-    setFormData({
-      ...formData,
-      isActive: value,
-      status: value ? 'ATIVO' : 'INATIVO'
-    });
+  const handleToggleStatus = async () => {
+    try {
+      setSaving(true);
+      
+      const newStatus = !formData.isActive;
+      
+      
+      await axios.patch(`http://localhost:8080/paciente/${id}`, {
+        isActive: newStatus
+      });
+      
+      
+      setFormData({
+        ...formData,
+        isActive: newStatus
+      });
+      
+      toast.success(`Status atualizado com sucesso para ${newStatus ? 'Ativo' : 'Inativo'}`);
+    } catch (err) {
+      console.error('Erro ao atualizar status do paciente:', err);
+      toast.error('Ocorreu um erro ao atualizar o status. Tente novamente.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
@@ -171,7 +218,7 @@ const EditarPaciente = () => {
   }
 
   return (
-    <div className="paciente-page">
+    <div className="editar-paciente-container">
       <div className="editar-paciente-page">
         <div className="back-navigation">
           <button onClick={handleVoltar} className="back-button">
@@ -182,79 +229,97 @@ const EditarPaciente = () => {
           <h1 className="page-title">Editar Paciente</h1>
         </div>
         
-        {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">Paciente atualizado com sucesso!</div>}
-        
         <form onSubmit={handleSubmit} className="paciente-form">
-          <div className="form-group">
-            <label htmlFor="nome">Nome Completo</label>
-            <input
-              type="text"
-              id="nome"
-              name="nome"
-              value={formData.nome}
-              onChange={handleChange}
-              className={errors.nome ? 'input-error' : ''}
-            />
-            {errors.nome && <div className="error-text">{errors.nome}</div>}
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="nome">Nome Completo</label>
+              <input
+                type="text"
+                id="nome"
+                name="nome"
+                value={formData.nome}
+                onChange={handleChange}
+                className={errors.nome ? 'input-error' : ''}
+              />
+              {errors.nome && <div className="error-text">{errors.nome}</div>}
+            </div>
           </div>
           
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className={errors.email ? 'input-error' : ''}
-            />
-            {errors.email && <div className="error-text">{errors.email}</div>}
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={errors.email ? 'input-error' : ''}
+              />
+              {errors.email && <div className="error-text">{errors.email}</div>}
+            </div>
           </div>
           
-          <div className="form-group">
-            <label htmlFor="telefone">Telefone</label>
-            <input
-              type="tel"
-              id="telefone"
-              name="telefone"
-              value={formData.telefone}
-              onChange={handleChange}
-              className={errors.telefone ? 'input-error' : ''}
-            />
-            {errors.telefone && <div className="error-text">{errors.telefone}</div>}
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="telefone">Telefone</label>
+              <input
+                type="text"
+                id="telefone"
+                name="telefone"
+                value={formData.telefone}
+                onChange={handleChange}
+                className={errors.telefone ? 'input-error' : ''}
+              />
+              {errors.telefone && <div className="error-text">{errors.telefone}</div>}
+            </div>
           </div>
           
-          <div className="form-group">
-            <label htmlFor="dataNascimento">Data de Nascimento</label>
-            <input
-              type="date"
-              id="dataNascimento"
-              name="dataNascimento"
-              value={formData.dataNascimento}
-              onChange={handleChange}
-            />
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="dataNascimento">Data de Nascimento</label>
+              <input
+                type="date"
+                id="dataNascimento"
+                name="dataNascimento"
+                value={formData.dataNascimento}
+                onChange={handleChange}
+                className={errors.dataNascimento ? 'input-error' : ''}
+              />
+              {errors.dataNascimento && <div className="error-text">{errors.dataNascimento}</div>}
+            </div>
           </div>
           
-          <div className="form-group">
-            <label htmlFor="isActive">Status</label>
-            <select
-              id="isActive"
-              name="isActive"
-              value={formData.isActive.toString()}
-              onChange={handleStatusChange}
-            >
-              <option value="true">Ativo</option>
-              <option value="false">Inativo</option>
-            </select>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="isActive">Status</label>
+              <select
+                id="isActive"
+                name="isActive"
+                value={formData.isActive}
+                onChange={handleChange}
+              >
+                <option value={true}>Ativo</option>
+                <option value={false}>Inativo</option>
+              </select>
+            </div>
           </div>
           
           <div className="form-actions">
-            <button type="button" onClick={handleVoltar} className="btn-cancelar">
+            <button 
+              type="button" 
+              className="form-button secondary" 
+              onClick={handleVoltar}
+              disabled={saving}
+            >
               Cancelar
             </button>
-            <button type="submit" className="btn-salvar" disabled={enviando}>
-              {enviando ? 'Salvando...' : 'Salvar Alterações'}
+            <button 
+              type="submit" 
+              className="form-button primary" 
+              disabled={saving}
+            >
+              {saving ? 'Salvando...' : 'Salvar Alterações'}
             </button>
           </div>
         </form>

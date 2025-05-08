@@ -38,7 +38,9 @@ const PacientePage = () => {
   
   const location = useLocation();
   
- 
+  // Criando um ref para armazenar mensagens recentes e evitar duplicação de toasts
+  const recentMessages = useRef(new Set());
+
   useEffect(() => {
     const fetchPacientes = async () => {
       try {
@@ -115,30 +117,43 @@ const PacientePage = () => {
     fetchPacientes();
   }, [refreshData]);
   
- 
   useEffect(() => {
     if (location.state && location.state.success) {
-      // Limpa o estado imediatamente para evitar que o toast apareça novamente
       const successMessage = location.state.success;
       const shouldRefresh = location.state.refresh;
       
-      // Limpa o estado ANTES de mostrar o toast
+      // Limpa o state imediatamente
       window.history.replaceState({}, document.title);
       
-      // Usa um ID único para o toast para evitar duplicação
-      toast.success(successMessage, {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: false,
-        toastId: `success-${Date.now()}`
-      });
+      // Cria uma chave única para esta mensagem
+      const messageKey = `${successMessage}-${Date.now()}`;
       
-      // Se é necessário atualizar os dados, fazemos após limpar o estado
-      if (shouldRefresh) {
-        setRefreshData(prev => prev + 1);
+      // Verifica se esta mensagem já foi exibida recentemente (nos últimos 3 segundos)
+      if (!recentMessages.current.has(messageKey)) {
+        // Adiciona a mensagem ao cache
+        recentMessages.current.add(messageKey);
+        
+        // Exibe o toast
+        toast.success(successMessage, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+          // ID fixo para a mesma mensagem
+          toastId: successMessage
+        });
+        
+        // Remove a mensagem do cache após 3 segundos
+        setTimeout(() => {
+          recentMessages.current.delete(messageKey);
+        }, 3000);
+        
+        // Se é necessário atualizar os dados
+        if (shouldRefresh) {
+          setRefreshData(prev => prev + 1);
+        }
       }
     }
   }, [location]);
@@ -164,6 +179,18 @@ const PacientePage = () => {
     
     // Forçar um refresh dos dados para sincronizar com o banco
     setRefreshData(prev => prev + 1);
+    
+    // Limpa qualquer estado de navegação existente
+    window.history.replaceState({}, document.title);
+    
+    // Adicionamos uma mensagem de sucesso usando o padrão de state
+    navigate('', { 
+      state: { 
+        success: "Paciente excluído com sucesso!",
+        refresh: false // Não precisamos de refresh pois já fizemos acima
+      },
+      replace: true // Importante usar replace para não adicionar nova entrada no histórico
+    });
   };
 
  
@@ -177,6 +204,21 @@ const PacientePage = () => {
             : paciente
         )
       );
+      
+      // Exibir o toast de forma padronizada
+      const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
+      
+      // Limpa qualquer estado de navegação existente
+      window.history.replaceState({}, document.title);
+      
+      // Adicionamos uma mensagem de sucesso usando o padrão de state
+      navigate('', { 
+        state: { 
+          success: `Status atualizado com sucesso para ${statusText}`,
+          refresh: false // Não precisamos de refresh pois já atualizamos localmente
+        },
+        replace: true // Importante usar replace para não adicionar nova entrada no histórico
+      });
     }
   };
  

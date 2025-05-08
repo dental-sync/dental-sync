@@ -91,7 +91,6 @@ const PacienteActionMenu = ({ pacienteId, pacienteStatus, onPacienteDeleted, onS
         if (onStatusChange) {
           onStatusChange(pacienteId, newStatus ? 'ATIVO' : 'INATIVO');
         }
-        toast.success(`Status atualizado com sucesso para ${newStatus ? 'Ativo' : 'Inativo'}`);
       }
       
       setIsOpen(false);
@@ -114,8 +113,6 @@ const PacienteActionMenu = ({ pacienteId, pacienteStatus, onPacienteDeleted, onS
       if (onPacienteDeleted) {
         onPacienteDeleted(pacienteId);
       }
-      
-      toast.success('Paciente excluído com sucesso!');
       
     } catch (error) {
       console.error('Erro ao excluir paciente:', error.response?.data || error.message);

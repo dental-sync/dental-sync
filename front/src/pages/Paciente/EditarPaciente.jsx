@@ -67,6 +67,29 @@ const EditarPaciente = () => {
         ...formData,
         [name]: value === 'true'
       });
+    } else if (name === 'telefone') {
+      // Remove todos os caracteres não numéricos
+      const numericValue = value.replace(/\D/g, '');
+      
+      // Aplica a máscara conforme o usuário digita
+      let formattedValue = '';
+      
+      if (numericValue.length <= 2) {
+        formattedValue = numericValue.length ? `(${numericValue}` : '';
+      } else if (numericValue.length <= 6) {
+        formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(2)}`;
+      } else if (numericValue.length <= 10) {
+        // Telefone fixo: (XX) XXXX-XXXX
+        formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(2, 6)}-${numericValue.slice(6, 10)}`;
+      } else {
+        // Celular: (XX) XXXXX-XXXX (limitado a 11 dígitos)
+        formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(2, 7)}-${numericValue.slice(7, 11)}`;
+      }
+      
+      setFormData({
+        ...formData,
+        [name]: formattedValue
+      });
     } else if (name === 'nome') {
       // Remove todos os números do valor digitado
       const lettersOnlyValue = value.replace(/\d/g, '');
@@ -123,6 +146,20 @@ const EditarPaciente = () => {
     
     if (!formData.telefone) {
       newErrors.telefone = 'Telefone é obrigatório';
+    }
+    
+    //Validar data de nascimento (não pode ser no futuro)
+    if (formData.dataNascimento) {
+      // Comparar diretamente a string de data com a data atual formatada em ISO
+      const hoje = new Date();
+      const anoHoje = hoje.getFullYear();
+      const mesHoje = String(hoje.getMonth() + 1).padStart(2, '0');
+      const diaHoje = String(hoje.getDate()).padStart(2, '0');
+      const dataHojeISO = `${anoHoje}-${mesHoje}-${diaHoje}`;
+      
+      if (formData.dataNascimento > dataHojeISO) {
+        newErrors.dataNascimento = 'A data de nascimento não pode ser no futuro';
+      }
     }
     
     setErrors(newErrors);
@@ -264,7 +301,7 @@ const EditarPaciente = () => {
             <div className="form-group">
               <label htmlFor="telefone">Telefone</label>
               <input
-                type="text"
+                type="tel"
                 id="telefone"
                 name="telefone"
                 value={formData.telefone}

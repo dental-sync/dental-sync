@@ -89,7 +89,7 @@ const PacienteActionMenu = ({ pacienteId, pacienteStatus, onPacienteDeleted, onS
       if (response.status === 200) {
         // Notificar o componente pai sobre a mudança de status
         if (onStatusChange) {
-          onStatusChange(pacienteId, newStatus);
+          onStatusChange(pacienteId, newStatus ? 'ATIVO' : 'INATIVO');
         }
         toast.success(`Status atualizado com sucesso para ${newStatus ? 'Ativo' : 'Inativo'}`);
       }

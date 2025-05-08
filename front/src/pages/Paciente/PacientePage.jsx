@@ -71,7 +71,8 @@ const PacientePage = () => {
               email: paciente.email || '-',
               dataNascimento: dataFormatada,
               ultimoServico: ultimoServicoFormatado,
-              isActive: paciente.isActive ? 'ATIVO' : 'INATIVO'
+              isActive: paciente.isActive ? 'ATIVO' : 'INATIVO',
+              status: paciente.isActive ? 'ATIVO' : 'INATIVO'
             };
           });
           
@@ -172,7 +173,7 @@ const PacientePage = () => {
       setPacientes(prevPacientes =>
         prevPacientes.map(paciente =>
           paciente.id === pacienteId
-            ? { ...paciente, isActive: newStatus }
+            ? { ...paciente, isActive: newStatus, status: newStatus }
             : paciente
         )
       );

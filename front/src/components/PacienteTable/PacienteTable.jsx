@@ -17,14 +17,14 @@ const PacienteTable = ({ pacientes = [], onPacienteDeleted, onStatusChange }) =>
     setPacientesState(prevState => 
       prevState.map(paciente => 
         paciente.id === pacienteId 
-          ? { ...paciente, status: newStatus ? 'ATIVO' : 'INATIVO' } 
+          ? { ...paciente, status: newStatus ? 'ATIVO' : 'INATIVO', isActive: newStatus ? 'ATIVO' : 'INATIVO' } 
           : paciente
       )
     );
     
     // Notificar o componente pai sobre a mudança
     if (onStatusChange) {
-      onStatusChange(pacienteId, newStatus);
+      onStatusChange(pacienteId, newStatus ? 'ATIVO' : 'INATIVO');
     }
   };
   
@@ -77,14 +77,14 @@ const PacienteTable = ({ pacientes = [], onPacienteDeleted, onStatusChange }) =>
                 <td>{paciente.ultimoServico}</td>
                 <td>
                   <StatusBadge 
-                    status={paciente.status || (paciente.isActive ? 'ATIVO' : 'INATIVO')} 
+                    status={paciente.status || paciente.isActive} 
                     onClick={(newStatus) => handleStatusClick(paciente.id, newStatus)}
                   />
                 </td>
                 <td>
                   <PacienteActionMenu 
                     pacienteId={paciente.id} 
-                    pacienteStatus={paciente.status || (paciente.isActive ? 'ATIVO' : 'INATIVO')}
+                    pacienteStatus={paciente.status || paciente.isActive}
                     onPacienteDeleted={onPacienteDeleted}
                     onStatusChange={handleStatusChange}
                   />

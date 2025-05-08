@@ -76,12 +76,14 @@ const EditarPaciente = () => {
       
       if (numericValue.length <= 2) {
         formattedValue = numericValue.length ? `(${numericValue}` : '';
-      } else if (numericValue.length <= 7) {
+      } else if (numericValue.length <= 6) {
         formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(2)}`;
+      } else if (numericValue.length <= 10) {
+        // Telefone fixo: (XX) XXXX-XXXX
+        formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(2, 6)}-${numericValue.slice(6, 10)}`;
       } else {
-        formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(
-          2, 7
-        )}-${numericValue.slice(7, 11)}`;
+        // Celular: (XX) XXXXX-XXXX (limitado a 11 dígitos)
+        formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(2, 7)}-${numericValue.slice(7, 11)}`;
       }
       
       setFormData({

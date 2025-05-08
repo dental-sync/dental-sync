@@ -31,7 +31,7 @@ public class Paciente extends BaseEntity {
     private String nome;
 
     @NotBlank(message = "O telefone é obrigatório")
-    @Pattern(regexp = "\\(\\d{2}\\)\\s\\d{5}-\\d{4}", message = "Formato de telefone inválido. Use o formato: (99) 99999-9999")
+    @Pattern(regexp = "\\(\\d{2}\\)\\s(\\d{4}-\\d{4}|\\d{5}-\\d{4})", message = "Formato de telefone inválido. Use o formato: (99) 9999-9999 ou (99) 99999-9999")
     private String telefone;
     
     @NotBlank(message = "O e-mail é obrigatório")

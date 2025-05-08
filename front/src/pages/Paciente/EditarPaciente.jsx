@@ -241,7 +241,16 @@ const EditarPaciente = () => {
         isActive: newStatus
       });
       
-      toast.success(`Status atualizado com sucesso para ${newStatus ? 'Ativo' : 'Inativo'}`);
+      // Limpa qualquer estado de navegação existente
+      window.history.replaceState({}, document.title);
+      
+      // Navegar para a página de listagem com mensagem de sucesso e flag de refresh
+      navigate('/paciente', { 
+        state: { 
+          success: `Status atualizado com sucesso para ${newStatus ? 'Ativo' : 'Inativo'}`,
+          refresh: true 
+        } 
+      });
     } catch (err) {
       console.error('Erro ao atualizar status do paciente:', err);
       toast.error('Ocorreu um erro ao atualizar o status. Tente novamente.');

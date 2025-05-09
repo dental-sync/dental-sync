@@ -42,7 +42,7 @@ const PacienteTable = ({ pacientes = [], onPacienteDeleted, onStatusChange }) =>
       
       if (response.status === 200) {
         handleStatusChange(pacienteId, newStatus);
-        // toast.success(`Paciente ${newStatus ? 'ativado' : 'inativado'} com sucesso!`);
+        
       }
     } catch (error) {
       console.error('Erro ao alterar status do paciente:', error);

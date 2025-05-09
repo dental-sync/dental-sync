@@ -207,6 +207,7 @@ const CadastroPaciente = () => {
               value={formData.nome}
               onChange={handleChange}
               className={errors.nome ? 'input-error' : ''}
+              placeholder="Digite o nome completo"
             />
             {errors.nome && <div className="error-text">{errors.nome}</div>}
           </div>
@@ -220,6 +221,7 @@ const CadastroPaciente = () => {
               value={formData.email}
               onChange={handleChange}
               className={errors.email ? 'input-error' : ''}
+              placeholder="exemplo@email.com"
             />
             {errors.email && <div className="error-text">{errors.email}</div>}
           </div>
@@ -233,6 +235,7 @@ const CadastroPaciente = () => {
               value={formData.telefone}
               onChange={handleChange}
               className={errors.telefone ? 'input-error' : ''}
+              placeholder="(00) 00000-0000"
             />
             {errors.telefone && <div className="error-text">{errors.telefone}</div>}
           </div>
@@ -246,6 +249,7 @@ const CadastroPaciente = () => {
               value={formData.dataNascimento}
               onChange={handleChange}
               className={errors.dataNascimento ? 'input-error' : ''}
+              placeholder="DD/MM/AAAA"
             />
             {errors.dataNascimento && <div className="error-text">{errors.dataNascimento}</div>}
           </div>

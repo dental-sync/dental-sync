@@ -241,10 +241,8 @@ const EditarPaciente = () => {
         isActive: newStatus
       });
       
-      // Limpa qualquer estado de navegação existente
       window.history.replaceState({}, document.title);
       
-      // Navegar para a página de listagem com mensagem de sucesso e flag de refresh
       navigate('/paciente', { 
         state: { 
           success: `Status atualizado com sucesso para ${newStatus ? 'Ativo' : 'Inativo'}`,

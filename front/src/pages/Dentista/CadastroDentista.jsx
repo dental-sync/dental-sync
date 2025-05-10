@@ -324,10 +324,10 @@ const CadastroDentista = () => {
               value={formData.cro}
               onChange={handleChange}
               className={errors.cro ? 'input-error' : ''}
-              placeholder="XX-XXX-XXXXX"
+              placeholder="Digite o CRO"
             />
             {errors.cro && <span className="error-text">{errors.cro}</span>}
-            <span className="info-text">Formato: CRO-UF-NÚMERO</span>
+            <span className="info-text">Formato: CRO-UF-NÚMERO (máximo 6 dígitos)</span>
           </div>
           
           <div className="form-group">

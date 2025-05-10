@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './EditarDentista.css';
 import axios from 'axios';
-import ModalCadastroClinica from '../../components/ModalCadastroClinica';
+import ModalCadastroClinica from '../../components/ModalCadastroClinica/ModalCadastroClinica';
+import { toast } from 'react-toastify';
 
 const EditarDentista = () => {
   const { id } = useParams();
@@ -62,16 +63,18 @@ const EditarDentista = () => {
       newErrors.nome = 'O nome é obrigatório';
     } else if (formData.nome.trim().split(' ').length < 2) {
       newErrors.nome = 'Por favor, informe o nome e sobrenome';
+    } else if (formData.nome.trim().split(' ').some(part => part.length < 2)) {
+      newErrors.nome = 'Sobrenome deve possuir no mínimo 2 letras';
     } else if (formData.nome.length > 255) {
       newErrors.nome = 'O nome não pode ultrapassar 255 caracteres';
     } else if (/\d/.test(formData.nome)) {
       newErrors.nome = 'O nome não pode conter números';
     }
     
-    if (!formData.cro.trim()) {
+    if (!formData.cro.trim() || formData.cro === 'CRO-') {
       newErrors.cro = 'O CRO é obrigatório';
-    } else if (!/^CRO-[A-Z]{2}-\d{1,20}$/.test(formData.cro)) {
-      newErrors.cro = 'CRO incorreto. Digite o padrão correto: CRO-UF-NÚMERO';
+    } else if (!/^CRO-[A-Z]{2}-\d{1,6}$/.test(formData.cro)) {
+      newErrors.cro = 'CRO incorreto. Digite o padrão correto: CRO-UF-NÚMERO (máximo 6 dígitos)';
     }
     
     if (!formData.email.trim()) {
@@ -120,9 +123,16 @@ const EditarDentista = () => {
         formattedValue = formattedValue.substring(0, 6) + '-' + formattedValue.substring(6);
       }
       
-      // Limita o tamanho máximo do CRO
-      if (formattedValue.length > 26) { // CRO-XX-XXXXXXXXXX = 26 caracteres
-        formattedValue = formattedValue.substring(0, 26);
+      // Limita o tamanho máximo do CRO (CRO-XX-XXXXXX = 15 caracteres)
+      if (formattedValue.length > 15) {
+        formattedValue = formattedValue.substring(0, 15);
+      }
+
+      // Limita o número após o segundo hífen para 6 dígitos
+      const parts = formattedValue.split('-');
+      if (parts.length === 3 && parts[2].length > 6) {
+        parts[2] = parts[2].substring(0, 6);
+        formattedValue = parts.join('-');
       }
       
       setFormData({
@@ -219,28 +229,37 @@ const EditarDentista = () => {
     setSaving(true);
     
     try {
-      // Primeiro verifica se o CRO e email já existem em outros dentistas
-      const [croResponse, emailResponse] = await Promise.all([
+      // Verificar todas as validações simultaneamente
+      const [croResponse, emailResponse, telefoneResponse] = await Promise.all([
         axios.get(`http://localhost:8080/dentistas/cro/${formData.cro}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/dentistas/email/${formData.email}`).catch(() => ({ data: null }))
+        axios.get(`http://localhost:8080/dentistas/email/${formData.email}`).catch(() => ({ data: null })),
+        axios.get(`http://localhost:8080/dentistas/telefone/${formData.telefone}`).catch(() => ({ data: null }))
       ]);
+
+      const newErrors = {};
 
       // Verifica se o CRO pertence a outro dentista
       if (croResponse.data && croResponse.data.id !== parseInt(id)) {
-        setErrors({ cro: "CRO já cadastrado" });
-        setSaving(false);
-        return;
+        newErrors.cro = "CRO já cadastrado";
       }
 
       // Verifica se o email pertence a outro dentista
       if (emailResponse.data && emailResponse.data.id !== parseInt(id)) {
-        setErrors({ email: "E-mail já cadastrado" });
+        newErrors.email = "E-mail já cadastrado";
+      }
+
+      // Verifica se o telefone pertence a outro dentista
+      if (telefoneResponse.data && telefoneResponse.data.id !== parseInt(id)) {
+        newErrors.telefone = "Telefone já cadastrado";
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
         setSaving(false);
         return;
       }
 
-      // Se chegou aqui, o CRO e email são únicos
-      // Agora tenta atualizar o dentista
+      // Se chegou aqui, nenhum dado está duplicado
       const dentistaData = {
         nome: formData.nome,
         cro: formData.cro,
@@ -252,7 +271,16 @@ const EditarDentista = () => {
 
       await axios.put(`http://localhost:8080/dentistas/${id}`, dentistaData);
       
-      navigate('/dentista', { state: { success: 'Dentista atualizado com sucesso!' } });
+      // Limpa qualquer estado de navegação existente
+      window.history.replaceState({}, document.title);
+      
+      // Navegar para a página de listagem com mensagem de sucesso e flag de refresh
+      navigate('/dentista', { 
+        state: { 
+          success: 'Dentista atualizado com sucesso!',
+          refresh: true 
+        } 
+      });
     } catch (error) {
       console.error('Erro ao atualizar dentista:', error);
       
@@ -261,14 +289,14 @@ const EditarDentista = () => {
         console.log('Mensagem de erro:', errorMessage);
         
         if (typeof errorMessage === 'string') {
-          setErrors({ general: errorMessage });
+          toast.error(errorMessage);
         } else if (errorMessage.message) {
-          setErrors({ general: errorMessage.message });
+          toast.error(errorMessage.message);
         } else {
-          setErrors({ general: 'Ocorreu um erro ao atualizar o dentista. Tente novamente.' });
+          toast.error('Ocorreu um erro ao atualizar o dentista. Tente novamente.');
         }
       } else {
-        setErrors({ general: 'Erro de conexão. Verifique sua internet e tente novamente.' });
+        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
       }
     } finally {
       setSaving(false);
@@ -310,20 +338,6 @@ const EditarDentista = () => {
           </div>
         )}
         
-        {errors.general && (
-          <div className="error-message">
-            <p>{errors.general}</p>
-          </div>
-        )}
-        
-        {Object.keys(errors).length > 0 && !errors.general && (
-          <div className="error-message">
-            {Object.entries(errors).map(([key, value]) => (
-              <p key={key}>{value}</p>
-            ))}
-          </div>
-        )}
-        
         <form onSubmit={handleSubmit} className="dentista-form">
           <div className="form-group">
             <label htmlFor="nome" className="required">Nome Completo</label>
@@ -335,7 +349,6 @@ const EditarDentista = () => {
               onChange={handleChange}
               className={errors.nome ? 'input-error' : ''}
               placeholder="Digite o nome completo"
-              required
             />
             {errors.nome && <span className="error-text">{errors.nome}</span>}
           </div>
@@ -349,11 +362,10 @@ const EditarDentista = () => {
               value={formData.cro}
               onChange={handleChange}
               className={errors.cro ? 'input-error' : ''}
-              placeholder="XX-XXX-XXXXX"
-              required
+              placeholder="Digite o CRO"
             />
             {errors.cro && <span className="error-text">{errors.cro}</span>}
-            <span className="info-text">Formato: CRO-UF-NÚMERO</span>
+            <span className="info-text">Formato: CRO-UF-NÚMERO (máximo 6 dígitos)</span>
           </div>
           
           <div className="form-group">
@@ -366,7 +378,6 @@ const EditarDentista = () => {
               onChange={handleChange}
               className={errors.email ? 'input-error' : ''}
               placeholder="exemplo@email.com"
-              required
             />
             {errors.email && <span className="error-text">{errors.email}</span>}
           </div>
@@ -382,7 +393,6 @@ const EditarDentista = () => {
               onBlur={handleBlur}
               className={errors.telefone ? 'input-error' : ''}
               placeholder="(00) 00000-0000"
-              required
             />
             {errors.telefone && <span className="error-text">{errors.telefone}</span>}
           </div>

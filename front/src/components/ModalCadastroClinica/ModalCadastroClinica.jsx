@@ -98,6 +98,8 @@ const ModalCadastroClinica = ({ isOpen, onClose, onSuccess }) => {
     
     if (!formData.nome.trim()) {
       newErrors.nome = 'Nome da clínica é obrigatório';
+    } else if (formData.nome.length > 255) {
+      newErrors.nome = 'O nome não pode ultrapassar 255 caracteres';
     }
     
     if (!formData.cnpj.trim()) {
@@ -131,18 +133,19 @@ const ModalCadastroClinica = ({ isOpen, onClose, onSuccess }) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao cadastrar clínica');
+        if (errorData.message === 'CNPJ já cadastrado') {
+          setErrors({ cnpj: 'CNPJ já cadastrado' });
+        } else {
+          setErrors({ cnpj: 'Erro ao salvar clínica. Tente novamente.' });
+        }
+        return;
       }
 
       const clinicaData = await response.json();
       onSuccess(clinicaData);
       onClose();
     } catch (error) {
-      if (error.message === 'CNPJ já cadastrado') {
-        setErrors({ cnpj: 'CNPJ já cadastrado' });
-      } else {
-        setErrors({ submit: 'Erro ao salvar clínica. Tente novamente.' });
-      }
+      setErrors({ cnpj: 'Erro ao salvar clínica. Tente novamente.' });
     } finally {
       setLoading(false);
     }
@@ -158,25 +161,9 @@ const ModalCadastroClinica = ({ isOpen, onClose, onSuccess }) => {
           <button className="close-button" onClick={onClose}>&times;</button>
         </div>
         
-        {errors.submit && (
-          <div className="error-message">
-            {errors.submit}
-          </div>
-        )}
-        
         <form className="modal-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="required">Nome da Clínica</label>
-            {errors.cnpj && (
-              <div className="error-message">
-                {errors.cnpj}
-              </div>
-            )}
-            {errors.nome && !errors.cnpj && (
-              <div className="error-message">
-                {errors.nome}
-              </div>
-            )}
             <input
               type="text"
               name="nome"
@@ -185,6 +172,7 @@ const ModalCadastroClinica = ({ isOpen, onClose, onSuccess }) => {
               className={errors.nome ? 'input-error' : ''}
               placeholder="Digite o nome da clínica"
             />
+            {errors.nome && <span className="error-text">{errors.nome}</span>}
           </div>
           
           <div className="form-group">
@@ -197,6 +185,7 @@ const ModalCadastroClinica = ({ isOpen, onClose, onSuccess }) => {
               placeholder="XX.XXX.XXX/YYYY-ZZ"
               className={errors.cnpj ? 'input-error' : ''}
             />
+            {errors.cnpj && <span className="error-text">{errors.cnpj}</span>}
           </div>
           
           <div className="modal-actions">

@@ -6,17 +6,28 @@ import { toast } from 'react-toastify';
 import ActionMenuDentista from '../ActionMenuDentista/ActionMenuDentista';
 import StatusBadge from '../StatusBadge/StatusBadge';
 
+// Função utilitária para formatar o ID
+const formatDentistaId = (id) => `D${String(id).padStart(4, '0')}`;
+
 const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfig, onSort }) => {
   const navigate = useNavigate();
 
   const handleStatusChange = async (dentistaId, newStatus) => {
     try {
+      // Encontrar o dentista atual
+      const dentistaAtual = dentistas.find(d => d.id === dentistaId);
+      
+      // Verificar se o status está realmente mudando
+      const statusAtual = dentistaAtual.isActive === 'ATIVO';
+      if (statusAtual === newStatus) {
+        return; // Não faz nada se o status for o mesmo
+      }
+
       await axios.patch(`http://localhost:8080/dentistas/${dentistaId}`, {
         isActive: newStatus
       });
       
       onStatusChange(dentistaId, newStatus ? 'ATIVO' : 'INATIVO');
-      toast.success(`Dentista ${newStatus ? 'ativado' : 'inativado'} com sucesso!`);
     } catch (error) {
       console.error('Erro ao alterar status:', error);
       toast.error('Erro ao alterar status. Tente novamente.');
@@ -26,9 +37,7 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
   const getSortIcon = (key) => {
     if (sortConfig.key !== key) {
       return (
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M7 3v18M17 3v18M3 7h18M3 17h18"/>
-        </svg>
+        <span style={{fontSize: '18px', opacity: 0.4, marginLeft: '2px', marginTop: '-2px'}}>–</span>
       );
     }
     return sortConfig.direction === 'ascending' ? (
@@ -48,17 +57,26 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
         <thead>
           <tr>
             <th className="sortable-header" onClick={() => onSort('id')}>
-              ID
-              <div className="sort-icon">{getSortIcon('id')}</div>
+              <span className="sortable-content">
+                ID
+                <div className="sort-icon">{getSortIcon('id')}</div>
+              </span>
             </th>
             <th className="sortable-header" onClick={() => onSort('nome')}>
-              Nome
-              <div className="sort-icon">{getSortIcon('nome')}</div>
+              <span className="sortable-content">
+                Nome
+                <div className="sort-icon">{getSortIcon('nome')}</div>
+              </span>
             </th>
             <th>CRO</th>
             <th>Email</th>
             <th>Telefone</th>
-            <th>Status</th>
+            <th className="sortable-header" onClick={() => onSort('isActive')}>
+              <span className="sortable-content">
+                Status
+                <div className="sort-icon">{getSortIcon('isActive')}</div>
+              </span>
+            </th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -66,7 +84,7 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
           {dentistas.length > 0 ? (
             dentistas.map((dentista) => (
               <tr key={dentista.id}>
-                <td>{dentista.id}</td>
+                <td>{formatDentistaId(dentista.id)}</td>
                 <td>{dentista.nome}</td>
                 <td>{dentista.cro}</td>
                 <td>{dentista.email}</td>

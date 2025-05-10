@@ -21,12 +21,12 @@ import lombok.NoArgsConstructor;
 public class Dentista extends BaseEntity {
 
     @NotBlank(message = "O nome é obrigatório")
-    @Pattern(regexp = "^[\\p{L}\\s]{2,}(\\s[\\p{L}\\s]{2,})+$", message = "Por favor, informe o nome e sobrenome")
+    @Pattern(regexp = "^[\\p{L}]{2,}(?:\\s[\\p{L}]{2,})+$", message = "Sobrenome deve possuir no mínimo 2 letras")
     @Size(max = 255, message = "O nome não pode ultrapassar 255 caracteres")
     private String nome;
 
     @NotBlank(message = "O CRO é obrigatório")
-    @Pattern(regexp = "CRO-[A-Z]{2}-[A-Z0-9]{1,20}", message = "Formato de CRO inválido. Use o formato: CRO-UF-NÚMERO")
+    @Pattern(regexp = "CRO-[A-Z]{2}-\\d{1,6}", message = "Formato de CRO inválido. Use o formato: CRO-UF-NÚMERO (máximo 6 dígitos)")
     private String cro;
 
     @ManyToMany

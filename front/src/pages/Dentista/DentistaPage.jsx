@@ -7,6 +7,7 @@ import NotificationBell from '../../components/NotificationBell/NotificationBell
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const DentistaPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,6 +28,9 @@ const DentistaPage = () => {
   const filterRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Criando um ref para armazenar mensagens recentes e evitar duplicação de toasts
+  const recentMessages = useRef(new Set());
 
   useEffect(() => {
     const fetchDentistas = async () => {
@@ -46,6 +50,14 @@ const DentistaPage = () => {
         console.error('Erro ao buscar dentistas:', err);
         setDentistas([]);
         setError('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.');
+        toast.error('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false
+        });
       } finally {
         setLoading(false);
       }
@@ -55,29 +67,45 @@ const DentistaPage = () => {
   }, [refreshData]);
 
   useEffect(() => {
-    if (location.state) {
-      if (location.state.success) {
-        setToastMessage(location.state.success);
-        setRefreshData(prev => prev + 1);
-        const timer = setTimeout(() => {
-          setToastMessage(null);
-          window.history.replaceState({}, document.title);
+    if (location.state && location.state.success) {
+      const successMessage = location.state.success;
+      const shouldRefresh = location.state.refresh;
+      
+      // Limpa o state imediatamente
+      window.history.replaceState({}, document.title);
+      
+      // Cria uma chave única para esta mensagem
+      const messageKey = `${successMessage}-${Date.now()}`;
+      
+      // Verifica se esta mensagem já foi exibida recentemente (nos últimos 3 segundos)
+      if (!recentMessages.current.has(messageKey)) {
+        // Adiciona a mensagem ao cache
+        recentMessages.current.add(messageKey);
+        
+        // Exibe o toast
+        toast.success(successMessage, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          // ID fixo para a mesma mensagem
+          toastId: successMessage
+        });
+        
+        // Remove a mensagem do cache após 3 segundos
+        setTimeout(() => {
+          recentMessages.current.delete(messageKey);
         }, 3000);
-        return () => clearTimeout(timer);
-      } else if (location.state.refresh) {
-        setRefreshData(prev => prev + 1);
+        
+        // Se é necessário atualizar os dados
+        if (shouldRefresh) {
+          setRefreshData(prev => prev + 1);
+        }
       }
     }
-  }, [location.state]);
-
-  useEffect(() => {
-    if (toastMessage) {
-      const timer = setTimeout(() => {
-        setToastMessage(null);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toastMessage]);
+  }, [location]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -93,23 +121,66 @@ const DentistaPage = () => {
   }, []);
 
   const handleDentistaDeleted = (dentistaId) => {
+    // Primeiro, remover o dentista do estado local para atualização imediata da UI
     setDentistas(prevDentistas => 
       prevDentistas.filter(dentista => dentista.id !== dentistaId)
     );
-    setTimeout(() => {
-      setRefreshData(prev => prev + 1);
-    }, 1000);
+    
+    // Forçar um refresh dos dados para sincronizar com o banco
+    setRefreshData(prev => prev + 1);
+    
+    // Limpa qualquer estado de navegação existente
+    window.history.replaceState({}, document.title);
+    
+    // Adicionamos uma mensagem de sucesso usando o padrão de state
+    navigate('', { 
+      state: { 
+        success: "Dentista excluído com sucesso!",
+        refresh: false // Não precisamos de refresh pois já fizemos acima
+      },
+      replace: true // Importante usar replace para não adicionar nova entrada no histórico
+    });
   };
 
   const handleStatusChange = (dentistaId, newStatus) => {
-    setDentistas(prevDentistas =>
-      prevDentistas.map(dentista =>
-        dentista.id === dentistaId
-          ? { ...dentista, isActive: newStatus }
-          : dentista
-      )
-    );
+    // Encontrar o dentista atual
+    const dentistaAtual = dentistas.find(d => d.id === dentistaId);
+    
+    // Verificar se o status está realmente mudando
+    const statusAtual = dentistaAtual.isActive === 'ATIVO';
+    if (statusAtual === (newStatus === 'ATIVO')) {
+      return; // Não faz nada se o status for o mesmo
+    }
+
+    // Atualizar o status do dentista na lista
+    if (newStatus !== null) {
+      setDentistas(prevDentistas =>
+        prevDentistas.map(dentista =>
+          dentista.id === dentistaId
+            ? { ...dentista, isActive: newStatus }
+            : dentista
+        )
+      );
+      
+      // Exibir o toast de forma padronizada
+      const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
+      
+      // Limpa qualquer estado de navegação existente
+      window.history.replaceState({}, document.title);
+      
+      // Adicionamos uma mensagem de sucesso usando o padrão de state
+      navigate('', { 
+        state: { 
+          success: `Status atualizado com sucesso para ${statusText}`,
+          refresh: false // Não precisamos de refresh pois já atualizamos localmente
+        },
+        replace: true // Importante usar replace para não adicionar nova entrada no histórico
+      });
+    }
   };
+
+  // Função utilitária para formatar o ID
+  const formatDentistaId = (id) => `D${String(id).padStart(4, '0')}`;
 
   const dentistasFiltrados = dentistas
     .filter(dentista => {
@@ -123,7 +194,8 @@ const DentistaPage = () => {
           dentista.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           dentista.telefone?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           dentista.cro?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (dentista.id?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase())
+          (dentista.id?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          formatDentistaId(dentista.id).toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
       
@@ -190,6 +262,15 @@ const DentistaPage = () => {
           return sortConfig.direction === 'ascending'
             ? a.id - b.id
             : b.id - a.id;
+        }
+        
+        // Para ordenação de status (ATIVO/INATIVO)
+        if (sortConfig.key === 'isActive') {
+          const aValue = a.isActive === 'ATIVO' ? 1 : 0;
+          const bValue = b.isActive === 'ATIVO' ? 1 : 0;
+          return sortConfig.direction === 'ascending'
+            ? aValue - bValue
+            : bValue - aValue;
         }
         
         // Para ordenação de strings (nome)

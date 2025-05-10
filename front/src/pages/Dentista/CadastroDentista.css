@@ -54,58 +54,6 @@
   text-align: center;
 }
 
-.error-message {
-  background: #e74c3c;
-  color: white;
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  text-align: center;
-  position: relative;
-  animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.error-message::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background-color: #c0392b;
-  border-radius: 4px 0 0 4px;
-}
-
-.error-message p {
-  margin: 0;
-  font-weight: 500;
-}
-
-.error-message ul {
-  margin: 10px 0 0 0;
-  padding-left: 20px;
-  text-align: left;
-}
-
-.error-message li {
-  margin-bottom: 5px;
-}
-
-.error-message li:last-child {
-  margin-bottom: 0;
-}
-
 .dentista-form {
   background: white;
   padding: 40px;
@@ -132,7 +80,7 @@
 
 .form-group label.required::after {
   content: '*';
-  color: #e74c3c;
+  color: #000000;
   margin-left: 4px;
   font-size: 18px;
   vertical-align: middle;
@@ -161,7 +109,7 @@
 }
 
 .form-group input[name="cro"] {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
 }
 
 .error-text {
@@ -173,10 +121,10 @@
 }
 
 .form-group input[name="cro"] + .error-text {
-  margin-top: 0;
-  position: absolute;
-  bottom: -28px;
-  left: 1px;
+  margin-top: 0.04rem;
+  position: relative;
+  bottom: auto;
+  left: auto;
 }
 
 .input-error {
@@ -305,11 +253,39 @@
 }
 
 .info-text {
-  color: #6c757d;
-  font-size: 0.75rem;
-  margin-top: 1.5rem;
+  display: none;
+  position: absolute;
+  background-color: #4a90e2;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  z-index: 1;
+  bottom: 100%;
+  left: 0;
+  transform: translateX(0);
+  white-space: nowrap;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.info-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 20px;
+  margin-left: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: #4a90e2 transparent transparent transparent;
+}
+
+.form-group:hover .info-text {
   display: block;
-  position: relative;
+  opacity: 1;
 }
 
 @media (max-width: 768px) {

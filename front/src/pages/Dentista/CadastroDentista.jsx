@@ -51,8 +51,8 @@ const CadastroDentista = () => {
     
     if (!formData.cro.trim() || formData.cro === 'CRO-') {
       newErrors.cro = 'O CRO é obrigatório';
-    } else if (!/^CRO-[A-Z]{2}-\d{1,20}$/.test(formData.cro)) {
-      newErrors.cro = 'CRO incorreto. Digite o padrão correto: CRO-UF-NÚMERO';
+    } else if (!/^CRO-[A-Z]{2}-\d{1,6}$/.test(formData.cro)) {
+      newErrors.cro = 'CRO incorreto. Digite o padrão correto: CRO-UF-NÚMERO (máximo 6 dígitos)';
     }
     
     if (!formData.email.trim()) {
@@ -101,9 +101,16 @@ const CadastroDentista = () => {
         formattedValue = formattedValue.substring(0, 6) + '-' + formattedValue.substring(6);
       }
       
-      // Limita o tamanho máximo do CRO
-      if (formattedValue.length > 26) { // CRO-XX-XXXXXXXXXX = 26 caracteres
-        formattedValue = formattedValue.substring(0, 26);
+      // Limita o tamanho máximo do CRO (CRO-XX-XXXXXX = 15 caracteres)
+      if (formattedValue.length > 15) {
+        formattedValue = formattedValue.substring(0, 15);
+      }
+
+      // Limita o número após o segundo hífen para 6 dígitos
+      const parts = formattedValue.split('-');
+      if (parts.length === 3 && parts[2].length > 6) {
+        parts[2] = parts[2].substring(0, 6);
+        formattedValue = parts.join('-');
       }
       
       setFormData({

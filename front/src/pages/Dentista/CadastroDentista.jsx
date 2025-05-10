@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './CadastroDentista.css';
 import axios from 'axios';
 import ModalCadastroClinica from '../../components/ModalCadastroClinica/ModalCadastroClinica';
+import { toast } from 'react-toastify';
 
 const CadastroDentista = () => {
   const [formData, setFormData] = useState({
@@ -248,7 +249,16 @@ const CadastroDentista = () => {
 
       await axios.post('http://localhost:8080/dentistas', dentistaData);
       
-      navigate('/dentista', { state: { success: 'Dentista cadastrado com sucesso!' } });
+      // Limpa qualquer estado de navegação existente
+      window.history.replaceState({}, document.title);
+      
+      // Navegar para a página de listagem com mensagem de sucesso e flag de refresh
+      navigate('/dentista', { 
+        state: { 
+          success: 'Dentista cadastrado com sucesso!',
+          refresh: true 
+        } 
+      });
     } catch (error) {
       console.error('Erro ao cadastrar dentista:', error);
       
@@ -257,14 +267,14 @@ const CadastroDentista = () => {
         console.log('Mensagem de erro:', errorMessage);
         
         if (typeof errorMessage === 'string') {
-          setErrors({ general: errorMessage });
+          toast.error(errorMessage);
         } else if (errorMessage.message) {
-          setErrors({ general: errorMessage.message });
+          toast.error(errorMessage.message);
         } else {
-          setErrors({ general: 'Ocorreu um erro ao cadastrar o dentista. Tente novamente.' });
+          toast.error('Ocorreu um erro ao cadastrar o dentista. Tente novamente.');
         }
       } else {
-        setErrors({ general: 'Erro de conexão. Verifique sua internet e tente novamente.' });
+        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
       }
     } finally {
       setLoading(false);

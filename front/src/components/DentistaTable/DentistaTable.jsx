@@ -11,12 +11,20 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
 
   const handleStatusChange = async (dentistaId, newStatus) => {
     try {
+      // Encontrar o dentista atual
+      const dentistaAtual = dentistas.find(d => d.id === dentistaId);
+      
+      // Verificar se o status está realmente mudando
+      const statusAtual = dentistaAtual.isActive === 'ATIVO';
+      if (statusAtual === newStatus) {
+        return; // Não faz nada se o status for o mesmo
+      }
+
       await axios.patch(`http://localhost:8080/dentistas/${dentistaId}`, {
         isActive: newStatus
       });
       
       onStatusChange(dentistaId, newStatus ? 'ATIVO' : 'INATIVO');
-      toast.success(`Dentista ${newStatus ? 'ativado' : 'inativado'} com sucesso!`);
     } catch (error) {
       console.error('Erro ao alterar status:', error);
       toast.error('Erro ao alterar status. Tente novamente.');

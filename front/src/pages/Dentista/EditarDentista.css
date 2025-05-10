@@ -44,58 +44,6 @@
   text-align: center;
 }
 
-.error-message {
-  background: #e74c3c;
-  color: white;
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  text-align: center;
-  position: relative;
-  animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.error-message::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background-color: #c0392b;
-  border-radius: 4px 0 0 4px;
-}
-
-.error-message p {
-  margin: 0;
-  font-weight: 500;
-}
-
-.error-message ul {
-  margin: 10px 0 0 0;
-  padding-left: 20px;
-  text-align: left;
-}
-
-.error-message li {
-  margin-bottom: 5px;
-}
-
-.error-message li:last-child {
-  margin-bottom: 0;
-}
-
 .dentista-form {
   background: white;
   padding: 40px;
@@ -300,6 +248,14 @@
   padding: 20px;
   color: #666;
   font-size: 18px;
+}
+
+.form-group label.required::after {
+  content: '*';
+  color: #000000;
+  margin-left: 4px;
+  font-size: 18px;
+  vertical-align: middle;
 }
 
 @media (max-width: 768px) {

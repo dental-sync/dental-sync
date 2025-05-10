@@ -49,7 +49,7 @@ const CadastroDentista = () => {
       newErrors.nome = 'O nome não pode conter números';
     }
     
-    if (!formData.cro.trim()) {
+    if (!formData.cro.trim() || formData.cro === 'CRO-') {
       newErrors.cro = 'O CRO é obrigatório';
     } else if (!/^CRO-[A-Z]{2}-\d{1,20}$/.test(formData.cro)) {
       newErrors.cro = 'CRO incorreto. Digite o padrão correto: CRO-UF-NÚMERO';
@@ -285,20 +285,6 @@ const CadastroDentista = () => {
           </div>
         )}
         
-        {errors.general && (
-          <div className="error-message">
-            <p>{errors.general}</p>
-          </div>
-        )}
-        
-        {Object.keys(errors).length > 0 && !errors.general && (
-          <div className="error-message">
-            {Object.entries(errors).map(([key, value]) => (
-              <p key={key}>{value}</p>
-            ))}
-          </div>
-        )}
-        
         <form onSubmit={handleSubmit} className="dentista-form">
           <div className="form-group">
             <label htmlFor="nome" className="required">Nome Completo</label>
@@ -310,7 +296,6 @@ const CadastroDentista = () => {
               onChange={handleChange}
               className={errors.nome ? 'input-error' : ''}
               placeholder="Digite o nome completo"
-              required
             />
             {errors.nome && <span className="error-text">{errors.nome}</span>}
           </div>
@@ -325,7 +310,6 @@ const CadastroDentista = () => {
               onChange={handleChange}
               className={errors.cro ? 'input-error' : ''}
               placeholder="XX-XXX-XXXXX"
-              required
             />
             {errors.cro && <span className="error-text">{errors.cro}</span>}
             <span className="info-text">Formato: CRO-UF-NÚMERO</span>
@@ -341,7 +325,6 @@ const CadastroDentista = () => {
               onChange={handleChange}
               className={errors.email ? 'input-error' : ''}
               placeholder="exemplo@email.com"
-              required
             />
             {errors.email && <span className="error-text">{errors.email}</span>}
           </div>
@@ -357,7 +340,6 @@ const CadastroDentista = () => {
               onBlur={handleBlur}
               className={errors.telefone ? 'input-error' : ''}
               placeholder="(00) 00000-0000"
-              required
             />
             {errors.telefone && <span className="error-text">{errors.telefone}</span>}
           </div>

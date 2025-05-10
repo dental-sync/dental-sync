@@ -42,6 +42,13 @@ public class DentistaController extends BaseController<Dentista, Long> {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/telefone/{telefone}")
+    public ResponseEntity<Dentista> findByTelefone(@PathVariable String telefone) {
+        return dentistaService.findByTelefone(telefone)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PatchMapping("/{id}")
     public ResponseEntity<Dentista> updateStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> status) {
         try {

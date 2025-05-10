@@ -196,30 +196,38 @@ const CadastroDentista = () => {
     if (!validateForm()) {
       return;
     }
-    
+
     setLoading(true);
     
     try {
-      // Primeiro verifica se o CRO e email já existem
-      const [croResponse, emailResponse] = await Promise.all([
+      // Verificar todas as validações simultaneamente
+      const [croResponse, emailResponse, telefoneResponse] = await Promise.all([
         axios.get(`http://localhost:8080/dentistas/cro/${formData.cro}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/dentistas/email/${formData.email}`).catch(() => ({ data: null }))
+        axios.get(`http://localhost:8080/dentistas/email/${formData.email}`).catch(() => ({ data: null })),
+        axios.get(`http://localhost:8080/dentistas/telefone/${formData.telefone}`).catch(() => ({ data: null }))
       ]);
 
+      const newErrors = {};
+
       if (croResponse.data) {
-        setErrors({ cro: "CRO já cadastrado" });
-        setLoading(false);
-        return;
+        newErrors.cro = "CRO já cadastrado";
       }
 
       if (emailResponse.data) {
-        setErrors({ email: "E-mail já cadastrado" });
+        newErrors.email = "E-mail já cadastrado";
+      }
+
+      if (telefoneResponse.data) {
+        newErrors.telefone = "Telefone já cadastrado";
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
         setLoading(false);
         return;
       }
 
-      // Se chegou aqui, o CRO e email são únicos
-      // Agora tenta cadastrar o dentista
+      // Se chegou aqui, nenhum dado está duplicado
       const dentistaData = {
         nome: formData.nome,
         cro: formData.cro,

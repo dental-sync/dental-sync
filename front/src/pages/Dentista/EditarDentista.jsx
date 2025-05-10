@@ -219,28 +219,37 @@ const EditarDentista = () => {
     setSaving(true);
     
     try {
-      // Primeiro verifica se o CRO e email já existem em outros dentistas
-      const [croResponse, emailResponse] = await Promise.all([
+      // Verificar todas as validações simultaneamente
+      const [croResponse, emailResponse, telefoneResponse] = await Promise.all([
         axios.get(`http://localhost:8080/dentistas/cro/${formData.cro}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/dentistas/email/${formData.email}`).catch(() => ({ data: null }))
+        axios.get(`http://localhost:8080/dentistas/email/${formData.email}`).catch(() => ({ data: null })),
+        axios.get(`http://localhost:8080/dentistas/telefone/${formData.telefone}`).catch(() => ({ data: null }))
       ]);
+
+      const newErrors = {};
 
       // Verifica se o CRO pertence a outro dentista
       if (croResponse.data && croResponse.data.id !== parseInt(id)) {
-        setErrors({ cro: "CRO já cadastrado" });
-        setSaving(false);
-        return;
+        newErrors.cro = "CRO já cadastrado";
       }
 
       // Verifica se o email pertence a outro dentista
       if (emailResponse.data && emailResponse.data.id !== parseInt(id)) {
-        setErrors({ email: "E-mail já cadastrado" });
+        newErrors.email = "E-mail já cadastrado";
+      }
+
+      // Verifica se o telefone pertence a outro dentista
+      if (telefoneResponse.data && telefoneResponse.data.id !== parseInt(id)) {
+        newErrors.telefone = "Telefone já cadastrado";
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
         setSaving(false);
         return;
       }
 
-      // Se chegou aqui, o CRO e email são únicos
-      // Agora tenta atualizar o dentista
+      // Se chegou aqui, nenhum dado está duplicado
       const dentistaData = {
         nome: formData.nome,
         cro: formData.cro,

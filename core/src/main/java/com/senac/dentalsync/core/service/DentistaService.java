@@ -44,6 +44,10 @@ public class DentistaService extends BaseService<Dentista, Long> {
         return dentistaRepository.findByCroContaining(cro);
     }
 
+    public Optional<Dentista> findByTelefone(String telefone) {
+        return dentistaRepository.findByTelefone(telefone);
+    }
+
     public Dentista updateStatus(Long id, Boolean status) {
         Dentista dentista = dentistaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Dentista não encontrado"));
@@ -73,6 +77,12 @@ public class DentistaService extends BaseService<Dentista, Long> {
         Optional<Dentista> dentistaComEmail = dentistaRepository.findByEmail(entity.getEmail());
         if (dentistaComEmail.isPresent() && !dentistaComEmail.get().getId().equals(entity.getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail já cadastrado");
+        }
+
+        // Verificar se já existe dentista com o mesmo telefone
+        Optional<Dentista> dentistaComTelefone = dentistaRepository.findByTelefone(entity.getTelefone());
+        if (dentistaComTelefone.isPresent() && !dentistaComTelefone.get().getId().equals(entity.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telefone já cadastrado");
         }
         
         try {

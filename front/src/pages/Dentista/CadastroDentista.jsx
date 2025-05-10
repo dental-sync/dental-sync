@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CadastroDentista.css';
 import axios from 'axios';
-import ModalCadastroClinica from '../../components/ModalCadastroClinica';
+import ModalCadastroClinica from '../../components/ModalCadastroClinica/ModalCadastroClinica';
 
 const CadastroDentista = () => {
   const [formData, setFormData] = useState({

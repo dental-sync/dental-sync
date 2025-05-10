@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './EditarDentista.css';
 import axios from 'axios';
-import ModalCadastroClinica from '../../components/ModalCadastroClinica';
+import ModalCadastroClinica from '../../components/ModalCadastroClinica/ModalCadastroClinica';
 
 const EditarDentista = () => {
   const { id } = useParams();

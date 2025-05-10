@@ -6,6 +6,9 @@ import { toast } from 'react-toastify';
 import ActionMenuDentista from '../ActionMenuDentista/ActionMenuDentista';
 import StatusBadge from '../StatusBadge/StatusBadge';
 
+// Função utilitária para formatar o ID
+const formatDentistaId = (id) => `D${String(id).padStart(4, '0')}`;
+
 const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfig, onSort }) => {
   const navigate = useNavigate();
 
@@ -81,7 +84,7 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
           {dentistas.length > 0 ? (
             dentistas.map((dentista) => (
               <tr key={dentista.id}>
-                <td>{dentista.id}</td>
+                <td>{formatDentistaId(dentista.id)}</td>
                 <td>{dentista.nome}</td>
                 <td>{dentista.cro}</td>
                 <td>{dentista.email}</td>

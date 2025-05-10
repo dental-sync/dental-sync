@@ -260,6 +260,15 @@ const DentistaPage = () => {
             : b.id - a.id;
         }
         
+        // Para ordenação de status (ATIVO/INATIVO)
+        if (sortConfig.key === 'isActive') {
+          const aValue = a.isActive === 'ATIVO' ? 1 : 0;
+          const bValue = b.isActive === 'ATIVO' ? 1 : 0;
+          return sortConfig.direction === 'ascending'
+            ? aValue - bValue
+            : bValue - aValue;
+        }
+        
         // Para ordenação de strings (nome)
         const aValue = String(a[sortConfig.key]).toLowerCase();
         const bValue = String(b[sortConfig.key]).toLowerCase();

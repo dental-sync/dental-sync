@@ -34,9 +34,7 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
   const getSortIcon = (key) => {
     if (sortConfig.key !== key) {
       return (
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M7 3v18M17 3v18M3 7h18M3 17h18"/>
-        </svg>
+        <span style={{fontSize: '18px', opacity: 0.4, marginLeft: '2px', marginTop: '-2px'}}>–</span>
       );
     }
     return sortConfig.direction === 'ascending' ? (
@@ -56,17 +54,26 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
         <thead>
           <tr>
             <th className="sortable-header" onClick={() => onSort('id')}>
-              ID
-              <div className="sort-icon">{getSortIcon('id')}</div>
+              <span className="sortable-content">
+                ID
+                <div className="sort-icon">{getSortIcon('id')}</div>
+              </span>
             </th>
             <th className="sortable-header" onClick={() => onSort('nome')}>
-              Nome
-              <div className="sort-icon">{getSortIcon('nome')}</div>
+              <span className="sortable-content">
+                Nome
+                <div className="sort-icon">{getSortIcon('nome')}</div>
+              </span>
             </th>
             <th>CRO</th>
             <th>Email</th>
             <th>Telefone</th>
-            <th>Status</th>
+            <th className="sortable-header" onClick={() => onSort('isActive')}>
+              <span className="sortable-content">
+                Status
+                <div className="sort-icon">{getSortIcon('isActive')}</div>
+              </span>
+            </th>
             <th>Ações</th>
           </tr>
         </thead>

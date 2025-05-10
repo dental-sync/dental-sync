@@ -98,6 +98,8 @@ const ModalCadastroClinica = ({ isOpen, onClose, onSuccess }) => {
     
     if (!formData.nome.trim()) {
       newErrors.nome = 'Nome da clínica é obrigatório';
+    } else if (formData.nome.length > 255) {
+      newErrors.nome = 'O nome não pode ultrapassar 255 caracteres';
     }
     
     if (!formData.cnpj.trim()) {

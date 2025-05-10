@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class Clinica extends BaseEntity {
 
     @NotBlank(message = "O nome é obrigatório")
+    @Size(max = 255, message = "O nome não pode ultrapassar 255 caracteres")
     private String nome;
 
     @NotBlank(message = "O CNPJ é obrigatório")

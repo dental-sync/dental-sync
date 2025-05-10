@@ -179,6 +179,9 @@ const DentistaPage = () => {
     }
   };
 
+  // Função utilitária para formatar o ID
+  const formatDentistaId = (id) => `D${String(id).padStart(4, '0')}`;
+
   const dentistasFiltrados = dentistas
     .filter(dentista => {
       if (filtros.isActive !== 'todos' && dentista.isActive !== filtros.isActive) {
@@ -191,7 +194,8 @@ const DentistaPage = () => {
           dentista.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           dentista.telefone?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           dentista.cro?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (dentista.id?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase())
+          (dentista.id?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          formatDentistaId(dentista.id).toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
       

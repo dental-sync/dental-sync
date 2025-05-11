@@ -19,28 +19,28 @@ import {
 const Sidebar = () => {
   const location = useLocation();
   const [activeItem, setActiveItem] = useState(
-    location.pathname.includes('protetico') ? 'protetico' : 
+    location.pathname.includes('proteticos') ? 'proteticos' : 
     location.pathname.includes('kanban') ? 'kanban' :
     location.pathname.includes('pedidos') ? 'pedidos' :
-    location.pathname.includes('paciente') ? 'pacientes' :
-    location.pathname.includes('dentista') ? 'dentista' :
+    location.pathname.includes('pacientes') ? 'pacientes' :
+    location.pathname.includes('dentistas') ? 'dentistas' :
     location.pathname.includes('servicos') ? 'servicos' :
-    location.pathname.includes('material') ? 'material' :
+    location.pathname.includes('materiais') ? 'materiais' :
     location.pathname.includes('relatorios') ? 'relatorios' :
-    location.pathname.includes('configuracao') ? 'configuracao' :
-    'protetico'
+    location.pathname.includes('configuracoes') ? 'configuracoes' :
+    'proteticos'
   );
 
   const menuItems = [
     { id: 'kanban', text: 'Kanban', icon: <KanbanIcon />, to: '/kanban' },
     { id: 'pedidos', text: 'Pedidos', icon: <PedidosIcon />, to: '/pedidos' },
     { id: 'pacientes', text: 'Pacientes', icon: <PacientesIcon />, to: '/paciente' },
-    { id: 'protetico', text: 'Protético', icon: <ProteticoIcon />, to: '/protetico' },
-    { id: 'dentista', text: 'Dentista', icon: <DentistaIcon />, to: '/dentista' },
+    { id: 'proteticos', text: 'Protéticos', icon: <ProteticoIcon />, to: '/protetico' },
+    { id: 'dentistas', text: 'Dentistas', icon: <DentistaIcon />, to: '/dentista' },
     { id: 'servicos', text: 'Serviços', icon: <ServicosIcon />, to: '/servicos' },
-    { id: 'material', text: 'Material', icon: <MaterialIcon />, to: '/material' },
+    { id: 'materiais', text: 'Materiais', icon: <MaterialIcon />, to: '/material' },
     { id: 'relatorios', text: 'Relatórios', icon: <RelatoriosIcon />, to: '/relatorios' },
-    { id: 'configuracao', text: 'Configuração', icon: <ConfiguracaoIcon />, to: '/configuracao' },
+    { id: 'configuracoes', text: 'Configurações', icon: <ConfiguracaoIcon />, to: '/configuracao' },
   ];
 
   const handleItemClick = (id) => {

@@ -13,4 +13,5 @@ public interface DentistaRepository extends BaseRepository<Dentista, Long> {
     Optional<Dentista> findByCro(String cro);
     List<Dentista> findByCroContaining(String cro);
     Optional<Dentista> findByTelefone(String telefone);
+    List<Dentista> findByClinicas_Id(Long clinicaId);
 } 

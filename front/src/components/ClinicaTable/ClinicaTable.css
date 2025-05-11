@@ -1,0 +1,183 @@
+.clinica-table-container {
+  width: 100%;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-top: 20px;
+  overflow-y: visible;
+  position: relative;
+  z-index: 10;
+  overflow-x: auto;
+}
+
+.clinica-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-height: 100px;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  table-layout: fixed;
+}
+
+.clinica-table th,
+.clinica-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.clinica-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+  padding: 12px 15px;
+  text-align: left;
+  position: relative;
+}
+
+.clinica-table th:nth-child(1) { width: 15%; } /* ID */
+.clinica-table th:nth-child(2) { width: 40%; } /* Nome */
+.clinica-table th:nth-child(3) { width: 35%; } /* CNPJ */
+.clinica-table th:nth-child(4) { width: 6%; text-align: center; padding-right: 0; } /* Ações */
+
+.clinica-table tr:hover {
+  background-color: #f5f5f5;
+}
+
+.clinica-table tr:last-child td {
+  border-bottom: none;
+}
+
+.clinica-table td {
+  font-size: 14px;
+  color: #333;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clinica-table td:last-child {
+  z-index: 30;
+  text-align: right;
+  padding-right: 8px;
+}
+
+.empty-row {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+}
+
+.empty-row td {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #888;
+  font-style: italic;
+  padding: 20px;
+  width: 100%;
+  height: 100px;
+}
+
+.clinica-table td.empty-table-message {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+  background-color: white;
+  height: 100px;
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .clinica-table th,
+  .clinica-table td {
+    padding: 8px 12px;
+  }
+}
+
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sort-icon {
+  display: flex;
+  align-items: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.btn-editar,
+.btn-excluir {
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.btn-editar {
+  color: #2196F3;
+}
+
+.btn-excluir {
+  color: #f44336;
+}
+
+.btn-editar:hover {
+  background-color: rgba(33, 150, 243, 0.1);
+}
+
+.btn-excluir:hover {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  color: #666;
+}
+
+.empty-state p {
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.btn-novo {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.btn-novo:hover {
+  background-color: #1976D2;
+}
+
+.action-menu-clinica {
+  margin-right: 4px;
+} 

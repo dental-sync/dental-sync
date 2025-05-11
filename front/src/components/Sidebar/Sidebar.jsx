@@ -13,7 +13,8 @@ import {
   ServicosIcon,
   MaterialIcon,
   RelatoriosIcon,
-  ConfiguracaoIcon
+  ConfiguracaoIcon,
+  ClinicaIcon
 } from './icons';
 
 const Sidebar = () => {
@@ -29,6 +30,7 @@ const Sidebar = () => {
     if (path.includes('material')) return 'materiais';
     if (path.includes('relatorios')) return 'relatorios';
     if (path.includes('configuracao')) return 'configuracoes';
+    if (path.includes('clinica')) return 'clinicas';
     return 'kanban'; // Item padrão caso nenhuma rota seja encontrada
   });
 
@@ -38,6 +40,7 @@ const Sidebar = () => {
     { id: 'pacientes', text: 'Pacientes', icon: <PacientesIcon />, to: '/paciente' },
     { id: 'proteticos', text: 'Protéticos', icon: <ProteticoIcon />, to: '/protetico' },
     { id: 'dentistas', text: 'Dentistas', icon: <DentistaIcon />, to: '/dentista' },
+    { id: 'clinicas', text: 'Clínicas', icon: <ClinicaIcon />, to: '/clinica' },
     { id: 'servicos', text: 'Serviços', icon: <ServicosIcon />, to: '/servicos' },
     { id: 'materiais', text: 'Materiais', icon: <MaterialIcon />, to: '/material' },
     { id: 'relatorios', text: 'Relatórios', icon: <RelatoriosIcon />, to: '/relatorios' },

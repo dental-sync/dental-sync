@@ -36,9 +36,9 @@
 }
 
 .clinica-table th:nth-child(1) { width: 15%; } /* ID */
-.clinica-table th:nth-child(2) { width: 40%; } /* Nome */
+.clinica-table th:nth-child(2) { width: 35%; } /* Nome */
 .clinica-table th:nth-child(3) { width: 35%; } /* CNPJ */
-.clinica-table th:nth-child(4) { width: 6%; text-align: center; padding-right: 0; } /* Ações */
+.clinica-table th:nth-child(4) { width: 15%; text-align: center; padding-right: 20px; } /* Ações */
 
 .clinica-table tr:hover {
   background-color: #f5f5f5;
@@ -59,8 +59,8 @@
 
 .clinica-table td:last-child {
   z-index: 30;
-  text-align: right;
-  padding-right: 8px;
+  text-align: center;
+  padding-right: 20px;
 }
 
 .empty-row {
@@ -116,7 +116,7 @@
 .action-buttons {
   display: flex;
   gap: 8px;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .btn-editar,

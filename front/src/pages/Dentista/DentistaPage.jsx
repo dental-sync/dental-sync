@@ -356,6 +356,7 @@ const DentistaPage = () => {
             isOpen={isExportOpen}
             toggleExport={toggleExport}
             onCloseDropdown={handleCloseExport}
+            title="Lista de Dentistas"
           />
         </div>
       </div>

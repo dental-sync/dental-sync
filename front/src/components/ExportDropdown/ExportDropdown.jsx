@@ -11,7 +11,8 @@ const ExportDropdown = ({
   isOpen, 
   toggleExport,
   onCloseDropdown,
-  title
+  title,
+  formatIdFn
 }) => {
   const { exportData } = useExportCsv();
   const exportRef = useRef(null);
@@ -33,7 +34,7 @@ const ExportDropdown = ({
   // Função para exportar dados
   const handleExportar = (format) => {
     // Chamar a função de exportação do hook com o formato especificado
-    exportData(data, headers, fields, filename, format, title);
+    exportData(data, headers, fields, filename, format, title, formatIdFn);
     
     // Fechar o dropdown de exportação
     onCloseDropdown();

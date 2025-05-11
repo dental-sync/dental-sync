@@ -12,9 +12,10 @@ const useExportCsv = () => {
    * @param {Array} data - Array de objetos a serem exportados
    * @param {Array} headers - Array com os cabeçalhos das colunas
    * @param {Array} fields - Array com os campos a serem exportados
+   * @param {Function} formatIdFn - Função opcional para formatar o ID
    * @returns {string} Conteúdo CSV formatado
    */
-  const generateCsvContent = (data, headers, fields) => {
+  const generateCsvContent = (data, headers, fields, formatIdFn) => {
     if (!data || data.length === 0) {
       return '';
     }
@@ -25,7 +26,11 @@ const useExportCsv = () => {
     // Converter linhas de dados para CSV usando ponto e vírgula como separador
     const rows = data.map(item => {
       return fields.map(field => {
-        const value = item[field] !== undefined && item[field] !== null ? item[field] : '';
+        let value = item[field] !== undefined && item[field] !== null ? item[field] : '';
+        // Formatar ID se a função fornecida e o campo for 'id'
+        if (field === 'id' && formatIdFn) {
+          value = formatIdFn(value);
+        }
         // Remover aspas duplas para evitar problemas
         return String(value).replace(/"/g, '');
       }).join(';');
@@ -40,9 +45,10 @@ const useExportCsv = () => {
    * @param {Array} data - Array de objetos a serem exportados
    * @param {Array} headers - Array com os cabeçalhos das colunas
    * @param {Array} fields - Array com os campos a serem exportados
+   * @param {Function} formatIdFn - Função opcional para formatar o ID
    * @returns {string} Conteúdo formatado para Excel
    */
-  const generateExcelContent = (data, headers, fields) => {
+  const generateExcelContent = (data, headers, fields, formatIdFn) => {
     if (!data || data.length === 0) {
       return '';
     }
@@ -54,7 +60,11 @@ const useExportCsv = () => {
     // Linhas de dados
     const rows = data.map(item => {
       return fields.map(field => {
-        const value = item[field] !== undefined && item[field] !== null ? item[field] : '';
+        let value = item[field] !== undefined && item[field] !== null ? item[field] : '';
+        // Formatar ID se a função fornecida e o campo for 'id'
+        if (field === 'id' && formatIdFn) {
+          value = formatIdFn(value);
+        }
         // Substituir aspas para evitar problemas
         const stringValue = String(value).replace(/"/g, '');
         return stringValue;
@@ -71,9 +81,10 @@ const useExportCsv = () => {
    * @param {Array} headers - Array com os cabeçalhos das colunas
    * @param {Array} fields - Array com os campos a serem exportados
    * @param {string} title - Título do documento PDF
+   * @param {Function} formatIdFn - Função opcional para formatar o ID
    * @returns {jsPDF} Documento PDF gerado
    */
-  const generatePdfContent = (data, headers, fields, title = 'Lista de Protéticos') => {
+  const generatePdfContent = (data, headers, fields, title = 'Lista de Protéticos', formatIdFn) => {
     if (!data || data.length === 0) {
       return null;
     }
@@ -85,7 +96,12 @@ const useExportCsv = () => {
       // Preparar dados no formato para autoTable
       const tableData = data.map(item => {
         return fields.map(field => {
-          return item[field] !== undefined && item[field] !== null ? item[field] : '';
+          let value = item[field] !== undefined && item[field] !== null ? item[field] : '';
+          // Formatar ID se a função fornecida e o campo for 'id'
+          if (field === 'id' && formatIdFn) {
+            value = formatIdFn(value);
+          }
+          return value;
         });
       });
       
@@ -172,8 +188,9 @@ const useExportCsv = () => {
    * @param {string} filename - Nome base do arquivo (sem extensão)
    * @param {string} format - Formato de exportação ('csv', 'excel', 'pdf')
    * @param {string} title - Título do documento PDF
+   * @param {Function} formatIdFn - Função opcional para formatar o ID
    */
-  const exportData = (data, headers, fields, filename, format = 'csv', title) => {
+  const exportData = (data, headers, fields, filename, format = 'csv', title, formatIdFn) => {
     if (!data || data.length === 0) {
       toast.warning('Não há dados para exportar.');
       return;
@@ -190,14 +207,14 @@ const useExportCsv = () => {
       // Gerar conteúdo de acordo com o formato
       switch (format) {
         case 'pdf':
-          content = generatePdfContent(data, headers, fields, title);
+          content = generatePdfContent(data, headers, fields, title, formatIdFn);
           break;
         case 'excel':
-          content = generateExcelContent(data, headers, fields);
+          content = generateExcelContent(data, headers, fields, formatIdFn);
           break;
         case 'csv':
         default:
-          content = generateCsvContent(data, headers, fields);
+          content = generateCsvContent(data, headers, fields, formatIdFn);
           break;
       }
       

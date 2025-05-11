@@ -18,18 +18,19 @@ import {
 
 const Sidebar = () => {
   const location = useLocation();
-  const [activeItem, setActiveItem] = useState(
-    location.pathname.includes('proteticos') ? 'proteticos' : 
-    location.pathname.includes('kanban') ? 'kanban' :
-    location.pathname.includes('pedidos') ? 'pedidos' :
-    location.pathname.includes('pacientes') ? 'pacientes' :
-    location.pathname.includes('dentistas') ? 'dentistas' :
-    location.pathname.includes('servicos') ? 'servicos' :
-    location.pathname.includes('materiais') ? 'materiais' :
-    location.pathname.includes('relatorios') ? 'relatorios' :
-    location.pathname.includes('configuracoes') ? 'configuracoes' :
-    'proteticos'
-  );
+  const [activeItem, setActiveItem] = useState(() => {
+    const path = location.pathname;
+    if (path.includes('kanban')) return 'kanban';
+    if (path.includes('pedidos')) return 'pedidos';
+    if (path.includes('paciente')) return 'pacientes';
+    if (path.includes('protetico')) return 'proteticos';
+    if (path.includes('dentista')) return 'dentistas';
+    if (path.includes('servicos')) return 'servicos';
+    if (path.includes('material')) return 'materiais';
+    if (path.includes('relatorios')) return 'relatorios';
+    if (path.includes('configuracao')) return 'configuracoes';
+    return 'kanban'; // Item padrão caso nenhuma rota seja encontrada
+  });
 
   const menuItems = [
     { id: 'kanban', text: 'Kanban', icon: <KanbanIcon />, to: '/kanban' },

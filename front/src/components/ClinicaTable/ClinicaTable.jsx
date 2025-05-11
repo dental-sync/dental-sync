@@ -31,13 +31,13 @@ const ClinicaTable = ({ clinicas, onClinicaDeleted, sortConfig, onSort, isEmpty 
       <table className="clinica-table">
         <thead>
           <tr>
-            <th className="sortable-header" onClick={() => onSort('id')}>
+            <th className="sortable-header" data-sortable="true" onClick={() => onSort('id')}>
               <span className="sortable-content">
                 ID
                 <div className="sort-icon">{getSortIcon('id')}</div>
               </span>
             </th>
-            <th className="sortable-header" onClick={() => onSort('nome')}>
+            <th className="sortable-header" data-sortable="true" onClick={() => onSort('nome')}>
               <span className="sortable-content">
                 Nome
                 <div className="sort-icon">{getSortIcon('nome')}</div>

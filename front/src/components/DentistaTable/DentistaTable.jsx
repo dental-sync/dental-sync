@@ -56,13 +56,13 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
       <table className="dentista-table">
         <thead>
           <tr>
-            <th className="sortable-header" onClick={() => onSort('id')}>
+            <th className="sortable-header" data-sortable="true" onClick={() => onSort('id')}>
               <span className="sortable-content">
                 ID
                 <div className="sort-icon">{getSortIcon('id')}</div>
               </span>
             </th>
-            <th className="sortable-header" onClick={() => onSort('nome')}>
+            <th className="sortable-header" data-sortable="true" onClick={() => onSort('nome')}>
               <span className="sortable-content">
                 Nome
                 <div className="sort-icon">{getSortIcon('nome')}</div>
@@ -71,7 +71,7 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
             <th>CRO</th>
             <th>Email</th>
             <th>Telefone</th>
-            <th className="sortable-header" onClick={() => onSort('isActive')}>
+            <th className="sortable-header" data-sortable="true" onClick={() => onSort('isActive')}>
               <span className="sortable-content">
                 Status
                 <div className="sort-icon">{getSortIcon('isActive')}</div>

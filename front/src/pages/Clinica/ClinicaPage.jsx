@@ -221,21 +221,21 @@ const ClinicaPage = () => {
 
   return (
     <div className="clinica-page">
-      <div className="clinica-page-top">
-        <div className="clinica-notification-container">
+      <div className="page-top">
+        <div className="notification-container">
           <NotificationBell count={2} />
         </div>
       </div>
       
       {toastMessage && (
-        <div className="clinica-toast-message">
+        <div className="toast-message">
           {toastMessage}
         </div>
       )}
       
-      <div className="clinica-page-header">
-        <h1 className="clinica-page-title">Clínicas</h1>
-        <div className="clinica-header-actions">
+      <div className="page-header">
+        <h1 className="page-title">Clínicas</h1>
+        <div className="header-actions">
           <ExportDropdown 
             data={sortedClinicas}
             headers={['ID', 'Nome', 'CNPJ']}
@@ -249,7 +249,7 @@ const ClinicaPage = () => {
         </div>
       </div>
       
-      <div className="clinica-search-container">
+      <div className="search-container">
         <SearchBar
           placeholder="Buscar por ID, nome ou CNPJ..."
           onSearch={handleSearch}
@@ -261,9 +261,9 @@ const ClinicaPage = () => {
         />
       </div>
       
-      <div className="clinica-table-section">
+      <div className="table-section">
         {searchQuery && clinicasFiltradas.length === 0 && (
-          <div className="clinica-search-info">
+          <div className="search-info">
             Nenhuma clínica encontrada para a busca "{searchQuery}".
           </div>
         )}

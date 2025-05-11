@@ -357,6 +357,7 @@ const DentistaPage = () => {
             toggleExport={toggleExport}
             onCloseDropdown={handleCloseExport}
             title="Lista de Dentistas"
+            formatIdFn={formatDentistaId}
           />
         </div>
       </div>

@@ -245,6 +245,7 @@ const ClinicaPage = () => {
             toggleExport={toggleExport}
             onCloseDropdown={handleCloseExport}
             title="Lista de Clínicas"
+            formatIdFn={formatClinicaId}
           />
         </div>
       </div>

@@ -9,7 +9,7 @@ import StatusBadge from '../StatusBadge/StatusBadge';
 // Função utilitária para formatar o ID
 const formatDentistaId = (id) => `D${String(id).padStart(4, '0')}`;
 
-const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfig, onSort }) => {
+const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfig, onSort, isEmpty }) => {
   const navigate = useNavigate();
 
   const handleStatusChange = async (dentistaId, newStatus) => {
@@ -81,7 +81,13 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
           </tr>
         </thead>
         <tbody>
-          {dentistas.length > 0 ? (
+          {isEmpty ? (
+            <tr>
+              <td colSpan="7" className="empty-table-message">
+                Nenhum dentista cadastrado
+              </td>
+            </tr>
+          ) : dentistas.length > 0 ? (
             dentistas.map((dentista) => (
               <tr key={dentista.id}>
                 <td>{formatDentistaId(dentista.id)}</td>

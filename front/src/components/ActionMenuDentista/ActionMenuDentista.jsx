@@ -69,7 +69,6 @@ const ActionMenuDentista = ({ dentistaId, onDentistaDeleted, isActive }) => {
     try {
       await axios.delete(`http://localhost:8080/dentistas/${dentistaId}`);
       onDentistaDeleted(dentistaId);
-      toast.success('Dentista excluído com sucesso!');
     } catch (error) {
       console.error('Erro ao excluir dentista:', error);
       toast.error('Erro ao excluir dentista. Tente novamente.');

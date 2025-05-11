@@ -70,9 +70,10 @@ const useExportCsv = () => {
    * @param {Array} data - Array de objetos a serem exportados
    * @param {Array} headers - Array com os cabeçalhos das colunas
    * @param {Array} fields - Array com os campos a serem exportados
+   * @param {string} title - Título do documento PDF
    * @returns {jsPDF} Documento PDF gerado
    */
-  const generatePdfContent = (data, headers, fields) => {
+  const generatePdfContent = (data, headers, fields, title = 'Lista de Protéticos') => {
     if (!data || data.length === 0) {
       return null;
     }
@@ -89,7 +90,7 @@ const useExportCsv = () => {
       });
       
       // Adicionar título ao documento
-      doc.text('Lista de Protéticos', 14, 15);
+      doc.text(title, 14, 15);
       
       // Usar o autoTable como função importada diretamente
       autoTable(doc, {
@@ -170,8 +171,9 @@ const useExportCsv = () => {
    * @param {Array} fields - Campos dos objetos a serem exportados
    * @param {string} filename - Nome base do arquivo (sem extensão)
    * @param {string} format - Formato de exportação ('csv', 'excel', 'pdf')
+   * @param {string} title - Título do documento PDF
    */
-  const exportData = (data, headers, fields, filename, format = 'csv') => {
+  const exportData = (data, headers, fields, filename, format = 'csv', title) => {
     if (!data || data.length === 0) {
       toast.warning('Não há dados para exportar.');
       return;
@@ -188,7 +190,7 @@ const useExportCsv = () => {
       // Gerar conteúdo de acordo com o formato
       switch (format) {
         case 'pdf':
-          content = generatePdfContent(data, headers, fields);
+          content = generatePdfContent(data, headers, fields, title);
           break;
         case 'excel':
           content = generateExcelContent(data, headers, fields);

@@ -356,6 +356,7 @@ const DentistaPage = () => {
             isOpen={isExportOpen}
             toggleExport={toggleExport}
             onCloseDropdown={handleCloseExport}
+            title="Lista de Dentistas"
           />
         </div>
       </div>
@@ -389,6 +390,7 @@ const DentistaPage = () => {
           onStatusChange={handleStatusChange}
           sortConfig={sortConfig}
           onSort={handleSort}
+          isEmpty={!searchQuery && dentistasFiltrados.length === 0 && filtros.isActive === 'todos'}
         />
       </div>
     </div>

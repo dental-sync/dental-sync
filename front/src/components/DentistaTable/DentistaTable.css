@@ -69,6 +69,16 @@
   height: 100px;
 }
 
+.dentista-table td.empty-table-message {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+  background-color: white;
+  height: 100px;
+  vertical-align: middle;
+}
+
 @media (max-width: 768px) {
   .dentista-table th,
   .dentista-table td {

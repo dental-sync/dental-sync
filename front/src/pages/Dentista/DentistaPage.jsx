@@ -389,6 +389,7 @@ const DentistaPage = () => {
           onStatusChange={handleStatusChange}
           sortConfig={sortConfig}
           onSort={handleSort}
+          isEmpty={!searchQuery && dentistasFiltrados.length === 0 && filtros.isActive === 'todos'}
         />
       </div>
     </div>

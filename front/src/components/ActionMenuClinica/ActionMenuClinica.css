@@ -1,0 +1,56 @@
+.action-menu-clinica {
+  position: relative;
+  display: inline-block;
+}
+
+.action-menu-button {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.action-menu-button:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.action-menu-dropdown {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  z-index: 1000;
+}
+
+.action-menu-dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.action-menu-dropdown li {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: all 0.2s ease;
+}
+
+.action-menu-dropdown li:hover {
+  background-color: #f5f5f5;
+}
+
+.action-menu-dropdown .delete-option {
+  color: #e53e3e;
+}
+
+.action-menu-dropdown .delete-option:hover {
+  background-color: #fff5f5;
+} 

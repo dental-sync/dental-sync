@@ -27,7 +27,7 @@ const ClinicaTable = ({ clinicas, onClinicaDeleted, sortConfig, onSort, isEmpty 
   };
 
   return (
-    <div className="clinica-table-container">
+    <div className={`clinica-table-container${isEmpty ? ' empty' : ''}`}>
       <table className="clinica-table">
         <thead>
           <tr>
@@ -48,13 +48,7 @@ const ClinicaTable = ({ clinicas, onClinicaDeleted, sortConfig, onSort, isEmpty 
           </tr>
         </thead>
         <tbody>
-          {isEmpty ? (
-            <tr>
-              <td colSpan="4" className="empty-table-message">
-                Nenhuma clínica cadastrada
-              </td>
-            </tr>
-          ) : clinicas.length > 0 ? (
+          {isEmpty ? null : clinicas.length > 0 ? (
             clinicas.map((clinica) => (
               <tr key={clinica.id}>
                 <td>{formatClinicaId(clinica.id)}</td>
@@ -75,6 +69,11 @@ const ClinicaTable = ({ clinicas, onClinicaDeleted, sortConfig, onSort, isEmpty 
           )}
         </tbody>
       </table>
+      {isEmpty && (
+        <div className="empty-table-message-absolute">
+          Nenhuma clínica cadastrada
+        </div>
+      )}
     </div>
   );
 }

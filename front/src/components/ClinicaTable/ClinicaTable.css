@@ -180,4 +180,41 @@
 
 .action-menu-clinica {
   margin-right: 4px;
+}
+
+.clinica-table-container.empty .clinica-table thead {
+  border-bottom: none;
+}
+
+.clinica-table-container.empty .clinica-table {
+  border-bottom: none;
+  box-shadow: none;
+  min-height: 0;
+  height: auto;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.clinica-table-container.empty {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.empty-table-message-absolute {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 120px;
+  color: #666;
+  font-size: 16px;
+  background-color: white;
+  border-radius: 8px;
+  margin-top: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.clinica-table-container.empty .clinica-table th,
+.clinica-table-container.empty .clinica-table td {
+  border-bottom: none;
 } 

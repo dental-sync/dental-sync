@@ -52,7 +52,7 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
   };
 
   return (
-    <div className="dentista-table-container">
+    <div className={`dentista-table-container${isEmpty ? ' empty' : ''}`}>
       <table className="dentista-table">
         <thead>
           <tr>
@@ -81,13 +81,7 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
           </tr>
         </thead>
         <tbody>
-          {isEmpty ? (
-            <tr>
-              <td colSpan="7" className="empty-table-message">
-                Nenhum dentista cadastrado
-              </td>
-            </tr>
-          ) : dentistas.length > 0 ? (
+          {isEmpty ? null : dentistas.length > 0 ? (
             dentistas.map((dentista) => (
               <tr key={dentista.id}>
                 <td>{formatDentistaId(dentista.id)}</td>
@@ -117,6 +111,11 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
           )}
         </tbody>
       </table>
+      {isEmpty && (
+        <div className="empty-table-message-absolute">
+          Nenhum dentista cadastrado
+        </div>
+      )}
     </div>
   );
 }

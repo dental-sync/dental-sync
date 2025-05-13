@@ -103,111 +103,115 @@ const HistoricoPaciente = () => {
   
   if (error) {
     return (
-      <div className="historico-paciente-page">
-        <div className="error-container">
-          <div className="error-message">{error}</div>
-          <button onClick={handleVoltar} className="btn-voltar">
-            Voltar para Lista de Pacientes
-          </button>
+      <div className="paciente-page">
+        <div className="historico-paciente-page">
+          <div className="error-container">
+            <div className="error-message">{error}</div>
+            <button onClick={handleVoltar} className="btn-voltar">
+              Voltar para Lista de Pacientes
+            </button>
+          </div>
         </div>
       </div>
     );
   }
   
   return (
-    <div className="historico-paciente-page">
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
-        </div>
-      </div>
-      
-      <div className="back-navigation">
-        <button onClick={handleVoltar} className="back-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <h1 className="page-title">Histórico do Paciente</h1>
-      </div>
-      
-      <div className="paciente-info-card">
-        <div className="paciente-info-header">
-          <h2>{paciente.nome}</h2>
-          <span className={`status-badge ${paciente.status ? 'status-ativo' : 'status-inativo'}`}>
-            {paciente.status ? 'Ativo' : 'Inativo'}
-          </span>
+    <div className="paciente-page">
+      <div className="historico-paciente-page">
+        <div className="page-top">
+          <div className="notification-container">
+            <NotificationBell count={2} />
+          </div>
         </div>
         
-        <div className="paciente-info-details">
-          <div className="info-group">
-            <span className="info-label">ID:</span>
-            <span className="info-value">{paciente.id}</span>
+        <div className="back-navigation">
+          <button onClick={handleVoltar} className="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <h1 className="page-title">Histórico do Paciente</h1>
+        </div>
+        
+        <div className="paciente-info-card">
+          <div className="paciente-info-header">
+            <h2>{paciente.nome}</h2>
+            <span className={`status-badge ${paciente.status ? 'status-ativo' : 'status-inativo'}`}>
+              {paciente.status ? 'Ativo' : 'Inativo'}
+            </span>
           </div>
           
-          <div className="info-group">
-            <span className="info-label">Email:</span>
-            <span className="info-value">{paciente.email || '-'}</span>
-          </div>
-          
-          <div className="info-group">
-            <span className="info-label">Telefone:</span>
-            <span className="info-value">{paciente.telefone || '-'}</span>
-          </div>
-          
-          <div className="info-group">
-            <span className="info-label">Data de Nascimento:</span>
-            <span className="info-value">{formatarData(paciente.dataNascimento)}</span>
-          </div>
-          
-          <div className="info-group">
-            <span className="info-label">Último Serviço:</span>
-            <span className="info-value">{formatarData(paciente.ultimoPedido)}</span>
+          <div className="paciente-info-details">
+            <div className="info-group">
+              <span className="info-label">ID:</span>
+              <span className="info-value">{paciente.id}</span>
+            </div>
+            
+            <div className="info-group">
+              <span className="info-label">Email:</span>
+              <span className="info-value">{paciente.email || '-'}</span>
+            </div>
+            
+            <div className="info-group">
+              <span className="info-label">Telefone:</span>
+              <span className="info-value">{paciente.telefone || '-'}</span>
+            </div>
+            
+            <div className="info-group">
+              <span className="info-label">Data de Nascimento:</span>
+              <span className="info-value">{formatarData(paciente.dataNascimento)}</span>
+            </div>
+            
+            <div className="info-group">
+              <span className="info-label">Último Serviço:</span>
+              <span className="info-value">{formatarData(paciente.ultimoPedido)}</span>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <div className="historico-section">
-        <h3 className="section-title">Histórico de Serviços</h3>
         
-        {servicos.length > 0 ? (
-          <div className="servicos-table-container">
-            <table className="servicos-table">
-              <thead>
-                <tr>
-                  <th>Código</th>
-                  <th>Data</th>
-                  <th>Tipo</th>
-                  <th>Descrição</th>
-                  <th>Dentista</th>
-                  <th>Valor</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {servicos.map(servico => (
-                  <tr key={servico.id}>
-                    <td>{servico.id}</td>
-                    <td>{formatarData(servico.data)}</td>
-                    <td>{servico.tipo}</td>
-                    <td>{servico.descricao}</td>
-                    <td>{servico.dentista}</td>
-                    <td>{formatarValor(servico.valorTotal)}</td>
-                    <td>
-                      <span className={`status-badge status-${servico.status.toLowerCase()}`}>
-                        {servico.status === 'CONCLUIDO' ? 'Concluído' : 'Agendado'}
-                      </span>
-                    </td>
+        <div className="historico-section">
+          <h3 className="section-title">Histórico de Serviços</h3>
+          
+          {servicos.length > 0 ? (
+            <div className="servicos-table-container">
+              <table className="servicos-table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Data</th>
+                    <th>Tipo</th>
+                    <th>Descrição</th>
+                    <th>Dentista</th>
+                    <th>Valor</th>
+                    <th>Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="empty-historico">
-            <p>Este paciente ainda não possui serviços registrados.</p>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {servicos.map(servico => (
+                    <tr key={servico.id}>
+                      <td>{servico.id}</td>
+                      <td>{formatarData(servico.data)}</td>
+                      <td>{servico.tipo}</td>
+                      <td>{servico.descricao}</td>
+                      <td>{servico.dentista}</td>
+                      <td>{formatarValor(servico.valorTotal)}</td>
+                      <td>
+                        <span className={`status-badge status-${servico.status.toLowerCase()}`}>
+                          {servico.status === 'CONCLUIDO' ? 'Concluído' : 'Agendado'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="empty-historico">
+              <p>Este paciente ainda não possui serviços registrados.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

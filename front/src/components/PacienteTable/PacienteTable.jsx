@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 
 const PacienteTable = ({ pacientes = [], onPacienteDeleted, onStatusChange }) => {
   const [pacientesState, setPacientesState] = useState(pacientes);
+  const isEmpty = pacientesState.length === 0;
 
   // Atualizar o estado local quando as props mudarem
   React.useEffect(() => {
@@ -51,7 +52,7 @@ const PacienteTable = ({ pacientes = [], onPacienteDeleted, onStatusChange }) =>
   };
 
   return (
-    <div className="paciente-table-container">
+    <div className={`paciente-table-container${isEmpty ? ' empty' : ''}`}>
       <table className="paciente-table">
         <thead>
           <tr>
@@ -66,7 +67,7 @@ const PacienteTable = ({ pacientes = [], onPacienteDeleted, onStatusChange }) =>
           </tr>
         </thead>
         <tbody>
-          {pacientesState.length > 0 ? (
+          {isEmpty ? null : (
             pacientesState.map((paciente) => (
               <tr key={paciente.id}>
                 <td>{paciente.id}</td>
@@ -91,13 +92,14 @@ const PacienteTable = ({ pacientes = [], onPacienteDeleted, onStatusChange }) =>
                 </td>
               </tr>
             ))
-          ) : (
-            <tr className="empty-row">
-              <td colSpan="8"></td>
-            </tr>
           )}
         </tbody>
       </table>
+      {isEmpty && (
+        <div className="empty-table-message-absolute">
+          Nenhum paciente cadastrado
+        </div>
+      )}
     </div>
   );
 };

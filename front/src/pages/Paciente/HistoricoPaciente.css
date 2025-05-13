@@ -1,6 +1,8 @@
 .historico-paciente-page {
   padding: 20px;
-  height: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: calc(100vh - 40px);
   display: flex;
   flex-direction: column;
 }

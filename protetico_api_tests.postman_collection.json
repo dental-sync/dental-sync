@@ -1,0 +1,445 @@
+{
+	"info": {
+		"_postman_id": "c5a42abc-1234-5678-9abc-def012345678",
+		"name": "DentalSync - Protetico API Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "Listar todos os protéticos",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/proteticos",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar protético por ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/proteticos/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar protético por ID inválido",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/proteticos/999",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos",
+						"999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar protético por email",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/proteticos/email/protetico@example.com",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos",
+						"email",
+						"protetico@example.com"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar protético por CRO",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/proteticos/cro/CRO-SP 12345",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos",
+						"cro",
+						"CRO-SP 12345"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Criar protético válido",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"nome\": \"Protetico Teste\",\n    \"cro\": \"CRO-SP 99999\",\n    \"isAdmin\": false,\n    \"telefone\": \"(11) 98765-4321\",\n    \"email\": \"protetico.teste@example.com\",\n    \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/proteticos",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Criar protético com email duplicado",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"nome\": \"Protetico Email Duplicado\",\n    \"cro\": \"CRO-RJ 88888\",\n    \"isAdmin\": false,\n    \"telefone\": \"(11) 98888-7777\",\n    \"email\": \"protetico@example.com\",\n    \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/proteticos",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Criar protético com CRO duplicado",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"nome\": \"Protetico CRO Duplicado\",\n    \"cro\": \"CRO-SP 12345\",\n    \"isAdmin\": false,\n    \"telefone\": \"(11) 97777-6666\",\n    \"email\": \"novo.protetico@example.com\",\n    \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/proteticos",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Criar protético com telefone duplicado",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"nome\": \"Protetico Telefone Duplicado\",\n    \"cro\": \"CRO-MG 77777\",\n    \"isAdmin\": false,\n    \"telefone\": \"(11) 98765-4321\",\n    \"email\": \"tel.duplicado@example.com\",\n    \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/proteticos",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Criar protético com formato de CRO inválido",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"nome\": \"Protetico CRO Inválido\",\n    \"cro\": \"CRO 12345\",\n    \"isAdmin\": false,\n    \"telefone\": \"(11) 96666-5555\",\n    \"email\": \"cro.invalido@example.com\",\n    \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/proteticos",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Criar protético com formato de telefone inválido",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"nome\": \"Protetico Telefone Inválido\",\n    \"cro\": \"CRO-RS 66666\",\n    \"isAdmin\": false,\n    \"telefone\": \"11987654321\",\n    \"email\": \"tel.invalido@example.com\",\n    \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/proteticos",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Criar protético com email inválido",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"nome\": \"Protetico Email Inválido\",\n    \"cro\": \"CRO-SC 55555\",\n    \"isAdmin\": false,\n    \"telefone\": \"(11) 95555-4444\",\n    \"email\": \"email-invalido\",\n    \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/proteticos",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Atualizar protético válido",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"nome\": \"Protetico Atualizado\",\n    \"cro\": \"CRO-SP 99999\",\n    \"isAdmin\": false,\n    \"telefone\": \"(11) 98765-4321\",\n    \"email\": \"protetico.teste@example.com\",\n    \"isActive\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/proteticos/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Atualizar status do protético",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"isActive\": false\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/proteticos/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Atualizar status com payload inválido",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"status\": false\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/proteticos/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Excluir protético ativo",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/proteticos/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Excluir protético inativo",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/proteticos/2",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Excluir protético inexistente",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/proteticos/999",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"proteticos",
+						"999"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+} 

@@ -3,7 +3,7 @@ import './DentistaTable.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import ActionMenuDentista from '../ActionMenuDentista/ActionMenuDentista';
+import ActionMenu from '../ActionMenu/ActionMenu';
 import StatusBadge from '../StatusBadge/StatusBadge';
 
 // Função utilitária para formatar o ID
@@ -96,10 +96,19 @@ const DentistaTable = ({ dentistas, onDentistaDeleted, onStatusChange, sortConfi
                   />
                 </td>
                 <td>
-                  <ActionMenuDentista 
-                    dentistaId={dentista.id} 
-                    onDentistaDeleted={onDentistaDeleted}
+                  <ActionMenu 
+                    itemId={dentista.id}
+                    entityType="dentista"
+                    apiEndpoint="http://localhost:8080/dentistas"
+                    onDelete={onDentistaDeleted}
                     isActive={dentista.isActive === 'ATIVO'}
+                    texts={{
+                      deleteTitle: 'Confirmar Exclusão',
+                      deleteMessage: 'Tem certeza que deseja excluir este dentista? Esta ação não pode ser desfeita.',
+                      deleteWarning: 'Não é possível excluir um dentista ativo. Desative-o primeiro.',
+                      deleteSuccess: 'Dentista excluído com sucesso!',
+                      deleteError: 'Erro ao excluir dentista. Tente novamente.'
+                    }}
                   />
                 </td>
               </tr>

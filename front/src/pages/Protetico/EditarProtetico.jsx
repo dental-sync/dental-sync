@@ -262,162 +262,160 @@ const EditarProtetico = () => {
 
   if (loadingData) {
     return (
-      <div className="editar-protetico-page">
-        <div className="loading">Carregando dados...</div>
+      <div className="protetico-page">
+        <div className="cadastro-protetico-page">
+          <div className="loading">Carregando dados...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="editar-protetico-page">
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
-        </div>
-      </div>
-      
-      <div className="back-navigation">
-        <button onClick={handleVoltar} className="back-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <h1 className="page-title">Editar Protético</h1>
-      </div>
-      
-      {success && (
-        <div className="success-message">
-          Protético atualizado com sucesso!
-        </div>
-      )}
-      
-      {errors.general && (
-        <div className="error-message">
-          {errors.general}
-        </div>
-      )}
-      
-      {errors.serverValidation && (
-        <div className="server-validation-error">
-          <div className="error-title">Erro de validação:</div>
-          <div className="error-message">{errors.serverValidation}</div>
-        </div>
-      )}
-      
-      <form onSubmit={handleSubmit} className="protetico-form">
-        <div className="form-group">
-          <label htmlFor="nome">Nome Completo</label>
-          <input
-            type="text"
-            id="nome"
-            name="nome"
-            value={formData.nome}
-            onChange={handleChange}
-            className={errors.nome ? 'input-error' : ''}
-            maxLength={255}
-            placeholder="Digite o nome completo"
-          />
-          {errors.nome && <div className="error-text">{errors.nome}</div>}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className={errors.email ? 'input-error' : ''}
-            maxLength={100}
-            placeholder="exemplo@email.com"
-          />
-          {errors.email && <div className="error-text">{errors.email}</div>}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="telefone">Telefone</label>
-          <input
-            type="tel"
-            id="telefone"
-            name="telefone"
-            value={formData.telefone}
-            onChange={handleChange}
-            className={errors.telefone ? 'input-error' : ''}
-            placeholder="(00) 00000-0000"
-          />
-          {errors.telefone && <div className="error-text">{errors.telefone}</div>}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="cargo">Cargo</label>
-          <select
-            id="cargo"
-            name="cargo"
-            value={formData.cargo}
-            onChange={handleChange}
-            className={errors.cargo ? 'input-error' : ''}
-          >
-            <option value="">Selecione um cargo</option>
-            <option value="Admin">Admin</option>
-            <option value="Protetico">Protetico</option>
-          </select>
-          {errors.cargo && <div className="error-text">{errors.cargo}</div>}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="cro">CRO</label>
-          <input
-            type="text"
-            id="cro"
-            name="cro"
-            value={formData.cro}
-            onChange={handleChange}
-            className={errors.cro ? 'input-error' : ''}
-            placeholder="CRO-XX 000000"
-          />
-          {errors.cro && <div className="error-text">{errors.cro}</div>}
-          <small className="input-help">Formato: CRO-XX NNNNNN (ex: CRO-SP 123456)</small>
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="senha">Nova Senha (opcional)</label>
-          <input
-            type="password"
-            id="senha"
-            name="senha"
-            value={formData.senha}
-            onChange={handleChange}
-            className={errors.senha ? 'input-error' : ''}
-            placeholder="Deixe em branco para manter a senha atual"
-            minLength={6}
-          />
-          {errors.senha && <div className="error-text">{errors.senha}</div>}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="confirmarSenha">Confirmar Nova Senha</label>
-          <input
-            type="password"
-            id="confirmarSenha"
-            name="confirmarSenha"
-            value={formData.confirmarSenha}
-            onChange={handleChange}
-            className={errors.confirmarSenha ? 'input-error' : ''}
-            placeholder="Repita a nova senha"
-          />
-          {errors.confirmarSenha && <div className="error-text">{errors.confirmarSenha}</div>}
-        </div>
-        
-        <div className="form-actions">
-          <button type="button" onClick={handleVoltar} className="btn-cancelar">
-            Cancelar
+    <div className="protetico-page">
+      <div className="cadastro-protetico-page">
+        <div className="back-navigation">
+          <button onClick={handleVoltar} className="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
           </button>
-          <button type="submit" className="btn-salvar" disabled={loading}>
-            {loading ? 'Salvando...' : 'Salvar Alterações'}
-          </button>
+          <h1 className="page-title">Editar Protético</h1>
         </div>
-      </form>
+        
+        {success && (
+          <div className="success-message">
+            Protético atualizado com sucesso!
+          </div>
+        )}
+        
+        {errors.general && (
+          <div className="error-message">
+            {errors.general}
+          </div>
+        )}
+        
+        {errors.serverValidation && (
+          <div className="server-validation-error">
+            <div className="error-title">Erro de validação:</div>
+            <div className="error-message">{errors.serverValidation}</div>
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit} className="protetico-form">
+          <div className="form-group">
+            <label htmlFor="nome" className="required">Nome Completo</label>
+            <input
+              type="text"
+              id="nome"
+              name="nome"
+              value={formData.nome}
+              onChange={handleChange}
+              className={errors.nome ? 'input-error' : ''}
+              maxLength={255}
+              placeholder="Digite o nome completo"
+            />
+            {errors.nome && <div className="error-text">{errors.nome}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="email" className="required">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={errors.email ? 'input-error' : ''}
+              maxLength={100}
+              placeholder="exemplo@email.com"
+            />
+            {errors.email && <div className="error-text">{errors.email}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="telefone" className="required">Telefone</label>
+            <input
+              type="tel"
+              id="telefone"
+              name="telefone"
+              value={formData.telefone}
+              onChange={handleChange}
+              className={errors.telefone ? 'input-error' : ''}
+              placeholder="(00) 00000-0000"
+            />
+            {errors.telefone && <div className="error-text">{errors.telefone}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="cargo" className="required">Cargo</label>
+            <select
+              id="cargo"
+              name="cargo"
+              value={formData.cargo}
+              onChange={handleChange}
+              className={errors.cargo ? 'input-error' : ''}
+            >
+              <option value="">Selecione um cargo</option>
+              <option value="Admin">Admin</option>
+              <option value="Protetico">Protetico</option>
+            </select>
+            {errors.cargo && <div className="error-text">{errors.cargo}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="cro" className="required">CRO</label>
+            <input
+              type="text"
+              id="cro"
+              name="cro"
+              value={formData.cro}
+              onChange={handleChange}
+              className={errors.cro ? 'input-error' : ''}
+              placeholder="CRO-XX 000000"
+            />
+            {errors.cro && <div className="error-text">{errors.cro}</div>}
+            <small className="input-help">Formato: CRO-XX NNNNNN (ex: CRO-SP 123456)</small>
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="senha">Nova Senha (opcional)</label>
+            <input
+              type="password"
+              id="senha"
+              name="senha"
+              value={formData.senha}
+              onChange={handleChange}
+              className={errors.senha ? 'input-error' : ''}
+              placeholder="Deixe em branco para manter a senha atual"
+              minLength={6}
+            />
+            {errors.senha && <div className="error-text">{errors.senha}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="confirmarSenha">Confirmar Nova Senha</label>
+            <input
+              type="password"
+              id="confirmarSenha"
+              name="confirmarSenha"
+              value={formData.confirmarSenha}
+              onChange={handleChange}
+              className={errors.confirmarSenha ? 'input-error' : ''}
+              placeholder="Repita a nova senha"
+            />
+            {errors.confirmarSenha && <div className="error-text">{errors.confirmarSenha}</div>}
+          </div>
+          
+          <div className="form-actions">
+            <button type="button" onClick={handleVoltar} className="btn-cancelar">
+              Cancelar
+            </button>
+            <button type="submit" className="btn-cadastrar" disabled={loading}>
+              {loading ? 'Salvando...' : 'Salvar Alterações'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

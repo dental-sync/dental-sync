@@ -5,19 +5,40 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
-import { formatProteticoId } from '../../utils/formatters';
 
-const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
+/**
+ * Componente genérico de menu de ações
+ * @param {Object} props - Propriedades do componente
+ * @param {string|number} props.itemId - ID do item associado ao menu
+ * @param {string} props.entityType - Tipo de entidade ('protetico', 'dentista', etc.)
+ * @param {string} props.apiEndpoint - Endpoint da API para exclusão (ex: '/api/proteticos', '/api/dentistas')
+ * @param {boolean} props.isActive - Se o item está ativo ou não
+ * @param {Function} props.onDelete - Callback executado quando o item é excluído
+ * @param {Array} props.customActions - Ações personalizadas adicionais [{ label, onClick }]
+ * @param {Object} props.texts - Textos personalizados para o componente
+ * @returns {JSX.Element}
+ */
+const ActionMenu = ({
+  itemId,
+  entityType = 'item',
+  apiEndpoint,
+  isActive = false,
+  onDelete,
+  customActions = [],
+  texts = {
+    deleteTitle: 'Confirmar Exclusão',
+    deleteMessage: 'Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.',
+    deleteWarning: 'Não é possível excluir um item ativo. Desative-o primeiro.',
+    deleteSuccess: 'Item excluído com sucesso!',
+    deleteError: 'Erro ao excluir. Tente novamente.'
+  }
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   const navigate = useNavigate();
-  const isActive = proteticoStatus === true || 
-                  proteticoStatus === 'true' ||
-                  proteticoStatus === 'ATIVO' ||
-                  proteticoStatus === 'Ativo';
 
   const updateDropdownPosition = () => {
     if (buttonRef.current) {
@@ -56,18 +77,18 @@ const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
   }, []);
 
   const handleVerHistorico = () => {
-    navigate(`/protetico/historico/${proteticoId}`);
+    navigate(`/${entityType}/historico/${itemId}`);
     setIsOpen(false);
   };
 
   const handleEditar = () => {
-    navigate(`/protetico/editar/${proteticoId}`);
+    navigate(`/${entityType}/editar/${itemId}`);
     setIsOpen(false);
   };
 
   const handleExcluir = () => {
     if (isActive) {
-      toast.warning('Não é possível excluir um protético ativo. Desative-o primeiro.');
+      toast.warning(texts.deleteWarning);
       setIsOpen(false);
       return;
     }
@@ -80,18 +101,18 @@ const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
   const handleConfirmDelete = async () => {
     try {
       // Chamada para o endpoint de exclusão
-      const response = await axios.delete(`http://localhost:8080/proteticos/${proteticoId}`);
+      const response = await axios.delete(`${apiEndpoint}/${itemId}`);
       
       if (response.status === 200 || response.status === 204) {
-        toast.success('Protético excluído com sucesso!');
+        toast.success(texts.deleteSuccess);
         // Forçar atualização da lista
-        if (onStatusChange) {
-          onStatusChange(proteticoId, null);
+        if (onDelete) {
+          onDelete(itemId);
         }
       }
     } catch (error) {
-      console.error('Erro ao excluir protético:', error);
-      toast.error(error.response?.data?.message || 'Erro ao excluir protético. Tente novamente.');
+      console.error(`Erro ao excluir ${entityType}:`, error);
+      toast.error(error.response?.data?.message || texts.deleteError);
     } finally {
       setIsDeleteModalOpen(false);
     }
@@ -118,6 +139,14 @@ const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
         <ul>
           <li onClick={handleEditar}>Editar</li>
           <li onClick={handleVerHistorico}>Histórico</li>
+          {customActions.map((action, index) => (
+            <li key={index} onClick={() => {
+              action.onClick(itemId);
+              setIsOpen(false);
+            }}>
+              {action.label}
+            </li>
+          ))}
           {!isActive && (
             <li onClick={handleExcluir} className="delete-option">Excluir</li>
           )}
@@ -151,8 +180,8 @@ const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
         isOpen={isDeleteModalOpen}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        title="Excluir Protético"
-        message="Tem certeza que deseja excluir este protético? Esta ação não pode ser desfeita."
+        title={texts.deleteTitle}
+        message={texts.deleteMessage}
       />
     </div>
   );

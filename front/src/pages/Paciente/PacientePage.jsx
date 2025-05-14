@@ -20,7 +20,11 @@ const PacientePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  
+ //Mesmo formato de ordenação do DentistaPage.jsx
+  const [sortConfig, setSortConfig] = useState({
+    key: 'id',
+    direction: 'ascending'
+  });  
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
 
@@ -240,6 +244,28 @@ const PacientePage = () => {
       }
       
       return true;
+    })
+    .sort((a, b) => {
+      if (!sortConfig.key) return 0;
+      
+      const keyA = a[sortConfig.key];
+      const keyB = b[sortConfig.key];
+      
+      if (keyA === undefined || keyA === null) return sortConfig.direction === 'ascending' ? -1 : 1;
+      if (keyB === undefined || keyB === null) return sortConfig.direction === 'ascending' ? 1 : -1;
+      
+      //Comparação dependendo do tipo de dados
+      if (typeof keyA === 'string' && typeof keyB === 'string') {
+        if (sortConfig.direction === 'ascending') {
+          return keyA.localeCompare(keyB);
+        }
+        return keyB.localeCompare(keyA);
+      } else {
+        if (sortConfig.direction === 'ascending') {
+          return keyA > keyB ? 1 : -1;
+        }
+        return keyA < keyB ? 1 : -1;
+      }
     });
 
   const handleSearch = (query) => {
@@ -280,6 +306,14 @@ const PacientePage = () => {
   
   const handleRefresh = () => {
     setRefreshData(prev => prev + 1);
+  };
+
+  const handleSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
   };
 
   if (loading) {
@@ -374,6 +408,9 @@ const PacientePage = () => {
           pacientes={pacientesFiltrados} 
           onPacienteDeleted={handlePacienteDeleted}
           onStatusChange={handleStatusChange}
+          sortConfig={sortConfig}
+          onSort={handleSort}
+          isEmpty={pacientesFiltrados.length === 0}
         />
       </div>
     </div>

@@ -1,254 +1,372 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import './CadastroMaterial.css';
+import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ModalCadastroCategoriaMaterial from '../../components/ModalCadastroCategoriaMaterial';
 
 const CadastroMaterial = () => {
-  console.log('Renderizando CadastroMaterial');
-  
   const navigate = useNavigate();
+  const { id } = useParams();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [categorias, setCategorias] = useState([]);
-  const [formData, setFormData] = useState({
-    nome: '',
-    quantidade: '',
-    valorUnitario: '',
-    tipo: '',
-    isActive: true,
-    estoqueMinimo: '',
-    unidadeMedida: ''
-  });
   const [showModalCategoria, setShowModalCategoria] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [material, setMaterial] = useState({
+    nome: '',
+    categoriaMaterial: null,
+    quantidade: '',
+    unidadeMedida: '',
+    valorUnitario: '',
+    estoqueMinimo: '',
+    status: 'EM_ESTOQUE',
+    isActive: true
+  });
 
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
         const response = await axios.get('http://localhost:8080/categoria-material');
         setCategorias(response.data);
-        if (response.data.length > 0) {
-          setFormData(prev => ({
-            ...prev,
-            tipo: response.data[0].id
-          }));
-        }
       } catch (error) {
         console.error('Erro ao buscar categorias:', error);
-        toast.error('Erro ao carregar categorias. Por favor, recarregue a página.');
+        setErrors(prev => ({
+          ...prev,
+          categoria: 'Erro ao carregar categorias. Por favor, recarregue a página.'
+        }));
       }
     };
 
     fetchCategorias();
-  }, []);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    
-    if (type === 'checkbox') {
-      setFormData(prevState => ({
-        ...prevState,
-        [name]: checked
-      }));
-      return;
+    if (id) {
+      const fetchMaterial = async () => {
+        try {
+          const response = await axios.get(`http://localhost:8080/material/${id}`);
+          setMaterial(response.data);
+        } catch (error) {
+          console.error('Erro ao buscar material:', error);
+          toast.error('Erro ao carregar dados do material.');
+          navigate('/material');
+        }
+      };
+
+      fetchMaterial();
     }
+  }, [id, navigate]);
 
-    // Para campos numéricos, permitir apenas números e um ponto decimal
-    if (type === 'number') {
-      // Remove qualquer caractere que não seja número ou ponto
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === 'valorUnitario' || name === 'quantidade' || name === 'estoqueMinimo') {
+      // Permitir apenas números e um ponto decimal
       const sanitizedValue = value.replace(/[^\d.]/g, '');
-      
-      // Garante que só exista um ponto decimal
       const parts = sanitizedValue.split('.');
       const formattedValue = parts.length > 2 
         ? `${parts[0]}.${parts.slice(1).join('')}`
         : sanitizedValue;
 
-      setFormData(prevState => ({
-        ...prevState,
+      setMaterial(prev => ({
+        ...prev,
         [name]: formattedValue
       }));
-      return;
+    } else {
+      setMaterial(prev => ({
+        ...prev,
+        [name]: value
+      }));
     }
 
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
+    // Limpar erro do campo quando o usuário digita
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const handleCategoriaChange = (e) => {
+    const categoriaId = e.target.value;
+    const categoria = categorias.find(cat => cat.id === parseInt(categoriaId));
+    setMaterial(prev => ({
+      ...prev,
+      categoriaMaterial: categoria
     }));
+    
+    if (errors.categoriaMaterial) {
+      setErrors(prev => ({
+        ...prev,
+        categoriaMaterial: ''
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Validar campos obrigatórios
+    if (!material.nome) newErrors.nome = 'Nome é obrigatório';
+    if (!material.categoriaMaterial) newErrors.categoriaMaterial = 'Categoria é obrigatória';
+    if (!material.quantidade) newErrors.quantidade = 'Quantidade é obrigatória';
+    if (!material.unidadeMedida) newErrors.unidadeMedida = 'Unidade de medida é obrigatória';
+    if (!material.valorUnitario) newErrors.valorUnitario = 'Valor unitário é obrigatório';
+    if (!material.estoqueMinimo) newErrors.estoqueMinimo = 'Estoque mínimo é obrigatório';
+    if (!material.status) newErrors.status = 'Status é obrigatório';
+
+    // Validar tamanho do nome
+    if (material.nome && material.nome.length > 100) {
+      newErrors.nome = 'O nome não pode ter mais de 100 caracteres';
+    }
+
+    // Validar valores numéricos
+    if (material.quantidade && parseFloat(material.quantidade) < 0) {
+      newErrors.quantidade = 'A quantidade não pode ser negativa';
+    }
+    if (material.valorUnitario && parseFloat(material.valorUnitario) < 0) {
+      newErrors.valorUnitario = 'O valor unitário não pode ser negativo';
+    }
+    if (material.estoqueMinimo && parseFloat(material.estoqueMinimo) < 0) {
+      newErrors.estoqueMinimo = 'O estoque mínimo não pode ser negativo';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Converter strings vazias para null e formatar números
-    const formattedData = {
-      ...formData,
-      quantidade: formData.quantidade ? Number(formData.quantidade) : null,
-      valorUnitario: formData.valorUnitario ? Number(formData.valorUnitario) : null,
-      estoqueMinimo: formData.estoqueMinimo ? Number(formData.estoqueMinimo) : null,
-      unidadeMedida: formData.unidadeMedida || null,
-      categoriaMaterial: {
-        id: formData.tipo
-      }
-    };
-    
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+    setErrors({});
+
     try {
-      await axios.post('http://localhost:8080/material', formattedData);
-      toast.success('Material cadastrado com sucesso!');
-      navigate('/material');
+      const materialData = {
+        ...material,
+        quantidade: parseFloat(material.quantidade),
+        valorUnitario: parseFloat(material.valorUnitario),
+        estoqueMinimo: parseFloat(material.estoqueMinimo)
+      };
+
+      if (id) {
+        await axios.put(`http://localhost:8080/material/${id}`, materialData);
+        toast.success('Material atualizado com sucesso!');
+      } else {
+        await axios.post('http://localhost:8080/material', materialData);
+        toast.success('Material cadastrado com sucesso!');
+      }
+
+      setSuccess(true);
+      setTimeout(() => {
+        navigate('/material');
+      }, 2000);
     } catch (error) {
-      console.error('Erro ao cadastrar material:', error);
-      toast.error('Erro ao cadastrar material. Por favor, tente novamente.');
+      console.error('Erro ao salvar material:', error);
+      setSuccess(false);
+      
+      if (error.response?.data?.errors) {
+        const apiErrors = {};
+        error.response.data.errors.forEach(err => {
+          apiErrors[err.field] = err.message;
+        });
+        setErrors(apiErrors);
+      } else {
+        setErrors({
+          submit: 'Erro ao salvar material. Por favor, verifique os dados e tente novamente.'
+        });
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCancel = () => {
+  const handleVoltar = () => {
     navigate('/material');
   };
 
   const handleCategoriaSuccess = (novaCategoria) => {
     setCategorias(prev => [...prev, novaCategoria]);
-    setFormData(prevState => ({
-      ...prevState,
-      tipo: novaCategoria.id
+    setMaterial(prev => ({
+      ...prev,
+      categoriaMaterial: novaCategoria
     }));
     setShowModalCategoria(false);
+    toast.success('Categoria cadastrada com sucesso!');
   };
 
   return (
     <div className="cadastro-material-page">
-      <ToastContainer position="top-right" autoClose={3000} />
-      
-      <div className="page-header">
-        <h1 className="page-title">Cadastro de Material</h1>
+      <div className="page-top">
+        <div className="notification-container">
+          <NotificationBell count={2} />
+        </div>
       </div>
 
-      <div className="form-container">
-        <form onSubmit={handleSubmit} className="material-form">
+      <div className="back-navigation">
+        <button className="back-button" onClick={handleVoltar}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <h1 className="page-title">{id ? 'Editar Material' : 'Novo Material'}</h1>
+      </div>
+
+      {success && (
+        <div className="success-message">
+          {id ? 'Material atualizado com sucesso!' : 'Material cadastrado com sucesso!'}
+        </div>
+      )}
+
+      {errors.submit && (
+        <div className="error-message">{errors.submit}</div>
+      )}
+      
+      <form onSubmit={handleSubmit} className="material-form">
+        <div className="form-group">
+          <label htmlFor="nome">Nome*</label>
+          <input
+            type="text"
+            id="nome"
+            name="nome"
+            value={material.nome}
+            onChange={handleInputChange}
+            className={errors.nome ? 'input-error' : ''}
+            placeholder="Nome do material"
+          />
+          {errors.nome && <span className="error-text">{errors.nome}</span>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="categoriaMaterial">Categoria*</label>
+          <div className="categoria-container">
+            <select
+              id="categoriaMaterial"
+              name="categoriaMaterial"
+              value={material.categoriaMaterial?.id || ''}
+              onChange={handleCategoriaChange}
+              className={errors.categoriaMaterial ? 'input-error' : ''}
+            >
+              <option value="">Selecione uma categoria</option>
+              {categorias.map(categoria => (
+                <option key={categoria.id} value={categoria.id}>
+                  {categoria.nome}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="btn-add-categoria"
+              onClick={() => setShowModalCategoria(true)}
+              title="Adicionar nova categoria"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+          {errors.categoriaMaterial && <span className="error-text">{errors.categoriaMaterial}</span>}
+        </div>
+
+        <div className="form-row">
           <div className="form-group">
-            <label htmlFor="nome">Nome *</label>
+            <label htmlFor="quantidade">Quantidade em estoque*</label>
             <input
               type="text"
-              id="nome"
-              name="nome"
-              value={formData.nome}
-              onChange={handleChange}
-              required
-              className="form-input"
-              placeholder="Digite o nome do material"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="quantidade">Quantidade *</label>
-            <input
-              type="number"
               id="quantidade"
               name="quantidade"
-              value={formData.quantidade}
-              onChange={handleChange}
-              required
-              min="0"
-              step="0.01"
-              className="form-input"
+              value={material.quantidade}
+              onChange={handleInputChange}
+              className={errors.quantidade ? 'input-error' : ''}
               placeholder="0,00"
             />
+            {errors.quantidade && <span className="error-text">{errors.quantidade}</span>}
           </div>
 
           <div className="form-group">
-            <label htmlFor="valorUnitario">Valor Unitário</label>
-            <input
-              type="number"
-              id="valorUnitario"
-              name="valorUnitario"
-              value={formData.valorUnitario}
-              onChange={handleChange}
-              min="0"
-              step="0.01"
-              className="form-input"
-              placeholder="R$ 0,00"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="unidadeMedida">Unidade de Medida</label>
-            <input
-              type="text"
+            <label htmlFor="unidadeMedida">Unidade de Medida*</label>
+            <select
               id="unidadeMedida"
               name="unidadeMedida"
-              value={formData.unidadeMedida}
-              onChange={handleChange}
-              className="form-input"
-              placeholder="Ex: kg, g, un, ml"
-            />
+              value={material.unidadeMedida}
+              onChange={handleInputChange}
+              className={errors.unidadeMedida ? 'input-error' : ''}
+            >
+              <option value="">Selecione</option>
+              <option value="UN">Unidade</option>
+              <option value="KG">Quilograma</option>
+              <option value="G">Grama</option>
+              <option value="ML">Mililitro</option>
+              <option value="L">Litro</option>
+              <option value="M">Metro</option>
+              <option value="CM">Centímetro</option>
+            </select>
+            {errors.unidadeMedida && <span className="error-text">{errors.unidadeMedida}</span>}
           </div>
+        </div>
 
+        <div className="form-row">
           <div className="form-group">
-            <label htmlFor="estoqueMinimo">Estoque Mínimo</label>
+            <label htmlFor="valorUnitario">Valor Unitário (R$)*</label>
             <input
-              type="number"
-              id="estoqueMinimo"
-              name="estoqueMinimo"
-              value={formData.estoqueMinimo}
-              onChange={handleChange}
-              min="0"
-              step="0.01"
-              className="form-input"
+              type="text"
+              id="valorUnitario"
+              name="valorUnitario"
+              value={material.valorUnitario}
+              onChange={handleInputChange}
+              className={errors.valorUnitario ? 'input-error' : ''}
               placeholder="0,00"
             />
+            {errors.valorUnitario && <span className="error-text">{errors.valorUnitario}</span>}
           </div>
 
           <div className="form-group">
-            <label htmlFor="tipo">Tipo *</label>
-            <div className="tipo-container">
-              <select
-                id="tipo"
-                name="tipo"
-                value={formData.tipo}
-                onChange={handleChange}
-                required
-                className="form-select"
-              >
-                <option value="">Selecione uma categoria</option>
-                {categorias.map(categoria => (
-                  <option key={categoria.id} value={categoria.id}>
-                    {categoria.nome}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="toggle-nova-categoria"
-                onClick={() => setShowModalCategoria(true)}
-              >
-                +
-              </button>
-            </div>
+            <label htmlFor="estoqueMinimo">Estoque Mínimo*</label>
+            <input
+              type="text"
+              id="estoqueMinimo"
+              name="estoqueMinimo"
+              value={material.estoqueMinimo}
+              onChange={handleInputChange}
+              className={errors.estoqueMinimo ? 'input-error' : ''}
+              placeholder="0,00"
+            />
+            {errors.estoqueMinimo && <span className="error-text">{errors.estoqueMinimo}</span>}
           </div>
+        </div>
 
-          <div className="form-group checkbox-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                name="isActive"
-                checked={formData.isActive}
-                onChange={handleChange}
-                className="form-checkbox"
-              />
-              Material Ativo
-            </label>
-          </div>
+        <div className="form-group">
+          <label htmlFor="status">Status*</label>
+          <select
+            id="status"
+            name="status"
+            value={material.status}
+            onChange={handleInputChange}
+            className={errors.status ? 'input-error' : ''}
+          >
+            <option value="EM_ESTOQUE">Em Estoque</option>
+            <option value="BAIXO_ESTOQUE">Baixo Estoque</option>
+            <option value="SEM_ESTOQUE">Sem Estoque</option>
+          </select>
+          {errors.status && <span className="error-text">{errors.status}</span>}
+        </div>
 
-          <div className="form-actions">
-            <button type="button" onClick={handleCancel} className="cancel-button">
-              Cancelar
-            </button>
-            <button type="submit" className="submit-button">
-              Cadastrar
-            </button>
-          </div>
-        </form>
-      </div>
+        <div className="form-actions">
+          <button type="button" onClick={handleVoltar} className="btn-cancelar">
+            Cancelar
+          </button>
+          <button type="submit" className="btn-cadastrar" disabled={loading}>
+            {loading ? 'Salvando...' : (id ? 'Salvar Alterações' : 'Cadastrar')}
+          </button>
+        </div>
+      </form>
 
       <ModalCadastroCategoriaMaterial
         isOpen={showModalCategoria}

@@ -123,6 +123,14 @@
   position: relative;
 }
 
+.char-counter {
+  color: #6c757d;
+  font-size: 0.75rem;
+  text-align: right;
+  margin-top: 4px;
+  display: block;
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;

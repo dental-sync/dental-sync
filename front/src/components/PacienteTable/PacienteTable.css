@@ -55,14 +55,17 @@
 }
 
 .paciente-table th.sortable-header:hover {
-  background-color: #e9ecef;
+  cursor: pointer;
+  user-select: none;
 }
 
 .sortable-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 4px;
 }
+
+
 
 .sort-icon {
   margin-left: 5px;

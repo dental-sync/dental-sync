@@ -199,7 +199,7 @@ const CadastroPaciente = () => {
         
         <form onSubmit={handleSubmit} className="paciente-form">
           <div className="form-group">
-            <label htmlFor="nome">Nome Completo</label>
+            <label htmlFor="nome" className="required">Nome Completo</label>
             <input
               type="text"
               id="nome"
@@ -209,11 +209,11 @@ const CadastroPaciente = () => {
               className={errors.nome ? 'input-error' : ''}
               placeholder="Digite o nome completo"
             />
-            {errors.nome && <div className="error-text">{errors.nome}</div>}
+            {errors.nome && <span className="error-text">{errors.nome}</span>}
           </div>
           
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email" className="required">Email</label>
             <input
               type="email"
               id="email"
@@ -223,11 +223,11 @@ const CadastroPaciente = () => {
               className={errors.email ? 'input-error' : ''}
               placeholder="exemplo@email.com"
             />
-            {errors.email && <div className="error-text">{errors.email}</div>}
+            {errors.email && <span className="error-text">{errors.email}</span>}
           </div>
           
           <div className="form-group">
-            <label htmlFor="telefone">Telefone</label>
+            <label htmlFor="telefone" className="required">Telefone</label>
             <input
               type="tel"
               id="telefone"
@@ -237,7 +237,7 @@ const CadastroPaciente = () => {
               className={errors.telefone ? 'input-error' : ''}
               placeholder="(00) 00000-0000"
             />
-            {errors.telefone && <div className="error-text">{errors.telefone}</div>}
+            {errors.telefone && <span className="error-text">{errors.telefone}</span>}
           </div>
           
           <div className="form-group">
@@ -249,17 +249,24 @@ const CadastroPaciente = () => {
               value={formData.dataNascimento}
               onChange={handleChange}
               className={errors.dataNascimento ? 'input-error' : ''}
-              placeholder="DD/MM/AAAA"
             />
-            {errors.dataNascimento && <div className="error-text">{errors.dataNascimento}</div>}
+            {errors.dataNascimento && <span className="error-text">{errors.dataNascimento}</span>}
           </div>
           
           <div className="form-actions">
-            <button type="button" onClick={handleVoltar} className="btn-cancelar">
+            <button 
+              type="button" 
+              className="btn-cancelar" 
+              onClick={handleVoltar}
+            >
               Cancelar
             </button>
-            <button type="submit" className="btn-cadastrar" disabled={loading}>
-              {loading ? 'Cadastrando...' : 'Cadastrar Paciente'}
+            <button 
+              type="submit" 
+              className="btn-cadastrar" 
+              disabled={loading}
+            >
+              {loading ? 'Salvando...' : 'Salvar'}
             </button>
           </div>
         </form>

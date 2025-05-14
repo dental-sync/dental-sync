@@ -165,16 +165,16 @@ const MaterialPage = () => {
     }
   };
 
-  const handleStatusChange = async (id, newStatus) => {
+  const handleStatusChange = async (id, isActive) => {
     try {
-      await axios.patch(`http://localhost:8080/material/${id}`, {
-        isActive: newStatus === 'ATIVO'
-      });
-      toast.success('Status atualizado com sucesso!');
+      await axios.patch(`http://localhost:8080/material/${id}`, { isActive });
       refreshMateriais();
+      setTimeout(() => {
+        toast.success(`Material ${isActive ? 'Ativado' : 'Inativado'} com sucesso!`);
+      }, 100);
     } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-      toast.error('Erro ao atualizar status. Por favor, tente novamente.');
+      console.error('Erro ao alterar status do material:', error);
+      toast.error('Erro ao alterar status do material. Por favor, tente novamente.');
     }
   };
 
@@ -184,7 +184,18 @@ const MaterialPage = () => {
 
   return (
     <div className="material-page">
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer 
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <div className="page-top">
         <div className="notification-container">
           <NotificationBell count={2} />

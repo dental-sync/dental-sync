@@ -35,7 +35,7 @@ const MaterialTable = ({ materiais, onDelete, onStatusChange, lastElementRef }) 
               <td>
                 <StatusBadge
                   status={material.status === 'ATIVO'}
-                  onClick={(isActive) => onStatusChange(material.id, isActive ? 'ATIVO' : 'INATIVO')}
+                  onClick={(isActive) => onStatusChange(material.id, isActive ? true : false)}
                 />
               </td>
               <td>

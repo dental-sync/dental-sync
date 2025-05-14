@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './CadastroMaterial.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ModalCadastroCategoriaMaterial from '../../components/ModalCadastroCategoriaMaterial';
@@ -10,7 +11,6 @@ const CadastroMaterial = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [categorias, setCategorias] = useState([]);
   const [showModalCategoria, setShowModalCategoria] = useState(false);
   const [errors, setErrors] = useState({});
@@ -140,6 +140,7 @@ const CadastroMaterial = () => {
     e.preventDefault();
     
     if (!validateForm()) {
+      toast.error('Por favor, corrija os erros no formulário antes de salvar.');
       return;
     }
 
@@ -162,13 +163,9 @@ const CadastroMaterial = () => {
         toast.success('Material cadastrado com sucesso!');
       }
 
-      setSuccess(true);
-      setTimeout(() => {
-        navigate('/material');
-      }, 2000);
+      navigate('/material');
     } catch (error) {
       console.error('Erro ao salvar material:', error);
-      setSuccess(false);
       
       if (error.response?.data?.errors) {
         const apiErrors = {};
@@ -176,10 +173,12 @@ const CadastroMaterial = () => {
           apiErrors[err.field] = err.message;
         });
         setErrors(apiErrors);
+        toast.error('Existem erros no formulário. Por favor, verifique os campos destacados.');
       } else {
         setErrors({
           submit: 'Erro ao salvar material. Por favor, verifique os dados e tente novamente.'
         });
+        toast.error('Erro ao salvar material. Por favor, tente novamente.');
       }
     } finally {
       setLoading(false);
@@ -202,6 +201,18 @@ const CadastroMaterial = () => {
 
   return (
     <div className="cadastro-material-page">
+      <ToastContainer 
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <div className="page-top">
         <div className="notification-container">
           <NotificationBell count={2} />
@@ -217,12 +228,6 @@ const CadastroMaterial = () => {
         </button>
         <h1 className="page-title">{id ? 'Editar Material' : 'Novo Material'}</h1>
       </div>
-
-      {success && (
-        <div className="success-message">
-          {id ? 'Material atualizado com sucesso!' : 'Material cadastrado com sucesso!'}
-        </div>
-      )}
 
       {errors.submit && (
         <div className="error-message">{errors.submit}</div>

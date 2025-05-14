@@ -16,6 +16,9 @@ import EditarDentista from './pages/Dentista/EditarDentista'
 import ClinicaPage from './pages/Clinica/ClinicaPage'
 import CadastroClinica from './pages/Clinica/CadastroClinica'
 import EditarClinica from './pages/Clinica/EditarClinica'
+import MaterialPage from './pages/Material/MaterialPage'
+import CadastroMaterial from './pages/Material/CadastroMaterial'
+import EditarMaterial from './pages/Material/EditarMaterial'
 import './App.css'
 
 function App() {
@@ -40,6 +43,9 @@ function App() {
             <Route path="/clinica" element={<ClinicaPage />} />
             <Route path="/clinica/cadastro" element={<CadastroClinica />} />
             <Route path="/clinica/editar/:id" element={<EditarClinica />} />
+            <Route path="/material" element={<MaterialPage />} />
+            <Route path="/material/cadastro" element={<CadastroMaterial />} />
+            <Route path="/material/editar/:id" element={<EditarMaterial />} />
           </Routes>
         </main>
         <ToastContainer position="top-right" autoClose={3000} />

@@ -15,6 +15,7 @@ const CadastroPaciente = () => {
   
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const MAX_CHARS = 255; // Constante para limitar o número de caracteres
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,10 +47,49 @@ const CadastroPaciente = () => {
       // Remove todos os números do valor digitado
       const lettersOnlyValue = value.replace(/\d/g, '');
       
+     
+      const limitedValue = lettersOnlyValue.slice(0, MAX_CHARS);
+      
       setFormData({
         ...formData,
-        [name]: lettersOnlyValue
+        [name]: limitedValue
       });
+      
+      //Mostrar erro se exceder o limite de caracteres
+      if (lettersOnlyValue.length > MAX_CHARS) {
+        setErrors({
+          ...errors,
+          [name]: `Limite máximo de ${MAX_CHARS} caracteres excedido`
+        });
+      } else if (errors[name] === `Limite máximo de ${MAX_CHARS} caracteres excedido`) {
+       
+        const updatedErrors = {...errors};
+        delete updatedErrors[name];
+        setErrors(updatedErrors);
+      }
+    } else if (name === "email") {
+     
+      // Remove espaços e normaliza o email
+      const sanitizedValue = value.trim().toLowerCase();
+      const limitedValue = sanitizedValue.slice(0, MAX_CHARS);
+      
+      setFormData({
+        ...formData,
+        [name]: limitedValue
+      });
+      
+   
+      if (value.length > MAX_CHARS) {
+        setErrors({
+          ...errors,
+          [name]: `Limite máximo de ${MAX_CHARS} caracteres excedido`
+        });
+      } else if (errors[name] === `Limite máximo de ${MAX_CHARS} caracteres excedido`) {
+        //Limpar o erro específico de limite de caracteres
+        const updatedErrors = {...errors};
+        delete updatedErrors[name];
+        setErrors(updatedErrors);
+      }
     } else {
       setFormData({
         ...formData,
@@ -58,7 +98,7 @@ const CadastroPaciente = () => {
     }
     
     //Limpar erro do campo quando o usuário digita
-    if (errors[name]) {
+    if (errors[name] && errors[name] !== `Limite máximo de ${MAX_CHARS} caracteres excedido`) {
       setErrors({
         ...errors,
         [name]: ''
@@ -82,8 +122,16 @@ const CadastroPaciente = () => {
     else if (/\d/.test(nomeTrimmed)) {
       newErrors.nome = 'O nome não pode conter números';
     }
+  
+    else if (nomeTrimmed.length > MAX_CHARS) {
+      newErrors.nome = `Limite máximo de ${MAX_CHARS} caracteres excedido`;
+    }
     
     if (!emailTrimmed) newErrors.email = 'Email é obrigatório';
+    else if (emailTrimmed.length > MAX_CHARS) {
+      newErrors.email = `Limite máximo de ${MAX_CHARS} caracteres excedido`;
+    }
+    
     if (!formData.telefone) newErrors.telefone = 'Telefone é obrigatório';
     
     //Validar formato de email
@@ -208,6 +256,7 @@ const CadastroPaciente = () => {
               onChange={handleChange}
               className={errors.nome ? 'input-error' : ''}
               placeholder="Digite o nome completo"
+              maxLength={MAX_CHARS}
             />
             {errors.nome && <span className="error-text">{errors.nome}</span>}
           </div>
@@ -222,6 +271,7 @@ const CadastroPaciente = () => {
               onChange={handleChange}
               className={errors.email ? 'input-error' : ''}
               placeholder="exemplo@email.com"
+              maxLength={MAX_CHARS}
             />
             {errors.email && <span className="error-text">{errors.email}</span>}
           </div>

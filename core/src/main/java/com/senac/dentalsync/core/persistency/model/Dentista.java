@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 public class Dentista extends BaseEntity {
 
     @NotBlank(message = "O nome é obrigatório")
-    @Pattern(regexp = "^[\\p{L}]{2,}(?:\\s[\\p{L}]{2,})+$", message = "Sobrenome deve possuir no mínimo 2 letras")
+    @Pattern(regexp = "^[\\p{L}]{2,}(?:\\s[\\p{L}]{1,})*\\s[\\p{L}]{2,}$", message = "Por favor, informe nome e sobrenome válidos. O último sobrenome deve ter no mínimo 2 letras")
     @Size(max = 255, message = "O nome não pode ultrapassar 255 caracteres")
     private String nome;
 

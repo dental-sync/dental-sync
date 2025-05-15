@@ -60,66 +60,84 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Estilo para o container do filtro */
 .filter-container {
   position: relative;
 }
 
+/* Estilo para o dropdown do filtro */
 .filter-dropdown {
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: var(--background-color);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 15px;
-  min-width: 200px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 250px;
+  margin-top: 8px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 16px;
   z-index: 1000;
 }
 
 .filter-dropdown h3 {
-  margin: 0 0 15px 0;
+  margin-top: 0;
+  margin-bottom: 16px;
   font-size: 16px;
-  color: var(--text-color);
+  color: #333;
+  font-weight: 600;
 }
 
 .filter-group {
-  margin-bottom: 15px;
+  margin-bottom: 16px;
 }
 
 .filter-group label {
   display: block;
-  margin-bottom: 5px;
-  color: var(--text-color);
+  margin-bottom: 8px;
   font-size: 14px;
+  color: #555;
+  font-weight: 500;
 }
 
 .filter-select {
   width: 100%;
-  padding: 8px;
-  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+  border: 1px solid #ddd;
   border-radius: 4px;
-  background-color: var(--input-background);
-  color: var(--text-color);
+  font-size: 14px;
+  color: #333;
+  background-color: white;
+  cursor: pointer;
 }
 
 .filter-actions {
   display: flex;
   justify-content: flex-end;
+  margin-top: 16px;
 }
 
 .clear-filter-button {
-  padding: 6px 12px;
-  background-color: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  color: var(--text-color);
-  cursor: pointer;
+  background: none;
+  border: none;
+  color: #0070D6;
   font-size: 14px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 4px;
 }
 
 .clear-filter-button:hover {
-  background-color: var(--hover-color);
+  background-color: #f0f7ff;
+}
+
+.filter-info {
+  background-color: #fff8e6;
+  border: 1px solid #ffe58f;
+  border-radius: 6px;
+  padding: 10px 16px;
+  color: #d48806;
+  margin-bottom: 16px;
+  font-size: 14px;
 }
 
 .search-container {

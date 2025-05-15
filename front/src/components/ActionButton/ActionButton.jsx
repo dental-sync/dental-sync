@@ -1,7 +1,22 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import './ActionButton.css';
 
-const ActionButton = ({ label, icon, variant = 'default', onClick, active }) => {
+const ActionButton = ({ label, icon, variant = 'default', onClick, active, onClose }) => {
+  const buttonRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (buttonRef.current && !buttonRef.current.contains(event.target) && active) {
+        onClose?.();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [active, onClose]);
+
   const getIconSvg = () => {
     switch (icon) {
       case 'filter':
@@ -32,7 +47,7 @@ const ActionButton = ({ label, icon, variant = 'default', onClick, active }) => 
   const buttonClassName = `action-button ${variant} ${active ? 'active' : ''}`;
 
   return (
-    <button className={buttonClassName} onClick={onClick}>
+    <button ref={buttonRef} className={buttonClassName} onClick={onClick}>
       {icon && getIconSvg()}
       {label}
     </button>

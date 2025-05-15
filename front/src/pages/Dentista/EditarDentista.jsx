@@ -354,7 +354,11 @@ const EditarDentista = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="cro" className="required">CRO</label>
+            <label htmlFor="cro">
+              CRO
+              <span className="required-mark">*</span>
+              <span className="tooltip-icon" data-tooltip="Formato: CRO-UF-NÚMERO (máximo 6 dígitos)">?</span>
+            </label>
             <input
               type="text"
               id="cro"
@@ -365,7 +369,6 @@ const EditarDentista = () => {
               placeholder="Digite o CRO"
             />
             {errors.cro && <span className="error-text">{errors.cro}</span>}
-            <span className="info-text">Formato: CRO-UF-NÚMERO (máximo 6 dígitos)</span>
           </div>
           
           <div className="form-group">

@@ -305,114 +305,105 @@ const EditarPaciente = () => {
 
   return (
     <div className="paciente-page">
-      <div className="editar-paciente-container">
-        <div className="editar-paciente-page">
-          <div className="back-navigation">
-            <button onClick={handleVoltar} className="back-button">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 12H5M12 19l-7-7 7-7"/>
-              </svg>
-            </button>
-            <h1 className="page-title">Editar Paciente</h1>
+      <div className="cadastro-paciente-page">
+        <div className="back-navigation">
+          <button onClick={handleVoltar} className="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <h1 className="page-title">Editar Paciente</h1>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="paciente-form">
+          <div className="form-group">
+            <label htmlFor="nome" className="required">Nome Completo</label>
+            <input
+              type="text"
+              id="nome"
+              name="nome"
+              value={formData.nome}
+              onChange={handleChange}
+              className={errors.nome ? 'input-error' : ''}
+              placeholder="Digite o nome completo"
+              maxLength={MAX_CHARS}
+            />
+            {errors.nome && <span className="error-text">{errors.nome}</span>}
           </div>
           
-          <form onSubmit={handleSubmit} className="paciente-form">
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="nome">Nome Completo</label>
-                <input
-                  type="text"
-                  id="nome"
-                  name="nome"
-                  value={formData.nome}
-                  onChange={handleChange}
-                  className={errors.nome ? 'input-error' : ''}
-                  maxLength={MAX_CHARS}
-                />
-                {errors.nome && <div className="error-text">{errors.nome}</div>}
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="email">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={errors.email ? 'input-error' : ''}
-                  maxLength={MAX_CHARS}
-                />
-                {errors.email && <div className="error-text">{errors.email}</div>}
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="telefone">Telefone</label>
-                <input
-                  type="tel"
-                  id="telefone"
-                  name="telefone"
-                  value={formData.telefone}
-                  onChange={handleChange}
-                  className={errors.telefone ? 'input-error' : ''}
-                />
-                {errors.telefone && <div className="error-text">{errors.telefone}</div>}
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="dataNascimento">Data de Nascimento</label>
-                <input
-                  type="date"
-                  id="dataNascimento"
-                  name="dataNascimento"
-                  value={formData.dataNascimento}
-                  onChange={handleChange}
-                  className={errors.dataNascimento ? 'input-error' : ''}
-                />
-                {errors.dataNascimento && <div className="error-text">{errors.dataNascimento}</div>}
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="isActive">Status</label>
-                <select
-                  id="isActive"
-                  name="isActive"
-                  value={formData.isActive}
-                  onChange={handleChange}
-                >
-                  <option value={true}>Ativo</option>
-                  <option value={false}>Inativo</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="form-actions">
-              <button 
-                type="button" 
-                className="form-button secondary" 
-                onClick={handleVoltar}
-                disabled={saving}
-              >
-                Cancelar
-              </button>
-              <button 
-                type="submit" 
-                className="form-button primary" 
-                disabled={saving}
-              >
-                {saving ? 'Salvando...' : 'Salvar Alterações'}
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="form-group">
+            <label htmlFor="email" className="required">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={errors.email ? 'input-error' : ''}
+              placeholder="exemplo@email.com"
+              maxLength={MAX_CHARS}
+            />
+            {errors.email && <span className="error-text">{errors.email}</span>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="telefone" className="required">Telefone</label>
+            <input
+              type="tel"
+              id="telefone"
+              name="telefone"
+              value={formData.telefone}
+              onChange={handleChange}
+              className={errors.telefone ? 'input-error' : ''}
+              placeholder="(00) 00000-0000"
+            />
+            {errors.telefone && <span className="error-text">{errors.telefone}</span>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="dataNascimento">Data de Nascimento</label>
+            <input
+              type="date"
+              id="dataNascimento"
+              name="dataNascimento"
+              value={formData.dataNascimento}
+              onChange={handleChange}
+              className={errors.dataNascimento ? 'input-error' : ''}
+            />
+            {errors.dataNascimento && <span className="error-text">{errors.dataNascimento}</span>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="isActive">Status</label>
+            <select
+              id="isActive"
+              name="isActive"
+              value={formData.isActive}
+              onChange={handleChange}
+            >
+              <option value={true}>Ativo</option>
+              <option value={false}>Inativo</option>
+            </select>
+          </div>
+          
+          <div className="form-actions">
+            <button 
+              type="button" 
+              className="btn-cancelar" 
+              onClick={handleVoltar}
+              disabled={saving}
+            >
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              className="btn-cadastrar" 
+              disabled={saving}
+            >
+              {saving ? 'Salvando...' : 'Salvar Alterações'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

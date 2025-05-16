@@ -30,7 +30,8 @@ public abstract class BaseService<T extends BaseEntity, ID> {
     }
 
     public List<T> findAll() {
-        return getRepository().findAll();
+        List<T> list = getRepository().findAll();
+        return list;
     }
 
     public Page<T> findAll(Pageable pageable) {
@@ -45,10 +46,25 @@ public abstract class BaseService<T extends BaseEntity, ID> {
         Optional<T> entity = findById(id);
         if (entity.isPresent()) {
             T entityToUpdate = entity.get();
-            entityToUpdate.setIsActive(false);
-            entityToUpdate.setUpdatedAt(LocalDateTime.now());
-            entityToUpdate.setUpdatedBy(getUsuarioLogado());
-            getRepository().save(entityToUpdate);
+            
+            // Para softdelete, descomentar o código abaixo.
+            
+            // //Garantir que todos os campos necessários estão preenchidos
+            // if (entityToUpdate.getCreatedAt() == null) {
+            //     entityToUpdate.setCreatedAt(LocalDateTime.now());
+            // }
+            
+            // if (entityToUpdate.getCreatedBy() == null) {
+            //     entityToUpdate.setCreatedBy(getUsuarioLogado());
+            // }
+            
+            // //Atualizar campos de exclusão lógica
+            // entityToUpdate.setIsActive(false);
+            // entityToUpdate.setUpdatedAt(LocalDateTime.now());
+            // entityToUpdate.setUpdatedBy(getUsuarioLogado());
+            // getRepository().save(entityToUpdate);
+
+            getRepository().delete(entityToUpdate);
         }
     }
 } 

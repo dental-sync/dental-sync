@@ -1,0 +1,93 @@
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.status-active {
+  background-color: #e6f7ee;
+  color: #10b981;
+}
+
+.status-inactive {
+  background-color: #fef1f2;
+  color: #ef4444;
+}
+
+.status-ativo {
+  background-color: #e6f7ee;
+  color: #10b981;
+}
+
+.status-inativo {
+  background-color: #fef1f2;
+  color: #ef4444;
+}
+
+.status-default {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+/* Container para o badge */
+.status-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Estilo para o dropdown */
+.status-dropdown {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  min-width: 120px;
+  overflow: hidden;
+}
+
+/* Opções dentro do dropdown */
+.status-option {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.status-option:hover {
+  background-color: #f8f9fa;
+}
+
+.status-option.active {
+  background-color: #e9ecef;
+  font-weight: 500;
+}
+
+/* Animação para o badge */
+.status-badge:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+.status-arrow {
+  margin-left: 4px;
+  transition: transform 0.2s;
+}
+
+.status-container:hover .status-arrow {
+  transform: translateY(1px);
+} 

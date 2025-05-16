@@ -1,0 +1,60 @@
+.paciente-action-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.action-menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: #666;
+}
+
+.action-menu-button:hover {
+  background-color: #f0f2f5;
+  color: #333;
+}
+
+.action-menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  width: 150px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  overflow: hidden;
+}
+
+.action-menu-dropdown ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.action-menu-dropdown li {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.action-menu-dropdown li:hover {
+  background-color: #f5f8ff;
+}
+
+.action-menu-dropdown li.delete-option {
+  color: #e53935;
+}
+
+.action-menu-dropdown li.delete-option:hover {
+  background-color: #fff1f0;
+} 

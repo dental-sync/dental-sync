@@ -20,6 +20,10 @@ const MaterialPage = () => {
     status: 'todos',
     tipo: 'todos'
   });
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'ascending'
+  });
   
   const filterRef = useRef(null);
   const navigate = useNavigate();
@@ -178,6 +182,66 @@ const MaterialPage = () => {
     }
   };
 
+  const handleSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedMateriais = React.useMemo(() => {
+    let sortableMateriais = [...materiaisFiltrados];
+    if (sortConfig.key) {
+      sortableMateriais.sort((a, b) => {
+        // Para ordenação de IDs (números)
+        if (sortConfig.key === 'id') {
+          return sortConfig.direction === 'ascending'
+            ? a.id - b.id
+            : b.id - a.id;
+        }
+        
+        // Para ordenação de status (ATIVO/INATIVO)
+        if (sortConfig.key === 'status') {
+          const aValue = a.status === 'ATIVO' ? 1 : 0;
+          const bValue = b.status === 'ATIVO' ? 1 : 0;
+          return sortConfig.direction === 'ascending'
+            ? aValue - bValue
+            : bValue - aValue;
+        }
+
+        // Para ordenação de quantidade (números)
+        if (sortConfig.key === 'quantidade') {
+          return sortConfig.direction === 'ascending'
+            ? a.quantidade - b.quantidade
+            : b.quantidade - a.quantidade;
+        }
+
+        // Para ordenação de categoria (objeto aninhado)
+        if (sortConfig.key === 'categoriaMaterial.nome') {
+          const aValue = a.categoriaMaterial?.nome || '';
+          const bValue = b.categoriaMaterial?.nome || '';
+          return sortConfig.direction === 'ascending'
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+        }
+        
+        // Para ordenação de strings (nome)
+        const aValue = String(a[sortConfig.key]).toLowerCase();
+        const bValue = String(b[sortConfig.key]).toLowerCase();
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableMateriais;
+  }, [materiaisFiltrados, sortConfig]);
+
   if (loading) {
     return <div className="loading">Carregando materiais...</div>;
   }
@@ -288,10 +352,12 @@ const MaterialPage = () => {
 
       <div className="table-container">
         <MaterialTable 
-          materiais={materiaisFiltrados}
+          materiais={sortedMateriais}
           onDelete={handleDelete}
           onStatusChange={handleStatusChange}
           lastElementRef={lastMaterialElementRef}
+          sortConfig={sortConfig}
+          onSort={handleSort}
         />
         
         {loadingMore && <div className="loading-more">Carregando mais materiais...</div>}

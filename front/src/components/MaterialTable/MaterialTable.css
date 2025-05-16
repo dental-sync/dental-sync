@@ -1,30 +1,83 @@
 .material-table-container {
-  background-color: var(--background-color);
+  width: 100%;
+  background-color: white;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-top: 20px;
+  overflow-y: visible;
+  position: relative;
+  z-index: 10;
+  overflow-x: auto;
 }
 
 .material-table {
   width: 100%;
   border-collapse: collapse;
+  min-height: 100px;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .material-table th,
 .material-table td {
   padding: 12px 15px;
   text-align: left;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #ddd;
 }
 
 .material-table th {
-  background-color: var(--header-background);
-  color: var(--text-color);
+  background-color: #f8f9fa;
   font-weight: 600;
+  color: #333;
+  padding: 12px 15px;
+  text-align: left;
+  position: relative;
 }
 
-.material-table tbody tr:hover {
-  background-color: var(--hover-color);
+.material-table tr:hover {
+  background-color: #f5f5f5;
+}
+
+.material-table tr:last-child td {
+  border-bottom: none;
+}
+
+.material-table td {
+  font-size: 14px;
+  color: #333;
+  position: relative;
+}
+
+.material-table td:last-child {
+  z-index: 30;
+  text-align: center;
+  padding-right: 20px;
+}
+
+/* Estilos para ordenação */
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sort-icon {
+  display: flex;
+  align-items: center;
+}
+
+.sort-icon svg {
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.sortable-header:hover .sort-icon svg {
+  opacity: 0.8;
 }
 
 .status-badge {
@@ -77,9 +130,9 @@
 }
 
 @media (max-width: 768px) {
-  .material-table {
-    display: block;
-    overflow-x: auto;
+  .material-table th,
+  .material-table td {
+    padding: 8px 12px;
   }
 
   .action-buttons {

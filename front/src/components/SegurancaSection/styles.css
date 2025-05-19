@@ -60,10 +60,10 @@
   margin-bottom: 1rem;
 }
 
-.form-actions {
-  margin-top: 1.5rem;
+.security-form-actions {
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end;
+  margin-top: 2rem;
 }
 
 .btn-primary {

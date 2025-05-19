@@ -90,7 +90,7 @@ const InformacaoSection = () => {
           />
         </div>
 
-        <div className="form-actions">
+        <div className="info-form-actions">
           <button type="submit" className="btn-save">
             Salvar Alterações
           </button>

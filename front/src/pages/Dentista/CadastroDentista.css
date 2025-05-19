@@ -181,25 +181,31 @@
 .clinica-options {
   display: flex;
   gap: 12px;
-  align-items: center;
+  align-items: stretch;
 }
 
-.clinica-options select {
-  flex: 1;
-  min-width: 250px;
+.clinica-options select,
+.clinica-options .toggle-nova-clinica {
+  padding: 14px;
+  height: auto;
+  font-size: 16px;
+  box-sizing: border-box;
 }
 
 .toggle-nova-clinica {
+  height: 100%;
+  min-width: 45px;
+  width: 45px;
+  box-sizing: border-box;
   background-color: #e9ecef;
   border: none;
   color: #495057;
-  width: 45px;
-  height: 45px;
-  border-radius: 4px;
-  cursor: pointer;
+  margin-left: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
   font-size: 20px;
   transition: background-color 0.3s;
 }

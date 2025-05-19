@@ -1,0 +1,21 @@
+.form-section {
+  background-color: #fafafa;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.form-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+
+.form-section-content {
+  padding: 1.5rem;
+} 

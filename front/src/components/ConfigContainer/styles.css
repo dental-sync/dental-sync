@@ -1,0 +1,11 @@
+.config-container {
+  width: 100%;
+  padding: 1.5rem;
+}
+
+.config-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+} 

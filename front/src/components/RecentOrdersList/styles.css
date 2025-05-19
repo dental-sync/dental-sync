@@ -1,0 +1,100 @@
+.recent-orders-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.recent-order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.25rem;
+  background-color: #fff;
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.2s;
+}
+
+.recent-order-item:hover {
+  background-color: #f1f5f9;
+}
+
+.order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.order-number {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.order-type {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.order-status-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 110px;
+}
+
+.order-status {
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  text-align: center;
+}
+
+.status-concluido {
+  background-color: #dcfce7;
+  color: #10b981;
+}
+
+.status-andamento {
+  background-color: #fef3c7;
+  color: #f59e0b;
+}
+
+.status-pendente {
+  background-color: #dbeafe;
+  color: #3b82f6;
+}
+
+.status-cancelado {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+.status-outros {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+.view-all-orders {
+  display: flex;
+  justify-content: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 0.5rem;
+}
+
+.view-all-link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0284c7;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.view-all-link:hover {
+  color: #0369a1;
+  text-decoration: underline;
+} 

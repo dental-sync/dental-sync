@@ -24,12 +24,10 @@ const InformacaoSection = () => {
 
   return (
     <div className="informacao-section">
-      <div className="section-header">
-        <h2>Informações do Laboratório</h2>
-        <p className="section-description">Gerencie as informações básicas do seu laboratório</p>
-      </div>
+      <h2>Informações do Laboratório</h2>
+      <p className="section-description">Gerencie as informações básicas do seu laboratório</p>
 
-      <form onSubmit={handleSubmit} className="lab-form">
+      <form onSubmit={handleSubmit}>
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="nome">Nome do Laboratório</label>

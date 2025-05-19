@@ -6,11 +6,7 @@
   border: 1px solid #e2e8f0;
 }
 
-.section-header {
-  margin-bottom: 1.5rem;
-}
-
-.section-header h2 {
+.informacao-section h2 {
   font-size: 1.25rem;
   font-weight: 600;
   color: #1e293b;
@@ -20,13 +16,7 @@
 .section-description {
   color: #64748b;
   font-size: 0.875rem;
-}
-
-.lab-form {
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 1.5rem;
-  background-color: #fafafa;
+  margin-bottom: 1.5rem;
 }
 
 .form-row {

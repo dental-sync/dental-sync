@@ -19,6 +19,10 @@ import EditarClinica from './pages/Clinica/EditarClinica'
 import MaterialPage from './pages/Material/MaterialPage'
 import CadastroMaterial from './pages/Material/CadastroMaterial'
 import EditarMaterial from './pages/Material/EditarMaterial'
+import PedidoPage from './pages/Pedido/PedidoPage'
+import CadastroPedido from './pages/Pedido/CadastroPedido'
+import EditarPedido from './pages/Pedido/EditarPedido'
+import VisualizarPedido from './pages/Pedido/VisualizarPedido'
 import Configuracao from './pages/Configuracao'
 import './App.css'
 
@@ -47,6 +51,10 @@ function App() {
             <Route path="/material" element={<MaterialPage />} />
             <Route path="/material/cadastro" element={<CadastroMaterial />} />
             <Route path="/material/editar/:id" element={<EditarMaterial />} />
+            <Route path="/pedidos" element={<PedidoPage />} />
+            <Route path="/pedidos/cadastro" element={<CadastroPedido />} />
+            <Route path="/pedidos/editar/:id" element={<EditarPedido />} />
+            <Route path="/pedidos/:id" element={<VisualizarPedido />} />
             <Route path="/configuracao" element={<Configuracao />} />
           </Routes>
         </main>

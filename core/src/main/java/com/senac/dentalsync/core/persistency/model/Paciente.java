@@ -25,10 +25,9 @@ public class Paciente extends BaseEntity {
     @NotBlank(message = "O nome é obrigatório")
 
     @Pattern(
-    regexp = "^[\\p{L}]{2,}(\\s[\\p{L}]+)+$",
-    message = "O nome deve começar com pelo menos duas letras e conter sobrenome(s)"
-    )
-    private String nome;
+    regexp = "^[\\p{L}]{2,}(?:\\s[\\p{L}]{2,})+$",
+    message = "Por favor, informe nome e sobrenome válidos"
+)
     @Size(max = 255, message = "O nome não pode ultrapassar 255 caracteres")
 
     @NotBlank(message = "O telefone é obrigatório")

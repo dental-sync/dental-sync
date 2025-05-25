@@ -36,7 +36,6 @@ public class Dentista extends BaseEntity {
     @Pattern(regexp = "\\(\\d{2}\\)\\s\\d{4,5}-\\d{4}", message = "Formato de telefone inválido. Use o formato: (99) 99999-9999 para celular ou (99) 9999-9999 para fixo")
     private String telefone;
 
-    @Email(message = "Email inválido")
     @NotBlank(message = "O email é obrigatório")
     @Pattern(regexp = "^[^\\s@]+@[^\\s@]+\\.com$", message = "O email deve terminar com .com")
     @Size(max = 255, message = "O email não pode ultrapassar 255 caracteres")

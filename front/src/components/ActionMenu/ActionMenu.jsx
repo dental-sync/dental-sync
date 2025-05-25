@@ -7,17 +7,13 @@ import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 import { formatProteticoId } from '../../utils/formatters';
 
-const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
+const ActionMenu = ({ proteticoId, onProteticoDeleted, isActive }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   const navigate = useNavigate();
-  const isActive = proteticoStatus === true || 
-                  proteticoStatus === 'true' ||
-                  proteticoStatus === 'ATIVO' ||
-                  proteticoStatus === 'Ativo';
 
   const updateDropdownPosition = () => {
     if (buttonRef.current) {
@@ -72,36 +68,21 @@ const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
       return;
     }
     
-    // Abrir modal de confirmação
-    setIsDeleteModalOpen(true);
+    setShowDeleteModal(true);
     setIsOpen(false);
   };
   
   const handleConfirmDelete = async () => {
     try {
-      // Chamada para o endpoint de exclusão
-      const response = await axios.delete(`http://localhost:8080/proteticos/${proteticoId}`);
-      
-      if (response.status === 200 || response.status === 204) {
-        toast.success('Protético excluído com sucesso!');
-        // Forçar atualização da lista
-        if (onStatusChange) {
-          onStatusChange(proteticoId, null);
-        }
-      }
+      await axios.delete(`http://localhost:8080/proteticos/${proteticoId}`);
+      onProteticoDeleted(proteticoId);
     } catch (error) {
       console.error('Erro ao excluir protético:', error);
-      toast.error(error.response?.data?.message || 'Erro ao excluir protético. Tente novamente.');
-    } finally {
-      setIsDeleteModalOpen(false);
+      toast.error('Erro ao excluir protético. Tente novamente.');
     }
+    setShowDeleteModal(false);
   };
   
-  const handleCancelDelete = () => {
-    setIsDeleteModalOpen(false);
-  };
-  
-  // Renderizar o dropdown no final do body
   const renderDropdown = () => {
     if (!isOpen) return null;
 
@@ -116,8 +97,8 @@ const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
         }}
       >
         <ul>
-          <li onClick={handleEditar}>Editar</li>
           <li onClick={handleVerHistorico}>Histórico</li>
+          <li onClick={handleEditar}>Editar</li>
           {!isActive && (
             <li onClick={handleExcluir} className="delete-option">Excluir</li>
           )}
@@ -132,29 +113,31 @@ const ActionMenu = ({ proteticoId, proteticoStatus, onStatusChange }) => {
   };
 
   return (
-    <div className="action-menu">
-      <button 
-        className="action-menu-button" 
-        onClick={toggleDropdown}
-        ref={buttonRef}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="1" />
-          <circle cx="12" cy="5" r="1" />
-          <circle cx="12" cy="19" r="1" />
-        </svg>
-      </button>
-      
-      {renderDropdown()}
+    <>
+      <div className="action-menu">
+        <button 
+          className="action-menu-button" 
+          onClick={toggleDropdown}
+          ref={buttonRef}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="1" />
+            <circle cx="12" cy="5" r="1" />
+            <circle cx="12" cy="19" r="1" />
+          </svg>
+        </button>
+        
+        {renderDropdown()}
+      </div>
       
       <DeleteConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={handleCancelDelete}
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
         onConfirm={handleConfirmDelete}
-        title="Excluir Protético"
-        message="Tem certeza que deseja excluir este protético? Esta ação não pode ser desfeita."
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir permanentemente este protético? Esta ação não poderá ser desfeita."
       />
-    </div>
+    </>
   );
 };
 

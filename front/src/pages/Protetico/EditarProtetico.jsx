@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './EditarProtetico.css';
-import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const EditarProtetico = () => {
   const navigate = useNavigate();
@@ -19,13 +19,13 @@ const EditarProtetico = () => {
   });
   
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [loadingData, setLoadingData] = useState(true);
-  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchProtetico = async () => {
       try {
+        setLoading(true);
         const response = await axios.get(`http://localhost:8080/proteticos/${id}`);
         const protetico = response.data;
         
@@ -41,9 +41,9 @@ const EditarProtetico = () => {
         });
       } catch (error) {
         console.error('Erro ao buscar dados do protético:', error);
-        setErrors({ general: 'Erro ao carregar dados do protético. Tente novamente.' });
+        toast.error('Erro ao carregar dados do protético. Tente novamente.');
       } finally {
-        setLoadingData(false);
+        setLoading(false);
       }
     };
     
@@ -55,52 +55,61 @@ const EditarProtetico = () => {
     
     if (name === 'telefone') {
       // Aplicar máscara de telefone (99) 99999-9999
-      const cleaned = value.replace(/\D/g, '');
-      let formatted = '';
+      const digits = value.replace(/\D/g, '');
+      let formattedValue = '';
       
-      if (cleaned.length <= 11) {
-        if (cleaned.length > 0) formatted += '(';
-        if (cleaned.length > 0) formatted += cleaned.substring(0, 2);
-        if (cleaned.length > 2) formatted += ') ';
-        if (cleaned.length > 2) formatted += cleaned.substring(2, 7);
-        if (cleaned.length > 7) formatted += '-';
-        if (cleaned.length > 7) formatted += cleaned.substring(7, 11);
+      if (digits.length > 0) {
+        // Limita a 11 dígitos (2 do DDD + 9 do número)
+        const limitedDigits = digits.substring(0, 11);
         
-        setFormData({
-          ...formData,
-          [name]: formatted
-        });
+        // Adiciona o DDD
+        formattedValue = `(${limitedDigits.substring(0, 2)}`;
+        
+        if (limitedDigits.length > 2) {
+          // Adiciona o espaço após o DDD
+          formattedValue += ') ';
+          
+          // Adiciona os números após o DDD
+          formattedValue += limitedDigits.substring(2);
+        }
       }
+      
+      setFormData({
+        ...formData,
+        [name]: formattedValue
+      });
     } else if (name === 'cro') {
       // Aplicar máscara para CRO
       const upperValue = value.toUpperCase();
       
-      // Verificar o formato CRO-XX NNNNNN
-      const croPrefixMatch = upperValue.match(/^(CRO-[A-Z]{0,2})/);
-      
-      if (croPrefixMatch) {
-        // Formato começa com CRO-XX
-        const prefix = croPrefixMatch[0];
-        const rest = upperValue.substring(prefix.length).replace(/\D/g, '');
-        
-        if (rest) {
-          setFormData({
-            ...formData,
-            [name]: `${prefix} ${rest}`
-          });
-        } else {
-          setFormData({
-            ...formData,
-            [name]: prefix
-          });
-        }
-      } else {
-        // Permitir apenas letras para o estado ou números para o registro
-        setFormData({
-          ...formData,
-          [name]: upperValue
-        });
+      // Garante que o valor sempre começa com CRO-
+      let formattedValue = upperValue;
+      if (!upperValue.startsWith('CRO-')) {
+        formattedValue = 'CRO-' + upperValue.replace(/^CRO-?/, '');
       }
+      
+      // Remove caracteres inválidos
+      formattedValue = formattedValue.replace(/[^A-Z0-9-]/g, '');
+      
+      // Formato CRO-XX NNNNNN
+      const parts = formattedValue.split('-');
+      if (parts.length >= 2 && parts[1].length === 2) {
+        // Se já temos o estado (XX), adicionamos espaço antes dos números
+        const restOfString = parts.slice(2).join('');
+        formattedValue = `CRO-${parts[1]} ${restOfString}`;
+      }
+      
+      setFormData({
+        ...formData,
+        [name]: formattedValue
+      });
+    } else if (name === 'nome') {
+      // Remove números do nome
+      const nomeSemNumeros = value.replace(/[0-9]/g, '');
+      setFormData({
+        ...formData,
+        [name]: nomeSemNumeros
+      });
     } else {
       // Para outros campos, sem máscara
       setFormData({
@@ -118,32 +127,86 @@ const EditarProtetico = () => {
     }
   };
 
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === 'telefone') {
+      const digits = value.replace(/\D/g, '');
+      let formattedValue = '';
+      
+      if (digits.length > 0) {
+        // Adiciona o DDD
+        formattedValue = `(${digits.substring(0, 2)}`;
+        
+        if (digits.length > 2) {
+          // Adiciona o espaço após o DDD
+          formattedValue += ') ';
+          
+          // Adiciona os números após o DDD
+          const remainingDigits = digits.substring(2);
+          
+          if (remainingDigits.length >= 8) {
+            // Identifica se é fixo (8 dígitos) ou celular (9 dígitos)
+            const isCelular = remainingDigits.length >= 9;
+            const splitPoint = isCelular ? 5 : 4;
+            formattedValue += `${remainingDigits.substring(0, splitPoint)}-${remainingDigits.substring(splitPoint, splitPoint + 4)}`;
+          } else {
+            formattedValue += remainingDigits;
+          }
+        }
+      }
+      
+      setFormData({
+        ...formData,
+        [name]: formattedValue
+      });
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
     
     // Validar campos obrigatórios
-    if (!formData.nome) newErrors.nome = 'Nome é obrigatório';
-    if (!formData.email) newErrors.email = 'Email é obrigatório';
-    if (!formData.cro) newErrors.cro = 'CRO é obrigatório';
-    if (!formData.cargo) newErrors.cargo = 'Cargo é obrigatório';
-    
-    // Validar tamanho do nome
-    if (formData.nome && formData.nome.length > 255) {
+    if (!formData.nome) {
+      newErrors.nome = 'Nome é obrigatório';
+    } else if (formData.nome.trim().split(' ').length < 2) {
+      newErrors.nome = 'Por favor, informe o nome e sobrenome';
+    } else if (formData.nome.trim().split(' ')[0].length < 2) {
+      newErrors.nome = 'O nome deve possuir no mínimo 2 letras';
+    } else if (formData.nome.length > 255) {
       newErrors.nome = 'O nome não pode ter mais de 255 caracteres';
+    }
+    
+    if (!formData.email) {
+      newErrors.email = 'Email é obrigatório';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Formato de email inválido';
+    } else if (formData.email.length > 255) {
+      newErrors.email = 'O email não pode ter mais de 255 caracteres';
+    }
+    
+    if (!formData.cro) {
+      newErrors.cro = 'CRO é obrigatório';
+    } else {
+      // Validar formato de CRO (CRO-XX NNNNNN)
+      const croRegex = /^CRO-[A-Z]{2}\s\d{1,6}$/;
+      if (!croRegex.test(formData.cro)) {
+        newErrors.cro = 'Formato de CRO inválido. Use o formato: CRO-XX NNNNNN (ex: CRO-SP 123456)';
+      }
+    }
+    
+    if (!formData.cargo) {
+      newErrors.cargo = 'Cargo é obrigatório';
     }
     
     // Validar formato do telefone
     if (formData.telefone) {
       const telefoneClean = formData.telefone.replace(/\D/g, '');
-      if (telefoneClean.length !== 11) {
-        newErrors.telefone = 'Telefone deve conter 11 dígitos (DDD + número)';
+      if (telefoneClean.length !== 11 && telefoneClean.length !== 10) {
+        newErrors.telefone = 'Telefone deve ter formato válido: (99) 99999-9999 para celular ou (99) 9999-9999 para fixo';
       }
-    }
-    
-    // Validar formato de CRO
-    const croRegex = /(CRO-[A-Z]{2}\s?\d{1,6})|(\d{1,6}\s?CRO-[A-Z]{2})/;
-    if (formData.cro && !croRegex.test(formData.cro)) {
-      newErrors.cro = 'Formato de CRO inválido. Use o formato: CRO-XX NNNNNN ou NNNNNN CRO-XX';
+    } else {
+      newErrors.telefone = 'Telefone é obrigatório';
     }
     
     // Validar senha apenas se foi preenchida
@@ -154,12 +217,6 @@ const EditarProtetico = () => {
     // Validar confirmação de senha
     if (formData.senha && formData.senha !== formData.confirmarSenha) {
       newErrors.confirmarSenha = 'As senhas não coincidem';
-    }
-    
-    // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) {
-      newErrors.email = 'Formato de email inválido';
     }
     
     setErrors(newErrors);
@@ -173,7 +230,7 @@ const EditarProtetico = () => {
       return;
     }
     
-    setLoading(true);
+    setSaving(true);
     setErrors({});
     
     try {
@@ -187,7 +244,8 @@ const EditarProtetico = () => {
         email: formData.email,
         telefone: formData.telefone || null,
         cro: formData.cro,
-        isAdmin: formData.cargo === 'Admin'
+        isAdmin: formData.cargo === 'Admin',
+        isActive: formData.isActive
       };
       
       // Incluir senha apenas se foi preenchida
@@ -195,64 +253,40 @@ const EditarProtetico = () => {
         proteticoData.senha = formData.senha;
       }
       
-      console.log('Dados enviados para atualização:', proteticoData);
-      const response = await axios.put(`http://localhost:8080/proteticos/${id}`, proteticoData);
-      console.log('Resposta da API:', response.data);
+      await axios.put(`http://localhost:8080/proteticos/${id}`, proteticoData);
       
       // Restaurar o status original se necessário
-      if (response.data.isActive !== currentStatus) {
-        console.log(`Restaurando status original: ${currentStatus}`);
+      if (proteticoData.isActive !== currentStatus) {
         await axios.patch(`http://localhost:8080/proteticos/${id}`, { isActive: currentStatus });
       }
       
-      setSuccess(true);
-      setTimeout(() => {
-        navigate('/protetico');
-      }, 2000);
+      // Limpa qualquer estado de navegação existente
+      window.history.replaceState({}, document.title);
+      
+      // Navegar para a página de listagem com mensagem de sucesso e flag de refresh
+      navigate('/protetico', { 
+        state: { 
+          success: 'Protético atualizado com sucesso!',
+          refresh: true 
+        } 
+      });
     } catch (error) {
       console.error('Erro ao atualizar protético:', error);
       
-      // Resetar estado de sucesso em caso de erro
-      setSuccess(false);
-      
       if (error.response) {
-        // Capturar erros de validação de e-mail
-        const errorResponseData = error.response.data || {};
-        const errorMessage = errorResponseData.message || '';
-        
-        // Verificar diferentes padrões de erro que indicam problemas com o email
-        if (
-          (error.response.status === 500 && 
-            (errorMessage.includes('Email inv') || 
-             errorMessage.includes('ConstraintViolationException') || 
-             errorMessage.includes('propertyPath=email')))
-        ) {
-          setErrors(prev => ({
-            ...prev,
-            email: 'Email inválido. Verifique o formato e tente novamente.'
-          }));
-        }
-        // Verificar outros erros específicos da API
-        else if (errorResponseData.errors) {
-          const apiErrors = {};
-          errorResponseData.errors.forEach(err => {
-            apiErrors[err.field] = err.message;
-          });
-          setErrors(apiErrors);
-        } 
-        // Mensagem de erro específica
-        else if (errorResponseData.message) {
-          setErrors({ general: errorResponseData.message });
-        } 
-        // Mensagem de erro genérica
-        else {
-          setErrors({ general: 'Ocorreu um erro ao atualizar o protético. Tente novamente.' });
+        const errorMessage = error.response.data;
+        if (typeof errorMessage === 'string') {
+          toast.error(errorMessage);
+        } else if (errorMessage.message) {
+          toast.error(errorMessage.message);
+        } else {
+          toast.error('Ocorreu um erro ao atualizar o protético. Tente novamente.');
         }
       } else {
-        setErrors({ general: 'Erro de conexão. Verifique sua internet e tente novamente.' });
+        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
       }
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -260,22 +294,12 @@ const EditarProtetico = () => {
     navigate('/protetico');
   };
 
-  if (loadingData) {
-    return (
-      <div className="editar-protetico-page">
-        <div className="loading">Carregando dados...</div>
-      </div>
-    );
+  if (loading) {
+    return <div className="loading">Carregando dados do protético...</div>;
   }
 
   return (
     <div className="editar-protetico-page">
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
-        </div>
-      </div>
-      
       <div className="back-navigation">
         <button onClick={handleVoltar} className="back-button">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -285,28 +309,9 @@ const EditarProtetico = () => {
         <h1 className="page-title">Editar Protético</h1>
       </div>
       
-      {success && (
-        <div className="success-message">
-          Protético atualizado com sucesso!
-        </div>
-      )}
-      
-      {errors.general && (
-        <div className="error-message">
-          {errors.general}
-        </div>
-      )}
-      
-      {errors.serverValidation && (
-        <div className="server-validation-error">
-          <div className="error-title">Erro de validação:</div>
-          <div className="error-message">{errors.serverValidation}</div>
-        </div>
-      )}
-      
       <form onSubmit={handleSubmit} className="protetico-form">
         <div className="form-group">
-          <label htmlFor="nome">Nome Completo</label>
+          <label htmlFor="nome" className="required">Nome Completo</label>
           <input
             type="text"
             id="nome"
@@ -317,11 +322,11 @@ const EditarProtetico = () => {
             maxLength={255}
             placeholder="Digite o nome completo"
           />
-          {errors.nome && <div className="error-text">{errors.nome}</div>}
+          {errors.nome && <span className="error-text">{errors.nome}</span>}
         </div>
         
         <div className="form-group">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email" className="required">Email</label>
           <input
             type="email"
             id="email"
@@ -329,28 +334,29 @@ const EditarProtetico = () => {
             value={formData.email}
             onChange={handleChange}
             className={errors.email ? 'input-error' : ''}
-            maxLength={100}
+            maxLength={255}
             placeholder="exemplo@email.com"
           />
-          {errors.email && <div className="error-text">{errors.email}</div>}
+          {errors.email && <span className="error-text">{errors.email}</span>}
         </div>
         
         <div className="form-group">
-          <label htmlFor="telefone">Telefone</label>
+          <label htmlFor="telefone" className="required">Telefone</label>
           <input
             type="tel"
             id="telefone"
             name="telefone"
             value={formData.telefone}
             onChange={handleChange}
+            onBlur={handleBlur}
             className={errors.telefone ? 'input-error' : ''}
             placeholder="(00) 00000-0000"
           />
-          {errors.telefone && <div className="error-text">{errors.telefone}</div>}
+          {errors.telefone && <span className="error-text">{errors.telefone}</span>}
         </div>
         
         <div className="form-group">
-          <label htmlFor="cargo">Cargo</label>
+          <label htmlFor="cargo" className="required">Cargo</label>
           <select
             id="cargo"
             name="cargo"
@@ -362,11 +368,14 @@ const EditarProtetico = () => {
             <option value="Admin">Admin</option>
             <option value="Protetico">Protetico</option>
           </select>
-          {errors.cargo && <div className="error-text">{errors.cargo}</div>}
+          {errors.cargo && <span className="error-text">{errors.cargo}</span>}
         </div>
         
         <div className="form-group">
-          <label htmlFor="cro">CRO</label>
+          <label htmlFor="cro" className="required">
+            CRO
+            <span className="tooltip-icon" data-tooltip="Formato: CRO-XX NNNNNN (ex: CRO-SP 123456)">?</span>
+          </label>
           <input
             type="text"
             id="cro"
@@ -376,8 +385,7 @@ const EditarProtetico = () => {
             className={errors.cro ? 'input-error' : ''}
             placeholder="CRO-XX 000000"
           />
-          {errors.cro && <div className="error-text">{errors.cro}</div>}
-          <small className="input-help">Formato: CRO-XX NNNNNN (ex: CRO-SP 123456)</small>
+          {errors.cro && <span className="error-text">{errors.cro}</span>}
         </div>
         
         <div className="form-group">
@@ -392,7 +400,7 @@ const EditarProtetico = () => {
             placeholder="Deixe em branco para manter a senha atual"
             minLength={6}
           />
-          {errors.senha && <div className="error-text">{errors.senha}</div>}
+          {errors.senha && <span className="error-text">{errors.senha}</span>}
         </div>
         
         <div className="form-group">
@@ -404,17 +412,25 @@ const EditarProtetico = () => {
             value={formData.confirmarSenha}
             onChange={handleChange}
             className={errors.confirmarSenha ? 'input-error' : ''}
-            placeholder="Repita a nova senha"
+            placeholder="Confirme a nova senha"
           />
-          {errors.confirmarSenha && <div className="error-text">{errors.confirmarSenha}</div>}
+          {errors.confirmarSenha && <span className="error-text">{errors.confirmarSenha}</span>}
         </div>
         
         <div className="form-actions">
-          <button type="button" onClick={handleVoltar} className="btn-cancelar">
+          <button 
+            type="button" 
+            onClick={handleVoltar} 
+            className="btn-cancelar"
+          >
             Cancelar
           </button>
-          <button type="submit" className="btn-salvar" disabled={loading}>
-            {loading ? 'Salvando...' : 'Salvar Alterações'}
+          <button 
+            type="submit" 
+            className="btn-salvar"
+            disabled={saving}
+          >
+            {saving ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
       </form>

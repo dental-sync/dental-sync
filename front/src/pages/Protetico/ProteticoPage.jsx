@@ -5,63 +5,112 @@ import ActionButton from '../../components/ActionButton/ActionButton';
 import ProteticoTable from '../../components/ProteticoTable/ProteticoTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import useInfiniteScroll from '../../hooks/useInfiniteScroll';
 import { formatProteticoId, extractProteticoId } from '../../utils/formatters';
 
 const ProteticoPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [proteticos, setProteticos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [filtros, setFiltros] = useState({
     status: 'todos',
     cargo: 'todos'
   });
+  const [refreshData, setRefreshData] = useState(0);
+  const [toastMessage, setToastMessage] = useState(null);
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'ascending'
+  });
   
   const filterRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
   
-  // Função para buscar protéticos da API
-  const fetchProteticosData = async (pageNum, pageSize) => {
-    try {
-      const response = await axios.get(`http://localhost:8080/proteticos/paginado?page=${pageNum}&size=${pageSize}`);
-      
-      const responseData = response.data;
-      const proteticosFormatados = responseData.content.map(protetico => ({
-        id: protetico.id,
-        idFormatado: formatProteticoId(protetico.id),
-        nome: protetico.nome,
-        cro: protetico.cro,
-        cargo: protetico.isAdmin ? 'Admin' : 'Protetico',
-        telefone: protetico.telefone || '-',
-        status: protetico.isActive ? 'ATIVO' : 'INATIVO'
-      }));
-      
-      return {
-        content: proteticosFormatados,
-        totalElements: responseData.totalElements,
-        last: responseData.last
-      };
-    } catch (error) {
-      console.error('Não foi possível acessar a API:', error);
-      toast.error('Erro ao buscar protéticos. Por favor, tente novamente.');
-      throw error;
-    }
-  };
-  
-  // Usar o hook de paginação infinita
-  const {
-    data: proteticos,
-    loading,
-    loadingMore,
-    lastElementRef: lastProteticoElementRef,
-    refresh: refreshProteticos
-  } = useInfiniteScroll(fetchProteticosData);
+  // Criando um ref para armazenar mensagens recentes e evitar duplicação de toasts
+  const recentMessages = useRef(new Set());
 
-  // Esconder dropdown de filtro ao clicar fora dele
+  useEffect(() => {
+    const fetchProteticos = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:8080/proteticos');
+        const proteticosFormatados = response.data.map(protetico => ({
+          id: protetico.id,
+          nome: protetico.nome,
+          cro: protetico.cro,
+          cargo: protetico.isAdmin ? 'Admin' : 'Protetico',
+          telefone: protetico.telefone || '-',
+          status: protetico.isActive ? 'ATIVO' : 'INATIVO'
+        }));
+        setProteticos(proteticosFormatados);
+      } catch (err) {
+        console.error('Erro ao buscar protéticos:', err);
+        setProteticos([]);
+        setError('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.');
+        toast.error('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProteticos();
+  }, [refreshData]);
+
+  useEffect(() => {
+    if (location.state && location.state.success) {
+      const successMessage = location.state.success;
+      const shouldRefresh = location.state.refresh;
+      
+      // Limpa o state imediatamente
+      window.history.replaceState({}, document.title);
+      
+      // Cria uma chave única para esta mensagem
+      const messageKey = `${successMessage}-${Date.now()}`;
+      
+      // Verifica se esta mensagem já foi exibida recentemente (nos últimos 3 segundos)
+      if (!recentMessages.current.has(messageKey)) {
+        // Adiciona a mensagem ao cache
+        recentMessages.current.add(messageKey);
+        
+        // Exibe o toast
+        toast.success(successMessage, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          // ID fixo para a mesma mensagem
+          toastId: successMessage
+        });
+        
+        // Remove a mensagem do cache após 3 segundos
+        setTimeout(() => {
+          recentMessages.current.delete(messageKey);
+        }, 3000);
+        
+        // Se é necessário atualizar os dados
+        if (shouldRefresh) {
+          setRefreshData(prev => prev + 1);
+        }
+      }
+    }
+  }, [location]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (filterRef.current && !filterRef.current.contains(event.target)) {
@@ -75,7 +124,65 @@ const ProteticoPage = () => {
     };
   }, []);
 
-  // Filtrar protéticos conforme a busca e filtros aplicados
+  const handleProteticoDeleted = (proteticoId) => {
+    // Primeiro, remover o protético do estado local para atualização imediata da UI
+    setProteticos(prevProteticos => 
+      prevProteticos.filter(protetico => protetico.id !== proteticoId)
+    );
+    
+    // Forçar um refresh dos dados para sincronizar com o banco
+    setRefreshData(prev => prev + 1);
+    
+    // Limpa qualquer estado de navegação existente
+    window.history.replaceState({}, document.title);
+    
+    // Adicionamos uma mensagem de sucesso usando o padrão de state
+    navigate('', { 
+      state: { 
+        success: "Protético excluído com sucesso!",
+        refresh: false // Não precisamos de refresh pois já fizemos acima
+      },
+      replace: true // Importante usar replace para não adicionar nova entrada no histórico
+    });
+  };
+
+  const handleStatusChange = (proteticoId, newStatus) => {
+    // Encontrar o protético atual
+    const proteticoAtual = proteticos.find(d => d.id === proteticoId);
+    
+    // Verificar se o status está realmente mudando
+    const statusAtual = proteticoAtual.status === 'ATIVO';
+    if (statusAtual === (newStatus === 'ATIVO')) {
+      return; // Não faz nada se o status for o mesmo
+    }
+
+    // Atualizar o status do protético na lista
+    if (newStatus !== null) {
+      setProteticos(prevProteticos =>
+        prevProteticos.map(protetico =>
+          protetico.id === proteticoId
+            ? { ...protetico, status: newStatus }
+            : protetico
+        )
+      );
+      
+      // Exibir o toast de forma padronizada
+      const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
+      
+      // Limpa qualquer estado de navegação existente
+      window.history.replaceState({}, document.title);
+      
+      // Adicionamos uma mensagem de sucesso usando o padrão de state
+      navigate('', { 
+        state: { 
+          success: `Status atualizado com sucesso para ${statusText}`,
+          refresh: false // Não precisamos de refresh pois já atualizamos localmente
+        },
+        replace: true // Importante usar replace para não adicionar nova entrada no histórico
+      });
+    }
+  };
+
   const proteticosFiltrados = proteticos
     .filter(protetico => {
       // Aplicar filtros de status
@@ -108,7 +215,7 @@ const ProteticoPage = () => {
         return (
           protetico.nome?.toLowerCase().includes(searchLower) ||
           protetico.cro?.toLowerCase().includes(searchLower) ||
-          protetico.idFormatado?.toLowerCase().includes(searchLower) ||
+          formatProteticoId(protetico.id).toLowerCase().includes(searchLower) ||
           (protetico.id?.toString() || '').toLowerCase().includes(searchLower)
         );
       }
@@ -153,10 +260,53 @@ const ProteticoPage = () => {
     navigate('/protetico/cadastro');
   };
 
-  // Função para forçar atualização da listagem
-  const handleStatusChange = () => {
-    refreshProteticos();
+  const handleRefresh = () => {
+    setRefreshData(prev => prev + 1);
   };
+
+  const handleSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedProteticos = React.useMemo(() => {
+    let sortableProteticos = [...proteticosFiltrados];
+    if (sortConfig.key) {
+      sortableProteticos.sort((a, b) => {
+        // Para ordenação de IDs (números)
+        if (sortConfig.key === 'id') {
+          return sortConfig.direction === 'ascending'
+            ? a.id - b.id
+            : b.id - a.id;
+        }
+        
+        // Para ordenação de status
+        if (sortConfig.key === 'status') {
+          const aValue = a.status === 'ATIVO' ? 1 : 0;
+          const bValue = b.status === 'ATIVO' ? 1 : 0;
+          return sortConfig.direction === 'ascending'
+            ? aValue - bValue
+            : bValue - aValue;
+        }
+        
+        // Para ordenação de strings (nome)
+        const aValue = String(a[sortConfig.key]).toLowerCase();
+        const bValue = String(b[sortConfig.key]).toLowerCase();
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableProteticos;
+  }, [proteticosFiltrados, sortConfig]);
 
   if (loading) {
     return <div className="loading">Carregando protéticos...</div>;
@@ -170,6 +320,12 @@ const ProteticoPage = () => {
           <NotificationBell count={2} />
         </div>
       </div>
+      
+      {toastMessage && (
+        <div className="toast-message">
+          {toastMessage}
+        </div>
+      )}
       
       <div className="page-header">
         <h1 className="page-title">Protéticos</h1>
@@ -217,8 +373,12 @@ const ProteticoPage = () => {
                 </div>
                 
                 <div className="filter-actions">
-                  <button onClick={handleLimparFiltros} className="clear-filter-button">
-                    Limpar filtros
+                  <button
+                    type="button"
+                    onClick={handleLimparFiltros}
+                    className="clear-filter-button"
+                  >
+                    Limpar Filtros
                   </button>
                 </div>
               </div>
@@ -226,23 +386,22 @@ const ProteticoPage = () => {
           </div>
           
           <ExportDropdown 
-            data={proteticosFiltrados.map(p => ({
-              ...p,
-              id: p.idFormatado // Substituir ID numerico pelo ID formatado
-            }))}
+            data={sortedProteticos}
             headers={['ID', 'Nome', 'CRO', 'Cargo', 'Telefone', 'Status']}
             fields={['id', 'nome', 'cro', 'cargo', 'telefone', 'status']}
             filename="proteticos"
             isOpen={isExportOpen}
             toggleExport={toggleExport}
             onCloseDropdown={handleCloseExport}
+            title="Lista de Protéticos"
+            formatIdFn={(id) => formatProteticoId(id)}
           />
         </div>
       </div>
       
       <div className="search-container">
         <SearchBar 
-          placeholder="Buscar por ID (PT001), nome ou CRO..." 
+          placeholder="Buscar por ID (PT001), nome, CRO ou telefone..." 
           onSearch={handleSearch} 
         />
         <ActionButton 
@@ -258,19 +417,19 @@ const ProteticoPage = () => {
             Nenhum protético encontrado para a busca "{searchQuery}".
           </div>
         )}
-        {!searchQuery && proteticosFiltrados.length === 0 && (filtros.status !== 'todos' || filtros.cargo !== 'todos') && (
+        {!searchQuery && proteticosFiltrados.length === 0 && (filtros.status !== 'todos' || filtros.cargo !== 'todos') ? (
           <div className="filter-info">
             Nenhum protético encontrado com os filtros aplicados.
           </div>
-        )}
+        ) : null}
         <ProteticoTable 
-          proteticos={proteticosFiltrados} 
+          proteticos={sortedProteticos} 
+          onProteticoDeleted={handleProteticoDeleted}
           onStatusChange={handleStatusChange}
-          lastProteticoRef={lastProteticoElementRef}
+          sortConfig={sortConfig}
+          onSort={handleSort}
+          isEmpty={!searchQuery && proteticosFiltrados.length === 0 && filtros.status === 'todos' && filtros.cargo === 'todos'}
         />
-        {loadingMore && (
-          <div className="loading-more">Carregando mais protéticos...</div>
-        )}
       </div>
     </div>
   );

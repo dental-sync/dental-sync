@@ -25,6 +25,7 @@ import Configuracao from './pages/Configuracao'
 import Relatorios from './pages/Relatorios'
 import ForgotPasswordPage from './pages/Login/ForgotPassword'
 import ResetPasswordPage from './pages/Login/ResetPassword'
+import PlanosPage from './pages/Planos'
 import './App.css'
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
           <Route path="/registre-se" element={<RegisterPage />} />
           <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
           <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
+          <Route path="planos" element={<PlanosPage />} />
           
           {/* Rotas protegidas com Sidebar */}
           <Route path="/dashboard/*" element={
@@ -45,26 +47,26 @@ function App() {
               <Sidebar />
               <main className="main-content">
                 <Routes>
-                  <Route path="/" element={<ProteticoPage />} />
-                  <Route path="/protetico" element={<ProteticoPage />} />
-                  <Route path="/protetico/cadastro" element={<CadastroProtetico />} />
-                  <Route path="/protetico/historico/:id" element={<HistoricoProtetico />} />
-                  <Route path="/protetico/editar/:id" element={<EditarProtetico />} />
-                  <Route path="/paciente" element={<PacientePage />} />
-                  <Route path="/paciente/cadastro" element={<CadastroPaciente />} />
-                  <Route path="/paciente/historico/:id" element={<HistoricoPaciente />} />
-                  <Route path="/paciente/editar/:id" element={<EditarPaciente />} />
-                  <Route path="/dentista" element={<DentistaPage />} />
-                  <Route path="/dentista/cadastro" element={<CadastroDentista />} />
-                  <Route path="/dentista/editar/:id" element={<EditarDentista />} />
-                  <Route path="/clinica" element={<ClinicaPage />} />
-                  <Route path="/clinica/cadastro" element={<CadastroClinica />} />
-                  <Route path="/clinica/editar/:id" element={<EditarClinica />} />
-                  <Route path="/material" element={<MaterialPage />} />
-                  <Route path="/material/cadastro" element={<CadastroMaterial />} />
-                  <Route path="/material/editar/:id" element={<EditarMaterial />} />
-                  <Route path="/configuracao" element={<Configuracao />} />
-                  <Route path="/relatorios" element={<Relatorios />} />
+                  <Route path="" element={<ProteticoPage />} />
+                  <Route path="protetico" element={<ProteticoPage />} />
+                  <Route path="protetico/cadastro" element={<CadastroProtetico />} />
+                  <Route path="protetico/historico/:id" element={<HistoricoProtetico />} />
+                  <Route path="protetico/editar/:id" element={<EditarProtetico />} />
+                  <Route path="paciente" element={<PacientePage />} />
+                  <Route path="paciente/cadastro" element={<CadastroPaciente />} />
+                  <Route path="paciente/historico/:id" element={<HistoricoPaciente />} />
+                  <Route path="paciente/editar/:id" element={<EditarPaciente />} />
+                  <Route path="dentista" element={<DentistaPage />} />
+                  <Route path="dentista/cadastro" element={<CadastroDentista />} />
+                  <Route path="dentista/editar/:id" element={<EditarDentista />} />
+                  <Route path="clinica" element={<ClinicaPage />} />
+                  <Route path="clinica/cadastro" element={<CadastroClinica />} />
+                  <Route path="clinica/editar/:id" element={<EditarClinica />} />
+                  <Route path="material" element={<MaterialPage />} />
+                  <Route path="material/cadastro" element={<CadastroMaterial />} />
+                  <Route path="material/editar/:id" element={<EditarMaterial />} />
+                  <Route path="configuracao" element={<Configuracao />} />
+                  <Route path="relatorios" element={<Relatorios />} />
                 </Routes>
               </main>
             </>

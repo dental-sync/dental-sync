@@ -6,14 +6,19 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
-const ActionMenu = ({ proteticoId, onProteticoDeleted, proteticoStatus }) => {
+const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, proteticoStatus, itemStatus }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   const navigate = useNavigate();
-  const isActive = proteticoStatus === 'ATIVO';
+  
+  // Usar o proteticoId ou o itemId (dependendo de qual foi passado)
+  const id = proteticoId || itemId;
+  const status = proteticoStatus || itemStatus;
+  const isActive = status === 'ATIVO';
+  const onDeleted = onProteticoDeleted || onItemDeleted;
 
   const updateDropdownPosition = () => {
     if (buttonRef.current) {
@@ -52,12 +57,12 @@ const ActionMenu = ({ proteticoId, onProteticoDeleted, proteticoStatus }) => {
   }, []);
 
   const handleVerHistorico = () => {
-    navigate(`/protetico/historico/${proteticoId}`);
+    navigate(`/protetico/historico/${id}`);
     setIsOpen(false);
   };
 
   const handleEditar = () => {
-    navigate(`/protetico/editar/${proteticoId}`);
+    navigate(`/protetico/editar/${id}`);
     setIsOpen(false);
   };
 
@@ -68,8 +73,8 @@ const ActionMenu = ({ proteticoId, onProteticoDeleted, proteticoStatus }) => {
 
   const handleConfirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8080/proteticos/${proteticoId}`);
-      onProteticoDeleted(proteticoId);
+      await axios.delete(`http://localhost:8080/proteticos/${id}`);
+      onDeleted(id);
     } catch (error) {
       console.error('Erro ao excluir protético:', error);
       toast.error('Erro ao excluir protético. Tente novamente.');

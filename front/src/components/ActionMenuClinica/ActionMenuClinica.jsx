@@ -6,13 +6,17 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
-const ActionMenuClinica = ({ clinicaId, onClinicaDeleted }) => {
+const ActionMenuClinica = ({ clinicaId, itemId, onClinicaDeleted, onItemDeleted }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   const navigate = useNavigate();
+  
+  // Usar o clinicaId ou o itemId (dependendo de qual foi passado)
+  const id = clinicaId || itemId;
+  const onDeleted = onClinicaDeleted || onItemDeleted;
 
   const updateDropdownPosition = () => {
     if (buttonRef.current) {
@@ -51,7 +55,7 @@ const ActionMenuClinica = ({ clinicaId, onClinicaDeleted }) => {
   }, []);
 
   const handleEditar = () => {
-    navigate(`/clinica/editar/${clinicaId}`);
+    navigate(`/clinica/editar/${id}`);
     setIsOpen(false);
   };
 
@@ -62,8 +66,8 @@ const ActionMenuClinica = ({ clinicaId, onClinicaDeleted }) => {
 
   const handleConfirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8080/clinicas/${clinicaId}`);
-      onClinicaDeleted(clinicaId);
+      await axios.delete(`http://localhost:8080/clinicas/${id}`);
+      onDeleted(id);
     } catch (error) {
       console.error('Erro ao excluir clínica:', error);
       toast.error('Erro ao excluir clínica. Tente novamente.');

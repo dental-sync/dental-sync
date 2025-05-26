@@ -107,6 +107,12 @@ const GenericTable = ({
                           itemId={item.id} 
                           onItemDeleted={onItemDeleted}
                           itemStatus={item[statusField]}
+                          dentistaId={item.id}
+                          proteticoId={item.id}
+                          pacienteId={item.id}
+                          clinicaId={item.id}
+                          materialId={item.id}
+                          isActive={item[statusField] === 'ATIVO'}
                         />
                       </td>
                     );
@@ -116,9 +122,7 @@ const GenericTable = ({
               </tr>
             ))
           ) : (
-            <tr>
-              <td colSpan={columns.length} className="empty-row"></td>
-            </tr>
+            null
           )}
         </tbody>
       </table>

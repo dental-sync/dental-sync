@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import './ActionMenuClinica.css';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
@@ -66,7 +66,7 @@ const ActionMenuClinica = ({ clinicaId, itemId, onClinicaDeleted, onItemDeleted 
 
   const handleConfirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8080/clinicas/${id}`);
+      await api.delete(`/clinicas/${id}`);
       onDeleted(id);
     } catch (error) {
       console.error('Erro ao excluir clínica:', error);

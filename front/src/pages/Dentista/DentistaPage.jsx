@@ -6,7 +6,7 @@ import DentistaTable from '../../components/DentistaTable/DentistaTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const DentistaPage = () => {
@@ -36,7 +36,7 @@ const DentistaPage = () => {
     const fetchDentistas = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8080/dentistas');
+        const response = await api.get('/dentistas');
         const dentistasFormatados = response.data.map(dentista => ({
           id: dentista.id,
           nome: dentista.nome,

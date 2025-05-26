@@ -7,7 +7,7 @@ import PacienteTable from '../../components/PacienteTable/PacienteTable'; //tabe
 import NotificationBell from '../../components/NotificationBell/NotificationBell'; //sininho de notificações (NotificationBell [componente])
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown'; //componente de exportação de dados
 import { useNavigate, useLocation } from 'react-router-dom'; //navegação e controle de rota (useNavigate [hook], useLocation [hook])
-import axios from 'axios'; //para fazer requisições HTTP (axios [biblioteca]) 
+import api from '../../axios-config'; //para fazer requisições HTTP (axios [biblioteca]) 
 import { toast } from 'react-toastify';
 
 const PacientePage = () => {
@@ -52,7 +52,7 @@ const PacientePage = () => {
         
         try {
           console.log('Buscando dados de pacientes da API...');
-          const response = await axios.get('http://localhost:8080/paciente');
+          const response = await api.get('/paciente');
           
           
           const pacientesFormatados = response.data.map(paciente => {

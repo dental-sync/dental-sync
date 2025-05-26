@@ -6,7 +6,7 @@ import ProteticoTable from '../../components/ProteticoTable/ProteticoTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const ProteticoPage = () => {
@@ -37,7 +37,7 @@ const ProteticoPage = () => {
     const fetchProteticos = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8080/proteticos');
+        const response = await api.get('/proteticos');
         const proteticosFormatados = response.data.map(protetico => ({
           id: protetico.id,
           nome: protetico.nome,

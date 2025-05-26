@@ -6,7 +6,7 @@ import NotificationBell from '../../components/NotificationBell/NotificationBell
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import MaterialTable from '../../components/MaterialTable/MaterialTable';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
@@ -32,7 +32,7 @@ const MaterialPage = () => {
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/categoria-material');
+        const response = await api.get('/categoria-material');
         setCategorias(response.data);
       } catch (error) {
         console.error('Erro ao buscar categorias:', error);
@@ -46,7 +46,7 @@ const MaterialPage = () => {
   // Função para buscar materiais da API
   const fetchMateriaisData = async (pageNum, pageSize) => {
     try {
-      const response = await axios.get(`http://localhost:8080/material/paginado?page=${pageNum}&size=${pageSize}`);
+      const response = await api.get(`/material/paginado?page=${pageNum}&size=${pageSize}`);
       
       const responseData = response.data;
       const materiaisFormatados = responseData.content.map(material => ({
@@ -160,7 +160,7 @@ const MaterialPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:8080/material/${id}`);
+      await api.delete(`/material/${id}`);
       toast.success('Material excluído com sucesso!');
       refreshMateriais();
     } catch (error) {
@@ -171,7 +171,7 @@ const MaterialPage = () => {
 
   const handleStatusChange = async (id, isActive) => {
     try {
-      await axios.patch(`http://localhost:8080/material/${id}`, { isActive });
+      await api.patch(`/material/${id}`, { isActive });
       refreshMateriais();
       setTimeout(() => {
         toast.success(`Material ${isActive ? 'Ativado' : 'Inativado'} com sucesso!`);

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './CadastroProtetico.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const CadastroProtetico = () => {
@@ -213,9 +213,9 @@ const CadastroProtetico = () => {
     try {
       // Verificar todas as validações simultaneamente
       const [croResponse, emailResponse, telefoneResponse] = await Promise.all([
-        axios.get(`http://localhost:8080/proteticos/cro/${formData.cro}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/proteticos/email/${formData.email}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/proteticos/telefone/${formData.telefone}`).catch(() => ({ data: null }))
+        api.get(`/proteticos/cro/${formData.cro}`).catch(() => ({ data: null })),
+        api.get(`/proteticos/email/${formData.email}`).catch(() => ({ data: null })),
+        api.get(`/proteticos/telefone/${formData.telefone}`).catch(() => ({ data: null }))
       ]);
 
       const newErrors = {};
@@ -252,7 +252,7 @@ const CadastroProtetico = () => {
         isActive: formData.isActive
       };
 
-      await axios.post('http://localhost:8080/proteticos', proteticoData);
+      await api.post('/proteticos', proteticoData);
       
       // Limpa qualquer estado de navegação existente
       window.history.replaceState({}, document.title);

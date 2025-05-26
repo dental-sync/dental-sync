@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CadastroDentista.css';
-import axios from 'axios';
+import api from '../../axios-config';
 import ModalCadastroClinica from '../../components/ModalCadastroClinica/ModalCadastroClinica';
 import { toast } from 'react-toastify';
 
@@ -26,7 +26,7 @@ const CadastroDentista = () => {
   useEffect(() => {
     const fetchClinicas = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/clinicas');
+        const response = await api.get('/clinicas');
         setClinicas(response.data);
       } catch (err) {
         console.error('Erro ao buscar clínicas:', err);
@@ -214,9 +214,9 @@ const CadastroDentista = () => {
     try {
       // Verificar todas as validações simultaneamente
       const [croResponse, emailResponse, telefoneResponse] = await Promise.all([
-        axios.get(`http://localhost:8080/dentistas/cro/${formData.cro}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/dentistas/email/${formData.email}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/dentistas/telefone/${formData.telefone}`).catch(() => ({ data: null }))
+        api.get(`/dentistas/cro/${formData.cro}`).catch(() => ({ data: null })),
+        api.get(`/dentistas/email/${formData.email}`).catch(() => ({ data: null })),
+        api.get(`/dentistas/telefone/${formData.telefone}`).catch(() => ({ data: null }))
       ]);
 
       const newErrors = {};
@@ -249,7 +249,7 @@ const CadastroDentista = () => {
         isActive: formData.isActive
       };
 
-      await axios.post('http://localhost:8080/dentistas', dentistaData);
+      await api.post('/dentistas', dentistaData);
       
       // Limpa qualquer estado de navegação existente
       window.history.replaceState({}, document.title);

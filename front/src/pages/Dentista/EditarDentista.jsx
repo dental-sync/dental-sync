@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './EditarDentista.css';
-import axios from 'axios';
+import api from '../../axios-config';
 import ModalCadastroClinica from '../../components/ModalCadastroClinica/ModalCadastroClinica';
 import { toast } from 'react-toastify';
 
@@ -29,8 +29,8 @@ const EditarDentista = () => {
     const fetchData = async () => {
       try {
         const [dentistaResponse, clinicasResponse] = await Promise.all([
-          axios.get(`http://localhost:8080/dentistas/${id}`),
-          axios.get('http://localhost:8080/clinicas')
+          api.get(`/dentistas/${id}`),
+          api.get('/clinicas')
         ]);
         
         const dentista = dentistaResponse.data;
@@ -233,9 +233,9 @@ const EditarDentista = () => {
     try {
       // Verificar todas as validações simultaneamente
       const [croResponse, emailResponse, telefoneResponse] = await Promise.all([
-        axios.get(`http://localhost:8080/dentistas/cro/${formData.cro}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/dentistas/email/${formData.email}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/dentistas/telefone/${formData.telefone}`).catch(() => ({ data: null }))
+        api.get(`/dentistas/cro/${formData.cro}`).catch(() => ({ data: null })),
+        api.get(`/dentistas/email/${formData.email}`).catch(() => ({ data: null })),
+        api.get(`/dentistas/telefone/${formData.telefone}`).catch(() => ({ data: null }))
       ]);
 
       const newErrors = {};
@@ -271,7 +271,7 @@ const EditarDentista = () => {
         isActive: formData.isActive
       };
 
-      await axios.put(`http://localhost:8080/dentistas/${id}`, dentistaData);
+      await api.put(`/dentistas/${id}`, dentistaData);
       
       // Limpa qualquer estado de navegação existente
       window.history.replaceState({}, document.title);

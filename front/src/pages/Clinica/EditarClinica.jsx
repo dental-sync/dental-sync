@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './EditarClinica.css';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const EditarClinica = () => {
@@ -19,7 +19,7 @@ const EditarClinica = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/clinicas/${id}`);
+        const response = await api.get(`/clinicas/${id}`);
         const clinica = response.data;
         setFormData({
           nome: clinica.nome,
@@ -116,7 +116,7 @@ const EditarClinica = () => {
     
     try {
       // Verificar se o CNPJ já existe em outra clínica
-      const cnpjResponse = await axios.get(`http://localhost:8080/clinicas/cnpj/${formData.cnpj}`).catch(() => ({ data: null }));
+      const cnpjResponse = await api.get(`/clinicas/cnpj/${formData.cnpj}`).catch(() => ({ data: null }));
 
       if (cnpjResponse.data && cnpjResponse.data.id !== parseInt(id)) {
         setErrors({ cnpj: "CNPJ já cadastrado em outra clínica" });
@@ -130,7 +130,7 @@ const EditarClinica = () => {
         cnpj: formData.cnpj
       };
 
-      await axios.put(`http://localhost:8080/clinicas/${id}`, clinicaData);
+      await api.put(`/clinicas/${id}`, clinicaData);
       
       // Limpa qualquer estado de navegação existente
       window.history.replaceState({}, document.title);

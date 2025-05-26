@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './EditarProtetico.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const EditarProtetico = () => {
@@ -27,7 +27,7 @@ const EditarProtetico = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/proteticos/${id}`);
+        const response = await api.get(`/proteticos/${id}`);
         const protetico = response.data;
         
         setFormData({
@@ -241,9 +241,9 @@ const EditarProtetico = () => {
     try {
       // Verificar todas as validações simultaneamente
       const [croResponse, emailResponse, telefoneResponse] = await Promise.all([
-        axios.get(`http://localhost:8080/proteticos/cro/${formData.cro}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/proteticos/email/${formData.email}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/proteticos/telefone/${formData.telefone}`).catch(() => ({ data: null }))
+        api.get(`/proteticos/cro/${formData.cro}`).catch(() => ({ data: null })),
+        api.get(`/proteticos/email/${formData.email}`).catch(() => ({ data: null })),
+        api.get(`/proteticos/telefone/${formData.telefone}`).catch(() => ({ data: null }))
       ]);
 
       const newErrors = {};
@@ -284,7 +284,7 @@ const EditarProtetico = () => {
         proteticoData.senha = formData.senha;
       }
 
-      await axios.put(`http://localhost:8080/proteticos/${id}`, proteticoData);
+      await api.put(`/proteticos/${id}`, proteticoData);
       
       // Limpa qualquer estado de navegação existente
       window.history.replaceState({}, document.title);

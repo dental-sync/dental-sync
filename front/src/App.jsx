@@ -20,6 +20,7 @@ import MaterialPage from './pages/Material/MaterialPage'
 import CadastroMaterial from './pages/Material/CadastroMaterial'
 import EditarMaterial from './pages/Material/EditarMaterial'
 import Configuracao from './pages/Configuracao'
+import Relatorios from './pages/Relatorios'
 import './App.css'
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
             <Route path="/material/cadastro" element={<CadastroMaterial />} />
             <Route path="/material/editar/:id" element={<EditarMaterial />} />
             <Route path="/configuracao" element={<Configuracao />} />
+            <Route path="/relatorios" element={<Relatorios />} />
           </Routes>
         </main>
         <ToastContainer position="top-right" autoClose={3000} />

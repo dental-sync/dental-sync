@@ -23,6 +23,7 @@ import CadastroMaterial from './pages/Material/CadastroMaterial'
 import EditarMaterial from './pages/Material/EditarMaterial'
 import Configuracao from './pages/Configuracao'
 import Relatorios from './pages/Relatorios'
+import ForgotPasswordPage from './pages/Login/ForgotPassword'
 import './App.css'
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registre-se" element={<RegisterPage />} />
+          <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
           
           {/* Rotas protegidas com Sidebar */}
           <Route path="/dashboard/*" element={

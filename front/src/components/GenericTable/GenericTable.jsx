@@ -31,7 +31,7 @@ const GenericTable = ({
       }
 
       await api.patch(`${apiEndpoint}/${itemId}`, {
-        [statusField]: newStatus
+        isActive: newStatus
       });
       
       onStatusChange(itemId, newStatus ? 'ATIVO' : 'INATIVO');

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import GenericTable from '../GenericTable/GenericTable';
 import PacienteActionMenu from './PacienteActionMenu';
 
@@ -20,22 +20,23 @@ const PacienteTable = ({ pacientes = [], onPacienteDeleted, onStatusChange, sort
   const [pacientesState, setPacientesState] = useState(pacientes);
 
   // Atualizar o estado local quando as props mudarem
-  React.useEffect(() => {
+  useEffect(() => {
     setPacientesState(pacientes);
   }, [pacientes]);
 
   const handleStatusChange = (pacienteId, newStatus) => {
+    // Primeiro atualiza o estado local
     setPacientesState(prevState => 
       prevState.map(paciente => 
         paciente.id === pacienteId 
-          ? { ...paciente, status: newStatus ? 'ATIVO' : 'INATIVO', isActive: newStatus ? 'ATIVO' : 'INATIVO' } 
+          ? { ...paciente, isActive: newStatus } 
           : paciente
       )
     );
     
-    // Notificar o componente pai sobre a mudança
+    // Depois notifica o componente pai
     if (onStatusChange) {
-      onStatusChange(pacienteId, newStatus ? 'ATIVO' : 'INATIVO');
+      onStatusChange(pacienteId, newStatus);
     }
   };
 

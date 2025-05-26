@@ -12,17 +12,25 @@ const columns = [
 ];
 
 const MaterialTable = ({ materiais, onDelete, onStatusChange, lastElementRef, sortConfig, onSort }) => {
+  const handleStatusChange = (materialId, newStatus) => {
+    // Converte o status para booleano antes de enviar para o backend
+    const statusBoolean = newStatus === 'ATIVO';
+    if (onStatusChange) {
+      onStatusChange(materialId, statusBoolean);
+    }
+  };
+
   return (
     <GenericTable
       data={materiais}
       onItemDeleted={onDelete}
-      onStatusChange={onStatusChange}
+      onStatusChange={handleStatusChange}
       sortConfig={sortConfig}
       onSort={onSort}
       isEmpty={materiais.length === 0}
       columns={columns}
       formatId={(id) => id.toString()}
-      apiEndpoint="/materiais"
+      apiEndpoint="/material"
       emptyMessage="Nenhum material cadastrado"
       ActionMenuComponent={MaterialActionMenu}
       statusField="status"

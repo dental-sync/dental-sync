@@ -11,18 +11,18 @@
 }
 
 .forgot-title {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 600;
   color: #111827;
   text-align: center;
-  margin-bottom: 2px;
+  margin-bottom: 0.3rem;
 }
 
 .forgot-subtitle {
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   color: #6B7280;
   text-align: center;
-  margin-bottom: 8px;
+  margin-bottom: 1rem;
 }
 
 .forgot-group {
@@ -93,7 +93,7 @@
 
 .forgot-link-container {
   text-align: center;
-  margin-top: 8px;
+  margin-top: 0.5rem;
 }
 
 .forgot-link {
@@ -117,4 +117,38 @@
   font-size: 0.95rem;
   text-align: center;
   margin-bottom: 4px;
+}
+
+.forgot-success-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  max-width: 950px;
+  margin: 48px auto 0 auto;
+  padding: 36px 32px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.forgot-success-message {
+  background: #f0fdf4;
+  color: #111827;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  text-align: left;
+  margin: 0 0 18px 0;
+  width: 100%;
+  font-weight: 400;
+  box-sizing: border-box;
+  white-space: normal;
+  overflow-x: unset;
+}
+
+.forgot-success-message b {
+  font-weight: 700;
+  color: #111827;
 } 

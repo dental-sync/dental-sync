@@ -1,7 +1,7 @@
 import React from 'react';
 import './GenericTable.css';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../utils/api';
+import  api  from '../../axios-config';
 import { toast } from 'react-toastify';
 import StatusBadge from '../StatusBadge/StatusBadge';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import './GenericTable.css';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../utils/api';
+import  api  from '../../axios-config';
 import { toast } from 'react-toastify';
 import StatusBadge from '../StatusBadge/StatusBadge';
 
@@ -107,6 +107,12 @@ const GenericTable = ({
                           itemId={item.id} 
                           onItemDeleted={onItemDeleted}
                           itemStatus={item[statusField]}
+                          dentistaId={item.id}
+                          proteticoId={item.id}
+                          pacienteId={item.id}
+                          clinicaId={item.id}
+                          materialId={item.id}
+                          isActive={item[statusField] === 'ATIVO'}
                         />
                       </td>
                     );
@@ -116,9 +122,7 @@ const GenericTable = ({
               </tr>
             ))
           ) : (
-            <tr>
-              <td colSpan={columns.length} className="empty-row"></td>
-            </tr>
+            null
           )}
         </tbody>
       </table>

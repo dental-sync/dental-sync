@@ -79,16 +79,18 @@
 
 .empty-table-message-absolute {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   width: 100%;
-  min-height: 120px;
-  color: #666;
-  font-size: 16px;
-  background-color: white;
-  border-radius: 8px;
-  margin-top: 2px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  height: 180px;
+  text-align: center;
+  color: #888;
+  background: none;
+  box-shadow: none;
+  border: none;
+  margin: 0;
+  font-size: 1.1rem;
+  padding: 0;
 }
 
 .generic-table-container.empty {

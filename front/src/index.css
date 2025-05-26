@@ -42,3 +42,11 @@ button {
 button:focus {
   outline: none;
 }
+
+/* Estilos específicos para inputs nas telas de autenticação */
+.auth-container .form-group input,
+.login-form .form-group input,
+.register-form .form-group input {
+  padding: 0.625rem;
+  padding-left: 2.5rem;
+}

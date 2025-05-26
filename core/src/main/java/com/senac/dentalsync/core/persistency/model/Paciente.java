@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,11 +26,12 @@ public class Paciente extends BaseEntity {
     @NotBlank(message = "O nome é obrigatório")
 
     @Pattern(
-    regexp = "^[\\p{L}]{2,}(?:\\s[\\p{L}]{2,})+$",
-    message = "Por favor, informe nome e sobrenome válido"
-)
+        regexp = "^(?=\\p{L}{2,}\\s)(\\p{L}{2,}|\\p{L})(\\s(\\p{L}{2,}|\\p{L}))*$",
+        message = "Por favor, informe nome e sobrenome válido"
+    )    
     @Size(max = 255, message = "O nome não pode ultrapassar 255 caracteres")
     private String nome;
+
     @NotBlank(message = "O telefone é obrigatório")
     @Pattern(regexp = "\\(\\d{2}\\)\\s(\\d{4}-\\d{4}|\\d{5}-\\d{4})", message = "Formato de telefone inválido. Use o formato: (99) 9999-9999 ou (99) 99999-9999")
     private String telefone;
@@ -42,6 +44,7 @@ public class Paciente extends BaseEntity {
 
     @Past(message = "A data de nascimento não pode ser maior que a data atual")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @NotNull(message = "A data de nascimento é obrigatória")
     private LocalDate dataNascimento;
 
     private LocalDate ultimoPedido;

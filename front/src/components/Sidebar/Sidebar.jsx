@@ -35,16 +35,16 @@ const Sidebar = () => {
   });
 
   const menuItems = [
-    { id: 'kanban', text: 'Kanban', icon: <KanbanIcon />, to: '/dashboard/kanban' },
-    { id: 'pedidos', text: 'Pedidos', icon: <PedidosIcon />, to: '/dashboard/pedidos' },
-    { id: 'pacientes', text: 'Pacientes', icon: <PacientesIcon />, to: '/dashboard/paciente' },
-    { id: 'proteticos', text: 'Protéticos', icon: <ProteticoIcon />, to: '/dashboard/protetico' },
-    { id: 'dentistas', text: 'Dentistas', icon: <DentistaIcon />, to: '/dashboard/dentista' },
-    { id: 'clinicas', text: 'Clínicas', icon: <ClinicaIcon />, to: '/dashboard/clinica' },
-    { id: 'servicos', text: 'Serviços', icon: <ServicosIcon />, to: '/dashboard/servicos' },
-    { id: 'materiais', text: 'Materiais', icon: <MaterialIcon />, to: '/dashboard/material' },
-    { id: 'relatorios', text: 'Relatórios', icon: <RelatoriosIcon />, to: '/dashboard/relatorios' },
-    { id: 'configuracoes', text: 'Configurações', icon: <ConfiguracaoIcon />, to: '/dashboard/configuracao' },
+    { id: 'kanban', text: 'Kanban', icon: <KanbanIcon />, to: '/kanban' },
+    { id: 'pedidos', text: 'Pedidos', icon: <PedidosIcon />, to: '/pedidos' },
+    { id: 'pacientes', text: 'Pacientes', icon: <PacientesIcon />, to: '/paciente' },
+    { id: 'proteticos', text: 'Protéticos', icon: <ProteticoIcon />, to: '/protetico' },
+    { id: 'dentistas', text: 'Dentistas', icon: <DentistaIcon />, to: '/dentista' },
+    { id: 'clinicas', text: 'Clínicas', icon: <ClinicaIcon />, to: '/clinica' },
+    { id: 'servicos', text: 'Serviços', icon: <ServicosIcon />, to: '/servicos' },
+    { id: 'materiais', text: 'Materiais', icon: <MaterialIcon />, to: '/material' },
+    { id: 'relatorios', text: 'Relatórios', icon: <RelatoriosIcon />, to: '/relatorios' },
+    { id: 'configuracoes', text: 'Configurações', icon: <ConfiguracaoIcon />, to: '/configuracao' },
   ];
 
   const handleItemClick = (id) => {

@@ -240,7 +240,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
                 name="endereco"
                 value={formData.endereco}
                 onChange={handleChange}
-                placeholder="Rua"
+                placeholder="Logradouro"
                 className={errors.endereco ? 'error' : ''}
               />
             </div>

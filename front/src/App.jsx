@@ -24,6 +24,7 @@ import EditarMaterial from './pages/Material/EditarMaterial'
 import Configuracao from './pages/Configuracao'
 import Relatorios from './pages/Relatorios'
 import ForgotPasswordPage from './pages/Login/ForgotPassword'
+import ResetPasswordPage from './pages/Login/ResetPassword'
 import './App.css'
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registre-se" element={<RegisterPage />} />
           <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
+          <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
           
           {/* Rotas protegidas com Sidebar */}
           <Route path="/dashboard/*" element={

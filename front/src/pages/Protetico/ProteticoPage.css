@@ -2,7 +2,6 @@
   padding: 20px;
   min-height: 100vh;
   background-color: #f5f5f5;
-  padding-bottom: 200px;
 }
 
 .page-top {
@@ -32,7 +31,8 @@
 
 .header-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
+  align-items: center;
 }
 
 /* Estilo para o container do filtro */
@@ -174,6 +174,11 @@
   font-weight: 500;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
+  padding: 8px 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .search-container .action-button.primary:hover {
@@ -189,10 +194,39 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+.search-container .action-button.primary svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* Estilo para botão de filtro ativo */
 .action-button.active {
   background-color: #e6f7ff;
   color: #0070D6;
+  border-color: #91d5ff;
+}
+
+/* Estilos para os botões de ação */
+.header-actions .action-button {
+  background: none;
+  border: 1px solid #ddd;
+  color: #333;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.header-actions .action-button:hover {
+  background-color: #f0f2f5;
+  border-color: #ccc;
+}
+
+.header-actions .action-button.active:hover {
+  background-color: #d4e8ff;
   border-color: #91d5ff;
 }
 
@@ -229,12 +263,28 @@
   margin: 0 24px;
 }
 
-/* Para garantir que outros elementos não afetem o dropdown */
 .protetico-table {
   isolation: isolate;
 }
 
-/* Estilos para a exportação */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.empty-state p {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
 .export-container {
   position: relative;
 }
@@ -250,11 +300,12 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   padding: 16px;
   z-index: 1000;
+  animation: fadeIn 0.2s ease;
 }
 
 .export-dropdown h3 {
   margin-top: 0;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   font-size: 16px;
   color: #333;
   font-weight: 600;
@@ -267,19 +318,70 @@
 }
 
 .export-option {
-  padding: 8px 12px;
   background: none;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  border: none;
   text-align: left;
-  font-size: 14px;
+  padding: 8px 12px;
   color: #333;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .export-option:hover {
+  background-color: #f5f5f5;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast-message {
+  padding: 12px 16px;
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 6px;
+  color: #52c41a;
+  margin-bottom: 16px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.empty-table-message {
+  padding: 50px 20px;
+  text-align: center;
+  background-color: white;
+  border-radius: 8px;
+  color: #999;
+  font-size: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.protetico-table th[data-sortable="true"] {
+  cursor: pointer;
+  position: relative;
+}
+
+.protetico-table th[data-sortable="true"]:hover {
   background-color: #f0f7ff;
-  border-color: #91d5ff;
-  color: #0070D6;
 } 

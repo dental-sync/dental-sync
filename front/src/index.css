@@ -42,3 +42,8 @@ button {
 button:focus {
   outline: none;
 }
+
+.form-group input {
+  padding: 0.625rem;
+  padding-left: 2.5rem;
+}

@@ -1,7 +1,8 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import Sidebar from './components/Sidebar/Sidebar'
+import LoginPage from './pages/Login'
 import ProteticoPage from './pages/Protetico/ProteticoPage'
 import CadastroProtetico from './pages/Protetico/CadastroProtetico'
 import HistoricoProtetico from './pages/Protetico/HistoricoProtetico'
@@ -27,31 +28,42 @@ function App() {
   return (
     <Router>
       <div className="app">
-        <Sidebar />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<ProteticoPage />} />
-            <Route path="/protetico" element={<ProteticoPage />} />
-            <Route path="/protetico/cadastro" element={<CadastroProtetico />} />
-            <Route path="/protetico/historico/:id" element={<HistoricoProtetico />} />
-            <Route path="/protetico/editar/:id" element={<EditarProtetico />} />
-            <Route path="/paciente" element={<PacientePage />} />
-            <Route path="/paciente/cadastro" element={<CadastroPaciente />} />
-            <Route path="/paciente/historico/:id" element={<HistoricoPaciente />} />
-            <Route path="/paciente/editar/:id" element={<EditarPaciente />} />
-            <Route path="/dentista" element={<DentistaPage />} />
-            <Route path="/dentista/cadastro" element={<CadastroDentista />} />
-            <Route path="/dentista/editar/:id" element={<EditarDentista />} />
-            <Route path="/clinica" element={<ClinicaPage />} />
-            <Route path="/clinica/cadastro" element={<CadastroClinica />} />
-            <Route path="/clinica/editar/:id" element={<EditarClinica />} />
-            <Route path="/material" element={<MaterialPage />} />
-            <Route path="/material/cadastro" element={<CadastroMaterial />} />
-            <Route path="/material/editar/:id" element={<EditarMaterial />} />
-            <Route path="/configuracao" element={<Configuracao />} />
-            <Route path="/relatorios" element={<Relatorios />} />
-          </Routes>
-        </main>
+        <Routes>
+          {/* Redirecionar raiz para login */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<LoginPage />} />
+          
+          {/* Rotas protegidas com Sidebar */}
+          <Route path="/dashboard/*" element={
+            <>
+              <Sidebar />
+              <main className="main-content">
+                <Routes>
+                  <Route path="/" element={<ProteticoPage />} />
+                  <Route path="/protetico" element={<ProteticoPage />} />
+                  <Route path="/protetico/cadastro" element={<CadastroProtetico />} />
+                  <Route path="/protetico/historico/:id" element={<HistoricoProtetico />} />
+                  <Route path="/protetico/editar/:id" element={<EditarProtetico />} />
+                  <Route path="/paciente" element={<PacientePage />} />
+                  <Route path="/paciente/cadastro" element={<CadastroPaciente />} />
+                  <Route path="/paciente/historico/:id" element={<HistoricoPaciente />} />
+                  <Route path="/paciente/editar/:id" element={<EditarPaciente />} />
+                  <Route path="/dentista" element={<DentistaPage />} />
+                  <Route path="/dentista/cadastro" element={<CadastroDentista />} />
+                  <Route path="/dentista/editar/:id" element={<EditarDentista />} />
+                  <Route path="/clinica" element={<ClinicaPage />} />
+                  <Route path="/clinica/cadastro" element={<CadastroClinica />} />
+                  <Route path="/clinica/editar/:id" element={<EditarClinica />} />
+                  <Route path="/material" element={<MaterialPage />} />
+                  <Route path="/material/cadastro" element={<CadastroMaterial />} />
+                  <Route path="/material/editar/:id" element={<EditarMaterial />} />
+                  <Route path="/configuracao" element={<Configuracao />} />
+                  <Route path="/relatorios" element={<Relatorios />} />
+                </Routes>
+              </main>
+            </>
+          } />
+        </Routes>
         <ToastContainer position="top-right" autoClose={3000} />
       </div>
     </Router>

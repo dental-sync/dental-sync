@@ -43,7 +43,9 @@ button:focus {
   outline: none;
 }
 
-.form-group input {
+/* Estilos globais para inputs dentro de form-group,
+   mas permitindo que componentes específicos sobreescrevam */
+.form-group input:not(.register-form .form-group input) {
   padding: 0.625rem;
   padding-left: 2.5rem;
 }

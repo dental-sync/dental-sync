@@ -3,6 +3,7 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import Sidebar from './components/Sidebar/Sidebar'
 import LoginPage from './pages/Login'
+import RegisterPage from './pages/Register'
 import ProteticoPage from './pages/Protetico/ProteticoPage'
 import CadastroProtetico from './pages/Protetico/CadastroProtetico'
 import HistoricoProtetico from './pages/Protetico/HistoricoProtetico'
@@ -32,6 +33,7 @@ function App() {
           {/* Redirecionar raiz para login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/registre-se" element={<RegisterPage />} />
           
           {/* Rotas protegidas com Sidebar */}
           <Route path="/dashboard/*" element={

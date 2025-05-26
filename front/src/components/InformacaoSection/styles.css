@@ -38,7 +38,6 @@
 
 .form-group label {
   font-size: 0.875rem;
-  margin-bottom: 0.5rem;
   color: #475569;
   font-weight: 500;
 }
@@ -55,10 +54,10 @@
   color: #94a3b8;
 }
 
-.form-actions {
-  margin-top: 1.5rem;
+.info-form-actions {
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end;
+  margin-top: 2rem;
 }
 
 .btn-save {

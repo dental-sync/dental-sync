@@ -93,7 +93,7 @@ const SegurancaSection = () => {
         
         {error && <p className="error-message">{error}</p>}
         
-        <div className="form-actions">
+        <div className="security-form-actions">
           <button type="submit" className="btn-primary">
             Alterar Senha
           </button>

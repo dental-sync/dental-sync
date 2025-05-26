@@ -98,7 +98,7 @@ const ConfiguracoesGeraisSection = () => {
       </div>
       
       <div className="form-actions-container">
-        <div className="form-actions">
+        <div className="config-form-actions">
           <button type="button" className="btn-cancel" onClick={handleCancel}>
             Cancelar
           </button>

@@ -21,7 +21,7 @@ public class Protetico extends BaseEntity {
     private String nome;
 
     @NotBlank(message = "O CRO é obrigatório")
-    @Pattern(regexp = "(CRO-[A-Z]{2}\\s?\\d{1,6})|(\\d{1,6}\\s?CRO-[A-Z]{2})", message = "Formato de CRO inválido. Use o formato: CRO-XX NNNNNN ou NNNNNN CRO-XX")
+    @Pattern(regexp = "CRO-[A-Z]{2}-\\d{1,6}", message = "Formato de CRO inválido. Use o formato: CRO-UF-NÚMERO (máximo 6 dígitos)")
     @Column(unique = true)
     private String cro;
 

@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [ homolog ]
   pull_request:
-    branches: [ main ]
+    branches: [ homolog ]
 
 jobs:
   build-and-test:
@@ -41,7 +41,7 @@ jobs:
 
   deploy:
     needs: build-and-test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/homolog' && github.event_name == 'push'
     runs-on: ubuntu-latest
     
     steps:

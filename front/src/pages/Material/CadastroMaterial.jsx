@@ -303,13 +303,13 @@ const CadastroMaterial = () => {
               className={errors.unidadeMedida ? 'input-error' : ''}
             >
               <option value="">Selecione</option>
-              <option value="UN">Unidade</option>
-              <option value="KG">Quilograma</option>
-              <option value="G">Grama</option>
-              <option value="ML">Mililitro</option>
-              <option value="L">Litro</option>
-              <option value="M">Metro</option>
-              <option value="CM">Centímetro</option>
+              <option value="Uni.">Unidade</option>
+              <option value="Quilograma">Quilograma</option>
+              <option value="Grama">Grama</option>
+              <option value="Mililitro">Mililitro</option>
+              <option value="Litro">Litro</option>
+              <option value="Metro">Metro</option>
+              <option value="Centímetro">Centímetro</option>
             </select>
             {errors.unidadeMedida && <span className="error-text">{errors.unidadeMedida}</span>}
           </div>

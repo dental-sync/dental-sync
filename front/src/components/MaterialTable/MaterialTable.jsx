@@ -4,14 +4,47 @@ import MaterialActionMenu from './MaterialActionMenu';
 
 const columns = [
   { key: 'id', label: 'ID', sortable: true },
-  { key: 'nome', label: 'Nome', sortable: true },
-  { key: 'quantidade', label: 'Quantidade', sortable: true },
-  { 
-    key: 'categoriaMaterial', 
-    label: 'Categoria', 
-    sortable: true,
-    render: (categoriaMaterial) => categoriaMaterial?.nome || '-'
-  },
+  { key: 'nome', label: 'Nome', sortable: true, render: (nome) => (
+    <span
+      title={nome}
+      style={{
+        display: 'inline-block',
+        maxWidth: '300px',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        verticalAlign: 'middle'
+      }}
+    >
+      {nome}
+    </span>
+  ) },
+  { key: 'categoriaMaterial', label: 'Categoria', sortable: true, render: (categoriaMaterial) => {
+    const nome = categoriaMaterial?.nome || '-';
+    return (
+      <span
+        title={nome}
+        style={{
+          display: 'inline-block',
+          maxWidth: '300px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          verticalAlign: 'middle'
+        }}
+      >
+        {nome}
+      </span>
+    );
+  } },
+  { key: 'quantidade', label: 'Quantidade Total', sortable: true },
+  { key: 'unidadeMedida', label: 'Unidade', sortable: false },
+  { key: 'valorUnitario', label: 'Preço Médio', sortable: false, render: (valor) => {
+    console.log('valorUnitario recebido:', valor);
+    const num = Number(valor);
+    console.log('valorUnitario convertido para número:', num);
+    return !isNaN(num) ? num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-';
+  } },
   { 
     key: 'status', 
     label: 'Status', 
@@ -26,7 +59,12 @@ const columns = [
               padding: '4px 8px',
               borderRadius: '4px',
               fontWeight: '500',
-              display: 'inline-block'
+              display: 'inline-block',
+              maxWidth: '300px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              verticalAlign: 'middle'
             };
           case 'BAIXO_ESTOQUE':
             return {
@@ -35,7 +73,12 @@ const columns = [
               padding: '4px 8px',
               borderRadius: '4px',
               fontWeight: '500',
-              display: 'inline-block'
+              display: 'inline-block',
+              maxWidth: '300px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              verticalAlign: 'middle'
             };
           case 'SEM_ESTOQUE':
             return {
@@ -44,22 +87,34 @@ const columns = [
               padding: '4px 8px',
               borderRadius: '4px',
               fontWeight: '500',
-              display: 'inline-block'
+              display: 'inline-block',
+              maxWidth: '300px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              verticalAlign: 'middle'
             };
           default:
-            return {};
+            return {
+              display: 'inline-block',
+              maxWidth: '300px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              verticalAlign: 'middle'
+            };
         }
       };
 
       switch (status) {
         case 'EM_ESTOQUE':
-          return <span style={getStatusStyle(status)}>Em Estoque</span>;
+          return <span style={getStatusStyle(status)} title="Em Estoque">Em Estoque</span>;
         case 'BAIXO_ESTOQUE':
-          return <span style={getStatusStyle(status)}>Baixo Estoque</span>;
+          return <span style={getStatusStyle(status)} title="Baixo Estoque">Baixo Estoque</span>;
         case 'SEM_ESTOQUE':
-          return <span style={getStatusStyle(status)}>Sem Estoque</span>;
+          return <span style={getStatusStyle(status)} title="Sem Estoque">Sem Estoque</span>;
         default:
-          return status;
+          return <span style={getStatusStyle(status)} title={status}>{status}</span>;
       }
     }
   },

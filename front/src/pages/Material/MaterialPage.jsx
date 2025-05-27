@@ -49,15 +49,20 @@ const MaterialPage = () => {
       const response = await axios.get(`http://localhost:8080/material/paginado?page=${pageNum}&size=${pageSize}`);
       
       const responseData = response.data;
-      const materiaisFormatados = responseData.content.map(material => ({
-        id: material.id,
-        nome: material.nome,
-        descricao: material.descricao || '-',
-        quantidade: material.quantidade,
-        categoriaMaterial: material.categoriaMaterial,
-        status: material.status,
-        isActive: material.isActive
-      }));
+      const materiaisFormatados = responseData.content.map(material => {
+        console.log('material recebido da API:', material);
+        return {
+          id: material.id,
+          nome: material.nome,
+          descricao: material.descricao || '-',
+          quantidade: material.quantidade,
+          unidadeMedida: material.unidadeMedida,
+          valorUnitario: material.valorUnitario,
+          categoriaMaterial: material.categoriaMaterial,
+          status: material.status,
+          isActive: material.isActive
+        };
+      });
       
       return {
         content: materiaisFormatados,
@@ -120,6 +125,8 @@ const MaterialPage = () => {
       
       return true;
     });
+
+  console.log('materiaisFiltrados:', materiaisFiltrados);
 
   const handleSearch = (query) => {
     setSearchQuery(query);

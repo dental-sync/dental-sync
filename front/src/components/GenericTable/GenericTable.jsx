@@ -17,7 +17,8 @@ const GenericTable = ({
   statusField = 'isActive',
   apiEndpoint,
   emptyMessage,
-  ActionMenuComponent
+  ActionMenuComponent,
+  useCustomStatusRender = false
 }) => {
   const navigate = useNavigate();
 
@@ -91,6 +92,9 @@ const GenericTable = ({
                     return <td key={column.key}>{formatId(item.id)}</td>;
                   }
                   if (column.key === statusField) {
+                    if (useCustomStatusRender && column.render) {
+                      return <td key={column.key}>{column.render(item[statusField])}</td>;
+                    }
                     return (
                       <td key={column.key}>
                         <StatusBadge
@@ -116,6 +120,9 @@ const GenericTable = ({
                         />
                       </td>
                     );
+                  }
+                  if (column.render) {
+                    return <td key={column.key}>{column.render(item[column.key])}</td>;
                   }
                   return <td key={column.key}>{item[column.key]}</td>;
                 })}

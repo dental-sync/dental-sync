@@ -55,7 +55,8 @@ const MaterialPage = () => {
         descricao: material.descricao || '-',
         quantidade: material.quantidade,
         categoriaMaterial: material.categoriaMaterial,
-        status: material.isActive ? 'ATIVO' : 'INATIVO'
+        status: material.status,
+        isActive: material.isActive
       }));
       
       return {
@@ -201,10 +202,15 @@ const MaterialPage = () => {
             : b.id - a.id;
         }
         
-        // Para ordenação de status (ATIVO/INATIVO)
+        // Para ordenação de status
         if (sortConfig.key === 'status') {
-          const aValue = a.status === 'ATIVO' ? 1 : 0;
-          const bValue = b.status === 'ATIVO' ? 1 : 0;
+          const statusOrder = {
+            'EM_ESTOQUE': 0,
+            'BAIXO_ESTOQUE': 1,
+            'SEM_ESTOQUE': 2
+          };
+          const aValue = statusOrder[a.status] || 0;
+          const bValue = statusOrder[b.status] || 0;
           return sortConfig.direction === 'ascending'
             ? aValue - bValue
             : bValue - aValue;
@@ -218,7 +224,7 @@ const MaterialPage = () => {
         }
 
         // Para ordenação de categoria (objeto aninhado)
-        if (sortConfig.key === 'categoriaMaterial.nome') {
+        if (sortConfig.key === 'categoriaMaterial') {
           const aValue = a.categoriaMaterial?.nome || '';
           const bValue = b.categoriaMaterial?.nome || '';
           return sortConfig.direction === 'ascending'
@@ -291,8 +297,9 @@ const MaterialPage = () => {
                     className="filter-select"
                   >
                     <option value="todos">Todos</option>
-                    <option value="ATIVO">Ativo</option>
-                    <option value="INATIVO">Inativo</option>
+                    <option value="EM_ESTOQUE">Em Estoque</option>
+                    <option value="BAIXO_ESTOQUE">Baixo Estoque</option>
+                    <option value="SEM_ESTOQUE">Sem Estoque</option>
                   </select>
                 </div>
                 

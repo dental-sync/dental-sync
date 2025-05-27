@@ -21,7 +21,6 @@ const CadastroMaterial = () => {
     unidadeMedida: '',
     valorUnitario: '',
     estoqueMinimo: '',
-    status: 'EM_ESTOQUE',
     isActive: true
   });
 
@@ -114,7 +113,6 @@ const CadastroMaterial = () => {
     if (!material.unidadeMedida) newErrors.unidadeMedida = 'Unidade de medida é obrigatória';
     if (!material.valorUnitario) newErrors.valorUnitario = 'Valor unitário é obrigatório';
     if (!material.estoqueMinimo) newErrors.estoqueMinimo = 'Estoque mínimo é obrigatório';
-    if (!material.status) newErrors.status = 'Status é obrigatório';
 
     // Validar tamanho do nome
     if (material.nome && material.nome.length > 100) {
@@ -346,23 +344,6 @@ const CadastroMaterial = () => {
             {errors.estoqueMinimo && <span className="error-text">{errors.estoqueMinimo}</span>}
           </div>
         </div>
-
-        <div className="form-group">
-          <label htmlFor="status">Status*</label>
-          <select
-            id="status"
-            name="status"
-            value={material.status}
-            onChange={handleInputChange}
-            className={errors.status ? 'input-error' : ''}
-          >
-            <option value="EM_ESTOQUE">Em Estoque</option>
-            <option value="BAIXO_ESTOQUE">Baixo Estoque</option>
-            <option value="SEM_ESTOQUE">Sem Estoque</option>
-          </select>
-          {errors.status && <span className="error-text">{errors.status}</span>}
-        </div>
-
         <div className="form-actions">
           <button type="button" onClick={handleVoltar} className="btn-cancelar">
             Cancelar

@@ -6,8 +6,63 @@ const columns = [
   { key: 'id', label: 'ID', sortable: true },
   { key: 'nome', label: 'Nome', sortable: true },
   { key: 'quantidade', label: 'Quantidade', sortable: true },
-  { key: 'categoriaMaterial.nome', label: 'Categoria', sortable: true },
-  { key: 'status', label: 'Status', sortable: true },
+  { 
+    key: 'categoriaMaterial', 
+    label: 'Categoria', 
+    sortable: true,
+    render: (categoriaMaterial) => categoriaMaterial?.nome || '-'
+  },
+  { 
+    key: 'status', 
+    label: 'Status', 
+    sortable: true,
+    render: (status) => {
+      const getStatusStyle = (status) => {
+        switch (status) {
+          case 'EM_ESTOQUE':
+            return {
+              backgroundColor: '#e8f5e9',
+              color: '#2e7d32',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontWeight: '500',
+              display: 'inline-block'
+            };
+          case 'BAIXO_ESTOQUE':
+            return {
+              backgroundColor: '#fff3e0',
+              color: '#e65100',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontWeight: '500',
+              display: 'inline-block'
+            };
+          case 'SEM_ESTOQUE':
+            return {
+              backgroundColor: '#ffebee',
+              color: '#c62828',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontWeight: '500',
+              display: 'inline-block'
+            };
+          default:
+            return {};
+        }
+      };
+
+      switch (status) {
+        case 'EM_ESTOQUE':
+          return <span style={getStatusStyle(status)}>Em Estoque</span>;
+        case 'BAIXO_ESTOQUE':
+          return <span style={getStatusStyle(status)}>Baixo Estoque</span>;
+        case 'SEM_ESTOQUE':
+          return <span style={getStatusStyle(status)}>Sem Estoque</span>;
+        default:
+          return status;
+      }
+    }
+  },
   { key: 'actions', label: 'Ações' }
 ];
 
@@ -35,6 +90,7 @@ const MaterialTable = ({ materiais, onDelete, onStatusChange, lastElementRef, so
       ActionMenuComponent={MaterialActionMenu}
       statusField="status"
       lastElementRef={lastElementRef}
+      useCustomStatusRender={true}
     />
   );
 }

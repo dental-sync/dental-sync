@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './ModalCadastroClinica.css';
+import api from '../../axios-config';
 
 const ModalCadastroClinica = ({ isOpen, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -123,7 +124,7 @@ const ModalCadastroClinica = ({ isOpen, onClose, onSuccess }) => {
     
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/clinicas', {
+      const response = await api.post('/clinicas', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

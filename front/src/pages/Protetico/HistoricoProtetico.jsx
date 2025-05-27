@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './HistoricoProtetico.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
-import axios from 'axios';
+import api from '../../axios-config';
 
 const HistoricoProtetico = () => {
   const { id } = useParams();
@@ -17,7 +17,7 @@ const HistoricoProtetico = () => {
       setLoading(true);
       try {
         // Buscar dados do protético
-        const proteticoResponse = await axios.get(`http://localhost:8080/proteticos/${id}`);
+        const proteticoResponse = await api.get(`/proteticos/${id}`);
         
         // Verificar o status baseado no isActive
         let statusText = "INATIVO";
@@ -36,7 +36,7 @@ const HistoricoProtetico = () => {
         });
         
         // Comentado temporariamente a busca do histórico
-        // const historicoResponse = await axios.get(`http://localhost:8080/proteticos/${id}/historico`);
+        // const historicoResponse = await api.get(`/proteticos/${id}/historico`);
         // setHistorico(historicoResponse.data);
         
         setLoading(false);

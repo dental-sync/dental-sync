@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './CadastroMaterial.css';
@@ -27,7 +27,7 @@ const CadastroMaterial = () => {
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/categoria-material');
+        const response = await api.get('/categoria-material');
         setCategorias(response.data);
       } catch (error) {
         console.error('Erro ao buscar categorias:', error);
@@ -43,7 +43,7 @@ const CadastroMaterial = () => {
     if (id) {
       const fetchMaterial = async () => {
         try {
-          const response = await axios.get(`http://localhost:8080/material/${id}`);
+          const response = await api.get(`/material/${id}`);
           setMaterial(response.data);
         } catch (error) {
           console.error('Erro ao buscar material:', error);
@@ -154,10 +154,10 @@ const CadastroMaterial = () => {
       };
 
       if (id) {
-        await axios.put(`http://localhost:8080/material/${id}`, materialData);
+        await api.put(`/material/${id}`, materialData);
         toast.success('Material atualizado com sucesso!');
       } else {
-        await axios.post('http://localhost:8080/material', materialData);
+        await api.post('/material', materialData);
         toast.success('Material cadastrado com sucesso!');
       }
 

@@ -6,7 +6,7 @@ import ClinicaTable from '../../components/ClinicaTable/ClinicaTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const ClinicaPage = () => {
@@ -33,7 +33,7 @@ const ClinicaPage = () => {
     const fetchClinicas = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8080/clinicas');
+        const response = await api.get('/clinicas');
         const clinicasFormatadas = response.data.map(clinica => ({
           id: clinica.id,
           nome: clinica.nome,

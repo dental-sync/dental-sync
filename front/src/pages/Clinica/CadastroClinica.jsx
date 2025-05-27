@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CadastroClinica.css';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const CadastroClinica = () => {
@@ -94,7 +94,7 @@ const CadastroClinica = () => {
     
     try {
       // Verificar se o CNPJ já existe
-      const cnpjResponse = await axios.get(`http://localhost:8080/clinicas/cnpj/${formData.cnpj}`).catch(() => ({ data: null }));
+      const cnpjResponse = await api.get(`/clinicas/cnpj/${formData.cnpj}`).catch(() => ({ data: null }));
 
       if (cnpjResponse.data) {
         setErrors({ cnpj: "CNPJ já cadastrado em outra clínica" });
@@ -108,7 +108,7 @@ const CadastroClinica = () => {
         cnpj: formData.cnpj
       };
 
-      await axios.post('http://localhost:8080/clinicas', clinicaData);
+      await api.post('/clinicas', clinicaData);
       
       // Limpa qualquer estado de navegação existente
       window.history.replaceState({}, document.title);

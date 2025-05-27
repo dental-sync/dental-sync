@@ -1,0 +1,54 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ homolog ]
+  pull_request:
+    branches: [ homolog ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configurar JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Build e Teste Backend
+      working-directory: ./core
+      run: |
+        chmod +x ./mvnw
+        ./mvnw clean verify
+
+    - name: Configurar Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'front/package-lock.json'
+
+    - name: Install Dependencies
+      working-directory: ./front
+      run: |
+        npm ci
+        npm run build:ci
+
+  deploy:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/homolog' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy Backend para Render
+      run: |
+        curl "${{ secrets.RENDER_DEPLOY_HOOK_BACK }}"
+          
+    - name: Deploy Frontend para Render
+      run: |
+        curl "${{ secrets.RENDER_DEPLOY_HOOK_FRONT }}" 

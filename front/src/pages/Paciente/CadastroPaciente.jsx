@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './CadastroPaciente.css';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const CadastroPaciente = () => {
@@ -198,7 +198,7 @@ const CadastroPaciente = () => {
         isActive: true
       };
       
-      await axios.post('http://localhost:8080/paciente', pacienteData);
+      await api.post('/paciente', pacienteData);
       
       // Limpa qualquer estado de navegação existente
       window.history.replaceState({}, document.title);

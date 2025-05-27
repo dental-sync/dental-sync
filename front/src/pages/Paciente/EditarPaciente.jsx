@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './EditarPaciente.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const EditarPaciente = () => {
@@ -24,7 +24,7 @@ const EditarPaciente = () => {
     const fetchPaciente = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://localhost:8080/paciente/${id}`);
+        const response = await api.get(`/paciente/${id}`);
         console.log('Dados recebidos do servidor:', response.data);
         
        
@@ -241,7 +241,7 @@ const EditarPaciente = () => {
       console.log('Enviando dados para a API:', pacienteData);
       
       // Enviar a atualização para a API
-      const response = await axios.put(`http://localhost:8080/paciente/${id}`, pacienteData);
+      const response = await api.put(`/paciente/${id}`, pacienteData);
       console.log('Resposta da API:', response.data);
       
       // Limpa qualquer estado de navegação existente
@@ -273,7 +273,7 @@ const EditarPaciente = () => {
       const newStatus = !formData.isActive;
       
       
-      await axios.patch(`http://localhost:8080/paciente/${id}`, {
+      await api.patch(`/paciente/${id}`, {
         isActive: newStatus
       });
       

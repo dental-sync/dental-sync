@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import './PacienteActionMenu.css';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
@@ -88,7 +88,7 @@ const PacienteActionMenu = ({ pacienteId, itemId, pacienteStatus, itemStatus, on
       const requestBody = { isActive: newStatus };
       console.log('Corpo da requisição:', JSON.stringify(requestBody));
       
-      const response = await axios.patch(`http://localhost:8080/paciente/${id}`, requestBody);
+      const response = await api.patch(`/paciente/${id}`, requestBody);
       
       console.log('Resposta da API:', response);
       
@@ -111,7 +111,7 @@ const PacienteActionMenu = ({ pacienteId, itemId, pacienteStatus, itemStatus, on
       setIsDeleting(true);
       console.log(`Iniciando exclusão do paciente ID ${id}`);
       
-      const response = await axios.delete(`http://localhost:8080/paciente/excluir/${id}`);
+      const response = await api.delete(`/paciente/excluir/${id}`);
       
       console.log('Resposta da exclusão:', response.data);
       

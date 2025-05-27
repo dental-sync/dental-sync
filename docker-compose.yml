@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # Serviço de banco de dados MySQL
+  db:
+    image: mysql:8.0
+    container_name: dentalsync-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-dentalsync}
+      MYSQL_USER: ${MYSQL_USER:-dentalsync}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-dentalsync}
+    ports:
+      - "${MYSQL_PORT:-3307}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - dentalsync-network
+
+  # Serviço de backend (Spring Boot)
+  backend:
+    build:
+      context: ./core
+      dockerfile: Dockerfile
+    container_name: dentalsync-backend
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:mysql://db:3306/dentalsync?useSSL=false&allowPublicKeyRetrieval=true}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-dentalsync}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-dentalsync}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}
+    networks:
+      - dentalsync-network
+
+  # Serviço de frontend (React)
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: dentalsync-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    networks:
+      - dentalsync-network
+
+# Redes
+networks:
+  dentalsync-network:
+    driver: bridge
+
+# Volumes
+volumes:
+  mysql-data: 

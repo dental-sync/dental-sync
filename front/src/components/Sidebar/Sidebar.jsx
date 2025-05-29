@@ -26,7 +26,7 @@ const Sidebar = () => {
     if (path.includes('paciente')) return 'pacientes';
     if (path.includes('protetico')) return 'proteticos';
     if (path.includes('dentista')) return 'dentistas';
-    if (path.includes('servicos')) return 'servicos';
+    if (path.includes('servico')) return 'servicos';
     if (path.includes('material')) return 'materiais';
     if (path.includes('relatorios')) return 'relatorios';
     if (path.includes('configuracao')) return 'configuracoes';
@@ -41,7 +41,7 @@ const Sidebar = () => {
     { id: 'proteticos', text: 'Protéticos', icon: <ProteticoIcon />, to: '/protetico' },
     { id: 'dentistas', text: 'Dentistas', icon: <DentistaIcon />, to: '/dentista' },
     { id: 'clinicas', text: 'Clínicas', icon: <ClinicaIcon />, to: '/clinica' },
-    { id: 'servicos', text: 'Serviços', icon: <ServicosIcon />, to: '/servicos' },
+    { id: 'servicos', text: 'Serviços', icon: <ServicosIcon />, to: '/servico' },
     { id: 'materiais', text: 'Materiais', icon: <MaterialIcon />, to: '/material' },
     { id: 'relatorios', text: 'Relatórios', icon: <RelatoriosIcon />, to: '/relatorios' },
     { id: 'configuracoes', text: 'Configurações', icon: <ConfiguracaoIcon />, to: '/configuracao' },

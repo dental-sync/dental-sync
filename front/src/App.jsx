@@ -21,6 +21,9 @@ import EditarClinica from './pages/Clinica/EditarClinica'
 import MaterialPage from './pages/Material/MaterialPage'
 import CadastroMaterial from './pages/Material/CadastroMaterial'
 import EditarMaterial from './pages/Material/EditarMaterial'
+import ServicoPage from './pages/Servico/ServicoPage'
+import CadastroServico from './pages/Servico/CadastroServico'
+import EditarServico from './pages/Servico/EditarServico'
 import Configuracao from './pages/Configuracao'
 import Relatorios from './pages/Relatorios'
 import ForgotPasswordPage from './pages/Login/ForgotPassword'
@@ -68,6 +71,9 @@ function App() {
           <Route path="/material" element={<ProtectedLayout><MaterialPage /></ProtectedLayout>} />
           <Route path="/material/cadastro" element={<ProtectedLayout><CadastroMaterial /></ProtectedLayout>} />
           <Route path="/material/editar/:id" element={<ProtectedLayout><EditarMaterial /></ProtectedLayout>} />
+          <Route path="/servico" element={<ProtectedLayout><ServicoPage /></ProtectedLayout>} />
+          <Route path="/servico/cadastro" element={<ProtectedLayout><CadastroServico /></ProtectedLayout>} />
+          <Route path="/servico/editar/:id" element={<ProtectedLayout><EditarServico /></ProtectedLayout>} />
           <Route path="/configuracao" element={<ProtectedLayout><Configuracao /></ProtectedLayout>} />
           <Route path="/relatorios" element={<ProtectedLayout><Relatorios /></ProtectedLayout>} />
         </Routes>

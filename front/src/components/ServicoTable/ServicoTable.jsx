@@ -18,7 +18,9 @@ const formatTempoPrevisto = (minutos) => {
 // Função para formatar os dados do serviço
 const formatServicoData = (servico) => ({
   ...servico,
-  valor: servico.valor ? `R$ ${servico.valor.toFixed(2)}` : '-',
+  valor: servico.valor != null
+    ? `R$ ${Number(servico.valor).toFixed(2).replace('.', ',')}`
+    : '-',
   tempoPrevisto: formatTempoPrevisto(servico.tempoPrevisto),
   categoriaServico: servico.categoriaServico?.nome || '-'
 });

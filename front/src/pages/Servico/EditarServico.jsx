@@ -15,6 +15,7 @@ const EditarServico = () => {
     nome: '',
     descricao: '',
     valor: '',
+    tempoPrevisto: '',
     categoriaServico: {
       id: ''
     },
@@ -36,7 +37,10 @@ const EditarServico = () => {
         setServico({
           nome: servicoData.nome,
           descricao: servicoData.descricao || '',
-          valor: servicoData.valor?.toString() || '',
+          valor: servicoData.preco != null
+            ? servicoData.preco.toFixed(2).replace('.', ',')
+            : '',
+          tempoPrevisto: servicoData.tempoPrevisto ? (servicoData.tempoPrevisto / 60).toString() : '',
           categoriaServico: {
             id: servicoData.categoriaServico?.id || ''
           },
@@ -55,7 +59,6 @@ const EditarServico = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
     if (name === 'categoriaServico') {
       setServico(prev => ({
         ...prev,
@@ -63,6 +66,9 @@ const EditarServico = () => {
           id: value
         }
       }));
+    } else if (name === 'valor') {
+      const valorFormatado = value.replace(/[^0-9,]/g, '');
+      setServico(prev => ({ ...prev, valor: valorFormatado }));
     } else {
       setServico(prev => ({
         ...prev,
@@ -76,19 +82,20 @@ const EditarServico = () => {
     setLoading(true);
 
     try {
-      // Validar campos obrigatórios
-      if (!servico.nome || !servico.valor || !servico.categoriaServico.id) {
+      if (!servico.nome || !servico.valor || !servico.categoriaServico.id || !servico.tempoPrevisto) {
         toast.error('Por favor, preencha todos os campos obrigatórios.');
         setLoading(false);
         return;
       }
-
-      // Formatar o valor para número
       const servicoData = {
-        ...servico,
-        valor: parseFloat(servico.valor.replace(',', '.'))
+        nome: servico.nome,
+        descricao: servico.descricao,
+        preco: parseFloat(servico.valor.replace(',', '.')),
+        tempoPrevisto: parseInt(servico.tempoPrevisto, 10) * 60,
+        categoriaServico: servico.categoriaServico,
+        status: servico.status,
+        isActive: servico.isActive
       };
-
       await axios.put(`http://localhost:8080/servico/${id}`, servicoData);
       toast.success('Serviço atualizado com sucesso!');
       navigate('/servico');
@@ -176,16 +183,17 @@ const EditarServico = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="status">Status</label>
-            <select
-              id="status"
-              name="status"
-              value={servico.status}
+            <label htmlFor="tempoPrevisto">Tempo Previsto (horas)</label>
+            <input
+              type="number"
+              id="tempoPrevisto"
+              name="tempoPrevisto"
+              value={servico.tempoPrevisto}
               onChange={handleChange}
-            >
-              <option value="ATIVO">Ativo</option>
-              <option value="INATIVO">Inativo</option>
-            </select>
+              placeholder="Horas"
+              min="1"
+              required
+            />
           </div>
 
           <div className="form-actions">

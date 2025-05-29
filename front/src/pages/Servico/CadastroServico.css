@@ -253,4 +253,148 @@ body.modal-open-servico .back-button {
   .card-content {
     padding: 12px;
   }
+}
+
+.materiais-lista-quantidade {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item-material-quantidade {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 15px;
+  transition: background 0.2s;
+  border: none;
+}
+
+.nome-material {
+  font-size: 15px;
+  color: #22223b;
+  font-weight: 500;
+  flex: 1;
+  text-align: left;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.material-acoes-direita {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quantidade-bloco {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0;
+  margin-left: 16px;
+  height: 32px;
+}
+
+.label-quantidade {
+  font-size: 14px;
+  font-weight: 500;
+  color: #22223b;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+.btn-quantidade {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f1f5f9;
+  color: #22223b;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  padding: 0;
+  border-radius: 0;
+}
+
+.btn-quantidade:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.btn-quantidade:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.btn-quantidade:hover {
+  background: #e2e8f0;
+}
+
+.input-quantidade-material {
+  width: 64px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-size: 16px;
+  color: #22223b;
+  outline: none;
+  margin: 0;
+  font-weight: 500;
+}
+
+.unidade-material {
+  font-size: 13px;
+  color: #64748b;
+  margin-left: 8px;
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  font-weight: 400;
+}
+
+.btn-remover-material {
+  background: none;
+  border: none;
+  color: #d90429;
+  font-size: 18px;
+  margin-left: 8px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.btn-remover-material:hover {
+  background: #ffe5e5;
+}
+
+@media (max-width: 600px) {
+  .item-material-quantidade {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 8px;
+  }
+  .quantidade-bloco {
+    margin-left: 0;
+  }
 } 

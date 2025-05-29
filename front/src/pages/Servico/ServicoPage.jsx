@@ -4,21 +4,22 @@ import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import useInfiniteScroll from '../../hooks/useInfiniteScroll';
+import { toast } from 'react-toastify';
 
 const ServicoPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [servicos, setServicos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
-  const [categorias, setCategorias] = useState([]);
   const [filtros, setFiltros] = useState({
-    status: 'todos',
-    tipo: 'todos'
+    isActive: 'todos'
   });
+  const [refreshData, setRefreshData] = useState(0);
+  const [toastMessage, setToastMessage] = useState(null);
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: 'ascending'
@@ -26,60 +27,85 @@ const ServicoPage = () => {
   
   const filterRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
   
-  // Buscar categorias ao montar o componente
+  // Criando um ref para armazenar mensagens recentes e evitar duplicação de toasts
+  const recentMessages = useRef(new Set());
+
   useEffect(() => {
-    const fetchCategorias = async () => {
+    const fetchServicos = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/categoria-servico');
-        setCategorias(response.data);
-      } catch (error) {
-        console.error('Erro ao buscar categorias:', error);
-        toast.error('Erro ao carregar categorias para filtro.');
+        setLoading(true);
+        const response = await axios.get('http://localhost:8080/servico');
+        const servicosFormatados = response.data.map(servico => ({
+          id: servico.id,
+          nome: servico.nome,
+          descricao: servico.descricao || '-',
+          valor: servico.valor,
+          categoriaServico: servico.categoriaServico,
+          isActive: servico.isActive ? 'ATIVO' : 'INATIVO'
+        }));
+        setServicos(servicosFormatados);
+      } catch (err) {
+        console.error('Erro ao buscar serviços:', err);
+        setServicos([]);
+        setError('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.');
+        toast.error('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false
+        });
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchCategorias();
-  }, []);
-  
-  // Função para buscar serviços da API
-  const fetchServicosData = async (pageNum, pageSize) => {
-    try {
-      const response = await axios.get(`http://localhost:8080/servico/paginado?page=${pageNum}&size=${pageSize}`);
-      
-      const responseData = response.data;
-      const servicosFormatados = responseData.content.map(servico => ({
-        id: servico.id,
-        nome: servico.nome,
-        descricao: servico.descricao || '-',
-        valor: servico.valor,
-        categoriaServico: servico.categoriaServico,
-        status: servico.status,
-        isActive: servico.isActive
-      }));
-      
-      return {
-        content: servicosFormatados,
-        totalElements: responseData.totalElements,
-        last: responseData.last
-      };
-    } catch (error) {
-      console.error('Não foi possível acessar a API:', error);
-      toast.error('Erro ao buscar serviços. Por favor, tente novamente.');
-      throw error;
-    }
-  };
-  
-  // Usar o hook de paginação infinita
-  const {
-    data: servicos,
-    loading,
-    loadingMore,
-    lastElementRef: lastServicoElementRef,
-    refresh: refreshServicos
-  } = useInfiniteScroll(fetchServicosData);
+    fetchServicos();
+  }, [refreshData]);
 
-  // Esconder dropdown de filtro ao clicar fora dele
+  useEffect(() => {
+    if (location.state && location.state.success) {
+      const successMessage = location.state.success;
+      const shouldRefresh = location.state.refresh;
+      
+      // Limpa o state imediatamente
+      window.history.replaceState({}, document.title);
+      
+      // Cria uma chave única para esta mensagem
+      const messageKey = `${successMessage}-${Date.now()}`;
+      
+      // Verifica se esta mensagem já foi exibida recentemente (nos últimos 3 segundos)
+      if (!recentMessages.current.has(messageKey)) {
+        // Adiciona a mensagem ao cache
+        recentMessages.current.add(messageKey);
+        
+        // Exibe o toast
+        toast.success(successMessage, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          toastId: successMessage
+        });
+        
+        // Remove a mensagem do cache após 3 segundos
+        setTimeout(() => {
+          recentMessages.current.delete(messageKey);
+        }, 3000);
+        
+        // Se é necessário atualizar os dados
+        if (shouldRefresh) {
+          setRefreshData(prev => prev + 1);
+        }
+      }
+    }
+  }, [location]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (filterRef.current && !filterRef.current.contains(event.target)) {
@@ -93,27 +119,82 @@ const ServicoPage = () => {
     };
   }, []);
 
-  // Filtrar serviços conforme a busca e filtros aplicados
+  const handleServicoDeleted = (servicoId) => {
+    // Primeiro, remover o serviço do estado local para atualização imediata da UI
+    setServicos(prevServicos => 
+      prevServicos.filter(servico => servico.id !== servicoId)
+    );
+    
+    // Forçar um refresh dos dados para sincronizar com o banco
+    setRefreshData(prev => prev + 1);
+    
+    // Limpa qualquer estado de navegação existente
+    window.history.replaceState({}, document.title);
+    
+    // Adicionamos uma mensagem de sucesso usando o padrão de state
+    navigate('', { 
+      state: { 
+        success: "Serviço excluído com sucesso!",
+        refresh: false
+      },
+      replace: true
+    });
+  };
+
+  const handleStatusChange = (servicoId, newStatus) => {
+    // Encontrar o serviço atual
+    const servicoAtual = servicos.find(s => s.id === servicoId);
+    
+    // Verificar se o status está realmente mudando
+    const statusAtual = servicoAtual.isActive === 'ATIVO';
+    if (statusAtual === (newStatus === 'ATIVO')) {
+      return; // Não faz nada se o status for o mesmo
+    }
+
+    // Atualizar o status do serviço na lista
+    if (newStatus !== null) {
+      setServicos(prevServicos =>
+        prevServicos.map(servico =>
+          servico.id === servicoId
+            ? { ...servico, isActive: newStatus }
+            : servico
+        )
+      );
+      
+      // Exibir o toast de forma padronizada
+      const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
+      
+      // Limpa qualquer estado de navegação existente
+      window.history.replaceState({}, document.title);
+      
+      // Adicionamos uma mensagem de sucesso usando o padrão de state
+      navigate('', { 
+        state: { 
+          success: `Status atualizado com sucesso para ${statusText}`,
+          refresh: false
+        },
+        replace: true
+      });
+    }
+  };
+
+  // Função utilitária para formatar o ID
+  const formatServicoId = (id) => `S${String(id).padStart(4, '0')}`;
+
   const servicosFiltrados = servicos
     .filter(servico => {
-      // Aplicar filtros de status
-      if (filtros.status !== 'todos' && servico.status !== filtros.status) {
+      if (filtros.isActive !== 'todos' && servico.isActive !== filtros.isActive) {
         return false;
       }
       
-      // Aplicar filtros de tipo
-      if (filtros.tipo !== 'todos' && servico.categoriaServico?.nome !== filtros.tipo) {
-        return false;
-      }
-      
-      // Aplicar busca textual
       if (searchQuery) {
-        const searchLower = searchQuery.toLowerCase();
         return (
-          servico.nome?.toLowerCase().includes(searchLower) ||
-          servico.descricao?.toLowerCase().includes(searchLower) ||
-          servico.categoriaServico?.nome?.toLowerCase().includes(searchLower) ||
-          (servico.id?.toString() || '').toLowerCase().includes(searchLower)
+          servico.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          servico.descricao?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          servico.categoriaServico?.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (servico.valor?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (servico.id?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          formatServicoId(servico.id).toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
       
@@ -126,16 +207,6 @@ const ServicoPage = () => {
 
   const toggleFiltro = () => {
     setIsFilterOpen(!isFilterOpen);
-    setIsExportOpen(false);
-  };
-
-  const toggleExport = () => {
-    setIsExportOpen(!isExportOpen);
-    setIsFilterOpen(false);
-  };
-
-  const handleCloseExport = () => {
-    setIsExportOpen(false);
   };
 
   const handleFiltroChange = (e) => {
@@ -148,8 +219,7 @@ const ServicoPage = () => {
 
   const handleLimparFiltros = () => {
     setFiltros({
-      status: 'todos',
-      tipo: 'todos'
+      isActive: 'todos'
     });
   };
 
@@ -157,28 +227,21 @@ const ServicoPage = () => {
     navigate('/servico/cadastro');
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:8080/servico/${id}`);
-      toast.success('Serviço excluído com sucesso!');
-      refreshServicos();
-    } catch (error) {
-      console.error('Erro ao excluir serviço:', error);
-      toast.error('Erro ao excluir serviço. Por favor, tente novamente.');
-    }
+  const handleRefresh = () => {
+    setRefreshData(prev => prev + 1);
   };
 
-  const handleStatusChange = async (id, isActive) => {
-    try {
-      await axios.patch(`http://localhost:8080/servico/${id}`, { isActive });
-      refreshServicos();
-      setTimeout(() => {
-        toast.success(`Serviço ${isActive ? 'Ativado' : 'Inativado'} com sucesso!`);
-      }, 100);
-    } catch (error) {
-      console.error('Erro ao alterar status do serviço:', error);
-      toast.error('Erro ao alterar status do serviço. Por favor, tente novamente.');
-    }
+  const handleExportar = () => {
+    // Implemente a lógica para exportar os serviços
+  };
+
+  const toggleExport = () => {
+    setIsExportOpen(!isExportOpen);
+    setIsFilterOpen(false); // Fechar o outro dropdown
+  };
+
+  const handleCloseExport = () => {
+    setIsExportOpen(false);
   };
 
   const handleSort = (key) => {
@@ -189,126 +252,174 @@ const ServicoPage = () => {
     setSortConfig({ key, direction });
   };
 
+  const sortedServicos = React.useMemo(() => {
+    let sortableServicos = [...servicosFiltrados];
+    if (sortConfig.key) {
+      sortableServicos.sort((a, b) => {
+        // Para ordenação de IDs (números)
+        if (sortConfig.key === 'id') {
+          return sortConfig.direction === 'ascending'
+            ? a.id - b.id
+            : b.id - a.id;
+        }
+        
+        // Para ordenação de status (ATIVO/INATIVO)
+        if (sortConfig.key === 'isActive') {
+          const aValue = a.isActive === 'ATIVO' ? 1 : 0;
+          const bValue = b.isActive === 'ATIVO' ? 1 : 0;
+          return sortConfig.direction === 'ascending'
+            ? aValue - bValue
+            : bValue - aValue;
+        }
+        
+        // Para ordenação de strings (nome, descrição, categoria)
+        const aValue = String(a[sortConfig.key]).toLowerCase();
+        const bValue = String(b[sortConfig.key]).toLowerCase();
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableServicos;
+  }, [servicosFiltrados, sortConfig]);
+
+  if (loading) {
+    return <div className="loading">Carregando serviços...</div>;
+  }
+
   return (
     <div className="servico-page">
-      <ToastContainer />
-      <div className="servico-header">
-        <h1>Serviços</h1>
-        <div className="servico-actions">
-          <SearchBar onSearch={handleSearch} placeholder="Buscar serviços..." />
-          <div className="servico-buttons">
-            <ActionButton
-              icon="filter"
-              onClick={toggleFiltro}
-              isActive={isFilterOpen}
-              tooltip="Filtros"
-            />
-            <ActionButton
-              icon="export"
-              onClick={toggleExport}
-              isActive={isExportOpen}
-              tooltip="Exportar"
-            />
-            <ActionButton
-              icon="plus"
-              onClick={handleNovo}
-              tooltip="Novo Serviço"
-            />
-            <NotificationBell />
-          </div>
+      <div className="page-top">
+        <div className="notification-container">
+          <NotificationBell count={2} />
         </div>
       </div>
-
-      {isFilterOpen && (
-        <div className="filter-dropdown" ref={filterRef}>
-          <div className="filter-section">
-            <h3>Status</h3>
-            <select
-              name="status"
-              value={filtros.status}
-              onChange={handleFiltroChange}
-            >
-              <option value="todos">Todos</option>
-              <option value="ATIVO">Ativos</option>
-              <option value="INATIVO">Inativos</option>
-            </select>
-          </div>
-          <div className="filter-section">
-            <h3>Categoria</h3>
-            <select
-              name="tipo"
-              value={filtros.tipo}
-              onChange={handleFiltroChange}
-            >
-              <option value="todos">Todas</option>
-              {categorias.map((categoria) => (
-                <option key={categoria.id} value={categoria.nome}>
-                  {categoria.nome}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button className="clear-filters" onClick={handleLimparFiltros}>
-            Limpar Filtros
-          </button>
+      
+      {toastMessage && (
+        <div className="toast-message">
+          {toastMessage}
         </div>
       )}
-
-      {isExportOpen && (
-        <ExportDropdown
-          onClose={handleCloseExport}
-          data={servicosFiltrados}
-          filename="servicos"
-          columns={[
-            { header: 'ID', accessor: 'id' },
-            { header: 'Nome', accessor: 'nome' },
-            { header: 'Descrição', accessor: 'descricao' },
-            { header: 'Valor', accessor: 'valor' },
-            { header: 'Categoria', accessor: 'categoriaServico.nome' },
-            { header: 'Status', accessor: 'status' }
-          ]}
+      
+      <div className="page-header">
+        <h1 className="page-title">Serviços</h1>
+        <div className="header-actions">
+          <div className="filter-container" ref={filterRef}>
+            <ActionButton 
+              label="Filtrar" 
+              icon="filter"
+              onClick={toggleFiltro} 
+              active={isFilterOpen || filtros.isActive !== 'todos'}
+            />
+            
+            {isFilterOpen && (
+              <div className="filter-dropdown">
+                <h3>Filtros</h3>
+                <div className="filter-group">
+                  <label htmlFor="isActive">Status</label>
+                  <select
+                    id="isActive"
+                    name="isActive"
+                    value={filtros.isActive}
+                    onChange={handleFiltroChange}
+                    className="filter-select"
+                  >
+                    <option value="todos">Todos</option>
+                    <option value="ATIVO">Ativo</option>
+                    <option value="INATIVO">Inativo</option>
+                  </select>
+                </div>
+                <div className="filter-actions">
+                  <button
+                    type="button"
+                    className="clear-filter-button"
+                    onClick={handleLimparFiltros}
+                  >
+                    Limpar Filtros
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <ExportDropdown 
+            data={sortedServicos}
+            headers={['ID', 'Nome', 'Descrição', 'Valor', 'Categoria', 'Status']}
+            fields={['id', 'nome', 'descricao', 'valor', 'categoriaServico.nome', 'isActive']}
+            filename="servicos"
+            isOpen={isExportOpen}
+            toggleExport={toggleExport}
+            onCloseDropdown={handleCloseExport}
+            title="Lista de Serviços"
+            formatIdFn={formatServicoId}
+          />
+        </div>
+      </div>
+      
+      <div className="search-container">
+        <SearchBar
+          placeholder="Buscar por ID, nome, descrição, categoria ou valor..."
+          onSearch={handleSearch}
         />
-      )}
-
-      <div className="servico-table-container">
+        <ActionButton
+          label="Novo"
+          variant="primary"
+          onClick={handleNovo}
+        />
+      </div>
+      
+      <div className="table-section">
+        {searchQuery && servicosFiltrados.length === 0 && (
+          <div className="search-info">
+            Nenhum serviço encontrado para a busca "{searchQuery}".
+          </div>
+        )}
+        {!searchQuery && servicosFiltrados.length === 0 && filtros.isActive !== 'todos' ? (
+          <div className="filter-info">
+            Nenhum serviço encontrado com os filtros aplicados.
+          </div>
+        ) : null}
+        
         <table className="servico-table">
           <thead>
             <tr>
-              <th onClick={() => handleSort('id')}>
+              <th onClick={() => handleSort('id')} data-sortable="true">
                 ID {sortConfig.key === 'id' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
-              <th onClick={() => handleSort('nome')}>
+              <th onClick={() => handleSort('nome')} data-sortable="true">
                 Nome {sortConfig.key === 'nome' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
-              <th onClick={() => handleSort('descricao')}>
+              <th onClick={() => handleSort('descricao')} data-sortable="true">
                 Descrição {sortConfig.key === 'descricao' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
-              <th onClick={() => handleSort('valor')}>
+              <th onClick={() => handleSort('valor')} data-sortable="true">
                 Valor {sortConfig.key === 'valor' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
-              <th onClick={() => handleSort('categoriaServico.nome')}>
+              <th onClick={() => handleSort('categoriaServico.nome')} data-sortable="true">
                 Categoria {sortConfig.key === 'categoriaServico.nome' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
-              <th onClick={() => handleSort('status')}>
-                Status {sortConfig.key === 'status' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+              <th onClick={() => handleSort('isActive')} data-sortable="true">
+                Status {sortConfig.key === 'isActive' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
               <th>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {servicosFiltrados.map((servico, index) => (
-              <tr
-                key={servico.id}
-                ref={index === servicosFiltrados.length - 1 ? lastServicoElementRef : null}
-              >
-                <td>{servico.id}</td>
+            {sortedServicos.map((servico) => (
+              <tr key={servico.id}>
+                <td>{formatServicoId(servico.id)}</td>
                 <td>{servico.nome}</td>
                 <td>{servico.descricao}</td>
                 <td>R$ {servico.valor?.toFixed(2)}</td>
                 <td>{servico.categoriaServico?.nome || '-'}</td>
                 <td>
-                  <span className={`status-badge ${servico.status?.toLowerCase()}`}>
-                    {servico.status}
+                  <span className={`status-badge ${servico.isActive?.toLowerCase()}`}>
+                    {servico.isActive}
                   </span>
                 </td>
                 <td>
@@ -322,17 +433,17 @@ const ServicoPage = () => {
                     </button>
                     <button
                       className="action-button delete"
-                      onClick={() => handleDelete(servico.id)}
+                      onClick={() => handleServicoDeleted(servico.id)}
                       title="Excluir"
                     >
                       🗑️
                     </button>
                     <button
                       className="action-button status"
-                      onClick={() => handleStatusChange(servico.id, !servico.isActive)}
-                      title={servico.isActive ? 'Inativar' : 'Ativar'}
+                      onClick={() => handleStatusChange(servico.id, servico.isActive === 'ATIVO' ? 'INATIVO' : 'ATIVO')}
+                      title={servico.isActive === 'ATIVO' ? 'Inativar' : 'Ativar'}
                     >
-                      {servico.isActive ? '🔴' : '🟢'}
+                      {servico.isActive === 'ATIVO' ? '🔴' : '🟢'}
                     </button>
                   </div>
                 </td>
@@ -340,8 +451,11 @@ const ServicoPage = () => {
             ))}
           </tbody>
         </table>
-        {loading && <div className="loading">Carregando...</div>}
-        {loadingMore && <div className="loading-more">Carregando mais...</div>}
+        {!searchQuery && servicosFiltrados.length === 0 && filtros.isActive === 'todos' && (
+          <div className="empty-table-message">
+            Nenhum serviço cadastrado.
+          </div>
+        )}
       </div>
     </div>
   );

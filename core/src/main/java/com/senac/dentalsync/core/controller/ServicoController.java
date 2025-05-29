@@ -9,7 +9,7 @@ import com.senac.dentalsync.core.service.BaseService;
 import com.senac.dentalsync.core.service.ServicoService;
 
 @RestController
-@RequestMapping("/servicos")
+@RequestMapping("/servico")
 public class ServicoController extends BaseController<Servico, Long> {
 
     @Autowired

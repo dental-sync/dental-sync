@@ -4,6 +4,7 @@ import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
+import ActionMenu from '../../components/ActionMenu/ActionMenu';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -349,8 +350,8 @@ const ServicoPage = () => {
           
           <ExportDropdown 
             data={sortedServicos}
-            headers={['ID', 'Nome', 'Descrição', 'Valor', 'Categoria', 'Status']}
-            fields={['id', 'nome', 'descricao', 'valor', 'categoriaServico.nome', 'isActive']}
+            headers={['ID', 'Nome', 'Descrição', 'Valor', 'Categoria']}
+            fields={['id', 'nome', 'descricao', 'valor', 'categoriaServico.nome']}
             filename="servicos"
             isOpen={isExportOpen}
             toggleExport={toggleExport}
@@ -403,9 +404,6 @@ const ServicoPage = () => {
               <th onClick={() => handleSort('categoriaServico.nome')} data-sortable="true">
                 Categoria {sortConfig.key === 'categoriaServico.nome' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
-              <th onClick={() => handleSort('isActive')} data-sortable="true">
-                Status {sortConfig.key === 'isActive' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -418,34 +416,12 @@ const ServicoPage = () => {
                 <td>R$ {servico.valor?.toFixed(2)}</td>
                 <td>{servico.categoriaServico?.nome || '-'}</td>
                 <td>
-                  <span className={`status-badge ${servico.isActive?.toLowerCase()}`}>
-                    {servico.isActive}
-                  </span>
-                </td>
-                <td>
-                  <div className="action-buttons">
-                    <button
-                      className="action-button edit"
-                      onClick={() => navigate(`/servico/editar/${servico.id}`)}
-                      title="Editar"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      className="action-button delete"
-                      onClick={() => handleServicoDeleted(servico.id)}
-                      title="Excluir"
-                    >
-                      🗑️
-                    </button>
-                    <button
-                      className="action-button status"
-                      onClick={() => handleStatusChange(servico.id, servico.isActive === 'ATIVO' ? 'INATIVO' : 'ATIVO')}
-                      title={servico.isActive === 'ATIVO' ? 'Inativar' : 'Ativar'}
-                    >
-                      {servico.isActive === 'ATIVO' ? '🔴' : '🟢'}
-                    </button>
-                  </div>
+                  <ActionMenu
+                    itemId={servico.id}
+                    onItemDeleted={handleServicoDeleted}
+                    itemStatus={servico.isActive}
+                    onStatusChange={handleStatusChange}
+                  />
                 </td>
               </tr>
             ))}

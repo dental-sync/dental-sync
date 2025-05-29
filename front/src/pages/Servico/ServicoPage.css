@@ -246,38 +246,6 @@
   color: #ff4d4f;
 }
 
-.action-buttons {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-start;
-}
-
-.action-button {
-  background: none;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.action-button:hover {
-  background-color: #f0f0f0;
-}
-
-.action-button.edit:hover {
-  color: #1890ff;
-}
-
-.action-button.delete:hover {
-  color: #ff4d4f;
-}
-
-.action-button.status:hover {
-  opacity: 0.8;
-}
-
 /* Responsividade */
 @media (max-width: 768px) {
   .page-header {
@@ -298,10 +266,6 @@
     display: block;
     overflow-x: auto;
     white-space: nowrap;
-  }
-
-  .action-buttons {
-    justify-content: center;
   }
 }
 

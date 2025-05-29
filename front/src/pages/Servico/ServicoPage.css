@@ -188,43 +188,6 @@
   padding: 0 20px;
 }
 
-.servico-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.servico-table th,
-.servico-table td {
-  padding: 12px 16px;
-  text-align: left;
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.servico-table th {
-  background-color: #fafafa;
-  font-weight: 600;
-  color: #333;
-  cursor: pointer;
-  user-select: none;
-  position: relative;
-}
-
-.servico-table th[data-sortable="true"] {
-  cursor: pointer;
-}
-
-.servico-table th[data-sortable="true"]:hover {
-  background-color: #f0f0f0;
-}
-
-.servico-table tbody tr:hover {
-  background-color: #fafafa;
-}
-
 .status-badge {
   display: inline-block;
   padding: 4px 8px;

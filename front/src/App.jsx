@@ -56,8 +56,8 @@ function App() {
           {/* Rotas protegidas */}
           <Route path="/protetico" element={<ProtectedLayout><ProteticoPage /></ProtectedLayout>} />
           <Route path="/protetico/cadastro" element={<ProtectedLayout><CadastroProtetico /></ProtectedLayout>} />
-          <Route path="/protetico/historico/:id" element={<ProtectedLayout><HistoricoProtetico /></ProtectedLayout>} />
-          <Route path="/protetico/editar/:id" element={<ProtectedLayout><EditarProtetico /></ProtectedLayout>} />
+          <Route path="/proteticos/historico/:id" element={<ProtectedLayout><HistoricoProtetico /></ProtectedLayout>} />
+          <Route path="/proteticos/editar/:id" element={<ProtectedLayout><EditarProtetico /></ProtectedLayout>} />
           <Route path="/paciente" element={<ProtectedLayout><PacientePage /></ProtectedLayout>} />
           <Route path="/paciente/cadastro" element={<ProtectedLayout><CadastroPaciente /></ProtectedLayout>} />
           <Route path="/paciente/historico/:id" element={<ProtectedLayout><HistoricoPaciente /></ProtectedLayout>} />

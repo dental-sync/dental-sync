@@ -8,6 +8,10 @@ import ActionMenu from '../../components/ActionMenu/ActionMenu';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import ServicoTable from '../../components/ServicoTable/ServicoTable';
+
+// Função utilitária para formatar o ID
+const formatServicoId = (id) => `S${String(id).padStart(4, '0')}`;
 
 const ServicoPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -180,19 +184,6 @@ const ServicoPage = () => {
     }
   };
 
-  // Função utilitária para formatar o ID
-  const formatServicoId = (id) => `S${String(id).padStart(4, '0')}`;
-
-  // Função para formatar o tempo previsto em horas e minutos
-  const formatTempoPrevisto = (minutos) => {
-    if (!minutos) return '-';
-    const horas = Math.floor(minutos / 60);
-    const mins = minutos % 60;
-    if (horas === 0) return `${mins} min`;
-    if (mins === 0) return `${horas}h`;
-    return `${horas}h ${mins}min`;
-  };
-
   const servicosFiltrados = servicos
     .filter(servico => {
       if (filtros.isActive !== 'todos' && servico.isActive !== filtros.isActive) {
@@ -205,8 +196,7 @@ const ServicoPage = () => {
           servico.descricao?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           servico.categoriaServico?.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           (servico.valor?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (servico.id?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-          formatServicoId(servico.id).toLowerCase().includes(searchQuery.toLowerCase())
+          (servico.id?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
       
@@ -360,12 +350,9 @@ const ServicoPage = () => {
           </div>
           
           <ExportDropdown 
-            data={sortedServicos.map(servico => ({
-              ...servico,
-              tempoPrevisto: formatTempoPrevisto(servico.tempoPrevisto)
-            }))}
+            data={sortedServicos}
             headers={['ID', 'Nome', 'Categoria', 'Preço', 'Tempo Previsto', 'Descrição']}
-            fields={['id', 'nome', 'categoriaServico.nome', 'valor', 'tempoPrevisto', 'descricao']}
+            fields={['id', 'nome', 'categoriaServico', 'valor', 'tempoPrevisto', 'descricao']}
             filename="servicos"
             isOpen={isExportOpen}
             toggleExport={toggleExport}
@@ -400,57 +387,14 @@ const ServicoPage = () => {
           </div>
         ) : null}
         
-        <table className="servico-table">
-          <thead>
-            <tr>
-              <th onClick={() => handleSort('id')} data-sortable="true">
-                ID {sortConfig.key === 'id' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
-              <th onClick={() => handleSort('nome')} data-sortable="true">
-                Nome {sortConfig.key === 'nome' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
-              <th onClick={() => handleSort('categoriaServico.nome')} data-sortable="true">
-                Categoria {sortConfig.key === 'categoriaServico.nome' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
-              <th onClick={() => handleSort('valor')} data-sortable="true">
-                Preço {sortConfig.key === 'valor' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
-              <th onClick={() => handleSort('tempoPrevisto')} data-sortable="true">
-                Tempo Previsto {sortConfig.key === 'tempoPrevisto' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
-              <th onClick={() => handleSort('descricao')} data-sortable="true">
-                Descrição {sortConfig.key === 'descricao' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedServicos.map((servico) => (
-              <tr key={servico.id}>
-                <td>{formatServicoId(servico.id)}</td>
-                <td>{servico.nome}</td>
-                <td>{servico.categoriaServico?.nome || '-'}</td>
-                <td>R$ {servico.valor?.toFixed(2)}</td>
-                <td>{formatTempoPrevisto(servico.tempoPrevisto)}</td>
-                <td>{servico.descricao}</td>
-                <td>
-                  <ActionMenu
-                    itemId={servico.id}
-                    onItemDeleted={handleServicoDeleted}
-                    itemStatus={servico.isActive}
-                    onStatusChange={handleStatusChange}
-                    alwaysAllowDelete={true}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {!searchQuery && servicosFiltrados.length === 0 && filtros.isActive === 'todos' && (
-          <div className="empty-table-message">
-            Nenhum serviço cadastrado.
-          </div>
-        )}
+        <ServicoTable 
+          servicos={sortedServicos} 
+          onServicoDeleted={handleServicoDeleted}
+          onStatusChange={handleStatusChange}
+          sortConfig={sortConfig}
+          onSort={handleSort}
+          isEmpty={!searchQuery && servicosFiltrados.length === 0 && filtros.isActive === 'todos'}
+        />
       </div>
     </div>
   );

@@ -57,12 +57,12 @@ const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, pr
   }, []);
 
   const handleVerHistorico = () => {
-    navigate(`/protetico/historico/${id}`);
+    navigate(`/${url}/historico/${id}`);
     setIsOpen(false);
   };
 
   const handleEditar = () => {
-    navigate(`/protetico/editar/${id}`);
+    navigate(`/${url}/editar/${id}`);
     setIsOpen(false);
   };
 

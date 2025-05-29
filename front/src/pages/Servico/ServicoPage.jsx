@@ -421,6 +421,8 @@ const ServicoPage = () => {
                     onItemDeleted={handleServicoDeleted}
                     itemStatus={servico.isActive}
                     onStatusChange={handleStatusChange}
+                    alwaysAllowDelete={true}
+                    url="servico"
                   />
                 </td>
               </tr>

@@ -30,6 +30,7 @@ const ProteticoTable = ({ proteticos, onProteticoDeleted, onStatusChange, sortCo
       apiEndpoint="/proteticos"
       emptyMessage="Nenhum protético cadastrado"
       ActionMenuComponent={ActionMenu}
+      url="proteticos"
     />
   );
 }

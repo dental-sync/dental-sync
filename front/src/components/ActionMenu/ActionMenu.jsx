@@ -6,7 +6,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
-const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, proteticoStatus, itemStatus }) => {
+const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, proteticoStatus, itemStatus, alwaysAllowDelete = false , url}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const dropdownRef = useRef(null);
@@ -73,7 +73,7 @@ const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, pr
 
   const handleConfirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8080/proteticos/${id}`);
+      await axios.delete(`http://localhost:8080/${url}/${id}`);
       onDeleted(id);
     } catch (error) {
       console.error('Erro ao excluir protético:', error);
@@ -98,7 +98,7 @@ const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, pr
         <ul>
           <li onClick={handleVerHistorico}>Histórico</li>
           <li onClick={handleEditar}>Editar</li>
-          {!isActive && <li onClick={handleExcluir} className="delete-option">Excluir</li>}
+          {(!isActive || alwaysAllowDelete) && <li onClick={handleExcluir} className="delete-option">Excluir</li>}
         </ul>
       </div>
     );

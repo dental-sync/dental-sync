@@ -43,6 +43,7 @@ const ServicoPage = () => {
           nome: servico.nome,
           descricao: servico.descricao || '-',
           valor: servico.preco,
+          tempoPrevisto: servico.tempoPrevisto || '-',
           categoriaServico: servico.categoriaServico,
           isActive: servico.isActive ? 'ATIVO' : 'INATIVO'
         }));
@@ -181,6 +182,16 @@ const ServicoPage = () => {
 
   // Função utilitária para formatar o ID
   const formatServicoId = (id) => `S${String(id).padStart(4, '0')}`;
+
+  // Função para formatar o tempo previsto em horas e minutos
+  const formatTempoPrevisto = (minutos) => {
+    if (!minutos) return '-';
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    if (horas === 0) return `${mins} min`;
+    if (mins === 0) return `${horas}h`;
+    return `${horas}h ${mins}min`;
+  };
 
   const servicosFiltrados = servicos
     .filter(servico => {
@@ -349,9 +360,12 @@ const ServicoPage = () => {
           </div>
           
           <ExportDropdown 
-            data={sortedServicos}
-            headers={['ID', 'Nome', 'Descrição', 'Preço', 'Categoria']}
-            fields={['id', 'nome', 'descricao', 'valor', 'categoriaServico.nome']}
+            data={sortedServicos.map(servico => ({
+              ...servico,
+              tempoPrevisto: formatTempoPrevisto(servico.tempoPrevisto)
+            }))}
+            headers={['ID', 'Nome', 'Descrição', 'Preço', 'Tempo Previsto', 'Categoria']}
+            fields={['id', 'nome', 'descricao', 'valor', 'tempoPrevisto', 'categoriaServico.nome']}
             filename="servicos"
             isOpen={isExportOpen}
             toggleExport={toggleExport}
@@ -401,6 +415,9 @@ const ServicoPage = () => {
               <th onClick={() => handleSort('valor')} data-sortable="true">
                 Preço {sortConfig.key === 'valor' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
+              <th onClick={() => handleSort('tempoPrevisto')} data-sortable="true">
+                Tempo Previsto {sortConfig.key === 'tempoPrevisto' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+              </th>
               <th onClick={() => handleSort('categoriaServico.nome')} data-sortable="true">
                 Categoria {sortConfig.key === 'categoriaServico.nome' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
@@ -414,6 +431,7 @@ const ServicoPage = () => {
                 <td>{servico.nome}</td>
                 <td>{servico.descricao}</td>
                 <td>R$ {servico.valor?.toFixed(2)}</td>
+                <td>{formatTempoPrevisto(servico.tempoPrevisto)}</td>
                 <td>{servico.categoriaServico?.nome || '-'}</td>
                 <td>
                   <ActionMenu

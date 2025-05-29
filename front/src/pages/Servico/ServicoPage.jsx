@@ -364,8 +364,8 @@ const ServicoPage = () => {
               ...servico,
               tempoPrevisto: formatTempoPrevisto(servico.tempoPrevisto)
             }))}
-            headers={['ID', 'Nome', 'Descrição', 'Preço', 'Tempo Previsto', 'Categoria']}
-            fields={['id', 'nome', 'descricao', 'valor', 'tempoPrevisto', 'categoriaServico.nome']}
+            headers={['ID', 'Nome', 'Categoria', 'Preço', 'Tempo Previsto', 'Descrição']}
+            fields={['id', 'nome', 'categoriaServico.nome', 'valor', 'tempoPrevisto', 'descricao']}
             filename="servicos"
             isOpen={isExportOpen}
             toggleExport={toggleExport}
@@ -409,8 +409,8 @@ const ServicoPage = () => {
               <th onClick={() => handleSort('nome')} data-sortable="true">
                 Nome {sortConfig.key === 'nome' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
-              <th onClick={() => handleSort('descricao')} data-sortable="true">
-                Descrição {sortConfig.key === 'descricao' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+              <th onClick={() => handleSort('categoriaServico.nome')} data-sortable="true">
+                Categoria {sortConfig.key === 'categoriaServico.nome' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
               <th onClick={() => handleSort('valor')} data-sortable="true">
                 Preço {sortConfig.key === 'valor' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
@@ -418,8 +418,8 @@ const ServicoPage = () => {
               <th onClick={() => handleSort('tempoPrevisto')} data-sortable="true">
                 Tempo Previsto {sortConfig.key === 'tempoPrevisto' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
-              <th onClick={() => handleSort('categoriaServico.nome')} data-sortable="true">
-                Categoria {sortConfig.key === 'categoriaServico.nome' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+              <th onClick={() => handleSort('descricao')} data-sortable="true">
+                Descrição {sortConfig.key === 'descricao' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
               <th>Ações</th>
             </tr>
@@ -429,10 +429,10 @@ const ServicoPage = () => {
               <tr key={servico.id}>
                 <td>{formatServicoId(servico.id)}</td>
                 <td>{servico.nome}</td>
-                <td>{servico.descricao}</td>
+                <td>{servico.categoriaServico?.nome || '-'}</td>
                 <td>R$ {servico.valor?.toFixed(2)}</td>
                 <td>{formatTempoPrevisto(servico.tempoPrevisto)}</td>
-                <td>{servico.categoriaServico?.nome || '-'}</td>
+                <td>{servico.descricao}</td>
                 <td>
                   <ActionMenu
                     itemId={servico.id}
@@ -440,7 +440,6 @@ const ServicoPage = () => {
                     itemStatus={servico.isActive}
                     onStatusChange={handleStatusChange}
                     alwaysAllowDelete={true}
-                    url="servico"
                   />
                 </td>
               </tr>

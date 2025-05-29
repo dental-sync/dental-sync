@@ -42,7 +42,7 @@ const ServicoPage = () => {
           id: servico.id,
           nome: servico.nome,
           descricao: servico.descricao || '-',
-          valor: servico.valor,
+          valor: servico.preco,
           categoriaServico: servico.categoriaServico,
           isActive: servico.isActive ? 'ATIVO' : 'INATIVO'
         }));
@@ -350,7 +350,7 @@ const ServicoPage = () => {
           
           <ExportDropdown 
             data={sortedServicos}
-            headers={['ID', 'Nome', 'Descrição', 'Valor', 'Categoria']}
+            headers={['ID', 'Nome', 'Descrição', 'Preço', 'Categoria']}
             fields={['id', 'nome', 'descricao', 'valor', 'categoriaServico.nome']}
             filename="servicos"
             isOpen={isExportOpen}
@@ -399,7 +399,7 @@ const ServicoPage = () => {
                 Descrição {sortConfig.key === 'descricao' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
               <th onClick={() => handleSort('valor')} data-sortable="true">
-                Valor {sortConfig.key === 'valor' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                Preço {sortConfig.key === 'valor' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
               <th onClick={() => handleSort('categoriaServico.nome')} data-sortable="true">
                 Categoria {sortConfig.key === 'categoriaServico.nome' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}

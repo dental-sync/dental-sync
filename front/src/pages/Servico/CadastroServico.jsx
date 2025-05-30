@@ -18,10 +18,8 @@ const CadastroServico = () => {
     descricao: '',
     valor: '',
     tempoPrevisto: '',
-    categoriaServico: {
-      id: ''
-    },
-    materiaisNecessarios: [],
+    categoriaServico: { id: '' },
+    materiais: [],
     status: 'ATIVO',
     isActive: true
   });
@@ -81,7 +79,7 @@ const CadastroServico = () => {
     });
     setFormData(prev => ({
       ...prev,
-      materiaisNecessarios: materiais.map(m => ({ id: m.id, quantidade: 1 }))
+      materiais: materiais.map(m => ({ material: { id: m.id }, quantidade: 1 }))
     }));
     setShowModalMateriais(false);
   };
@@ -90,7 +88,7 @@ const CadastroServico = () => {
     setMateriaisSelecionados(prev => prev.filter(mat => mat.id !== id));
     setFormData(prev => ({
       ...prev,
-      materiaisNecessarios: prev.materiaisNecessarios.filter(mat => mat.id !== id)
+      materiais: prev.materiais.filter(sm => sm.material.id !== id)
     }));
   };
 
@@ -103,8 +101,8 @@ const CadastroServico = () => {
     ));
     setFormData(prev => ({
       ...prev,
-      materiaisNecessarios: prev.materiaisNecessarios.map(mat =>
-        mat.id === id ? { ...mat, quantidade } : mat
+      materiais: prev.materiais.map(sm =>
+        (sm.material.id === id) ? { ...sm, quantidade } : sm
       )
     }));
   };
@@ -124,7 +122,7 @@ const CadastroServico = () => {
         categoriaServico: formData.categoriaServico,
         status: formData.status,
         isActive: formData.isActive,
-        materiaisNecessarios: formData.materiaisNecessarios
+        materiais: materiaisSelecionados.map(m => ({ material: { id: m.id }, quantidade: m.quantidadeUso }))
       };
       await axios.post('http://localhost:8080/servico', servicoData);
       toast.success('Serviço cadastrado com sucesso!');

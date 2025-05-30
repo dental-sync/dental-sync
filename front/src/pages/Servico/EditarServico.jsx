@@ -4,6 +4,7 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './CadastroServico.css';
+import ModalSelecionarMateriais from '../../components/ModalSelecionarMateriais';
 
 const EditarServico = () => {
   const navigate = useNavigate();
@@ -22,6 +23,8 @@ const EditarServico = () => {
     status: 'ATIVO',
     isActive: true
   });
+  const [showModalMateriais, setShowModalMateriais] = useState(false);
+  const [materiaisSelecionados, setMateriaisSelecionados] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,6 +50,16 @@ const EditarServico = () => {
           status: servicoData.status || 'ATIVO',
           isActive: servicoData.isActive
         });
+        // Carregar materiais utilizados (via ServicoMaterial)
+        setMateriaisSelecionados(
+          (servicoData.materiais || []).map(sm => ({
+            id: sm.material.id,
+            nome: sm.material.nome,
+            unidadeMedida: sm.material.unidadeMedida,
+            quantidadeEstoque: sm.material.quantidade,
+            quantidadeUso: sm.quantidade
+          }))
+        );
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
         toast.error('Erro ao carregar dados do serviço.');
@@ -77,6 +90,33 @@ const EditarServico = () => {
     }
   };
 
+  const handleMateriaisConfirm = (materiais) => {
+    setMateriaisSelecionados(prev => {
+      return materiais.map(m => {
+        const antigo = prev.find(pm => pm.id === m.id);
+        return {
+          ...m,
+          quantidadeEstoque: m.quantidade ?? m.quantidadeEstoque ?? 0,
+          quantidadeUso: antigo ? antigo.quantidadeUso : 1
+        };
+      });
+    });
+    setShowModalMateriais(false);
+  };
+
+  const handleRemoverMaterial = (id) => {
+    setMateriaisSelecionados(prev => prev.filter(mat => mat.id !== id));
+  };
+
+  const handleQuantidadeChange = (id, value) => {
+    const quantidade = Math.max(1, Math.floor(Number(value)));
+    setMateriaisSelecionados(prev => prev.map(m =>
+      m.id === id
+        ? { ...m, quantidadeUso: quantidade }
+        : m
+    ));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -94,7 +134,8 @@ const EditarServico = () => {
         tempoPrevisto: parseInt(servico.tempoPrevisto, 10) * 60,
         categoriaServico: servico.categoriaServico,
         status: servico.status,
-        isActive: servico.isActive
+        isActive: servico.isActive,
+        materiais: materiaisSelecionados.map(m => ({ material: { id: m.id }, quantidade: m.quantidadeUso }))
       };
       await axios.put(`http://localhost:8080/servico/${id}`, servicoData);
       toast.success('Serviço atualizado com sucesso!');
@@ -194,6 +235,83 @@ const EditarServico = () => {
               min="1"
               required
             />
+          </div>
+
+          <ModalSelecionarMateriais
+            isOpen={showModalMateriais}
+            onClose={() => setShowModalMateriais(false)}
+            onConfirm={handleMateriaisConfirm}
+            materiaisSelecionados={materiaisSelecionados.map(m => m.id)}
+          />
+          <div className="form-card">
+            <div className="card-header">
+              <h2>Materiais Necessários</h2>
+            </div>
+            <div className="card-content">
+              <div className="form-group">
+                <div className="material-select">
+                  <button type="button" className="select-materiais-button" onClick={() => setShowModalMateriais(true)}>
+                    Selecionar materiais
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <path d="m21 21-4.3-4.3"></path>
+                    </svg>
+                  </button>
+                </div>
+                <div className="materiais-selecionados-lista">
+                  {materiaisSelecionados.length === 0 ? (
+                    <div className="empty-state">Nenhum material selecionado</div>
+                  ) : (
+                    <ul className="materiais-lista-quantidade">
+                      {materiaisSelecionados.map(m => (
+                        <li key={m.id} className="item-material-quantidade">
+                          <span className="nome-material">{m.nome}</span>
+                          <div className="material-acoes-direita">
+                            <span className="label-quantidade">Quantidade:</span>
+                            <div className="quantidade-bloco">
+                              <button
+                                type="button"
+                                className="btn-quantidade"
+                                onClick={() => handleQuantidadeChange(m.id, Math.max(1, m.quantidadeUso - 1))}
+                                disabled={m.quantidadeUso <= 1}
+                                tabIndex={0}
+                              >-</button>
+                              <input
+                                type="number"
+                                min={1}
+                                max={m.quantidadeEstoque}
+                                value={m.quantidadeUso}
+                                onChange={e => {
+                                  let val = parseInt(e.target.value, 10);
+                                  if (isNaN(val) || val < 1) val = 1;
+                                  if (val > m.quantidadeEstoque) val = m.quantidadeEstoque;
+                                  handleQuantidadeChange(m.id, val);
+                                }}
+                                className="input-quantidade-material"
+                              />
+                              <button
+                                type="button"
+                                className="btn-quantidade"
+                                onClick={() => handleQuantidadeChange(m.id, Math.min(m.quantidadeEstoque, m.quantidadeUso + 1))}
+                                disabled={m.quantidadeUso >= m.quantidadeEstoque}
+                                tabIndex={0}
+                              >+</button>
+                            </div>
+                            <span className="unidade-material">{m.unidadeMedida || ''}</span>
+                            <button
+                              type="button"
+                              className="btn-remover-material"
+                              onClick={() => handleRemoverMaterial(m.id)}
+                              title="Remover material"
+                            >×</button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="form-actions">

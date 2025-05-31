@@ -18,7 +18,8 @@ const GenericTable = ({
   apiEndpoint,
   emptyMessage,
   ActionMenuComponent,
-  useCustomStatusRender = false
+  useCustomStatusRender = false,
+  url
 }) => {
   const navigate = useNavigate();
 
@@ -117,6 +118,7 @@ const GenericTable = ({
                           clinicaId={item.id}
                           materialId={item.id}
                           isActive={item[statusField] === 'ATIVO'}
+                          url={url}
                         />
                       </td>
                     );

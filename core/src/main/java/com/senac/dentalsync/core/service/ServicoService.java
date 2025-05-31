@@ -1,16 +1,22 @@
 package com.senac.dentalsync.core.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.senac.dentalsync.core.persistency.model.Material;
 import com.senac.dentalsync.core.persistency.model.Servico;
 import com.senac.dentalsync.core.persistency.model.ServicoMaterial;
+import com.senac.dentalsync.core.persistency.model.ServicoMaterialId;
 import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.ServicoRepository;
+
+import jakarta.persistence.EntityManager;
 
 @Service
 public class ServicoService extends BaseService<Servico, Long> {
@@ -24,6 +30,9 @@ public class ServicoService extends BaseService<Servico, Long> {
     @Autowired
     private MaterialService materialService;
 
+    @Autowired
+    private EntityManager entityManager;
+
     @Override
     protected BaseRepository<Servico, Long> getRepository() {
         return servicoRepository;
@@ -35,13 +44,31 @@ public class ServicoService extends BaseService<Servico, Long> {
     }
 
     @Override
+    @Transactional
     public Servico save(Servico servico) {
-        // Atualiza o estoque dos materiais (via ServicoMaterial)
-        if (servico.getMateriais() != null) {
-            for (ServicoMaterial sm : servico.getMateriais()) {
+        // Guarda a lista de materiais e limpa a lista do serviço para evitar o cascade
+        List<ServicoMaterial> materiais = servico.getMateriais();
+        servico.setMateriais(new ArrayList<>());
+        
+        // Salva o serviço primeiro
+        Servico servicoSalvo = super.save(servico);
+        
+        // Depois atualiza o estoque e salva os materiais manualmente
+        if (materiais != null) {
+            List<ServicoMaterial> materiaisSalvos = new ArrayList<>();
+            
+            for (ServicoMaterial sm : materiais) {
                 Material material = materialService.getRepository().findById(sm.getMaterial().getId())
                         .orElseThrow(() -> new RuntimeException("Material não encontrado"));
-                BigDecimal qtd = sm.getQuantidade();
+                
+                // Cria um novo ServicoMaterial com os IDs corretos
+                ServicoMaterial novoSm = new ServicoMaterial();
+                novoSm.setServico(servicoSalvo);
+                novoSm.setMaterial(material);
+                novoSm.setQuantidade(sm.getQuantidade());
+                novoSm.setId(new ServicoMaterialId(servicoSalvo.getId(), material.getId()));
+                
+                BigDecimal qtd = novoSm.getQuantidade();
                 if (qtd == null) {
                     throw new RuntimeException("Quantidade não informada para o material: " + material.getNome());
                 }
@@ -50,10 +77,18 @@ public class ServicoService extends BaseService<Servico, Long> {
                 }
                 material.setQuantidade(material.getQuantidade().subtract(qtd));
                 materialService.save(material);
+                
+                // Persiste o ServicoMaterial manualmente
+                entityManager.persist(novoSm);
+                materiaisSalvos.add(novoSm);
             }
+            
+            // Atualiza a lista de materiais do serviço
+            servicoSalvo.setMateriais(materiaisSalvos);
+            return servicoSalvo;
         }
-        // Salva o serviço (que, por cascade, salva os ServicoMaterial)
-        return super.save(servico);
+        
+        return servicoSalvo;
     }
 
     public Servico updateServico(Servico servicoEditado, Long idServico) {

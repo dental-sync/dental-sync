@@ -15,69 +15,97 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Verificar se há dados de autenticação salvos ao carregar a aplicação
+  // Verificar se há sessão ativa ao carregar a aplicação
   useEffect(() => {
+    console.log('AuthContext useEffect executado - isLoggingOut:', isLoggingOut);
+    
+    // Não verificar autenticação se estiver fazendo logout
+    if (isLoggingOut) {
+      console.log('Pulando verificação - logout em andamento');
+      return;
+    }
+
     const checkAuth = async () => {
-      const token = localStorage.getItem('authToken');
-      const userData = localStorage.getItem('userData');
-      
-      if (token && userData) {
-        try {
-          const userDataParsed = JSON.parse(userData);
-          
-          // Buscar dados atualizados do usuário logado
-          const response = await api.get('/proteticos/me');
-          const userInfo = {
-            ...userDataParsed,
-            ...response.data,
-            isAdmin: response.data.isAdmin || false
-          };
-          
+      console.log('Verificando autenticação...');
+      try {
+        const response = await api.get('/auth/check');
+        console.log('Resposta auth/check:', response.data);
+        
+        if (response.data.success && response.data.authenticated) {
           setIsAuthenticated(true);
-          setUser(userInfo);
-          localStorage.setItem('userData', JSON.stringify(userInfo));
-        } catch (error) {
-          console.error('Erro ao verificar autenticação:', error);
-          logout();
+          setUser(response.data.user);
+        } else {
+          setIsAuthenticated(false);
+          setUser(null);
         }
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+        setIsAuthenticated(false);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     checkAuth();
-  }, []);
+  }, [isLoggingOut]);
 
-  const login = async (userData) => {
-    try {
-      // Buscar dados completos do usuário após login
-      const response = await api.get('/proteticos/me');
-      const userInfo = {
-        ...userData,
-        ...response.data,
-        isAdmin: response.data.isAdmin || false
-      };
-      
-      setIsAuthenticated(true);
-      setUser(userInfo);
-      // Salvar no localStorage para persistir entre sessões
-      localStorage.setItem('authToken', 'authenticated');
-      localStorage.setItem('userData', JSON.stringify(userInfo));
-    } catch (error) {
-      console.error('Erro ao buscar dados do usuário:', error);
-      // Fallback para login básico se não conseguir buscar dados
-      setIsAuthenticated(true);
-      setUser({ ...userData, isAdmin: false });
-      localStorage.setItem('authToken', 'authenticated');
-      localStorage.setItem('userData', JSON.stringify({ ...userData, isAdmin: false }));
-    }
+  const login = (userData) => {
+    setIsAuthenticated(true);
+    setUser(userData);
+    setIsLoggingOut(false);
+    // Não salvamos mais no localStorage - cookies são gerenciados automaticamente
   };
 
-  const logout = () => {
+  const logout = async () => {
+    setIsLoggingOut(true);
+    setLoading(true);
+    
+    try {
+      await api.post('/logout');
+    } catch (error) {
+      console.error('Erro ao fazer logout no servidor:', error);
+      // Mesmo com erro, continuamos o logout local
+    }
+    
+    // Limpar estado local sempre
     setIsAuthenticated(false);
     setUser(null);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
+    setLoading(false);
+    
+    // Usar setTimeout para garantir que o estado foi limpo antes do redirecionamento
+    setTimeout(() => {
+      setIsLoggingOut(false);
+      window.location.href = '/login';
+    }, 100);
+  };
+
+  const refreshUserData = async () => {
+    // Não atualizar dados se estiver fazendo logout
+    if (isLoggingOut) {
+      throw new Error('Sistema fazendo logout');
+    }
+
+    try {
+      const response = await api.get('/auth/check');
+      
+      if (response.data.success && response.data.authenticated) {
+        const userInfo = response.data.user;
+        setUser(userInfo);
+        return userInfo;
+      } else {
+        throw new Error('Usuário não autenticado');
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar dados do usuário:', error);
+      if (!isLoggingOut) {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+      throw error;
+    }
   };
 
   const value = {
@@ -86,6 +114,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     loading,
+    refreshUserData,
     isAdmin: user?.isAdmin || false
   };
 

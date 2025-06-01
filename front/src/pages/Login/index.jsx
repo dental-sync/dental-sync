@@ -16,20 +16,34 @@ const LoginPage = () => {
       const params = new URLSearchParams();
       params.append('username', formData.email);
       params.append('password', formData.password);
+      
       const response = await api.post('/login', params, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
       
-      // Se chegou até aqui, login foi bem-sucedido
-      const userData = {
-        email: formData.email,
-        // Outras informações do usuário podem ser obtidas de response.data
-      };
-      
-      login(userData);
-      navigate('/protetico');
+      // Verificar se o login foi bem-sucedido
+      if (response.data.success) {
+        const userData = {
+          email: formData.email,
+          ...response.data.user
+        };
+        
+        login(userData);
+        navigate('/protetico');
+      } else {
+        alert(response.data.message || 'Erro no login');
+      }
     } catch (error) {
-      alert('Usuário ou senha inválidos!');
+      console.error('Erro no login:', error);
+      
+      if (error.response) {
+        // Erro da API
+        const errorMessage = error.response.data?.message || 'Usuário ou senha inválidos!';
+        alert(errorMessage);
+      } else {
+        // Erro de rede ou outro
+        alert('Erro de conexão. Tente novamente.');
+      }
     }
   };
 

@@ -45,7 +45,22 @@ const ProtectedLayout = ({ children }) => (
 
 // Componente para redirecionar se já estiver logado
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  
+  // Aguardar verificação de autenticação antes de redirecionar
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}>
+        <div>Carregando...</div>
+      </div>
+    );
+  }
+  
   return isAuthenticated ? <Navigate to="/paciente" replace /> : children;
 };
 

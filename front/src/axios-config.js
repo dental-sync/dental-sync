@@ -8,7 +8,8 @@ const baseURL = process.env.NODE_ENV === 'production'
 // Criar instância do axios com configurações customizadas
 const api = axios.create({
   baseURL,
-  timeout: 10000, // 10 segundos
+  timeout: 30000, // 30 segundos - aumentado para operações que envolvem email
+  withCredentials: true, // Importante: inclui cookies HTTP-only
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -18,11 +19,7 @@ const api = axios.create({
 // Interceptadores para requisições
 api.interceptors.request.use(
   config => {
-    // Aqui poderia adicionar um token de autenticação se necessário
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    // Não é mais necessário adicionar token manualmente - cookies são automáticos
     return config;
   },
   error => {
@@ -41,9 +38,9 @@ api.interceptors.response.use(
       // O servidor respondeu com um status diferente de 2xx
       console.error('Erro na resposta:', error.response.status, error.response.data);
       
-      // Aqui poderia implementar tratamentos específicos por código
+      // Remover redirecionamento automático - deixar o AuthContext gerenciar
       // if (error.response.status === 401) {
-      //   // Redirecionar para login, por exemplo
+      //   window.location.href = '/login';
       // }
     } else if (error.request) {
       // A requisição foi feita mas não houve resposta

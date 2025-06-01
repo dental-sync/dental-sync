@@ -100,6 +100,18 @@
 .checkbox-label {
   color: #4B5563;
   cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.remember-me-info {
+  color: #059669;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .forgot-password-container {

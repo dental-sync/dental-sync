@@ -1,10 +1,11 @@
 import './UserSection.css';
+import Avatar from '../Avatar/Avatar';
 
 const UserSection = ({ userName, userEmail, onLogout }) => {
   return (
     <div className="user-section">
       <div className="user-info">
-        <div className="avatar"></div>
+        <Avatar name={userName} email={userEmail} size={40} />
         <div className="user-details">
           <span className="user-name">{userName}</span>
           <span className="user-email">{userEmail}</span>

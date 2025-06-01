@@ -29,6 +29,7 @@ import Relatorios from './pages/Relatorios'
 import ForgotPasswordPage from './pages/Login/ForgotPassword'
 import ResetPasswordPage from './pages/Login/ResetPassword'
 import PlanosPage from './pages/Planos'
+import PedidoPage from './pages/Pedido/PedidoPage'
 import './App.css'
 
 const ProtectedLayout = ({ children }) => (
@@ -55,6 +56,7 @@ function App() {
           
           {/* Rotas protegidas */}
           <Route path="/protetico" element={<ProtectedLayout><ProteticoPage /></ProtectedLayout>} />
+          <Route path="/pedidos" element={<ProtectedLayout><PedidoPage /></ProtectedLayout>} />
           <Route path="/protetico/cadastro" element={<ProtectedLayout><CadastroProtetico /></ProtectedLayout>} />
           <Route path="/proteticos/historico/:id" element={<ProtectedLayout><HistoricoProtetico /></ProtectedLayout>} />
           <Route path="/proteticos/editar/:id" element={<ProtectedLayout><EditarProtetico /></ProtectedLayout>} />

@@ -1,6 +1,7 @@
 package com.senac.dentalsync.core.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,6 +24,7 @@ import com.senac.dentalsync.core.service.EmailService;
 import com.senac.dentalsync.core.service.ProteticoService;
 import com.senac.dentalsync.core.service.TrustedDeviceService;
 import com.senac.dentalsync.core.service.TwoFactorService;
+import com.senac.dentalsync.core.service.RememberMeService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,6 +51,9 @@ public class AuthController {
 
     @Autowired
     private TrustedDeviceService trustedDeviceService;
+
+    @Autowired
+    private RememberMeService rememberMeService;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(
@@ -228,11 +233,22 @@ public class AuthController {
             // Se "Lembrar de mim" estiver marcado: 7 dias
             session.setMaxInactiveInterval(7 * 24 * 60 * 60); // 7 dias
             
+            // Gerar token persistente no banco de dados
+            String rememberMeToken = rememberMeService.generateRememberMeToken(protetico.getEmail(), 7);
+            
+            // Configurar cookie persistente com o token
+            Cookie rememberMeCookie = new Cookie("DENTALSYNC_REMEMBER_ME", rememberMeToken);
+            rememberMeCookie.setMaxAge(7 * 24 * 60 * 60); // 7 dias em segundos
+            rememberMeCookie.setHttpOnly(true);
+            rememberMeCookie.setSecure(false); // mudar para true em produção com HTTPS
+            rememberMeCookie.setPath("/");
+            response.addCookie(rememberMeCookie);
+            
             // Configurar cookie de sessão para ser persistente
             Cookie sessionCookie = new Cookie("DENTALSYNC_SESSION", session.getId());
             sessionCookie.setMaxAge(7 * 24 * 60 * 60); // 7 dias em segundos
             sessionCookie.setHttpOnly(true);
-            sessionCookie.setSecure(false); // mudar para true em produção com HTTPS
+            sessionCookie.setSecure(false);
             sessionCookie.setPath("/");
             response.addCookie(sessionCookie);
         } else {
@@ -266,10 +282,23 @@ public class AuthController {
     public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request, HttpServletResponse response) {
         try {
             HttpSession session = request.getSession(false);
+            
+            // Obter dados do usuário antes de invalidar a sessão
+            String userEmail = null;
             if (session != null) {
+                Protetico userData = (Protetico) session.getAttribute("USER_DATA");
+                if (userData != null) {
+                    userEmail = userData.getEmail();
+                }
                 session.invalidate();
             }
+            
             SecurityContextHolder.clearContext();
+            
+            // Remover token de "Lembrar de mim" do banco de dados
+            if (userEmail != null) {
+                rememberMeService.removeRememberMeToken(userEmail);
+            }
             
             // Limpar cookie de sessão
             Cookie sessionCookie = new Cookie("DENTALSYNC_SESSION", "");
@@ -277,6 +306,13 @@ public class AuthController {
             sessionCookie.setHttpOnly(true);
             sessionCookie.setPath("/");
             response.addCookie(sessionCookie);
+            
+            // Limpar cookie de "Lembrar de mim"
+            Cookie rememberMeCookie = new Cookie("DENTALSYNC_REMEMBER_ME", "");
+            rememberMeCookie.setMaxAge(0); // Remove o cookie
+            rememberMeCookie.setHttpOnly(true);
+            rememberMeCookie.setPath("/");
+            response.addCookie(rememberMeCookie);
             
             Map<String, Object> response2 = new HashMap<>();
             response2.put("success", true);
@@ -297,6 +333,7 @@ public class AuthController {
             HttpSession session = request.getSession(false);
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             
+            // Primeiro, verificar se há sessão ativa
             if (session != null && auth != null && auth.isAuthenticated() 
                 && !auth.getName().equals("anonymousUser")) {
                 
@@ -315,6 +352,47 @@ public class AuthController {
                 }
             }
             
+            // Se não há sessão ativa, verificar cookie de "Lembrar de mim"
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("DENTALSYNC_REMEMBER_ME".equals(cookie.getName())) {
+                        String rememberMeToken = cookie.getValue();
+                        
+                        // Buscar usuário pelo token válido
+                        Optional<Protetico> userOpt = rememberMeService.findUserByValidRememberMeToken(rememberMeToken);
+                        if (userOpt.isPresent()) {
+                            Protetico user = userOpt.get();
+                            
+                            // Recriar sessão automaticamente
+                            HttpSession newSession = request.getSession(true);
+                            
+                            // Configurar autenticação
+                            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                                user.getEmail(), null, List.of()
+                            );
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                            newSession.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+                            newSession.setAttribute("USER_DATA", user);
+                            newSession.setAttribute("REMEMBER_ME", true);
+                            newSession.setMaxInactiveInterval(7 * 24 * 60 * 60); // 7 dias
+                            
+                            Map<String, Object> response = new HashMap<>();
+                            response.put("success", true);
+                            response.put("authenticated", true);
+                            response.put("user", user);
+                            response.put("rememberMe", true);
+                            response.put("sessionDuration", "7 dias");
+                            response.put("restoredFromRememberMe", true);
+                            
+                            System.out.println("Sessão restaurada automaticamente via token de Lembrar de mim para: " + user.getEmail());
+                            return ResponseEntity.ok(response);
+                        }
+                    }
+                }
+            }
+            
+            // Nenhuma autenticação válida encontrada
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("authenticated", false);

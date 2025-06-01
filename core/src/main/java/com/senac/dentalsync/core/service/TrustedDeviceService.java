@@ -1,20 +1,20 @@
 package com.senac.dentalsync.core.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import java.util.Optional;
+import java.util.List;
 
 @Service
 public class TrustedDeviceService {
     
-    // Armazenamento temporário dos dispositivos confiáveis (em produção usar Redis ou banco)
-    private Map<String, String> trustedDevices = new ConcurrentHashMap<>(); // deviceFingerprint -> email
-    private Map<String, Long> deviceTimestamps = new ConcurrentHashMap<>(); // deviceFingerprint -> timestamp
-    private Map<String, String> deviceTokens = new ConcurrentHashMap<>(); // deviceFingerprint -> token
+    @Autowired
+    private ProteticoService proteticoService;
     
     @Value("${dentalsync.2fa.trusted-device-duration-minutes:10}")
     private int trustedDeviceDurationMinutes;
@@ -25,19 +25,28 @@ public class TrustedDeviceService {
     public String generateTrustedDeviceToken(String email, String deviceFingerprint) {
         String token = UUID.randomUUID().toString();
         
-        // Armazenar informações do dispositivo
-        trustedDevices.put(deviceFingerprint, email);
-        deviceTimestamps.put(deviceFingerprint, System.currentTimeMillis());
-        deviceTokens.put(deviceFingerprint, token);
+        Optional<Protetico> userOpt = proteticoService.findByEmail(email);
+        if (!userOpt.isPresent()) {
+            System.err.println("Usuário não encontrado para gerar token de dispositivo: " + email);
+            return null;
+        }
         
-        // Limpar dispositivos expirados
-        cleanExpiredDevices();
+        Protetico user = userOpt.get();
+        
+        // Armazenar informações do dispositivo no usuário
+        user.setTrustedDeviceFingerprint(deviceFingerprint);
+        user.setTrustedDeviceToken(token);
+        user.setTrustedDeviceTimestamp(System.currentTimeMillis());
+        
+        // Salvar no banco de dados
+        proteticoService.save(user);
         
         System.out.println("=== DISPOSITIVO CONFIÁVEL REGISTRADO ===");
         System.out.println("Email: " + email);
         System.out.println("Device Fingerprint: " + deviceFingerprint);
         System.out.println("Token: " + token);
         System.out.println("Válido por " + trustedDeviceDurationMinutes + " minutos");
+        System.out.println("Salvo no banco de dados");
         System.out.println("===============================");
         
         return token;
@@ -47,16 +56,23 @@ public class TrustedDeviceService {
      * Verifica se um dispositivo é confiável
      */
     public boolean isTrustedDevice(String email, String deviceFingerprint) {
-        String storedEmail = trustedDevices.get(deviceFingerprint);
-        Long timestamp = deviceTimestamps.get(deviceFingerprint);
-        
-        if (storedEmail == null || timestamp == null) {
-            System.out.println("Dispositivo não encontrado: " + deviceFingerprint);
+        Optional<Protetico> userOpt = proteticoService.findByEmail(email);
+        if (!userOpt.isPresent()) {
+            System.out.println("Usuário não encontrado: " + email);
             return false;
         }
         
-        if (!storedEmail.equals(email)) {
-            System.out.println("Email não corresponde ao dispositivo: " + email);
+        Protetico user = userOpt.get();
+        String storedFingerprint = user.getTrustedDeviceFingerprint();
+        Long timestamp = user.getTrustedDeviceTimestamp();
+        
+        if (storedFingerprint == null || timestamp == null) {
+            System.out.println("Dispositivo não encontrado para usuário: " + email);
+            return false;
+        }
+        
+        if (!storedFingerprint.equals(deviceFingerprint)) {
+            System.out.println("Device fingerprint não corresponde para usuário: " + email);
             return false;
         }
         
@@ -65,8 +81,8 @@ public class TrustedDeviceService {
         long elapsedMinutes = (currentTime - timestamp) / (1000 * 60);
         
         if (elapsedMinutes > trustedDeviceDurationMinutes) {
-            System.out.println("Dispositivo confiável expirado: " + deviceFingerprint + " (expirou há " + (elapsedMinutes - trustedDeviceDurationMinutes) + " minutos)");
-            removeTrustedDevice(deviceFingerprint);
+            System.out.println("Dispositivo confiável expirado para " + email + " (expirou há " + (elapsedMinutes - trustedDeviceDurationMinutes) + " minutos)");
+            removeTrustedDevice(email);
             return false;
         }
         
@@ -77,16 +93,24 @@ public class TrustedDeviceService {
     /**
      * Valida token de dispositivo confiável
      */
-    public boolean validateTrustedDeviceToken(String deviceFingerprint, String token) {
-        String storedToken = deviceTokens.get(deviceFingerprint);
-        
-        if (storedToken == null) {
-            System.out.println("Token de dispositivo não encontrado: " + deviceFingerprint);
+    public boolean validateTrustedDeviceToken(String email, String deviceFingerprint, String token) {
+        Optional<Protetico> userOpt = proteticoService.findByEmail(email);
+        if (!userOpt.isPresent()) {
+            System.out.println("Usuário não encontrado para validar token: " + email);
             return false;
         }
         
-        boolean isValid = storedToken.equals(token);
-        System.out.println("Validação de token de dispositivo: " + (isValid ? "VÁLIDO" : "INVÁLIDO"));
+        Protetico user = userOpt.get();
+        String storedToken = user.getTrustedDeviceToken();
+        String storedFingerprint = user.getTrustedDeviceFingerprint();
+        
+        if (storedToken == null || storedFingerprint == null) {
+            System.out.println("Token ou fingerprint de dispositivo não encontrado para: " + email);
+            return false;
+        }
+        
+        boolean isValid = storedToken.equals(token) && storedFingerprint.equals(deviceFingerprint);
+        System.out.println("Validação de token de dispositivo para " + email + ": " + (isValid ? "VÁLIDO" : "INVÁLIDO"));
         
         return isValid;
     }
@@ -94,27 +118,27 @@ public class TrustedDeviceService {
     /**
      * Remove um dispositivo confiável
      */
-    public void removeTrustedDevice(String deviceFingerprint) {
-        trustedDevices.remove(deviceFingerprint);
-        deviceTimestamps.remove(deviceFingerprint);
-        deviceTokens.remove(deviceFingerprint);
-        System.out.println("Dispositivo confiável removido: " + deviceFingerprint);
+    public void removeTrustedDevice(String email) {
+        Optional<Protetico> userOpt = proteticoService.findByEmail(email);
+        if (!userOpt.isPresent()) {
+            System.out.println("Usuário não encontrado para remover dispositivo: " + email);
+            return;
+        }
+        
+        Protetico user = userOpt.get();
+        user.setTrustedDeviceFingerprint(null);
+        user.setTrustedDeviceToken(null);
+        user.setTrustedDeviceTimestamp(null);
+        
+        proteticoService.save(user);
+        System.out.println("Dispositivo confiável removido para usuário: " + email);
     }
     
     /**
-     * Remove todos os dispositivos confiáveis de um usuário
+     * Remove todos os dispositivos confiáveis de um usuário (mesmo método que removeTrustedDevice neste caso)
      */
     public void removeAllTrustedDevicesForUser(String email) {
-        trustedDevices.entrySet().removeIf(entry -> {
-            if (entry.getValue().equals(email)) {
-                String fingerprint = entry.getKey();
-                deviceTimestamps.remove(fingerprint);
-                deviceTokens.remove(fingerprint);
-                System.out.println("Dispositivo confiável removido para usuário " + email + ": " + fingerprint);
-                return true;
-            }
-            return false;
-        });
+        removeTrustedDevice(email);
     }
     
     /**
@@ -122,43 +146,57 @@ public class TrustedDeviceService {
      */
     public Map<String, Object> getTrustedDevicesInfo(String email) {
         Map<String, Object> info = new HashMap<>();
-        int count = 0;
-        long oldestTimestamp = System.currentTimeMillis();
         
-        for (Map.Entry<String, String> entry : trustedDevices.entrySet()) {
-            if (entry.getValue().equals(email)) {
-                count++;
-                Long timestamp = deviceTimestamps.get(entry.getKey());
-                if (timestamp != null && timestamp < oldestTimestamp) {
-                    oldestTimestamp = timestamp;
-                }
-            }
+        Optional<Protetico> userOpt = proteticoService.findByEmail(email);
+        if (!userOpt.isPresent()) {
+            info.put("count", 0);
+            info.put("oldestDeviceAge", 0);
+            info.put("maxDurationMinutes", trustedDeviceDurationMinutes);
+            return info;
         }
         
-        info.put("count", count);
-        info.put("oldestDeviceAge", count > 0 ? (System.currentTimeMillis() - oldestTimestamp) / (1000 * 60) : 0);
-        info.put("maxDurationMinutes", trustedDeviceDurationMinutes);
+        Protetico user = userOpt.get();
+        Long timestamp = user.getTrustedDeviceTimestamp();
+        
+        if (timestamp != null) {
+            long currentTime = System.currentTimeMillis();
+            long ageInMinutes = (currentTime - timestamp) / (1000 * 60);
+            
+            info.put("count", 1);
+            info.put("oldestDeviceAge", ageInMinutes);
+            info.put("maxDurationMinutes", trustedDeviceDurationMinutes);
+            info.put("isExpired", ageInMinutes > trustedDeviceDurationMinutes);
+        } else {
+            info.put("count", 0);
+            info.put("oldestDeviceAge", 0);
+            info.put("maxDurationMinutes", trustedDeviceDurationMinutes);
+            info.put("isExpired", false);
+        }
         
         return info;
     }
     
     /**
-     * Remove dispositivos expirados
+     * Remove dispositivos expirados de todos os usuários
      */
-    private void cleanExpiredDevices() {
+    public void cleanExpiredDevicesForAllUsers() {
+        // Buscar todos os usuários com dispositivos confiáveis
+        List<Protetico> allUsers = proteticoService.findAll();
         long currentTime = System.currentTimeMillis();
         
-        deviceTimestamps.entrySet().removeIf(entry -> {
-            long elapsedMinutes = (currentTime - entry.getValue()) / (1000 * 60);
-            if (elapsedMinutes > trustedDeviceDurationMinutes) {
-                String fingerprint = entry.getKey();
-                trustedDevices.remove(fingerprint);
-                deviceTokens.remove(fingerprint);
-                System.out.println("Dispositivo confiável expirado removido: " + fingerprint);
-                return true;
+        for (Protetico user : allUsers) {
+            Long timestamp = user.getTrustedDeviceTimestamp();
+            if (timestamp != null) {
+                long elapsedMinutes = (currentTime - timestamp) / (1000 * 60);
+                if (elapsedMinutes > trustedDeviceDurationMinutes) {
+                    user.setTrustedDeviceFingerprint(null);
+                    user.setTrustedDeviceToken(null);
+                    user.setTrustedDeviceTimestamp(null);
+                    proteticoService.save(user);
+                    System.out.println("Dispositivo confiável expirado removido para: " + user.getEmail());
+                }
             }
-            return false;
-        });
+        }
     }
     
     /**

@@ -41,14 +41,14 @@ export const AuthProvider = ({ children }) => {
           setRememberMe(false);
           setSessionDuration('');
         }
-      } catch (error) {
-        console.error('Erro ao verificar autenticação:', error);
+        } catch (error) {
+          console.error('Erro ao verificar autenticação:', error);
         setIsAuthenticated(false);
         setUser(null);
         setRememberMe(false);
         setSessionDuration('');
       } finally {
-        setLoading(false);
+      setLoading(false);
       }
     };
 

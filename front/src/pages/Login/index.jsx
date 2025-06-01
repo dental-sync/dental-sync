@@ -37,21 +37,21 @@ const LoginPage = () => {
         }
         
         // Login normal sem 2FA
-        const userData = {
-          email: formData.email,
+      const userData = {
+        email: formData.email,
           ...response.data.user,
           rememberMe: response.data.rememberMe,
           sessionDuration: response.data.sessionDuration
-        };
-        
-        login(userData);
+      };
+      
+      login(userData);
         
         // Mostrar duração da sessão se "Lembrar de mim" estiver marcado
         if (formData.rememberMe) {
           console.log(`Sessão configurada para: ${response.data.sessionDuration}`);
         }
         
-        navigate('/protetico');
+      navigate('/protetico');
       } else {
         alert(response.data.message || 'Erro no login');
       }

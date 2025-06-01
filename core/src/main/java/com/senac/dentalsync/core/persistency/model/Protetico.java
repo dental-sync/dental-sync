@@ -54,6 +54,26 @@ public class Protetico extends BaseEntity {
     @Column(name = "two_factor_enabled")
     private Boolean twoFactorEnabled = false;
     
+    // Campos para dispositivo confiável
+    @Column(name = "trusted_device_fingerprint")
+    private String trustedDeviceFingerprint;
+    
+    @Column(name = "trusted_device_token")
+    private String trustedDeviceToken;
+    
+    @Column(name = "trusted_device_timestamp")
+    private Long trustedDeviceTimestamp;
+    
+    // Campos para "Lembrar de mim" (login persistente)
+    @Column(name = "remember_me_token")
+    private String rememberMeToken;
+    
+    @Column(name = "remember_me_timestamp")
+    private Long rememberMeTimestamp;
+    
+    @Column(name = "remember_me_duration_days")
+    private Integer rememberMeDurationDays;
+    
     // Getters e Setters para 2FA (adicionados manualmente)
     public String getTwoFactorSecret() {
         return twoFactorSecret;
@@ -104,5 +124,55 @@ public class Protetico extends BaseEntity {
     
     public Laboratorio getLaboratorio() {
         return laboratorio;
+    }
+    
+    // Getters e Setters para dispositivo confiável
+    public String getTrustedDeviceFingerprint() {
+        return trustedDeviceFingerprint;
+    }
+    
+    public void setTrustedDeviceFingerprint(String trustedDeviceFingerprint) {
+        this.trustedDeviceFingerprint = trustedDeviceFingerprint;
+    }
+    
+    public String getTrustedDeviceToken() {
+        return trustedDeviceToken;
+    }
+    
+    public void setTrustedDeviceToken(String trustedDeviceToken) {
+        this.trustedDeviceToken = trustedDeviceToken;
+    }
+    
+    public Long getTrustedDeviceTimestamp() {
+        return trustedDeviceTimestamp;
+    }
+    
+    public void setTrustedDeviceTimestamp(Long trustedDeviceTimestamp) {
+        this.trustedDeviceTimestamp = trustedDeviceTimestamp;
+    }
+    
+    // Getters e Setters para "Lembrar de mim"
+    public String getRememberMeToken() {
+        return rememberMeToken;
+    }
+    
+    public void setRememberMeToken(String rememberMeToken) {
+        this.rememberMeToken = rememberMeToken;
+    }
+    
+    public Long getRememberMeTimestamp() {
+        return rememberMeTimestamp;
+    }
+    
+    public void setRememberMeTimestamp(Long rememberMeTimestamp) {
+        this.rememberMeTimestamp = rememberMeTimestamp;
+    }
+    
+    public Integer getRememberMeDurationDays() {
+        return rememberMeDurationDays;
+    }
+    
+    public void setRememberMeDurationDays(Integer rememberMeDurationDays) {
+        this.rememberMeDurationDays = rememberMeDurationDays;
     }
 } 

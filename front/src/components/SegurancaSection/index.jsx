@@ -78,7 +78,7 @@ const SegurancaSection = () => {
       setFieldErrors(errors);
       return;
     }
-
+    
     setIsLoading(true);
     setFieldErrors({});
 
@@ -102,13 +102,13 @@ const SegurancaSection = () => {
           pauseOnHover: true,
           draggable: true
         });
-        
+    
         // Limpar formulário
-        setFormData({
-          senhaAtual: '',
-          novaSenha: '',
-          confirmarSenha: ''
-        });
+    setFormData({
+      senhaAtual: '',
+      novaSenha: '',
+      confirmarSenha: ''
+    });
       } else {
         // Erro específico do backend - tratar como erro de campo se for senha incorreta
         if (response.data.message && response.data.message.includes('Senha atual incorreta')) {
@@ -241,46 +241,46 @@ const SegurancaSection = () => {
       
       {/* Seção Alterar Senha */}
       <div className="security-subsection">
-        <h3 className="subsection-title">Alterar Senha</h3>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="senhaAtual">Senha Atual</label>
-            <PasswordInput
-              id="senhaAtual"
-              name="senhaAtual"
-              value={formData.senhaAtual}
-              onChange={handleChange}
+      <h3 className="subsection-title">Alterar Senha</h3>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="senhaAtual">Senha Atual</label>
+          <PasswordInput
+            id="senhaAtual"
+            name="senhaAtual"
+            value={formData.senhaAtual}
+            onChange={handleChange}
               disabled={isLoading}
-            />
+          />
             {fieldErrors.senhaAtual && (
               <span className="field-error">{fieldErrors.senhaAtual}</span>
             )}
-          </div>
-          
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="novaSenha">Nova Senha</label>
-              <PasswordInput
-                id="novaSenha"
-                name="novaSenha"
-                value={formData.novaSenha}
-                onChange={handleChange}
+        </div>
+        
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="novaSenha">Nova Senha</label>
+            <PasswordInput
+              id="novaSenha"
+              name="novaSenha"
+              value={formData.novaSenha}
+              onChange={handleChange}
                 disabled={isLoading}
-              />
+            />
               {fieldErrors.novaSenha && (
                 <span className="field-error">{fieldErrors.novaSenha}</span>
               )}
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="confirmarSenha">Confirmar Nova Senha</label>
-              <PasswordInput
-                id="confirmarSenha"
-                name="confirmarSenha"
-                value={formData.confirmarSenha}
-                onChange={handleChange}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="confirmarSenha">Confirmar Nova Senha</label>
+            <PasswordInput
+              id="confirmarSenha"
+              name="confirmarSenha"
+              value={formData.confirmarSenha}
+              onChange={handleChange}
                 disabled={isLoading}
-              />
+            />
               {fieldErrors.confirmarSenha && (
                 <span className="field-error">{fieldErrors.confirmarSenha}</span>
               )}
@@ -297,8 +297,8 @@ const SegurancaSection = () => {
             </button>
           </div>
         </form>
-      </div>
-
+        </div>
+        
       {/* Seção 2FA */}
       <div className="security-subsection">
         <h3 className="subsection-title">Autenticação de Dois Fatores (2FA)</h3>
@@ -400,7 +400,7 @@ const SegurancaSection = () => {
                   disabled={twoFactorLoading || totpCode.length !== 6}
                 >
                   {twoFactorLoading ? 'Desativando...' : 'Desativar 2FA'}
-                </button>
+          </button>
               </div>
             </div>
           )}

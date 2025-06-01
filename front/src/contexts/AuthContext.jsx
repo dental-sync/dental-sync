@@ -16,34 +16,37 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [sessionDuration, setSessionDuration] = useState('');
 
   // Verificar se há sessão ativa ao carregar a aplicação
   useEffect(() => {
-    console.log('AuthContext useEffect executado - isLoggingOut:', isLoggingOut);
-    
     // Não verificar autenticação se estiver fazendo logout
     if (isLoggingOut) {
-      console.log('Pulando verificação - logout em andamento');
       return;
     }
 
     const checkAuth = async () => {
-      console.log('Verificando autenticação...');
       try {
         const response = await api.get('/auth/check');
-        console.log('Resposta auth/check:', response.data);
         
         if (response.data.success && response.data.authenticated) {
           setIsAuthenticated(true);
           setUser(response.data.user);
+          setRememberMe(response.data.rememberMe || false);
+          setSessionDuration(response.data.sessionDuration || '');
         } else {
           setIsAuthenticated(false);
           setUser(null);
+          setRememberMe(false);
+          setSessionDuration('');
         }
       } catch (error) {
         console.error('Erro ao verificar autenticação:', error);
         setIsAuthenticated(false);
         setUser(null);
+        setRememberMe(false);
+        setSessionDuration('');
       } finally {
         setLoading(false);
       }
@@ -55,6 +58,8 @@ export const AuthProvider = ({ children }) => {
   const login = (userData) => {
     setIsAuthenticated(true);
     setUser(userData);
+    setRememberMe(userData.rememberMe || false);
+    setSessionDuration(userData.sessionDuration || '');
     setIsLoggingOut(false);
     // Não salvamos mais no localStorage - cookies são gerenciados automaticamente
   };
@@ -73,6 +78,8 @@ export const AuthProvider = ({ children }) => {
     // Limpar estado local sempre
     setIsAuthenticated(false);
     setUser(null);
+    setRememberMe(false);
+    setSessionDuration('');
     setLoading(false);
     
     // Usar setTimeout para garantir que o estado foi limpo antes do redirecionamento
@@ -94,6 +101,8 @@ export const AuthProvider = ({ children }) => {
       if (response.data.success && response.data.authenticated) {
         const userInfo = response.data.user;
         setUser(userInfo);
+        setRememberMe(response.data.rememberMe || false);
+        setSessionDuration(response.data.sessionDuration || '');
         return userInfo;
       } else {
         throw new Error('Usuário não autenticado');
@@ -103,6 +112,8 @@ export const AuthProvider = ({ children }) => {
       if (!isLoggingOut) {
         setIsAuthenticated(false);
         setUser(null);
+        setRememberMe(false);
+        setSessionDuration('');
       }
       throw error;
     }
@@ -115,7 +126,9 @@ export const AuthProvider = ({ children }) => {
     logout,
     loading,
     refreshUserData,
-    isAdmin: user?.isAdmin || false
+    isAdmin: user?.isAdmin || false,
+    rememberMe,
+    sessionDuration
   };
 
   return (

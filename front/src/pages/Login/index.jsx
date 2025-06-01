@@ -16,6 +16,7 @@ const LoginPage = () => {
       const params = new URLSearchParams();
       params.append('username', formData.email);
       params.append('password', formData.password);
+      params.append('rememberMe', formData.rememberMe);
       
       const response = await api.post('/login', params, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
@@ -25,10 +26,18 @@ const LoginPage = () => {
       if (response.data.success) {
         const userData = {
           email: formData.email,
-          ...response.data.user
+          ...response.data.user,
+          rememberMe: response.data.rememberMe,
+          sessionDuration: response.data.sessionDuration
         };
         
         login(userData);
+        
+        // Mostrar duração da sessão se "Lembrar de mim" estiver marcado
+        if (formData.rememberMe) {
+          console.log(`Sessão configurada para: ${response.data.sessionDuration}`);
+        }
+        
         navigate('/protetico');
       } else {
         alert(response.data.message || 'Erro no login');

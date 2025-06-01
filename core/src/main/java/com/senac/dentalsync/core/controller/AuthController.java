@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.service.EmailService;
 import com.senac.dentalsync.core.service.ProteticoService;
+import com.senac.dentalsync.core.service.TrustedDeviceService;
 import com.senac.dentalsync.core.service.TwoFactorService;
 
 import jakarta.servlet.http.Cookie;
@@ -45,6 +46,9 @@ public class AuthController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private TrustedDeviceService trustedDeviceService;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(
@@ -90,13 +94,29 @@ public class AuthController {
             // Se chegou até aqui, a autenticação foi bem-sucedida
             // Verificar se o usuário tem 2FA ativado
             if (protetico.getTwoFactorEnabled() != null && protetico.getTwoFactorEnabled()) {
-                System.out.println("Usuário tem 2FA ativado, criando sessão temporária");
+                System.out.println("Usuário tem 2FA ativado");
+                
+                // Gerar fingerprint do dispositivo
+                String userAgent = request.getHeader("User-Agent");
+                String ipAddress = request.getRemoteAddr();
+                String deviceFingerprint = trustedDeviceService.generateDeviceFingerprint(userAgent, ipAddress, null);
+                
+                System.out.println("Device fingerprint: " + deviceFingerprint);
+                
+                // Verificar se este dispositivo é confiável
+                if (trustedDeviceService.isTrustedDevice(username, deviceFingerprint)) {
+                    System.out.println("Dispositivo confiável encontrado - pulando 2FA");
+                    return completeLogin(protetico, authentication, rememberMe, request, response);
+                }
+                
+                System.out.println("Dispositivo não confiável - exigindo 2FA");
                 
                 // Criar sessão temporária para 2FA
                 HttpSession session = request.getSession(true);
                 session.setAttribute("TEMP_AUTH", authentication);
                 session.setAttribute("TEMP_USER", protetico);
                 session.setAttribute("TEMP_REMEMBER_ME", rememberMe);
+                session.setAttribute("TEMP_DEVICE_FINGERPRINT", deviceFingerprint);
                 session.setMaxInactiveInterval(5 * 60); // 5 minutos para completar 2FA
                 
                 Map<String, Object> response2 = new HashMap<>();
@@ -126,6 +146,7 @@ public class AuthController {
     @PostMapping("/login/verify-2fa")
     public ResponseEntity<Map<String, Object>> verifyTwoFactor(
             @RequestParam int totpCode,
+            @RequestParam(defaultValue = "false") boolean trustThisDevice,
             HttpServletRequest request,
             HttpServletResponse response) {
         
@@ -141,6 +162,7 @@ public class AuthController {
             Authentication tempAuth = (Authentication) session.getAttribute("TEMP_AUTH");
             Protetico tempUser = (Protetico) session.getAttribute("TEMP_USER");
             Boolean rememberMe = (Boolean) session.getAttribute("TEMP_REMEMBER_ME");
+            String deviceFingerprint = (String) session.getAttribute("TEMP_DEVICE_FINGERPRINT");
             
             if (tempAuth == null || tempUser == null) {
                 Map<String, Object> errorResponse = new HashMap<>();
@@ -148,6 +170,9 @@ public class AuthController {
                 errorResponse.put("message", "Dados de autenticação não encontrados. Faça login novamente.");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
             }
+            
+            System.out.println("Verificando código 2FA para usuário: " + tempUser.getEmail());
+            System.out.println("Lembrar dispositivo: " + trustThisDevice);
             
             // Verificar código TOTP
             if (!twoFactorService.validateTotpCode(tempUser.getTwoFactorSecret(), totpCode)) {
@@ -157,15 +182,26 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(errorResponse);
             }
             
+            System.out.println("Código 2FA válido");
+            
+            // Se usuário marcou "Lembrar deste dispositivo", registrar dispositivo
+            if (trustThisDevice && deviceFingerprint != null) {
+                String deviceToken = trustedDeviceService.generateTrustedDeviceToken(tempUser.getEmail(), deviceFingerprint);
+                System.out.println("Dispositivo registrado como confiável: " + deviceToken);
+            }
+            
             // Limpar dados temporários
             session.removeAttribute("TEMP_AUTH");
             session.removeAttribute("TEMP_USER");
             session.removeAttribute("TEMP_REMEMBER_ME");
+            session.removeAttribute("TEMP_DEVICE_FINGERPRINT");
             
             // Completar login
             return completeLogin(tempUser, tempAuth, rememberMe != null ? rememberMe : false, request, response);
             
         } catch (Exception e) {
+            System.err.println("Erro na verificação 2FA: " + e.getMessage());
+            e.printStackTrace();
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("message", "Erro interno do servidor");

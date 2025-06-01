@@ -11,6 +11,7 @@ const TwoFactorForm = ({ onSubmit, onBack, email }) => {
   const [recoveryCode, setRecoveryCode] = useState('');
   const [isRecoveryLoading, setIsRecoveryLoading] = useState(false);
   const [recoveryCodeSent, setRecoveryCodeSent] = useState(false);
+  const [trustThisDevice, setTrustThisDevice] = useState(false);
   const inputRefs = useRef([]);
 
   useEffect(() => {
@@ -76,7 +77,7 @@ const TwoFactorForm = ({ onSubmit, onBack, email }) => {
     setError('');
 
     try {
-      await onSubmit(parseInt(fullCode));
+      await onSubmit(parseInt(fullCode), trustThisDevice);
     } catch (error) {
       setError(error.message || 'Código inválido. Tente novamente.');
       // Limpar o código em caso de erro
@@ -291,6 +292,24 @@ const TwoFactorForm = ({ onSubmit, onBack, email }) => {
       </div>
 
       {error && <div className="twofactor-error">{error}</div>}
+
+      <div className="trust-device-section">
+        <label className="trust-device-label">
+          <input
+            type="checkbox"
+            checked={trustThisDevice}
+            onChange={(e) => setTrustThisDevice(e.target.checked)}
+            disabled={isLoading}
+            className="trust-device-checkbox"
+          />
+          <span className="trust-device-text">
+            Lembrar deste dispositivo por 10 minutos
+          </span>
+        </label>
+        <p className="trust-device-hint">
+          Não será necessário digitar o código 2FA neste dispositivo durante o período especificado
+        </p>
+      </div>
 
       <div className="twofactor-actions">
         <button

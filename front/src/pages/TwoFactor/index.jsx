@@ -22,10 +22,11 @@ const TwoFactorPage = () => {
     }
   }, [email, navigate]);
 
-  const handleVerifyCode = async (totpCode) => {
+  const handleVerifyCode = async (totpCode, trustThisDevice = false) => {
     try {
       const params = new URLSearchParams();
       params.append('totpCode', totpCode);
+      params.append('trustThisDevice', trustThisDevice);
       
       const response = await api.post('/login/verify-2fa', params, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
@@ -41,9 +42,14 @@ const TwoFactorPage = () => {
         
         login(userData);
         
-        toast.success('Login realizado com sucesso!', {
+        let successMessage = 'Login realizado com sucesso!';
+        if (trustThisDevice) {
+          successMessage += ' Dispositivo será lembrado por 10 minutos.';
+        }
+        
+        toast.success(successMessage, {
           position: "top-right",
-          autoClose: 3000
+          autoClose: 4000
         });
         
         navigate('/protetico');

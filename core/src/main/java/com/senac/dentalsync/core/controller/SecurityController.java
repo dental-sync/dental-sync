@@ -2,6 +2,7 @@ package com.senac.dentalsync.core.controller;
 
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.service.ProteticoService;
+import com.senac.dentalsync.core.service.TrustedDeviceService;
 import com.senac.dentalsync.core.service.TwoFactorService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -35,6 +36,9 @@ public class SecurityController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private TrustedDeviceService trustedDeviceService;
 
     /**
      * Altera a senha do usuário
@@ -298,6 +302,80 @@ public class SecurityController {
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "Erro ao verificar status 2FA");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * Obtém informações sobre dispositivos confiáveis
+     */
+    @GetMapping("/trusted-devices")
+    public ResponseEntity<Map<String, Object>> getTrustedDevicesInfo(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            HttpSession session = request.getSession(false);
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            
+            if (session == null || auth == null || !auth.isAuthenticated()) {
+                response.put("success", false);
+                response.put("message", "Usuário não autenticado");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            Protetico currentUser = (Protetico) session.getAttribute("USER_DATA");
+            if (currentUser == null) {
+                response.put("success", false);
+                response.put("message", "Dados do usuário não encontrados");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            Map<String, Object> deviceInfo = trustedDeviceService.getTrustedDevicesInfo(currentUser.getEmail());
+            
+            response.put("success", true);
+            response.put("trustedDevices", deviceInfo);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Erro ao obter informações de dispositivos");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * Remove todos os dispositivos confiáveis do usuário
+     */
+    @PostMapping("/trusted-devices/remove-all")
+    public ResponseEntity<Map<String, Object>> removeAllTrustedDevices(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            HttpSession session = request.getSession(false);
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            
+            if (session == null || auth == null || !auth.isAuthenticated()) {
+                response.put("success", false);
+                response.put("message", "Usuário não autenticado");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            Protetico currentUser = (Protetico) session.getAttribute("USER_DATA");
+            if (currentUser == null) {
+                response.put("success", false);
+                response.put("message", "Dados do usuário não encontrados");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            trustedDeviceService.removeAllTrustedDevicesForUser(currentUser.getEmail());
+            
+            response.put("success", true);
+            response.put("message", "Todos os dispositivos confiáveis foram removidos");
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Erro ao remover dispositivos confiáveis");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

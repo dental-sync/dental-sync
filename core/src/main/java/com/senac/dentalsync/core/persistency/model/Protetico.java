@@ -36,4 +36,8 @@ public class Protetico extends BaseEntity {
     @Email(message = "Email inválido")
     @NotBlank(message = "O email é obrigatório")
     private String email;
+
+    @NotBlank(message = "A senha é obrigatória")
+    @Column(nullable = false)
+    private String senha;
 } 

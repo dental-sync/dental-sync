@@ -7,6 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.context.ApplicationContext;
 
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.model.Usuario;
@@ -14,13 +20,16 @@ import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.ProteticoRepository;
 
 @Service
-public class ProteticoService extends BaseService<Protetico, Long> {
+public class ProteticoService extends BaseService<Protetico, Long> implements UserDetailsService {
 
     @Autowired
     private ProteticoRepository proteticoRepository;
     
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Override
     protected BaseRepository<Protetico, Long> getRepository() {
@@ -35,6 +44,10 @@ public class ProteticoService extends BaseService<Protetico, Long> {
     @Override
     public Protetico save(Protetico protetico) {
         verificarDuplicidade(protetico);
+        PasswordEncoder passwordEncoder = applicationContext.getBean(PasswordEncoder.class);
+        if (protetico.getId() == null || isSenhaAlterada(protetico, passwordEncoder)) {
+            protetico.setSenha(passwordEncoder.encode(protetico.getSenha()));
+        }
         return super.save(protetico);
     }
     
@@ -109,5 +122,22 @@ public class ProteticoService extends BaseService<Protetico, Long> {
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao excluir protético");
         }
+    }
+
+    private boolean isSenhaAlterada(Protetico protetico, PasswordEncoder passwordEncoder) {
+        if (protetico.getId() == null) return true;
+        Protetico existente = findById(protetico.getId()).orElse(null);
+        return existente == null || !passwordEncoder.matches(protetico.getSenha(), existente.getSenha());
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Protetico protetico = findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("Protético não encontrado com o email: " + email));
+        return User.builder()
+                .username(protetico.getEmail())
+                .password(protetico.getSenha())
+                .roles(protetico.getIsAdmin() != null && protetico.getIsAdmin() ? "ADMIN" : "USER")
+                .build();
     }
 } 

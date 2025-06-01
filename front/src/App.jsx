@@ -30,6 +30,8 @@ import ForgotPasswordPage from './pages/Login/ForgotPassword'
 import ResetPasswordPage from './pages/Login/ResetPassword'
 import PlanosPage from './pages/Planos'
 import './App.css'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
 
 const ProtectedLayout = ({ children }) => (
   <>
@@ -40,46 +42,54 @@ const ProtectedLayout = ({ children }) => (
   </>
 );
 
+// Componente para redirecionar se já estiver logado
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Navigate to="/protetico" replace /> : children;
+};
+
 function App() {
   return (
-    <Router>
-      <div className="app">
-        <Routes>
-          {/* Rotas públicas */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/registre-se" element={<RegisterPage />} />
-          <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
-          <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
-          <Route path="/planos" element={<PlanosPage />} />
-          
-          {/* Rotas protegidas */}
-          <Route path="/protetico" element={<ProtectedLayout><ProteticoPage /></ProtectedLayout>} />
-          <Route path="/protetico/cadastro" element={<ProtectedLayout><CadastroProtetico /></ProtectedLayout>} />
-          <Route path="/proteticos/historico/:id" element={<ProtectedLayout><HistoricoProtetico /></ProtectedLayout>} />
-          <Route path="/proteticos/editar/:id" element={<ProtectedLayout><EditarProtetico /></ProtectedLayout>} />
-          <Route path="/paciente" element={<ProtectedLayout><PacientePage /></ProtectedLayout>} />
-          <Route path="/paciente/cadastro" element={<ProtectedLayout><CadastroPaciente /></ProtectedLayout>} />
-          <Route path="/paciente/historico/:id" element={<ProtectedLayout><HistoricoPaciente /></ProtectedLayout>} />
-          <Route path="/paciente/editar/:id" element={<ProtectedLayout><EditarPaciente /></ProtectedLayout>} />
-          <Route path="/dentista" element={<ProtectedLayout><DentistaPage /></ProtectedLayout>} />
-          <Route path="/dentista/cadastro" element={<ProtectedLayout><CadastroDentista /></ProtectedLayout>} />
-          <Route path="/dentista/editar/:id" element={<ProtectedLayout><EditarDentista /></ProtectedLayout>} />
-          <Route path="/clinica" element={<ProtectedLayout><ClinicaPage /></ProtectedLayout>} />
-          <Route path="/clinica/cadastro" element={<ProtectedLayout><CadastroClinica /></ProtectedLayout>} />
-          <Route path="/clinica/editar/:id" element={<ProtectedLayout><EditarClinica /></ProtectedLayout>} />
-          <Route path="/material" element={<ProtectedLayout><MaterialPage /></ProtectedLayout>} />
-          <Route path="/material/cadastro" element={<ProtectedLayout><CadastroMaterial /></ProtectedLayout>} />
-          <Route path="/material/editar/:id" element={<ProtectedLayout><EditarMaterial /></ProtectedLayout>} />
-          <Route path="/servico" element={<ProtectedLayout><ServicoPage /></ProtectedLayout>} />
-          <Route path="/servico/cadastro" element={<ProtectedLayout><CadastroServico /></ProtectedLayout>} />
-          <Route path="/servico/editar/:id" element={<ProtectedLayout><EditarServico /></ProtectedLayout>} />
-          <Route path="/configuracao" element={<ProtectedLayout><Configuracao /></ProtectedLayout>} />
-          <Route path="/relatorios" element={<ProtectedLayout><Relatorios /></ProtectedLayout>} />
-        </Routes>
-        <ToastContainer position="top-right" autoClose={3000} />
-      </div>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <div className="app">
+          <Routes>
+            {/* Rotas públicas */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+            <Route path="/registre-se" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+            <Route path="/esqueci-senha" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+            <Route path="/redefinir-senha" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
+            <Route path="/planos" element={<PlanosPage />} />
+            
+            {/* Rotas protegidas */}
+            <Route path="/protetico" element={<ProtectedRoute><ProtectedLayout><ProteticoPage /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/protetico/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroProtetico /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/proteticos/historico/:id" element={<ProtectedRoute><ProtectedLayout><HistoricoProtetico /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/proteticos/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarProtetico /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/paciente" element={<ProtectedRoute><ProtectedLayout><PacientePage /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/paciente/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroPaciente /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/paciente/historico/:id" element={<ProtectedRoute><ProtectedLayout><HistoricoPaciente /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/paciente/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarPaciente /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/dentista" element={<ProtectedRoute><ProtectedLayout><DentistaPage /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/dentista/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroDentista /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/dentista/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarDentista /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/clinica" element={<ProtectedRoute><ProtectedLayout><ClinicaPage /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/clinica/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroClinica /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/clinica/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarClinica /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/material" element={<ProtectedRoute><ProtectedLayout><MaterialPage /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/material/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroMaterial /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/material/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarMaterial /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/servico" element={<ProtectedRoute><ProtectedLayout><ServicoPage /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/servico/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroServico /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/servico/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarServico /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/configuracao" element={<ProtectedRoute><ProtectedLayout><Configuracao /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/relatorios" element={<ProtectedRoute><ProtectedLayout><Relatorios /></ProtectedLayout></ProtectedRoute>} />
+          </Routes>
+          <ToastContainer position="top-right" autoClose={3000} />
+        </div>
+      </Router>
+    </AuthProvider>
   )
 }
 

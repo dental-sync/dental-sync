@@ -14,7 +14,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
   // Chama onChange sempre que formData mudar (mas não no render inicial)
   useEffect(() => {
     if (onChange) onChange(formData);
-  }, [formData]);
+  }, [formData, onChange]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

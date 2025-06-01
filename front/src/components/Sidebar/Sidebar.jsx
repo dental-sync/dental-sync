@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 import Logo from './Logo';
 import NavItem from './NavItem';
@@ -16,9 +16,12 @@ import {
   ConfiguracaoIcon,
   ClinicaIcon
 } from './icons';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [activeItem, setActiveItem] = useState(() => {
     const path = location.pathname;
     if (path.includes('kanban')) return 'kanban';
@@ -52,7 +55,8 @@ const Sidebar = () => {
   };
 
   const handleLogout = () => {
-    console.log('Logout clicked');
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -73,8 +77,8 @@ const Sidebar = () => {
         ))}
       </div>
       <UserSection
-        userName="Usuário demo"
-        userEmail="usuario@dental.com"
+        userName={user?.email || "Usuário"}
+        userEmail={user?.email || "usuario@dental.com"}
         onLogout={handleLogout}
       />
     </div>

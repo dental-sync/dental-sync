@@ -30,6 +30,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
   
   // Estado para controlar quais dentes estão selecionados no odontograma
   const [dentesSelecionados, setDentesSelecionados] = useState([]);
+  const [servicoSelecionado, setServicoSelecionado] = useState(null);
   
   // Efeito para carregar dados de referência ao montar o componente
   useEffect(() => {
@@ -41,10 +42,10 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
           proteticosResponse, 
           servicosResponse
         ] = await Promise.all([
-          axios.get('http://localhost:8080/pacientes'),
+          axios.get('http://localhost:8080/paciente'),
           axios.get('http://localhost:8080/dentistas'),
           axios.get('http://localhost:8080/proteticos'),
-          axios.get('http://localhost:8080/servicos')
+          axios.get('http://localhost:8080/servico')
         ]);
         
         setClientes(clientesResponse.data);
@@ -84,6 +85,10 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
           });
           
           setDentesSelecionados(pedido.odontograma || []);
+          
+          if (pedido.servico) {
+            setServicoSelecionado(pedido.servico);
+          }
         } catch (err) {
           console.error('Erro ao carregar pedido:', err);
           setError('Não foi possível carregar os dados do pedido.');
@@ -102,6 +107,11 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
       ...formData,
       [name]: value
     });
+    
+    if (name === 'servico' && value) {
+      const servico = servicos.find(s => s.id === parseInt(value));
+      setServicoSelecionado(servico);
+    }
   };
   
   const toggleDente = (numero) => {
@@ -152,8 +162,11 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
     }
   };
   
-  // Gerar números dos dentes para o odontograma (1-32)
-  const numerosDentes = Array.from({ length: 32 }, (_, i) => i + 1);
+  // Organizar dentes em apenas 2 linhas
+  const dentesSuperiores = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
+  const dentesInferiores = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
+  
+  const valorTotal = servicoSelecionado ? servicoSelecionado.preco || 0 : 0;
   
   if (loadingData) {
     return <div className="loading">Carregando dados do pedido...</div>;
@@ -161,167 +174,212 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
   
   return (
     <div className="pedido-form-container">
-      <form className="pedido-form" onSubmit={handleSubmit}>
+      <div className="pedido-header">
+        <button className="back-button" onClick={() => navigate('/pedidos')}>
+          ← Cadastro Pedido
+        </button>
+        <button type="button" className="btn-microfone">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="pedido-form" className="pedido-form" onSubmit={handleSubmit}>
         {error && <div className="error-message">{error}</div>}
         
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="cliente">Cliente*</label>
-            <select
-              id="cliente"
-              name="cliente"
-              value={formData.cliente}
-              onChange={handleInputChange}
-              required
-              className="form-select"
-            >
-              <option value="">Selecione um cliente</option>
-              {clientes.map(cliente => (
-                <option key={cliente.id} value={cliente.id}>
-                  {cliente.nome}
-                </option>
-              ))}
-            </select>
+        <div className="form-content">
+          {/* Layout principal: Inputs à esquerda, Odontograma e Observações à direita */}
+          <div className="main-layout">
+            {/* Coluna Esquerda - Campos de Input */}
+            <div className="inputs-container">
+              <div className="form-group">
+                <label htmlFor="cliente">Cliente</label>
+                <select
+                  id="cliente"
+                  name="cliente"
+                  value={formData.cliente}
+                  onChange={handleInputChange}
+                  required
+                  className="form-select"
+                >
+                  <option value="">Selecionar cliente</option>
+                  {clientes.map(cliente => (
+                    <option key={cliente.id} value={cliente.id}>
+                      {cliente.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="dataEntrega">Data Entrega</label>
+                <input
+                  type="date"
+                  id="dataEntrega"
+                  name="dataEntrega"
+                  value={formData.dataEntrega}
+                  onChange={handleInputChange}
+                  required
+                  className="form-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="dentista">Dentista</label>
+                <select
+                  id="dentista"
+                  name="dentista"
+                  value={formData.dentista}
+                  onChange={handleInputChange}
+                  required
+                  className="form-select"
+                >
+                  <option value="">Selecionar dentista</option>
+                  {dentistas.map(dentista => (
+                    <option key={dentista.id} value={dentista.id}>
+                      {dentista.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="protetico">Protético</label>
+                <select
+                  id="protetico"
+                  name="protetico"
+                  value={formData.protetico}
+                  onChange={handleInputChange}
+                  required
+                  className="form-select"
+                >
+                  <option value="">Selecionar protético</option>
+                  {proteticos.map(protetico => (
+                    <option key={protetico.id} value={protetico.id}>
+                      {protetico.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="servico">Serviço</label>
+                <select
+                  id="servico"
+                  name="servico"
+                  value={formData.servico}
+                  onChange={handleInputChange}
+                  required
+                  className="form-select"
+                >
+                  <option value="">Selecionar serviços</option>
+                  {servicos.map(servico => (
+                    <option key={servico.id} value={servico.id}>
+                      {servico.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="prioridade">Prioridade</label>
+                <select
+                  id="prioridade"
+                  name="prioridade"
+                  value={formData.prioridade}
+                  onChange={handleInputChange}
+                  required
+                  className="form-select"
+                >
+                  <option value="">Selecione a prioridade</option>
+                  <option value="BAIXA">Baixa</option>
+                  <option value="MEDIA">Média</option>
+                  <option value="ALTA">Alta</option>
+                  <option value="URGENTE">Urgente</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Coluna Direita - Odontograma e Observações */}
+            <div className="right-column">
+              {/* Odontograma */}
+              <div className="odontograma-container">
+                <h3>Odontograma</h3>
+                <div className="odontograma">
+                  <div className="dentes-row">
+                    {dentesSuperiores.map(numero => (
+                      <button
+                        key={numero}
+                        type="button"
+                        className={`dente ${dentesSelecionados.includes(numero) ? 'selecionado' : ''}`}
+                        onClick={() => toggleDente(numero)}
+                      >
+                        {numero}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="dentes-row">
+                    {dentesInferiores.map(numero => (
+                      <button
+                        key={numero}
+                        type="button"
+                        className={`dente ${dentesSelecionados.includes(numero) ? 'selecionado' : ''}`}
+                        onClick={() => toggleDente(numero)}
+                      >
+                        {numero}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Observações */}
+              <div className="observacoes-container">
+                <h3>Observações</h3>
+                <textarea
+                  id="observacao"
+                  name="observacao"
+                  value={formData.observacao}
+                  onChange={handleInputChange}
+                  className="form-textarea"
+                  rows="8"
+                  placeholder="Adicione observações ou instruções especiais para este pedido"
+                ></textarea>
+              </div>
+            </div>
           </div>
-          
-          <div className="form-group">
-            <label htmlFor="dentista">Dentista*</label>
-            <select
-              id="dentista"
-              name="dentista"
-              value={formData.dentista}
-              onChange={handleInputChange}
-              required
-              className="form-select"
-            >
-              <option value="">Selecione um dentista</option>
-              {dentistas.map(dentista => (
-                <option key={dentista.id} value={dentista.id}>
-                  {dentista.nome}
-                </option>
-              ))}
-            </select>
+
+          {/* Contêiner de Serviços */}
+          <div className="servicos-container">
+            <h3>Serviços Selecionados</h3>
+            <div className="servicos-content">
+              {servicoSelecionado ? (
+                <div className="servico-item">
+                  <span>{servicoSelecionado.nome}</span>
+                  <span>R$ {(servicoSelecionado.preco || 0).toFixed(2).replace('.', ',')}</span>
+                </div>
+              ) : (
+                <p className="nenhum-servico">Nenhum serviço selecionado</p>
+              )}
+            </div>
           </div>
-        </div>
-        
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="protetico">Protético*</label>
-            <select
-              id="protetico"
-              name="protetico"
-              value={formData.protetico}
-              onChange={handleInputChange}
-              required
-              className="form-select"
-            >
-              <option value="">Selecione um protético</option>
-              {proteticos.map(protetico => (
-                <option key={protetico.id} value={protetico.id}>
-                  {protetico.nome}
-                </option>
-              ))}
-            </select>
+
+          {/* Contêiner do Valor Total */}
+          <div className="valor-container">
+            <div className="valor-total">
+              <span>Valor total: <strong>R$ {valorTotal.toFixed(2).replace('.', ',')}</strong></span>
+            </div>
           </div>
-          
-          <div className="form-group">
-            <label htmlFor="servico">Serviço*</label>
-            <select
-              id="servico"
-              name="servico"
-              value={formData.servico}
-              onChange={handleInputChange}
-              required
-              className="form-select"
-            >
-              <option value="">Selecione um serviço</option>
-              {servicos.map(servico => (
-                <option key={servico.id} value={servico.id}>
-                  {servico.nome}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="dataEntrega">Data de Entrega*</label>
-            <input
-              type="date"
-              id="dataEntrega"
-              name="dataEntrega"
-              value={formData.dataEntrega}
-              onChange={handleInputChange}
-              required
-              className="form-input"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="prioridade">Prioridade*</label>
-            <select
-              id="prioridade"
-              name="prioridade"
-              value={formData.prioridade}
-              onChange={handleInputChange}
-              required
-              className="form-select"
-            >
-              <option value="BAIXA">Baixa</option>
-              <option value="MEDIA">Média</option>
-              <option value="ALTA">Alta</option>
-              <option value="URGENTE">Urgente</option>
-            </select>
-          </div>
-        </div>
-        
-        <div className="form-group">
-          <label>Odontograma (Selecione os dentes)</label>
-          <div className="odontograma">
-            {numerosDentes.map(numero => (
-              <button
-                key={numero}
-                type="button"
-                className={`dente ${dentesSelecionados.includes(numero) ? 'selecionado' : ''}`}
-                onClick={() => toggleDente(numero)}
-              >
-                {numero}
-              </button>
-            ))}
-          </div>
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="observacao">Observações</label>
-          <textarea
-            id="observacao"
-            name="observacao"
-            value={formData.observacao}
-            onChange={handleInputChange}
-            className="form-textarea"
-            rows="4"
-            placeholder="Detalhes adicionais sobre o pedido..."
-          ></textarea>
-        </div>
-        
-        <div className="form-actions">
-          <button 
-            type="button" 
-            className="btn-cancel" 
-            onClick={() => navigate('/pedidos')}
-          >
-            Cancelar
-          </button>
-          <button 
-            type="submit" 
-            className="btn-submit" 
-            disabled={loading}
-          >
-            {loading ? 'Salvando...' : pedidoId ? 'Atualizar Pedido' : 'Criar Pedido'}
-          </button>
         </div>
       </form>
+
+      <div className="form-footer">
+        <button type="submit" form="pedido-form" className="btn-salvar-pedido" disabled={loading}>
+          {loading ? 'Salvando...' : 'Salvar Pedido'}
+        </button>
+      </div>
     </div>
   );
 };

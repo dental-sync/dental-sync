@@ -13,6 +13,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 
 import com.senac.dentalsync.core.persistency.model.Laboratorio;
 import com.senac.dentalsync.core.persistency.model.Protetico;
@@ -46,6 +48,31 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
     public Protetico save(Protetico protetico) {
         System.out.println("=== Salvando protético: " + protetico.getEmail() + " ===");
         System.out.println("ID do protético: " + protetico.getId());
+        
+        // Se é um novo protético (ID null) e não tem laboratório associado, 
+        // associar automaticamente com o laboratório do usuário logado
+        if (protetico.getId() == null && protetico.getLaboratorio() == null) {
+            try {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                if (authentication != null && authentication.isAuthenticated() && 
+                    !authentication.getName().equals("anonymousUser")) {
+                    
+                    String emailUsuarioLogado = authentication.getName();
+                    System.out.println("Usuário logado: " + emailUsuarioLogado);
+                    
+                    Optional<Laboratorio> laboratorioOpt = findLaboratorioByEmail(emailUsuarioLogado);
+                    if (laboratorioOpt.isPresent()) {
+                        protetico.setLaboratorio(laboratorioOpt.get());
+                        System.out.println("Laboratório setado automaticamente para o novo protético");
+                    } else {
+                        System.out.println("Laboratório não encontrado para o usuário logado: " + emailUsuarioLogado);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Erro ao obter laboratório do usuário logado: " + e.getMessage());
+                // Não interrompe o processo, apenas não associa o laboratório
+            }
+        }
         
         verificarDuplicidade(protetico);
         PasswordEncoder passwordEncoder = applicationContext.getBean(PasswordEncoder.class);

@@ -126,6 +126,10 @@ public class Protetico extends BaseEntity {
         return laboratorio;
     }
     
+    public void setLaboratorio(Laboratorio laboratorio) {
+        this.laboratorio = laboratorio;
+    }
+    
     // Getters e Setters para dispositivo confiável
     public String getTrustedDeviceFingerprint() {
         return trustedDeviceFingerprint;

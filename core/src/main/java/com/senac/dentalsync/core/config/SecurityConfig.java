@@ -33,7 +33,8 @@ public class SecurityConfig {
             .cors().and()
             .csrf().disable()
             .authorizeHttpRequests()
-                .requestMatchers("/login", "/logout", "/auth/check", "/login/verify-2fa", "/login/request-recovery-code", "/login/verify-recovery-code").permitAll() // endpoints de autenticação
+                .requestMatchers("/login", "/logout", "/auth/check", "/login/verify-2fa", "/login/request-recovery-code", "/login/verify-recovery-code",
+                        "/password/forgot", "/password/verify-2fa", "/password/request-email-link", "/password/reset").permitAll() // endpoints de autenticação e recuperação
                 .requestMatchers("/proteticos", "/laboratorios").permitAll() // permitir cadastro
                 .requestMatchers("/security/reset-password-emergency").permitAll() // endpoint temporário de reset
                 .requestMatchers("/security/**").authenticated() // outros endpoints de segurança requerem autenticação

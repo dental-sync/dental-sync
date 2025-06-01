@@ -76,8 +76,8 @@ function App() {
             <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
             <Route path="/two-factor" element={<PublicRoute><TwoFactorPage /></PublicRoute>} />
             <Route path="/registre-se" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-            <Route path="/esqueci-senha" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
-            <Route path="/redefinir-senha" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
+            <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+            <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
             <Route path="/planos" element={<PlanosPage />} />
             
             {/* Rotas protegidas apenas para admins */}

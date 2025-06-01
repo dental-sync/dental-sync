@@ -64,7 +64,7 @@ const LoginForm = ({ onSubmit }) => {
       <div className="form-group">
         <div className="form-label-row">
           <label htmlFor="password" className="form-label">Senha</label>
-          <Link to="/esqueci-senha" className="forgot-password-link">
+          <Link to="/forgot-password" className="forgot-password-link">
             Esqueceu a senha?
           </Link>
         </div>

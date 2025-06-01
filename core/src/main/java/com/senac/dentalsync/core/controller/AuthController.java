@@ -1,5 +1,9 @@
 package com.senac.dentalsync.core.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,23 +12,21 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.senac.dentalsync.core.persistency.model.Protetico;
+import com.senac.dentalsync.core.service.EmailService;
 import com.senac.dentalsync.core.service.ProteticoService;
 import com.senac.dentalsync.core.service.TwoFactorService;
-import com.senac.dentalsync.core.service.EmailService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 @RestController
 public class AuthController {
@@ -40,6 +42,9 @@ public class AuthController {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(
@@ -418,5 +423,213 @@ public class AuthController {
             errorResponse.put("message", "Erro interno do servidor");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
+    }
+    
+    // ===== ENDPOINTS DE RECUPERAÇÃO DE SENHA =====
+    
+    @PostMapping("/password/forgot")
+    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestParam String email) {
+        try {
+            System.out.println("=== Iniciando recuperação de senha para: " + email + " ===");
+            
+            Optional<Protetico> userOpt = proteticoService.findByEmail(email);
+            if (!userOpt.isPresent()) {
+                // Por segurança, sempre retornar sucesso mesmo se o email não existir
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "Se existir uma conta com este email, você receberá as instruções");
+                response.put("requiresTwoFactor", false);
+                return ResponseEntity.ok(response);
+            }
+            
+            Protetico user = userOpt.get();
+            
+            // Verificar se tem 2FA ativo
+            if (user.getTwoFactorEnabled() && user.getTwoFactorSecret() != null) {
+                // Gerar token temporário para o processo de recuperação
+                String recoveryToken = generatePasswordResetToken(email);
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("requiresTwoFactor", true);
+                response.put("email", email);
+                response.put("recoveryToken", recoveryToken);
+                response.put("message", "Verificação 2FA necessária para recuperação de senha");
+                
+                System.out.println("2FA necessário para recuperação de senha: " + email);
+                return ResponseEntity.ok(response);
+            } else {
+                // Usuário sem 2FA - enviar link diretamente por email
+                String resetToken = generatePasswordResetToken(email);
+                emailService.sendPasswordResetEmail(email, resetToken);
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("requiresTwoFactor", false);
+                response.put("message", "Link de recuperação enviado para seu email");
+                
+                System.out.println("Link de recuperação enviado por email para: " + email);
+                return ResponseEntity.ok(response);
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Erro na recuperação de senha: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Erro interno do servidor");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    @PostMapping("/password/verify-2fa")
+    public ResponseEntity<Map<String, Object>> verifyTwoFactorForPasswordReset(
+            @RequestParam String email,
+            @RequestParam String recoveryToken,
+            @RequestParam int totpCode) {
+        
+        try {
+            System.out.println("=== Verificando 2FA para recuperação de senha: " + email + " ===");
+            
+            // Verificar token de recuperação
+            if (!emailService.validatePasswordResetToken(email, recoveryToken)) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Token de recuperação inválido ou expirado");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            
+            Optional<Protetico> userOpt = proteticoService.findByEmail(email);
+            if (!userOpt.isPresent()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Usuário não encontrado");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            }
+            
+            Protetico user = userOpt.get();
+            
+            // Verificar código TOTP
+            if (!twoFactorService.validateTotpCode(user.getTwoFactorSecret(), totpCode)) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Código de verificação inválido");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            
+            // 2FA válido - gerar token final para reset de senha
+            String finalResetToken = generatePasswordResetToken(email);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("resetToken", finalResetToken);
+            response.put("message", "2FA verificado com sucesso");
+            
+            System.out.println("2FA verificado - token de reset gerado para: " + email);
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.err.println("Erro na verificação 2FA para recuperação: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Erro interno do servidor");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    @PostMapping("/password/request-email-link")
+    public ResponseEntity<Map<String, Object>> requestEmailLinkForPasswordReset(@RequestParam String email) {
+        try {
+            System.out.println("=== Solicitando link por email para: " + email + " ===");
+            
+            Optional<Protetico> userOpt = proteticoService.findByEmail(email);
+            if (!userOpt.isPresent()) {
+                // Por segurança, sempre retornar sucesso
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "Se existir uma conta com este email, você receberá o link");
+                return ResponseEntity.ok(response);
+            }
+            
+            // Gerar token e enviar por email
+            String resetToken = generatePasswordResetToken(email);
+            emailService.sendPasswordResetEmail(email, resetToken);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Link de recuperação enviado para seu email");
+            
+            System.out.println("Link de recuperação enviado por email para: " + email);
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar link por email: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Erro ao enviar email");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    @PostMapping("/password/reset")
+    public ResponseEntity<Map<String, Object>> resetPassword(
+            @RequestParam String token,
+            @RequestParam String newPassword) {
+        
+        try {
+            System.out.println("=== Resetando senha com token ===");
+            
+            // Validar token
+            String email = emailService.validatePasswordResetTokenAndGetEmail(token);
+            if (email == null) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Token inválido ou expirado");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            
+            Optional<Protetico> userOpt = proteticoService.findByEmail(email);
+            if (!userOpt.isPresent()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Usuário não encontrado");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            }
+            
+            Protetico user = userOpt.get();
+            
+            // Atualizar senha
+            user.setSenha(passwordEncoder.encode(newPassword));
+            proteticoService.save(user);
+            
+            // Invalidar token
+            emailService.invalidatePasswordResetToken(token);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Senha alterada com sucesso");
+            
+            System.out.println("Senha resetada com sucesso para: " + email);
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.err.println("Erro ao resetar senha: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Erro interno do servidor");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    // Método auxiliar para gerar token de reset de senha
+    private String generatePasswordResetToken(String email) {
+        return emailService.generatePasswordResetToken(email);
     }
 } 

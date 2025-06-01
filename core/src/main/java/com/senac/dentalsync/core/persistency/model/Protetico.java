@@ -46,4 +46,11 @@ public class Protetico extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "laboratorio_id")
     private Laboratorio laboratorio;
+    
+    // Campos para autenticação 2FA
+    @Column(name = "two_factor_secret")
+    private String twoFactorSecret;
+    
+    @Column(name = "two_factor_enabled")
+    private Boolean twoFactorEnabled = false;
 } 

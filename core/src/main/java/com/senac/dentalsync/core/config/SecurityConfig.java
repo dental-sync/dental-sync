@@ -35,6 +35,7 @@ public class SecurityConfig {
             .authorizeHttpRequests()
                 .requestMatchers("/login", "/logout", "/auth/check").permitAll() // endpoints de autenticação
                 .requestMatchers("/proteticos", "/laboratorios").permitAll() // permitir cadastro
+                .requestMatchers("/security/**").authenticated() // endpoints de segurança requerem autenticação
                 .anyRequest().authenticated()
             .and()
             .sessionManagement()

@@ -80,13 +80,18 @@ const TwoStepRegister = () => {
           estado: formData.estado
         }
       };
-      // Registrar laboratório
-      await api.post('/laboratorios', labPayload);
+      
+      // Registrar laboratório primeiro
+      const labResponse = await api.post('/laboratorios', labPayload);
+      const laboratorioId = labResponse.data.id;
 
-      // Montar payload do protético
+      // Montar payload do protético associado ao laboratório
       const proteticoPayload = {
         ...userData,
-        isAdmin: true // sempre admin no primeiro cadastro
+        isAdmin: true, // sempre admin no primeiro cadastro
+        laboratorio: {
+          id: laboratorioId
+        }
       };
       await api.post('/proteticos', proteticoPayload);
 

@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.context.ApplicationContext;
 
+import com.senac.dentalsync.core.persistency.model.Laboratorio;
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
@@ -84,6 +85,11 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
     
     public Optional<Protetico> findByEmail(String email) {
         return proteticoRepository.findByEmail(email);
+    }
+    
+    public Optional<Laboratorio> findLaboratorioByEmail(String email) {
+        return proteticoRepository.findByEmail(email)
+                .map(Protetico::getLaboratorio);
     }
     
     public Optional<Protetico> findByCro(String cro) {

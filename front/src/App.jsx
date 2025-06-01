@@ -32,6 +32,7 @@ import PlanosPage from './pages/Planos'
 import './App.css'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 
 const ProtectedLayout = ({ children }) => (
   <>
@@ -45,7 +46,7 @@ const ProtectedLayout = ({ children }) => (
 // Componente para redirecionar se já estiver logado
 const PublicRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <Navigate to="/protetico" replace /> : children;
+  return isAuthenticated ? <Navigate to="/paciente" replace /> : children;
 };
 
 function App() {
@@ -62,11 +63,13 @@ function App() {
             <Route path="/redefinir-senha" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
             <Route path="/planos" element={<PlanosPage />} />
             
-            {/* Rotas protegidas */}
-            <Route path="/protetico" element={<ProtectedRoute><ProtectedLayout><ProteticoPage /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/protetico/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroProtetico /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/proteticos/historico/:id" element={<ProtectedRoute><ProtectedLayout><HistoricoProtetico /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/proteticos/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarProtetico /></ProtectedLayout></ProtectedRoute>} />
+            {/* Rotas protegidas apenas para admins */}
+            <Route path="/protetico" element={<AdminRoute><ProtectedLayout><ProteticoPage /></ProtectedLayout></AdminRoute>} />
+            <Route path="/protetico/cadastro" element={<AdminRoute><ProtectedLayout><CadastroProtetico /></ProtectedLayout></AdminRoute>} />
+            <Route path="/proteticos/historico/:id" element={<AdminRoute><ProtectedLayout><HistoricoProtetico /></ProtectedLayout></AdminRoute>} />
+            <Route path="/proteticos/editar/:id" element={<AdminRoute><ProtectedLayout><EditarProtetico /></ProtectedLayout></AdminRoute>} />
+            
+            {/* Rotas protegidas para todos os usuários autenticados */}
             <Route path="/paciente" element={<ProtectedRoute><ProtectedLayout><PacientePage /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/paciente/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroPaciente /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/paciente/historico/:id" element={<ProtectedRoute><ProtectedLayout><HistoricoPaciente /></ProtectedLayout></ProtectedRoute>} />

@@ -4,6 +4,7 @@ import NotificationBell from '../../components/NotificationBell/NotificationBell
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import api from '../../axios-config';
 
 const CadastroProtetico = () => {
   const navigate = useNavigate();
@@ -211,75 +212,47 @@ const CadastroProtetico = () => {
     setLoading(true);
     
     try {
-      // Verificar todas as validações simultaneamente
-      const [croResponse, emailResponse, telefoneResponse] = await Promise.all([
-        axios.get(`http://localhost:8080/proteticos/cro/${formData.cro}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/proteticos/email/${formData.email}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/proteticos/telefone/${formData.telefone}`).catch(() => ({ data: null }))
-      ]);
-
-      const newErrors = {};
-
-      // Verifica se o CRO já está cadastrado
-      if (croResponse.data) {
-        newErrors.cro = "CRO já cadastrado";
-      }
-
-      // Verifica se o email já está cadastrado
-      if (emailResponse.data) {
-        newErrors.email = "E-mail já cadastrado";
-      }
-
-      // Verifica se o telefone já está cadastrado
-      if (telefoneResponse.data) {
-        newErrors.telefone = "Telefone já cadastrado";
-      }
-
-      if (Object.keys(newErrors).length > 0) {
-        setErrors(newErrors);
-        setLoading(false);
-        return;
-      }
-
-      // Se chegou aqui, nenhum dado está duplicado
-      const proteticoData = {
+      // Preparar dados para envio - converter cargo para isAdmin
+      const dataToSend = {
         nome: formData.nome,
         cro: formData.cro,
-        telefone: formData.telefone,
         email: formData.email,
-        isAdmin: formData.cargo === 'Admin',
+        telefone: formData.telefone,
         senha: formData.senha,
-        isActive: formData.isActive
+        isAdmin: formData.cargo === 'Admin'
       };
-
-      await axios.post('http://localhost:8080/proteticos', proteticoData);
       
-      // Limpa qualquer estado de navegação existente
-      window.history.replaceState({}, document.title);
+      await api.post('/proteticos', dataToSend);
       
-      // Navegar para a página de listagem com mensagem de sucesso e flag de refresh
-      navigate('/protetico', { 
-        state: { 
-          success: 'Protético cadastrado com sucesso!',
-          refresh: true 
-        } 
+      setSuccess(true);
+      toast.success('Protético cadastrado com sucesso!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
       });
+      
+      // Redirecionar para a lista após sucesso
+      setTimeout(() => {
+        navigate('/protetico', { 
+          state: { 
+            success: "Protético cadastrado com sucesso!",
+            refresh: true
+          }
+        });
+      }, 1500);
+      
     } catch (error) {
       console.error('Erro ao cadastrar protético:', error);
       
-      if (error.response) {
-        const errorMessage = error.response.data;
-        console.log('Mensagem de erro:', errorMessage);
-        
-        if (typeof errorMessage === 'string') {
-          toast.error(errorMessage);
-        } else if (errorMessage.message) {
-          toast.error(errorMessage.message);
-        } else {
-          toast.error('Ocorreu um erro ao cadastrar o protético. Tente novamente.');
-        }
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else if (error.response?.status === 400) {
+        toast.error('Dados inválidos. Verifique as informações e tente novamente.');
       } else {
-        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
+        toast.error('Erro ao cadastrar protético. Tente novamente.');
       }
     } finally {
       setLoading(false);

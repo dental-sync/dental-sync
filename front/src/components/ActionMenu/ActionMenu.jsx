@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import './ActionMenu.css';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
@@ -73,7 +73,7 @@ const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, pr
 
   const handleConfirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8080/${url}/${id}`);
+      await api.delete(`/${url}/${id}`);
       onDeleted(id);
     } catch (error) {
       console.error('Erro ao excluir protético:', error);

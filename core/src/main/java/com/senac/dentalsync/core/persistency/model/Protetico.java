@@ -2,6 +2,8 @@ package com.senac.dentalsync.core.persistency.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -40,4 +42,8 @@ public class Protetico extends BaseEntity {
     @NotBlank(message = "A senha é obrigatória")
     @Column(nullable = false)
     private String senha;
+
+    @ManyToOne
+    @JoinColumn(name = "laboratorio_id")
+    private Laboratorio laboratorio;
 } 

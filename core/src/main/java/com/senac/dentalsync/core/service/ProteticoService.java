@@ -44,12 +44,27 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
     
     @Override
     public Protetico save(Protetico protetico) {
+        System.out.println("=== Salvando protético: " + protetico.getEmail() + " ===");
+        System.out.println("ID do protético: " + protetico.getId());
+        
         verificarDuplicidade(protetico);
         PasswordEncoder passwordEncoder = applicationContext.getBean(PasswordEncoder.class);
-        if (protetico.getId() == null || isSenhaAlterada(protetico, passwordEncoder)) {
+        
+        boolean senhaFoiAlterada = isSenhaAlterada(protetico, passwordEncoder);
+        System.out.println("Senha foi alterada: " + senhaFoiAlterada);
+        System.out.println("Senha atual (primeiros 10 chars): " + (protetico.getSenha() != null ? protetico.getSenha().substring(0, Math.min(10, protetico.getSenha().length())) : "null"));
+        
+        if (protetico.getId() == null || senhaFoiAlterada) {
+            System.out.println("Criptografando senha...");
             protetico.setSenha(passwordEncoder.encode(protetico.getSenha()));
+            System.out.println("Senha criptografada (primeiros 10 chars): " + protetico.getSenha().substring(0, 10));
+        } else {
+            System.out.println("Mantendo senha existente");
         }
-        return super.save(protetico);
+        
+        Protetico savedProtetico = super.save(protetico);
+        System.out.println("Protético salvo com sucesso");
+        return savedProtetico;
     }
     
     private void verificarDuplicidade(Protetico protetico) {
@@ -131,9 +146,45 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
     }
 
     private boolean isSenhaAlterada(Protetico protetico, PasswordEncoder passwordEncoder) {
-        if (protetico.getId() == null) return true;
+        if (protetico.getId() == null) {
+            System.out.println("Novo usuário - senha precisa ser criptografada");
+            return true;
+        }
+        
         Protetico existente = findById(protetico.getId()).orElse(null);
-        return existente == null || !passwordEncoder.matches(protetico.getSenha(), existente.getSenha());
+        if (existente == null) {
+            System.out.println("Usuário existente não encontrado - senha precisa ser criptografada");
+            return true;
+        }
+        
+        // Verificar se a senha atual já está criptografada (começa com $2a$ ou $2b$)
+        boolean senhaAtualJaCriptografada = protetico.getSenha() != null && 
+            (protetico.getSenha().startsWith("$2a$") || protetico.getSenha().startsWith("$2b$"));
+        
+        // Verificar se a senha existente já está criptografada
+        boolean senhaExistenteJaCriptografada = existente.getSenha() != null && 
+            (existente.getSenha().startsWith("$2a$") || existente.getSenha().startsWith("$2b$"));
+            
+        System.out.println("Senha atual já criptografada: " + senhaAtualJaCriptografada);
+        System.out.println("Senha existente já criptografada: " + senhaExistenteJaCriptografada);
+        
+        // Se a senha atual já está criptografada e é igual à existente, não alterar
+        if (senhaAtualJaCriptografada && senhaExistenteJaCriptografada) {
+            boolean senhasSaoIguais = protetico.getSenha().equals(existente.getSenha());
+            System.out.println("Senhas criptografadas são iguais: " + senhasSaoIguais);
+            return !senhasSaoIguais; // Retorna false se são iguais (não foi alterada)
+        }
+        
+        // Se a senha atual não está criptografada, verificar se corresponde à existente
+        if (!senhaAtualJaCriptografada && senhaExistenteJaCriptografada) {
+            boolean senhaCorresponde = passwordEncoder.matches(protetico.getSenha(), existente.getSenha());
+            System.out.println("Senha corresponde à existente: " + senhaCorresponde);
+            return !senhaCorresponde; // Retorna false se corresponde (não foi alterada)
+        }
+        
+        // Caso padrão: considera que foi alterada
+        System.out.println("Caso padrão - considerando senha alterada");
+        return true;
     }
 
     @Override
@@ -145,5 +196,17 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
                 .password(protetico.getSenha())
                 .roles(protetico.getIsAdmin() != null && protetico.getIsAdmin() ? "ADMIN" : "USER")
                 .build();
+    }
+
+    /**
+     * Salva o protético sem verificar/alterar a senha
+     * Usado para operações como ativação de 2FA onde não queremos tocar na senha
+     */
+    public Protetico saveWithoutPasswordChange(Protetico protetico) {
+        System.out.println("=== Salvando protético SEM alterar senha: " + protetico.getEmail() + " ===");
+        verificarDuplicidade(protetico);
+        Protetico savedProtetico = super.save(protetico);
+        System.out.println("Protético salvo sem alteração de senha");
+        return savedProtetico;
     }
 } 

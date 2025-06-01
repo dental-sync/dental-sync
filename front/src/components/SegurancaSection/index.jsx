@@ -337,7 +337,7 @@ const SegurancaSection = () => {
 
                   <div className="qr-code-container">
                     <img 
-                      src={`data:image/png;base64,${qrCodeImage}`} 
+                      src={qrCodeImage} 
                       alt="QR Code para Google Authenticator"
                       className="qr-code-image"
                     />

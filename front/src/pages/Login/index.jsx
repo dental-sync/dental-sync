@@ -24,6 +24,19 @@ const LoginPage = () => {
       
       // Verificar se o login foi bem-sucedido
       if (response.data.success) {
+        // Verificar se requer 2FA
+        if (response.data.requiresTwoFactor) {
+          // Redirecionar para página de 2FA
+          navigate('/two-factor', { 
+            state: { 
+              email: response.data.email 
+            },
+            replace: true 
+          });
+          return;
+        }
+        
+        // Login normal sem 2FA
         const userData = {
           email: formData.email,
           ...response.data.user,

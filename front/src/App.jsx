@@ -4,6 +4,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import Sidebar from './components/Sidebar/Sidebar'
 import LoginPage from './pages/Login'
 import RegisterPage from './pages/Register'
+import TwoFactorPage from './pages/TwoFactor'
 import ProteticoPage from './pages/Protetico/ProteticoPage'
 import CadastroProtetico from './pages/Protetico/CadastroProtetico'
 import HistoricoProtetico from './pages/Protetico/HistoricoProtetico'
@@ -73,6 +74,7 @@ function App() {
             {/* Rotas públicas */}
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+            <Route path="/two-factor" element={<PublicRoute><TwoFactorPage /></PublicRoute>} />
             <Route path="/registre-se" element={<PublicRoute><RegisterPage /></PublicRoute>} />
             <Route path="/esqueci-senha" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
             <Route path="/redefinir-senha" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />

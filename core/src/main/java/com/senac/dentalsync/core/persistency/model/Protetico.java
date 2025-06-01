@@ -53,4 +53,56 @@ public class Protetico extends BaseEntity {
     
     @Column(name = "two_factor_enabled")
     private Boolean twoFactorEnabled = false;
+    
+    // Getters e Setters para 2FA (adicionados manualmente)
+    public String getTwoFactorSecret() {
+        return twoFactorSecret;
+    }
+    
+    public void setTwoFactorSecret(String twoFactorSecret) {
+        this.twoFactorSecret = twoFactorSecret;
+    }
+    
+    public Boolean getTwoFactorEnabled() {
+        return twoFactorEnabled;
+    }
+    
+    public void setTwoFactorEnabled(Boolean twoFactorEnabled) {
+        this.twoFactorEnabled = twoFactorEnabled;
+    }
+    
+    // Getter para email (usado pelo SecurityController)
+    public String getEmail() {
+        return email;
+    }
+    
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    
+    // Getter e setter para senha (usado pelo SecurityController)
+    public String getSenha() {
+        return senha;
+    }
+    
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+    
+    // Outros getters essenciais
+    public String getCro() {
+        return cro;
+    }
+    
+    public String getTelefone() {
+        return telefone;
+    }
+    
+    public Boolean getIsAdmin() {
+        return isAdmin;
+    }
+    
+    public Laboratorio getLaboratorio() {
+        return laboratorio;
+    }
 } 

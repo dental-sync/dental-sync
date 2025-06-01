@@ -31,10 +31,14 @@ public class TwoFactorService {
      * Gera a URL para o QR Code do Google Authenticator
      */
     public String generateQRCodeUrl(String userEmail, String secretKey, String issuer) {
-        return GoogleAuthenticatorQRGenerator.getOtpAuthURL(
+        // Gerando URL TOTP manualmente no formato correto para Google Authenticator
+        // Formato: otpauth://totp/Issuer:user@email.com?secret=SECRET&issuer=Issuer
+        return String.format(
+            "otpauth://totp/%s:%s?secret=%s&issuer=%s",
             issuer,
             userEmail,
-            gAuth.createCredentials(secretKey)
+            secretKey,
+            issuer
         );
     }
 
@@ -43,12 +47,22 @@ public class TwoFactorService {
      */
     public String generateQRCodeImage(String qrCodeUrl) throws WriterException, IOException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = qrCodeWriter.encode(qrCodeUrl, BarcodeFormat.QR_CODE, 200, 200);
+        
+        // Configurações melhoradas para melhor compatibilidade
+        BitMatrix bitMatrix = qrCodeWriter.encode(
+            qrCodeUrl, 
+            BarcodeFormat.QR_CODE, 
+            300, // largura aumentada
+            300  // altura aumentada
+        );
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
         
-        return Base64.getEncoder().encodeToString(baos.toByteArray());
+        String base64Image = Base64.getEncoder().encodeToString(baos.toByteArray());
+        
+        // Retornar no formato data URL para uso direto no frontend
+        return "data:image/png;base64," + base64Image;
     }
 
     /**
@@ -63,13 +77,30 @@ public class TwoFactorService {
      */
     public TwoFactorSetupData generateSetupData(String userEmail, String issuer) {
         try {
+            // Validações para evitar erros
+            if (userEmail == null || userEmail.trim().isEmpty()) {
+                throw new IllegalArgumentException("Email do usuário não pode ser nulo ou vazio");
+            }
+            if (issuer == null || issuer.trim().isEmpty()) {
+                issuer = "DentalSync"; // valor padrão
+            }
+            
+            System.out.println("Gerando setup 2FA para: " + userEmail + " com issuer: " + issuer);
+            
             String secretKey = generateSecretKey();
+            System.out.println("Secret key gerada: " + secretKey);
+            
             String qrCodeUrl = generateQRCodeUrl(userEmail, secretKey, issuer);
+            System.out.println("QR Code URL gerada: " + qrCodeUrl);
+            
             String qrCodeImage = generateQRCodeImage(qrCodeUrl);
+            System.out.println("QR Code Image gerada com sucesso");
             
             return new TwoFactorSetupData(secretKey, qrCodeUrl, qrCodeImage);
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao gerar dados de configuração 2FA", e);
+            System.err.println("Erro ao gerar dados de configuração 2FA: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Erro ao gerar dados de configuração 2FA: " + e.getMessage(), e);
         }
     }
 

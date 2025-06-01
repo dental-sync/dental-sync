@@ -33,9 +33,10 @@ public class SecurityConfig {
             .cors().and()
             .csrf().disable()
             .authorizeHttpRequests()
-                .requestMatchers("/login", "/logout", "/auth/check").permitAll() // endpoints de autenticação
+                .requestMatchers("/login", "/logout", "/auth/check", "/login/verify-2fa").permitAll() // endpoints de autenticação
                 .requestMatchers("/proteticos", "/laboratorios").permitAll() // permitir cadastro
-                .requestMatchers("/security/**").authenticated() // endpoints de segurança requerem autenticação
+                .requestMatchers("/security/reset-password-emergency").permitAll() // endpoint temporário de reset
+                .requestMatchers("/security/**").authenticated() // outros endpoints de segurança requerem autenticação
                 .anyRequest().authenticated()
             .and()
             .sessionManagement()

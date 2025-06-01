@@ -112,37 +112,44 @@ const CadastroPaciente = () => {
     // Validar campos obrigatórios com trim para garantir que não haja espaços em branco
     const nomeTrimmed = formData.nome.trim();
     const emailTrimmed = formData.email.trim();
+    const telefoneTrimmed = formData.telefone.trim();
     
-    if (!nomeTrimmed) newErrors.nome = 'Nome é obrigatório';
-    // Verificar se o nome contém pelo menos um sobrenome
-    else if (!nomeTrimmed.includes(' ') || nomeTrimmed.split(' ').some(part => part.length === 0)) {
+    //Validação do nome
+    if (!nomeTrimmed) {
+      newErrors.nome = 'Nome é obrigatório';
+    } else if (!nomeTrimmed.includes(' ') || nomeTrimmed.split(' ').some(part => part.length === 0)) {
       newErrors.nome = 'Por favor, informe o nome e sobrenome';
-    }
-    // Verificar se o nome contém números
-    else if (/\d/.test(nomeTrimmed)) {
+    } else if (/\d/.test(nomeTrimmed)) {
       newErrors.nome = 'O nome não pode conter números';
-    }
-  
-    else if (nomeTrimmed.length > MAX_CHARS) {
+    } else if (nomeTrimmed.length > MAX_CHARS) {
       newErrors.nome = `Limite máximo de ${MAX_CHARS} caracteres excedido`;
     }
     
-    if (!emailTrimmed) newErrors.email = 'Email é obrigatório';
-    else if (emailTrimmed.length > MAX_CHARS) {
-      newErrors.email = `Limite máximo de ${MAX_CHARS} caracteres excedido`;
+    //Validação do email
+    if (!emailTrimmed) {
+      newErrors.email = 'Email é obrigatório';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(emailTrimmed)) {
+        newErrors.email = 'Formato de email inválido';
+      } else if (emailTrimmed.length > MAX_CHARS) {
+        newErrors.email = `Limite máximo de ${MAX_CHARS} caracteres excedido`;
+      }
     }
     
-    if (!formData.telefone) newErrors.telefone = 'Telefone é obrigatório';
-    
-    //Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (emailTrimmed && !emailRegex.test(emailTrimmed)) {
-      newErrors.email = 'Formato de email inválido';
+    //Validação do telefone
+    if (!telefoneTrimmed) {
+      newErrors.telefone = 'Telefone é obrigatório';
+    } else {
+      const telefoneRegex = /^\(\d{2}\)\s(?:\d{4}-\d{4}|\d{5}-\d{4})$/;
+      if (!telefoneRegex.test(telefoneTrimmed)) {
+        newErrors.telefone = 'Formato de telefone inválido. Use (99) 9999-9999 ou (99) 99999-9999';
+      }
     }
     
-    //Validar data de nascimento (não pode ser no futuro)
-    if (formData.dataNascimento) {
-      // Comparar diretamente a string de data com a data atual formatada em ISO
+    if (!formData.dataNascimento) {
+      newErrors.dataNascimento = 'Data de nascimento é obrigatória';
+    } else {
       const hoje = new Date();
       const anoHoje = hoje.getFullYear();
       const mesHoje = String(hoje.getMonth() + 1).padStart(2, '0');
@@ -150,7 +157,7 @@ const CadastroPaciente = () => {
       const dataHojeISO = `${anoHoje}-${mesHoje}-${diaHoje}`;
       
       if (formData.dataNascimento > dataHojeISO) {
-        newErrors.dataNascimento = 'A data de nascimento não pode ser no futuro';
+        newErrors.dataNascimento = 'A data de nascimento não pode ser maior que a data atual';
       }
     }
     
@@ -167,6 +174,7 @@ const CadastroPaciente = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     
     // Aplicar trim() no nome e email antes da validação
     setFormData(prev => ({
@@ -185,14 +193,11 @@ const CadastroPaciente = () => {
       const pacienteData = {
         nome: formData.nome.trim(),
         email: formData.email.trim(),
-        telefone: formData.telefone,
+        telefone: formData.telefone.trim(),
         dataNascimento: formatDateForAPI(formData.dataNascimento),
         isActive: true
       };
       
-      console.log('Data de nascimento original do input:', formData.dataNascimento);
-      console.log('Data de nascimento formatada para API:', pacienteData.dataNascimento);
-      console.log('Enviando dados do paciente para API:', pacienteData);
       await axios.post('http://localhost:8080/paciente', pacienteData);
       
       // Limpa qualquer estado de navegação existente
@@ -245,7 +250,7 @@ const CadastroPaciente = () => {
           <h1 className="page-title">Cadastro de Paciente</h1>
         </div>
         
-        <form onSubmit={handleSubmit} className="paciente-form">
+        <form onSubmit={handleSubmit} className="paciente-form" noValidate>
           <div className="form-group">
             <label htmlFor="nome" className="required">Nome Completo</label>
             <input
@@ -291,7 +296,7 @@ const CadastroPaciente = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="dataNascimento">Data de Nascimento</label>
+            <label htmlFor="dataNascimento" className="required">Data de Nascimento</label>
             <input
               type="date"
               id="dataNascimento"
@@ -299,6 +304,8 @@ const CadastroPaciente = () => {
               value={formData.dataNascimento}
               onChange={handleChange}
               className={errors.dataNascimento ? 'input-error' : ''}
+              placeholder="dd/mm/aaaa"
+              noValidate
             />
             {errors.dataNascimento && <span className="error-text">{errors.dataNascimento}</span>}
           </div>

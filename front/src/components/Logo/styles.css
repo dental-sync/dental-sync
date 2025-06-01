@@ -1,0 +1,28 @@
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-container.small .logo-image {
+  width: 40px;
+  height: auto;
+}
+
+.logo-container.medium .logo-image {
+  width: 50px;
+  height: auto;
+}
+
+.logo-container.large .logo-image {
+  width: 80px;
+  height: auto;
+}
+
+.logo-text {
+  color: #2563EB;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-left: 8px;
+  letter-spacing: 0.5px;
+} 

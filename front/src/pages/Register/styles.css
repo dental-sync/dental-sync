@@ -1,0 +1,40 @@
+/* Centraliza o conteúdo da página de registro */
+.register-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f0f5ff;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.register-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.register-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.register-footer {
+  text-align: center;
+  padding: 16px;
+  color: #6B7280;
+  font-size: 14px;
+  background-color: white;
+  border-top: 1px solid #e5e7eb;
+  width: 100%;
+  box-sizing: border-box;
+} 

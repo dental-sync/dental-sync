@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import './styles.css';
 import PasswordInput from '../PasswordInput';
+import './styles.css';
 
 const SegurancaSection = () => {
   const [formData, setFormData] = useState({

@@ -1,96 +1,153 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import './MaterialTable.css';
-import StatusBadge from '../StatusBadge/StatusBadge';
+import GenericTable from '../GenericTable/GenericTable';
 import MaterialActionMenu from './MaterialActionMenu';
 
-const MaterialTable = ({ materiais, onDelete, onStatusChange, lastElementRef, sortConfig, onSort }) => {
-  const navigate = useNavigate();
-
-  const getSortIcon = (key) => {
-    if (!sortConfig || sortConfig.key !== key) {
-      return (
-        <span style={{fontSize: '18px', opacity: 0.4, marginLeft: '2px', marginTop: '-2px'}}>–</span>
-      );
-    }
-    return sortConfig.direction === 'ascending' ? (
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 15l-6-6-6 6"/>
-      </svg>
-    ) : (
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 9l6 6 6-6"/>
-      </svg>
+const columns = [
+  { key: 'id', label: 'ID', sortable: true },
+  { key: 'nome', label: 'Nome', sortable: true, render: (nome) => (
+    <span
+      title={nome}
+      style={{
+        display: 'inline-block',
+        maxWidth: '300px',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        verticalAlign: 'middle'
+      }}
+    >
+      {nome}
+    </span>
+  ) },
+  { key: 'categoriaMaterial', label: 'Categoria', sortable: true, render: (categoriaMaterial) => {
+    const nome = categoriaMaterial?.nome || '-';
+    return (
+      <span
+        title={nome}
+        style={{
+          display: 'inline-block',
+          maxWidth: '300px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          verticalAlign: 'middle'
+        }}
+      >
+        {nome}
+      </span>
     );
+  } },
+  { key: 'quantidade', label: 'Quantidade Total', sortable: true },
+  { key: 'unidadeMedida', label: 'Unidade', sortable: false },
+  { key: 'valorUnitario', label: 'Preço Médio', sortable: false, render: (valor) => {
+    console.log('valorUnitario recebido:', valor);
+    const num = Number(valor);
+    console.log('valorUnitario convertido para número:', num);
+    return !isNaN(num) ? num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-';
+  } },
+  { 
+    key: 'status', 
+    label: 'Status', 
+    sortable: true,
+    render: (status) => {
+      const getStatusStyle = (status) => {
+        switch (status) {
+          case 'EM_ESTOQUE':
+            return {
+              backgroundColor: '#e8f5e9',
+              color: '#2e7d32',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontWeight: '500',
+              display: 'inline-block',
+              maxWidth: '300px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              verticalAlign: 'middle'
+            };
+          case 'BAIXO_ESTOQUE':
+            return {
+              backgroundColor: '#fff3e0',
+              color: '#e65100',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontWeight: '500',
+              display: 'inline-block',
+              maxWidth: '300px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              verticalAlign: 'middle'
+            };
+          case 'SEM_ESTOQUE':
+            return {
+              backgroundColor: '#ffebee',
+              color: '#c62828',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontWeight: '500',
+              display: 'inline-block',
+              maxWidth: '300px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              verticalAlign: 'middle'
+            };
+          default:
+            return {
+              display: 'inline-block',
+              maxWidth: '300px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              verticalAlign: 'middle'
+            };
+        }
+      };
+
+      switch (status) {
+        case 'EM_ESTOQUE':
+          return <span style={getStatusStyle(status)} title="Em Estoque">Em Estoque</span>;
+        case 'BAIXO_ESTOQUE':
+          return <span style={getStatusStyle(status)} title="Baixo Estoque">Baixo Estoque</span>;
+        case 'SEM_ESTOQUE':
+          return <span style={getStatusStyle(status)} title="Sem Estoque">Sem Estoque</span>;
+        default:
+          return <span style={getStatusStyle(status)} title={status}>{status}</span>;
+      }
+    }
+  },
+  { key: 'actions', label: 'Ações' }
+];
+
+const MaterialTable = ({ materiais, onDelete, onStatusChange, lastElementRef, sortConfig, onSort }) => {
+  const handleStatusChange = (materialId, newStatus) => {
+    // Converte o status para booleano antes de enviar para o backend
+    const statusBoolean = newStatus === 'ATIVO';
+    if (onStatusChange) {
+      onStatusChange(materialId, statusBoolean);
+    }
   };
 
   return (
-    <div className="material-table-container">
-      <table className="material-table">
-        <thead>
-          <tr>
-            <th className="sortable-header" data-sortable="true" onClick={() => onSort && onSort('id')}>
-              <span className="sortable-content">
-                ID
-                <div className="sort-icon">{getSortIcon('id')}</div>
-              </span>
-            </th>
-            <th className="sortable-header" data-sortable="true" onClick={() => onSort && onSort('nome')}>
-              <span className="sortable-content">
-                Nome
-                <div className="sort-icon">{getSortIcon('nome')}</div>
-              </span>
-            </th>
-            <th className="sortable-header" data-sortable="true" onClick={() => onSort && onSort('quantidade')}>
-              <span className="sortable-content">
-                Quantidade
-                <div className="sort-icon">{getSortIcon('quantidade')}</div>
-              </span>
-            </th>
-            <th className="sortable-header" data-sortable="true" onClick={() => onSort && onSort('categoriaMaterial.nome')}>
-              <span className="sortable-content">
-                Categoria
-                <div className="sort-icon">{getSortIcon('categoriaMaterial.nome')}</div>
-              </span>
-            </th>
-            <th className="sortable-header" data-sortable="true" onClick={() => onSort && onSort('status')}>
-              <span className="sortable-content">
-                Status
-                <div className="sort-icon">{getSortIcon('status')}</div>
-              </span>
-            </th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {materiais.map((material, index) => (
-            <tr 
-              key={material.id}
-              ref={index === materiais.length - 1 ? lastElementRef : null}
-            >
-              <td>{material.id}</td>
-              <td>{material.nome}</td>
-              <td>{material.quantidade}</td>
-              <td>{material.categoriaMaterial?.nome || 'N/A'}</td>
-              <td>
-                <StatusBadge
-                  status={material.status === 'ATIVO'}
-                  onClick={(isActive) => onStatusChange(material.id, isActive ? true : false)}
-                />
-              </td>
-              <td>
-                <MaterialActionMenu
-                  materialId={material.id}
-                  materialStatus={material.status}
-                  onDelete={onDelete}
-                />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <GenericTable
+      data={materiais}
+      onItemDeleted={onDelete}
+      onStatusChange={handleStatusChange}
+      sortConfig={sortConfig}
+      onSort={onSort}
+      isEmpty={materiais.length === 0}
+      columns={columns}
+      formatId={(id) => id.toString()}
+      apiEndpoint="/material"
+      emptyMessage="Nenhum material cadastrado"
+      ActionMenuComponent={MaterialActionMenu}
+      statusField="status"
+      lastElementRef={lastElementRef}
+      useCustomStatusRender={true}
+    />
   );
-};
+}
 
 export default MaterialTable; 

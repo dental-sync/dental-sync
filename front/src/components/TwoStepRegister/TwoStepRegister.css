@@ -1,0 +1,260 @@
+/* Estilos para o componente de registro em duas etapas */
+.two-step-register {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 30px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Barra de progresso */
+.register-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+  transition: all 0.3s ease;
+  opacity: 0.6;
+}
+
+.progress-step.active {
+  opacity: 1;
+}
+
+.step-number {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background-color: #e9ecef;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-bottom: 8px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.progress-step.active .step-number {
+  background-color: #0070d6;
+  color: #fff;
+  border-color: #004c91;
+}
+
+.step-text {
+  font-size: 14px;
+  color: #6c757d;
+  transition: all 0.3s ease;
+}
+
+.progress-step.active .step-text {
+  color: #0070d6;
+  font-weight: 600;
+}
+
+.progress-line {
+  height: 2px;
+  background-color: #e9ecef;
+  width: 120px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Container dos formulários com animação */
+.form-container {
+  position: relative;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.form-container.slide-left {
+  transform: translateX(-10%);
+  opacity: 0;
+}
+
+.form-container.slide-right {
+  transform: translateX(10%);
+  opacity: 0;
+}
+
+/* Estilos dos formulários */
+.user-form,
+.lab-form {
+  width: 100%;
+}
+
+h2 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+.form-subtitle {
+  color: #6c757d;
+  margin-bottom: 25px;
+  font-size: 16px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.form-row .form-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #495057;
+}
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-container input,
+.input-container select {
+  padding-left: 2.5rem !important;
+  padding-right: 0.75rem;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: #b0b8c1;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+input:focus, select:focus {
+  border-color: #0070d6;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(0, 112, 214, 0.25);
+}
+
+input.error, select.error {
+  border-color: #dc3545;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 13px;
+  margin-top: 5px;
+  display: block;
+}
+
+/* Estilos para os campos de senha */
+.password-input-container {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-password:hover {
+  color: #0070d6;
+}
+
+/* Estilos para os botões */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+  gap: 12px;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-primary {
+  background-color: #0070d6;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #005bb0;
+}
+
+.btn-secondary {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.btn-secondary:hover {
+  background-color: #dee2e6;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .two-step-register {
+    padding: 20px;
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .form-row .form-group {
+    min-width: 100%;
+  }
+
+  .progress-line {
+    width: 60px;
+  }
+} 

@@ -45,9 +45,9 @@ const CadastroDentista = () => {
     } else if (formData.nome.trim().split(' ').length < 2) {
       newErrors.nome = 'Por favor, informe o nome e sobrenome';
     } else if (formData.nome.trim().split(' ')[0].length < 2) {
-      newErrors.nome = 'O nome deve possuir no mínimo 2 letras';
-    } else if (formData.nome.trim().split(' ').pop().length < 2) {
-      newErrors.nome = 'O último sobrenome deve possuir no mínimo 2 letras';
+      newErrors.nome = 'O primeiro nome deve possuir no mínimo 2 letras';
+    } else if (formData.nome.trim().split(' ').pop().length < 1) {
+      newErrors.nome = 'O sobrenome deve possuir no mínimo 1 letra';
     } else if (formData.nome.length > 255) {
       newErrors.nome = 'O nome não pode ultrapassar 255 caracteres';
     } else if (/\d/.test(formData.nome)) {

@@ -6,7 +6,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
-const PacienteActionMenu = ({ pacienteId, pacienteStatus, onPacienteDeleted, onStatusChange }) => {
+const PacienteActionMenu = ({ pacienteId, itemId, pacienteStatus, itemStatus, onPacienteDeleted, onItemDeleted, onStatusChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -14,10 +14,16 @@ const PacienteActionMenu = ({ pacienteId, pacienteStatus, onPacienteDeleted, onS
   const buttonRef = useRef(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   const navigate = useNavigate();
-  const isActive = pacienteStatus === true || 
-                  pacienteStatus === 'true' ||
-                  pacienteStatus === 'ATIVO' ||
-                  pacienteStatus === 'Ativo';
+  
+  // Usar o pacienteId ou o itemId (dependendo de qual foi passado)
+  const id = pacienteId || itemId;
+  const status = pacienteStatus || itemStatus;
+  const onDeleted = onPacienteDeleted || onItemDeleted;
+  
+  const isActive = status === true || 
+                  status === 'true' ||
+                  status === 'ATIVO' ||
+                  status === 'Ativo';
 
   const updateDropdownPosition = () => {
     if (buttonRef.current) {
@@ -56,12 +62,12 @@ const PacienteActionMenu = ({ pacienteId, pacienteStatus, onPacienteDeleted, onS
   }, []);
 
   const handleVerHistorico = () => {
-    navigate(`/paciente/historico/${pacienteId}`);
+    navigate(`/paciente/historico/${id}`);
     setIsOpen(false);
   };
 
   const handleEditar = () => {
-    navigate(`/paciente/editar/${pacienteId}`);
+    navigate(`/paciente/editar/${id}`);
     setIsOpen(false);
   };
 
@@ -77,19 +83,19 @@ const PacienteActionMenu = ({ pacienteId, pacienteStatus, onPacienteDeleted, onS
   const handleToggleStatus = async () => {
     try {
       const newStatus = !isActive;
-      console.log(`Atualizando status do paciente ${pacienteId} para ${newStatus ? 'Ativo' : 'Inativo'}`);
+      console.log(`Atualizando status do paciente ${id} para ${newStatus ? 'Ativo' : 'Inativo'}`);
       
       const requestBody = { isActive: newStatus };
       console.log('Corpo da requisição:', JSON.stringify(requestBody));
       
-      const response = await axios.patch(`http://localhost:8080/paciente/${pacienteId}`, requestBody);
+      const response = await axios.patch(`http://localhost:8080/paciente/${id}`, requestBody);
       
       console.log('Resposta da API:', response);
       
       if (response.status === 200) {
         // Notificar o componente pai sobre a mudança de status
         if (onStatusChange) {
-          onStatusChange(pacienteId, newStatus ? 'ATIVO' : 'INATIVO');
+          onStatusChange(id, newStatus ? 'ATIVO' : 'INATIVO');
         }
       }
       
@@ -103,15 +109,15 @@ const PacienteActionMenu = ({ pacienteId, pacienteStatus, onPacienteDeleted, onS
   const handleConfirmDelete = async () => {
     try {
       setIsDeleting(true);
-      console.log(`Iniciando exclusão do paciente ID ${pacienteId}`);
+      console.log(`Iniciando exclusão do paciente ID ${id}`);
       
-      const response = await axios.delete(`http://localhost:8080/paciente/excluir/${pacienteId}`);
+      const response = await axios.delete(`http://localhost:8080/paciente/excluir/${id}`);
       
       console.log('Resposta da exclusão:', response.data);
       
       // Notificar o componente pai que o paciente foi excluído
-      if (onPacienteDeleted) {
-        onPacienteDeleted(pacienteId);
+      if (onDeleted) {
+        onDeleted(id);
       }
       
     } catch (error) {

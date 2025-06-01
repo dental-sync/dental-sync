@@ -333,7 +333,7 @@ public class AuthController {
             HttpSession session = request.getSession(false);
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             
-            // Primeiro, verificar se há sessão ativa
+            // Verificar se há sessão ativa
             if (session != null && auth != null && auth.isAuthenticated() 
                 && !auth.getName().equals("anonymousUser")) {
                 
@@ -352,47 +352,8 @@ public class AuthController {
                 }
             }
             
-            // Se não há sessão ativa, verificar cookie de "Lembrar de mim"
-            Cookie[] cookies = request.getCookies();
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if ("DENTALSYNC_REMEMBER_ME".equals(cookie.getName())) {
-                        String rememberMeToken = cookie.getValue();
-                        
-                        // Buscar usuário pelo token válido
-                        Optional<Protetico> userOpt = rememberMeService.findUserByValidRememberMeToken(rememberMeToken);
-                        if (userOpt.isPresent()) {
-                            Protetico user = userOpt.get();
-                            
-                            // Recriar sessão automaticamente
-                            HttpSession newSession = request.getSession(true);
-                            
-                            // Configurar autenticação
-                            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                                user.getEmail(), null, List.of()
-                            );
-                            SecurityContextHolder.getContext().setAuthentication(authentication);
-                            newSession.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-                            newSession.setAttribute("USER_DATA", user);
-                            newSession.setAttribute("REMEMBER_ME", true);
-                            newSession.setMaxInactiveInterval(7 * 24 * 60 * 60); // 7 dias
-                            
-                            Map<String, Object> response = new HashMap<>();
-                            response.put("success", true);
-                            response.put("authenticated", true);
-                            response.put("user", user);
-                            response.put("rememberMe", true);
-                            response.put("sessionDuration", "7 dias");
-                            response.put("restoredFromRememberMe", true);
-                            
-                            System.out.println("Sessão restaurada automaticamente via token de Lembrar de mim para: " + user.getEmail());
-                            return ResponseEntity.ok(response);
-                        }
-                    }
-                }
-            }
-            
-            // Nenhuma autenticação válida encontrada
+            // Se não há sessão ativa, retornar não autenticado
+            // O token de "Lembrar de mim" será verificado apenas no login manual
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("authenticated", false);
@@ -745,5 +706,94 @@ public class AuthController {
     // Método auxiliar para gerar token de reset de senha
     private String generatePasswordResetToken(String email) {
         return emailService.generatePasswordResetToken(email);
+    }
+
+    @PostMapping("/login/remember-me")
+    public ResponseEntity<Map<String, Object>> loginWithRememberMeToken(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            System.out.println("=== Verificando login com token de Lembrar de mim ===");
+            
+            // Verificar cookie de "Lembrar de mim"
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("DENTALSYNC_REMEMBER_ME".equals(cookie.getName())) {
+                        String rememberMeToken = cookie.getValue();
+                        
+                        // Buscar usuário pelo token válido
+                        Optional<Protetico> userOpt = rememberMeService.findUserByValidRememberMeToken(rememberMeToken);
+                        if (userOpt.isPresent()) {
+                            Protetico user = userOpt.get();
+                            
+                            // Verificar se o usuário tem 2FA ativado
+                            if (user.getTwoFactorEnabled() != null && user.getTwoFactorEnabled()) {
+                                System.out.println("Usuário com token válido tem 2FA ativado");
+                                
+                                // Gerar fingerprint do dispositivo
+                                String userAgent = request.getHeader("User-Agent");
+                                String ipAddress = request.getRemoteAddr();
+                                String deviceFingerprint = trustedDeviceService.generateDeviceFingerprint(userAgent, ipAddress, null);
+                                
+                                // Verificar se este dispositivo é confiável
+                                if (trustedDeviceService.isTrustedDevice(user.getEmail(), deviceFingerprint)) {
+                                    System.out.println("Dispositivo confiável encontrado - login automático com token");
+                                    
+                                    // Criar autenticação
+                                    Authentication authentication = new UsernamePasswordAuthenticationToken(
+                                        user.getEmail(), null, List.of()
+                                    );
+                                    
+                                    return completeLogin(user, authentication, true, request, response);
+                                } else {
+                                    System.out.println("Dispositivo não confiável - exigindo 2FA mesmo com token válido");
+                                    
+                                    // Criar sessão temporária para 2FA com token de remember me
+                                    HttpSession session = request.getSession(true);
+                                    Authentication tempAuth = new UsernamePasswordAuthenticationToken(user.getEmail(), null, List.of());
+                                    session.setAttribute("TEMP_AUTH", tempAuth);
+                                    session.setAttribute("TEMP_USER", user);
+                                    session.setAttribute("TEMP_REMEMBER_ME", true);
+                                    session.setAttribute("TEMP_DEVICE_FINGERPRINT", deviceFingerprint);
+                                    session.setAttribute("FROM_REMEMBER_ME_TOKEN", true);
+                                    session.setMaxInactiveInterval(5 * 60);
+                                    
+                                    Map<String, Object> response2 = new HashMap<>();
+                                    response2.put("success", true);
+                                    response2.put("requiresTwoFactor", true);
+                                    response2.put("message", "Digite o código do Google Authenticator");
+                                    response2.put("email", user.getEmail());
+                                    response2.put("fromRememberMeToken", true);
+                                    
+                                    return ResponseEntity.ok(response2);
+                                }
+                            } else {
+                                System.out.println("Login automático com token (usuário sem 2FA)");
+                                
+                                // Criar autenticação
+                                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                                    user.getEmail(), null, List.of()
+                                );
+                                
+                                return completeLogin(user, authentication, true, request, response);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Nenhum token válido encontrado
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Token de lembrar de mim não encontrado ou expirado");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            
+        } catch (Exception e) {
+            System.err.println("Erro no login com token de lembrar de mim: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Erro interno do servidor");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 } 

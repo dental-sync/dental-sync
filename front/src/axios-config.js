@@ -8,7 +8,7 @@ const baseURL = process.env.NODE_ENV === 'production'
 // Criar instância do axios com configurações customizadas
 const api = axios.create({
   baseURL,
-  timeout: 10000, // 10 segundos
+  timeout: 30000, // 30 segundos - aumentado para operações que envolvem email
   withCredentials: true, // Importante: inclui cookies HTTP-only
   headers: {
     'Content-Type': 'application/json',

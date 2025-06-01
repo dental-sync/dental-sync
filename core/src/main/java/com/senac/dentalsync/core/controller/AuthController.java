@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.service.ProteticoService;
 import com.senac.dentalsync.core.service.TwoFactorService;
+import com.senac.dentalsync.core.service.EmailService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,6 +37,9 @@ public class AuthController {
 
     @Autowired
     private TwoFactorService twoFactorService;
+
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(
@@ -281,6 +285,137 @@ public class AuthController {
             errorResponse.put("success", false);
             errorResponse.put("authenticated", false);
             errorResponse.put("message", "Erro ao verificar autenticação");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    @PostMapping("/login/request-recovery-code")
+    public ResponseEntity<Map<String, Object>> requestRecoveryCode(
+            @RequestParam String email,
+            HttpServletRequest request) {
+        
+        try {
+            System.out.println("=== Solicitando código de recuperação para: " + email + " ===");
+            
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Sessão expirada. Faça login novamente.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            }
+            
+            // Verificar se há dados temporários de 2FA na sessão
+            Protetico tempUser = (Protetico) session.getAttribute("TEMP_USER");
+            if (tempUser == null || !tempUser.getEmail().equals(email)) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Sessão inválida. Faça login novamente.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            }
+            
+            // Gerar e enviar código por email
+            try {
+                emailService.generateRecoveryCode(email);
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "Código de recuperação enviado para seu email");
+                
+                return ResponseEntity.ok(response);
+                
+            } catch (RuntimeException emailError) {
+                System.err.println("Erro específico no envio de email: " + emailError.getMessage());
+                
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Erro ao enviar email. Verifique se o email está correto e tente novamente.");
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Erro geral ao solicitar código de recuperação: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Erro interno do servidor");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    @PostMapping("/login/verify-recovery-code")
+    public ResponseEntity<Map<String, Object>> verifyRecoveryCode(
+            @RequestParam String email,
+            @RequestParam String code,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        
+        try {
+            System.out.println("=== Verificando código de recuperação para: " + email + " ===");
+            
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Sessão expirada. Faça login novamente.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            }
+            
+            Authentication tempAuth = (Authentication) session.getAttribute("TEMP_AUTH");
+            Protetico tempUser = (Protetico) session.getAttribute("TEMP_USER");
+            Boolean rememberMe = (Boolean) session.getAttribute("TEMP_REMEMBER_ME");
+            
+            if (tempAuth == null || tempUser == null || !tempUser.getEmail().equals(email)) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Dados de autenticação não encontrados. Faça login novamente.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            }
+            
+            // Verificar código de recuperação
+            if (!emailService.validateRecoveryCode(email, code)) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Código de recuperação inválido ou expirado");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            
+            // Código válido - desativar 2FA e fazer login
+            System.out.println("Código válido - desativando 2FA para: " + email);
+            
+            // Buscar usuário do banco e desativar 2FA
+            Optional<Protetico> userFromDb = proteticoService.findByEmail(email);
+            if (!userFromDb.isPresent()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Usuário não encontrado");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            }
+            
+            Protetico user = userFromDb.get();
+            user.setTwoFactorSecret(null);
+            user.setTwoFactorEnabled(false);
+            
+            // Salvar usando repository para evitar problemas de senha
+            proteticoService.save(user);
+            
+            // Limpar dados temporários
+            session.removeAttribute("TEMP_AUTH");
+            session.removeAttribute("TEMP_USER");
+            session.removeAttribute("TEMP_REMEMBER_ME");
+            
+            // Completar login
+            System.out.println("2FA desativado - completando login para: " + email);
+            return completeLogin(user, tempAuth, rememberMe != null ? rememberMe : false, request, response);
+            
+        } catch (Exception e) {
+            System.err.println("Erro ao verificar código de recuperação: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Erro interno do servidor");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }

@@ -1,10 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
+import api from '../../axios-config';
+import { toast } from 'react-toastify';
 import './styles.css';
 
-const TwoFactorForm = ({ onSubmit, onBack }) => {
+const TwoFactorForm = ({ onSubmit, onBack, email }) => {
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showRecovery, setShowRecovery] = useState(false);
+  const [recoveryCode, setRecoveryCode] = useState('');
+  const [isRecoveryLoading, setIsRecoveryLoading] = useState(false);
+  const [recoveryCodeSent, setRecoveryCodeSent] = useState(false);
   const inputRefs = useRef([]);
 
   useEffect(() => {
@@ -81,6 +87,184 @@ const TwoFactorForm = ({ onSubmit, onBack }) => {
     }
   };
 
+  const handleRequestRecoveryCode = async () => {
+    setIsRecoveryLoading(true);
+    
+    try {
+      const params = new URLSearchParams();
+      params.append('email', email);
+      
+      const response = await api.post('/login/request-recovery-code', params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      });
+      
+      if (response.data.success) {
+        setRecoveryCodeSent(true);
+        toast.success('Código de recuperação enviado para seu email! Pode demorar alguns minutos para chegar.', {
+          position: "top-right",
+          autoClose: 8000
+        });
+      } else {
+        throw new Error(response.data.message || 'Erro ao enviar código');
+      }
+    } catch (error) {
+      console.error('Erro ao solicitar código de recuperação:', error);
+      
+      let errorMessage = 'Erro ao enviar código de recuperação';
+      
+      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        // Em caso de timeout, assumir que o email foi enviado
+        errorMessage = 'O servidor está demorando para responder, mas o email pode ter sido enviado. Verifique sua caixa de entrada e continue com o processo.';
+        setRecoveryCodeSent(true); // Permitir continuar o processo
+        
+        toast.warning(errorMessage, {
+          position: "top-right",
+          autoClose: 10000
+        });
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+        
+        toast.error(errorMessage, {
+          position: "top-right",
+          autoClose: 5000
+        });
+      } else {
+        toast.error(errorMessage, {
+          position: "top-right",
+          autoClose: 5000
+        });
+      }
+    } finally {
+      setIsRecoveryLoading(false);
+    }
+  };
+
+  const handleRecoverySubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!recoveryCode || recoveryCode.length !== 6) {
+      toast.error('Digite o código de 6 dígitos recebido no email');
+      return;
+    }
+
+    setIsRecoveryLoading(true);
+
+    try {
+      const params = new URLSearchParams();
+      params.append('email', email);
+      params.append('code', recoveryCode);
+      
+      const response = await api.post('/login/verify-recovery-code', params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      });
+      
+      if (response.data.success) {
+        toast.success('2FA removido com sucesso! Redirecionando...', {
+          position: "top-right",
+          autoClose: 3000
+        });
+        
+        // Simular o login bem-sucedido
+        // O backend já processou o login e retornou os dados
+        window.location.reload(); // ou usar navigate conforme necessário
+      } else {
+        throw new Error(response.data.message || 'Código inválido');
+      }
+    } catch (error) {
+      console.error('Erro ao verificar código de recuperação:', error);
+      
+      let errorMessage = 'Código de recuperação inválido ou expirado';
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000
+      });
+    } finally {
+      setIsRecoveryLoading(false);
+    }
+  };
+
+  if (showRecovery) {
+    return (
+      <div className="twofactor-form">
+        <div className="recovery-section">
+          <h3>Recuperação de Acesso</h3>
+          <p>Isso irá desativar o 2FA da sua conta e você poderá configurá-lo novamente depois.</p>
+          
+          {!recoveryCodeSent ? (
+            <div className="recovery-request">
+              <p>Clique no botão abaixo para receber um código de recuperação no seu email:</p>
+              <p><strong>{email}</strong></p>
+              
+              <button
+                type="button"
+                onClick={handleRequestRecoveryCode}
+                disabled={isRecoveryLoading}
+                className="btn-recovery-request"
+              >
+                {isRecoveryLoading ? 'Enviando...' : 'Enviar Código por Email'}
+              </button>
+              
+              <div className="recovery-manual">
+                <p><small>Problemas de conexão?</small></p>
+                <button
+                  type="button"
+                  onClick={() => setRecoveryCodeSent(true)}
+                  className="btn-recovery-manual"
+                  disabled={isRecoveryLoading}
+                >
+                  Já recebi o código
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleRecoverySubmit} className="recovery-form">
+              <p>Digite o código de 6 dígitos enviado para seu email:</p>
+              
+              <input
+                type="text"
+                value={recoveryCode}
+                onChange={(e) => setRecoveryCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+                className="recovery-code-input"
+                disabled={isRecoveryLoading}
+                maxLength="6"
+              />
+              
+              <div className="recovery-actions">
+                <button
+                  type="submit"
+                  disabled={isRecoveryLoading || recoveryCode.length !== 6}
+                  className="btn-recovery-verify"
+                >
+                  {isRecoveryLoading ? 'Verificando...' : 'Verificar e Remover 2FA'}
+                </button>
+              </div>
+              
+              <p className="recovery-note">
+                <small>⚠️ Atenção: Isso irá desativar completamente o 2FA da sua conta</small>
+              </p>
+            </form>
+          )}
+          
+          <div className="recovery-back">
+            <button
+              type="button"
+              onClick={() => setShowRecovery(false)}
+              className="btn-recovery-back"
+              disabled={isRecoveryLoading}
+            >
+              Voltar para verificação 2FA
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit} className="twofactor-form">
       <div className="code-input-container">
@@ -129,8 +313,13 @@ const TwoFactorForm = ({ onSubmit, onBack }) => {
       
       <div className="twofactor-help">
         <p>Não consegue acessar seu dispositivo?</p>
-        <button type="button" className="help-link" disabled={isLoading}>
-          Entre em contato com o suporte
+        <button 
+          type="button" 
+          className="help-link" 
+          disabled={isLoading}
+          onClick={() => setShowRecovery(true)}
+        >
+          Receber código por email
         </button>
       </div>
     </form>

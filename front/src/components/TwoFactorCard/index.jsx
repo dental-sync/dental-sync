@@ -15,7 +15,7 @@ const TwoFactorCard = ({ email, onSubmit, onBack }) => {
         <p className="twofactor-email">Logado como: <strong>{email}</strong></p>
       </div>
       
-      <TwoFactorForm onSubmit={onSubmit} onBack={onBack} />
+      <TwoFactorForm onSubmit={onSubmit} onBack={onBack} email={email} />
     </div>
   );
 };

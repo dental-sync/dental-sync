@@ -159,33 +159,14 @@ const ForgotPasswordForm = () => {
     setLoading(true);
 
     try {
-      const params = new URLSearchParams();
-      params.append('email', email);
-
-      const response = await api.post('/password/forgot', params, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      });
-
-      if (response.data.success) {
-        if (response.data.requiresTwoFactor) {
-          setRequiresTwoFactor(true);
-          setRecoveryToken(response.data.recoveryToken);
-          setStep('2fa');
-        } else {
-          setEmailSent(true);
-          setStep('success');
-        }
-        
-        toast.success(response.data.message, {
-          position: "top-right",
-          autoClose: 5000
-        });
-      } else {
-        toast.error(response.data.message || 'Erro ao processar solicitação');
-      }
+      // Temporariamente desabilitado - usar suporte
+      throw new Error('Funcionalidade temporariamente indisponível. Entre em contato com o suporte.');
     } catch (error) {
-      console.error('Erro na recuperação de senha:', error);
-      toast.error('Erro ao processar solicitação. Tente novamente.');
+      console.error('Erro ao solicitar recuperação:', error);
+      toast.error('Funcionalidade de recuperação temporariamente indisponível. Entre em contato com o suporte.', {
+        position: "top-right",
+        autoClose: 5000
+      });
     } finally {
       setLoading(false);
     }

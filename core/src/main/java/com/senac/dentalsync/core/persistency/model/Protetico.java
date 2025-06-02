@@ -114,12 +114,24 @@ public class Protetico extends BaseEntity {
         return cro;
     }
     
+    public String getNome() {
+        return nome;
+    }
+    
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+    
     public String getTelefone() {
         return telefone;
     }
     
     public Boolean getIsAdmin() {
         return isAdmin;
+    }
+    
+    public void setIsAdmin(Boolean isAdmin) {
+        this.isAdmin = isAdmin;
     }
     
     public Laboratorio getLaboratorio() {

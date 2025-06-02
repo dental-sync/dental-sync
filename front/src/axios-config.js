@@ -9,7 +9,7 @@ const baseURL = process.env.NODE_ENV === 'production'
 const api = axios.create({
   baseURL,
   timeout: 30000, // 30 segundos - aumentado para operações que envolvem email
-  withCredentials: true, // Importante: inclui cookies HTTP-only
+  withCredentials: false, // JWT não precisa de cookies
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -19,7 +19,14 @@ const api = axios.create({
 // Interceptadores para requisições
 api.interceptors.request.use(
   config => {
-    // Não é mais necessário adicionar token manualmente - cookies são automáticos
+    // Adicionar token JWT se disponível
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('🔑 Token adicionado à requisição:', config.url);
+    } else {
+      console.log('⚠️ Nenhum token disponível para:', config.url);
+    }
     return config;
   },
   error => {
@@ -32,21 +39,50 @@ api.interceptors.response.use(
   response => {
     return response;
   },
-  error => {
-    // Manipular erros de resposta (ex: 401, 404, 500, etc)
+  async error => {
+    const originalRequest = error.config;
+
+    // Se for erro 401 e não for tentativa de refresh
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+          const response = await axios.post(`${baseURL}/auth/refresh-token`, 
+            new URLSearchParams({ refreshToken }), 
+            {
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            }
+          );
+
+          if (response.data.success) {
+            localStorage.setItem('accessToken', response.data.accessToken);
+            localStorage.setItem('refreshToken', response.data.refreshToken);
+            
+            // Repetir requisição original com novo token
+            originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
+            return api(originalRequest);
+          }
+        }
+      } catch (refreshError) {
+        console.error('Erro ao renovar token:', refreshError);
+      }
+
+      // Se chegou aqui, o refresh falhou - fazer logout
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userData');
+      window.location.href = '/login';
+      return Promise.reject(error);
+    }
+
+    // Manipular outros erros
     if (error.response) {
-      // O servidor respondeu com um status diferente de 2xx
       console.error('Erro na resposta:', error.response.status, error.response.data);
-      
-      // Remover redirecionamento automático - deixar o AuthContext gerenciar
-      // if (error.response.status === 401) {
-      //   window.location.href = '/login';
-      // }
     } else if (error.request) {
-      // A requisição foi feita mas não houve resposta
       console.error('Sem resposta do servidor:', error.request);
     } else {
-      // Erro ao configurar a requisição
       console.error('Erro:', error.message);
     }
     

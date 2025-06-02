@@ -89,103 +89,18 @@ const TwoFactorForm = ({ onSubmit, onBack, email }) => {
   };
 
   const handleRequestRecoveryCode = async () => {
-    setIsRecoveryLoading(true);
-    
-    try {
-      const params = new URLSearchParams();
-      params.append('email', email);
-      
-      const response = await api.post('/login/request-recovery-code', params, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      });
-      
-      if (response.data.success) {
-        setRecoveryCodeSent(true);
-        toast.success('Código de recuperação enviado para seu email! Pode demorar alguns minutos para chegar.', {
-          position: "top-right",
-          autoClose: 8000
-        });
-      } else {
-        throw new Error(response.data.message || 'Erro ao enviar código');
-      }
-    } catch (error) {
-      console.error('Erro ao solicitar código de recuperação:', error);
-      
-      let errorMessage = 'Erro ao enviar código de recuperação';
-      
-      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-        // Em caso de timeout, assumir que o email foi enviado
-        errorMessage = 'O servidor está demorando para responder, mas o email pode ter sido enviado. Verifique sua caixa de entrada e continue com o processo.';
-        setRecoveryCodeSent(true); // Permitir continuar o processo
-        
-        toast.warning(errorMessage, {
-          position: "top-right",
-          autoClose: 10000
-        });
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-        
-        toast.error(errorMessage, {
-          position: "top-right",
-          autoClose: 5000
-        });
-      } else {
-        toast.error(errorMessage, {
-          position: "top-right",
-          autoClose: 5000
-        });
-      }
-    } finally {
-      setIsRecoveryLoading(false);
-    }
+    toast.error('Funcionalidade de recuperação temporariamente indisponível. Entre em contato com o suporte.', {
+      position: "top-right",
+      autoClose: 5000
+    });
   };
 
   const handleRecoverySubmit = async (e) => {
     e.preventDefault();
-    
-    if (!recoveryCode || recoveryCode.length !== 6) {
-      toast.error('Digite o código de 6 dígitos recebido no email');
-      return;
-    }
-
-    setIsRecoveryLoading(true);
-
-    try {
-      const params = new URLSearchParams();
-      params.append('email', email);
-      params.append('code', recoveryCode);
-      
-      const response = await api.post('/login/verify-recovery-code', params, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      });
-      
-      if (response.data.success) {
-        toast.success('2FA removido com sucesso! Redirecionando...', {
-          position: "top-right",
-          autoClose: 3000
-        });
-        
-        // Simular o login bem-sucedido
-        // O backend já processou o login e retornou os dados
-        window.location.reload(); // ou usar navigate conforme necessário
-      } else {
-        throw new Error(response.data.message || 'Código inválido');
-      }
-    } catch (error) {
-      console.error('Erro ao verificar código de recuperação:', error);
-      
-      let errorMessage = 'Código de recuperação inválido ou expirado';
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      }
-      
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 5000
-      });
-    } finally {
-      setIsRecoveryLoading(false);
-    }
+    toast.error('Funcionalidade de recuperação temporariamente indisponível. Entre em contato com o suporte.', {
+      position: "top-right",
+      autoClose: 5000
+    });
   };
 
   if (showRecovery) {

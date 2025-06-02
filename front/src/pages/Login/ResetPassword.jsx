@@ -13,6 +13,7 @@ const ResetPasswordPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     // Verificar se há token na URL
@@ -26,61 +27,15 @@ const ResetPasswordPage = () => {
     setTokenValid(true);
   }, [token, navigate]);
 
-  const handleReset = async ({ password, confirmPassword }) => {
-    if (password !== confirmPassword) {
-      toast.error('As senhas não coincidem');
-      return;
-    }
-
-    if (password.length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres');
-      return;
-    }
-
+  const handleSubmit = async (formData) => {
     setLoading(true);
-
+    
     try {
-      const params = new URLSearchParams();
-      params.append('token', token);
-      params.append('newPassword', password);
-
-      const response = await api.post('/password/reset', params, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      });
-
-      if (response.data.success) {
-        setSuccess(true);
-        
-        toast.success('Senha alterada com sucesso! Redirecionando para o login...', {
-          position: "top-right",
-          autoClose: 3000
-        });
-
-        // Redirecionar para login após 3 segundos
-        setTimeout(() => {
-          navigate('/login');
-        }, 3000);
-      } else {
-        toast.error(response.data.message || 'Erro ao redefinir senha');
-      }
+      // Temporariamente desabilitado
+      throw new Error('Funcionalidade temporariamente indisponível. Entre em contato com o suporte.');
     } catch (error) {
       console.error('Erro ao redefinir senha:', error);
-      
-      let errorMessage = 'Erro ao redefinir senha';
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-        
-        // Se o token é inválido, redirecionar para recuperação
-        if (errorMessage.includes('Token inválido') || errorMessage.includes('expirado')) {
-          toast.error('Token expirado ou inválido. Solicite uma nova recuperação.');
-          setTimeout(() => {
-            navigate('/forgot-password');
-          }, 2000);
-          return;
-        }
-      }
-      
-      toast.error(errorMessage);
+      setError('Funcionalidade de reset temporariamente indisponível. Entre em contato com o suporte.');
     } finally {
       setLoading(false);
     }
@@ -129,9 +84,10 @@ const ResetPasswordPage = () => {
       </header>
       <main className="reset-main">
         <ResetPasswordForm 
-          onSubmit={handleReset} 
+          onSubmit={handleSubmit} 
           loading={loading} 
           success={success}
+          error={error}
         />
       </main>
       <footer className="reset-footer">

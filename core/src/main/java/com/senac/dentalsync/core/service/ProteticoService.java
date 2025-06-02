@@ -188,9 +188,15 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
             return true;
         }
         
+        // Se a senha atual é null ou vazia, significa que não foi enviada (edição sem alterar senha)
+        if (protetico.getSenha() == null || protetico.getSenha().trim().isEmpty()) {
+            System.out.println("Senha não fornecida - mantendo senha existente");
+            protetico.setSenha(existente.getSenha()); // Manter senha existente
+            return false; // Não foi alterada
+        }
+        
         // Verificar se a senha atual já está criptografada (começa com $2a$ ou $2b$)
-        boolean senhaAtualJaCriptografada = protetico.getSenha() != null && 
-            (protetico.getSenha().startsWith("$2a$") || protetico.getSenha().startsWith("$2b$"));
+        boolean senhaAtualJaCriptografada = protetico.getSenha().startsWith("$2a$") || protetico.getSenha().startsWith("$2b$");
         
         // Verificar se a senha existente já está criptografada
         boolean senhaExistenteJaCriptografada = existente.getSenha() != null && 

@@ -17,51 +17,98 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [sessionDuration, setSessionDuration] = useState('');
 
-  // Verificar se há sessão ativa ao carregar a aplicação
+  // Verificar se há token ativo ao carregar a aplicação
   useEffect(() => {
-    // Não verificar autenticação se estiver fazendo logout
     if (isLoggingOut) {
       return;
     }
 
     const checkAuth = async () => {
       try {
-        const response = await api.get('/auth/check');
+        const token = localStorage.getItem('accessToken');
+        console.log('🔍 Verificando autenticação... Token existe:', !!token);
         
-        if (response.data.success && response.data.authenticated) {
-          setIsAuthenticated(true);
-          setUser(response.data.user);
-          setRememberMe(response.data.rememberMe || false);
-          setSessionDuration(response.data.sessionDuration || '');
-        } else {
+        if (!token) {
+          console.log('❌ Nenhum token encontrado');
           setIsAuthenticated(false);
           setUser(null);
           setRememberMe(false);
-          setSessionDuration('');
+          setLoading(false);
+          return;
         }
-        } catch (error) {
-          console.error('Erro ao verificar autenticação:', error);
+
+        console.log('🔑 Token encontrado, verificando validade...');
+        // Verificar se o token ainda é válido
+        const response = await api.get('/auth/check-auth');
+        
+        if (response.data.success && response.data.authenticated) {
+          console.log('✅ Usuário autenticado:', response.data.user.email);
+          setIsAuthenticated(true);
+          setUser(response.data.user);
+          
+          // Recuperar dados do localStorage
+          const userData = localStorage.getItem('userData');
+          if (userData) {
+            const parsedData = JSON.parse(userData);
+            setRememberMe(parsedData.rememberMe || false);
+          }
+        } else {
+          console.log('❌ Token inválido ou expirado');
+          // Token inválido - limpar tudo
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('userData');
+          setIsAuthenticated(false);
+          setUser(null);
+          setRememberMe(false);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao verificar autenticação:', error);
+        // Se der erro, limpar tokens
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('userData');
         setIsAuthenticated(false);
         setUser(null);
         setRememberMe(false);
-        setSessionDuration('');
       } finally {
-      setLoading(false);
+        setLoading(false);
       }
     };
 
     checkAuth();
   }, [isLoggingOut]);
 
-  const login = (userData) => {
+  const login = (userData, accessToken, refreshToken) => {
+    console.log('🔐 Fazendo login com dados:', { 
+      email: userData.email, 
+      rememberMe: userData.rememberMe,
+      hasToken: !!accessToken 
+    });
+    
+    // Salvar tokens no localStorage
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+    
+    // Salvar dados do usuário
+    const userDataToStore = {
+      ...userData,
+      rememberMe: userData.rememberMe || false
+    };
+    localStorage.setItem('userData', JSON.stringify(userDataToStore));
+    
+    console.log('💾 Dados salvos no localStorage:', {
+      hasAccessToken: !!localStorage.getItem('accessToken'),
+      hasRefreshToken: !!localStorage.getItem('refreshToken'),
+      userData: userDataToStore
+    });
+    
+    // Atualizar estado
     setIsAuthenticated(true);
     setUser(userData);
     setRememberMe(userData.rememberMe || false);
-    setSessionDuration(userData.sessionDuration || '');
     setIsLoggingOut(false);
-    // Não salvamos mais no localStorage - cookies são gerenciados automaticamente
   };
 
   const logout = async () => {
@@ -69,20 +116,22 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     
     try {
-      await api.post('/logout');
+      await api.post('/auth/logout');
     } catch (error) {
       console.error('Erro ao fazer logout no servidor:', error);
-      // Mesmo com erro, continuamos o logout local
     }
     
-    // Limpar estado local sempre
+    // Limpar localStorage
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('userData');
+    
+    // Limpar estado
     setIsAuthenticated(false);
     setUser(null);
     setRememberMe(false);
-    setSessionDuration('');
     setLoading(false);
     
-    // Usar setTimeout para garantir que o estado foi limpo antes do redirecionamento
     setTimeout(() => {
       setIsLoggingOut(false);
       window.location.href = '/login';
@@ -90,19 +139,25 @@ export const AuthProvider = ({ children }) => {
   };
 
   const refreshUserData = async () => {
-    // Não atualizar dados se estiver fazendo logout
     if (isLoggingOut) {
       throw new Error('Sistema fazendo logout');
     }
 
     try {
-      const response = await api.get('/auth/check');
+      const response = await api.get('/auth/check-auth');
       
       if (response.data.success && response.data.authenticated) {
         const userInfo = response.data.user;
         setUser(userInfo);
-        setRememberMe(response.data.rememberMe || false);
-        setSessionDuration(response.data.sessionDuration || '');
+        
+        // Atualizar localStorage
+        const userData = localStorage.getItem('userData');
+        if (userData) {
+          const parsedData = JSON.parse(userData);
+          const updatedData = { ...parsedData, ...userInfo };
+          localStorage.setItem('userData', JSON.stringify(updatedData));
+        }
+        
         return userInfo;
       } else {
         throw new Error('Usuário não autenticado');
@@ -110,10 +165,12 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Erro ao atualizar dados do usuário:', error);
       if (!isLoggingOut) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('userData');
         setIsAuthenticated(false);
         setUser(null);
         setRememberMe(false);
-        setSessionDuration('');
       }
       throw error;
     }
@@ -127,8 +184,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     refreshUserData,
     isAdmin: user?.isAdmin || false,
-    rememberMe,
-    sessionDuration
+    rememberMe
   };
 
   return (

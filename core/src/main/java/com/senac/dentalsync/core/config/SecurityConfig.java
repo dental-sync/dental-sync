@@ -1,5 +1,6 @@
 package com.senac.dentalsync.core.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,17 +12,21 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
+    
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     public SecurityConfig(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
@@ -33,21 +38,23 @@ public class SecurityConfig {
             .cors().and()
             .csrf().disable()
             .authorizeHttpRequests()
-                .requestMatchers("/login", "/logout", "/auth/check", "/login/verify-2fa", "/login/request-recovery-code", "/login/verify-recovery-code",
-                        "/password/forgot", "/password/verify-2fa", "/password/request-email-link", "/password/reset").permitAll() // endpoints de autenticação e recuperação
-                .requestMatchers("/proteticos", "/laboratorios").permitAll() // permitir cadastro
-                .requestMatchers("/security/reset-password-emergency").permitAll() // endpoint temporário de reset
-                .requestMatchers("/security/**").authenticated() // outros endpoints de segurança requerem autenticação
+                // Endpoints de autenticação JWT
+                .requestMatchers("/auth/**").permitAll()
+                // Permitir apenas POST para cadastros (registros)
+                .requestMatchers(HttpMethod.POST, "/proteticos", "/laboratorios").permitAll()
+                // Endpoint temporário de reset
+                .requestMatchers("/security/reset-password-emergency").permitAll()
+                // Outros endpoints de segurança requerem autenticação
+                .requestMatchers("/security/**").authenticated()
+                // Todos os outros endpoints requerem autenticação
                 .anyRequest().authenticated()
             .and()
+            // Configurar para JWT (stateless)
             .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                .maximumSessions(1)
-                .maxSessionsPreventsLogin(false)
-                .sessionRegistry(sessionRegistry())
-                .and()
-                .sessionFixation().migrateSession()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
+            // Adicionar filtro JWT antes do filtro de autenticação padrão
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .formLogin().disable()
             .httpBasic().disable();
             
@@ -73,21 +80,11 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:5173", "http://localhost:8080"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true); // Importante para cookies
+        configuration.setAllowCredentials(true); // Permitir credentials para compatibilidade com endpoints antigos
         configuration.setMaxAge(3600L); // Cache por 1 hora
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-    
-    @Bean
-    public HttpSessionEventPublisher httpSessionEventPublisher() {
-        return new HttpSessionEventPublisher();
-    }
-
-    @Bean
-    public org.springframework.security.core.session.SessionRegistry sessionRegistry() {
-        return new org.springframework.security.core.session.SessionRegistryImpl();
     }
 } 

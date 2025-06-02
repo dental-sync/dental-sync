@@ -13,22 +13,24 @@ const TwoFactorPage = () => {
   const { login } = useAuth();
   
   // Verificar se há dados do login anterior
+  const tempAuthId = location.state?.tempAuthId;
   const email = location.state?.email;
   
   // Redirecionar se não houver dados válidos
   React.useEffect(() => {
-    if (!email) {
+    if (!tempAuthId || !email) {
       navigate('/login', { replace: true });
     }
-  }, [email, navigate]);
+  }, [tempAuthId, email, navigate]);
 
   const handleVerifyCode = async (totpCode, trustThisDevice = false) => {
     try {
       const params = new URLSearchParams();
+      params.append('tempAuthId', tempAuthId);
       params.append('totpCode', totpCode);
       params.append('trustThisDevice', trustThisDevice);
       
-      const response = await api.post('/login/verify-2fa', params, {
+      const response = await api.post('/auth/verify-2fa', params, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
       
@@ -36,15 +38,14 @@ const TwoFactorPage = () => {
         const userData = {
           email: email,
           ...response.data.user,
-          rememberMe: response.data.rememberMe,
-          sessionDuration: response.data.sessionDuration
+          rememberMe: response.data.rememberMe
         };
         
-        login(userData);
+        login(userData, response.data.accessToken, response.data.refreshToken);
         
         let successMessage = 'Login realizado com sucesso!';
         if (trustThisDevice) {
-          successMessage += ' Dispositivo será lembrado por 10 minutos.';
+          successMessage += ' Dispositivo será lembrado.';
         }
         
         toast.success(successMessage, {
@@ -58,23 +59,16 @@ const TwoFactorPage = () => {
       }
     } catch (error) {
       console.error('Erro na verificação 2FA:', error);
-      
-      let errorMessage = 'Código inválido. Tente novamente.';
+      let errorMessage = 'Erro ao verificar código';
       
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
-        
-        // Se a sessão expirou, redirecionar para login
-        if (errorMessage.includes('Sessão expirada') || errorMessage.includes('Dados de autenticação não encontrados')) {
-          toast.error(errorMessage);
-          navigate('/login', { replace: true });
-          return;
-        }
-      } else if (error.message) {
-        errorMessage = error.message;
       }
       
-      throw new Error(errorMessage);
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 4000
+      });
     }
   };
 
@@ -82,15 +76,11 @@ const TwoFactorPage = () => {
     navigate('/login', { replace: true });
   };
 
-  if (!email) {
-    return null; // Ou componente de loading
-  }
-
   return (
     <AuthLayout>
       <TwoFactorCard 
-        email={email}
         onSubmit={handleVerifyCode}
+        email={email}
         onBack={handleBack}
       />
     </AuthLayout>

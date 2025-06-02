@@ -6,7 +6,7 @@ import NotificationBell from '../../components/NotificationBell/NotificationBell
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import ActionMenu from '../../components/ActionMenu/ActionMenu';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 import ServicoTable from '../../components/ServicoTable/ServicoTable';
 
@@ -39,9 +39,9 @@ const ServicoPage = () => {
 
   useEffect(() => {
     const fetchServicos = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        const response = await axios.get('http://localhost:8080/servico');
+        const response = await api.get('/servico');
         const servicosFormatados = response.data.map(servico => ({
           id: servico.id,
           nome: servico.nome,
@@ -52,18 +52,9 @@ const ServicoPage = () => {
           isActive: servico.isActive ? 'ATIVO' : 'INATIVO'
         }));
         setServicos(servicosFormatados);
-      } catch (err) {
-        console.error('Erro ao buscar serviços:', err);
-        setServicos([]);
-        setError('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.');
-        toast.error('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.', {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: false
-        });
+      } catch (error) {
+        console.error('Erro ao buscar serviços:', error);
+        toast.error('Erro ao carregar serviços');
       } finally {
         setLoading(false);
       }

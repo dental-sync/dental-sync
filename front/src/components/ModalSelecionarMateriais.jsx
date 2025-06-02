@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../axios-config';
 import './ModalSelecionarMateriais.css';
 
 const ModalSelecionarMateriais = ({ isOpen, onClose, onConfirm, materiaisSelecionados = [] }) => {
@@ -10,11 +10,16 @@ const ModalSelecionarMateriais = ({ isOpen, onClose, onConfirm, materiaisSelecio
 
   useEffect(() => {
     if (isOpen) {
-      setLoading(true);
-      axios.get('http://localhost:8080/material')
-        .then(res => setMateriais(res.data))
-        .catch(() => setMateriais([]))
-        .finally(() => setLoading(false));
+      const fetchMateriais = async () => {
+        try {
+          const response = await api.get('/material');
+          setMateriais(response.data);
+        } catch (error) {
+          console.error('Erro ao carregar materiais:', error);
+        }
+      };
+      
+      fetchMateriais();
     }
   }, [isOpen]);
 

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './ModalCadastroCategoriaServico.css';
-import axios from 'axios';
+import api from '../axios-config';
 
 const ModalCadastroCategoriaServico = ({ isOpen, onClose, onSuccess }) => {
   const [nome, setNome] = useState('');
@@ -59,18 +59,23 @@ const ModalCadastroCategoriaServico = ({ isOpen, onClose, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (!nome.trim()) {
-      setError('O nome da categoria é obrigatório.');
+      setError('Nome da categoria é obrigatório');
       return;
     }
+
     setLoading(true);
-    setError(null);
+    setError('');
+
     try {
-      const response = await axios.post('http://localhost:8080/categoria-servico', { nome });
+      const response = await api.post('/categoria-servico', { nome });
       onSuccess(response.data);
       setNome('');
-    } catch (err) {
-      setError('Erro ao cadastrar categoria.');
+      onClose();
+    } catch (error) {
+      console.error('Erro ao criar categoria:', error);
+      setError('Erro ao criar categoria. Tente novamente.');
     } finally {
       setLoading(false);
     }

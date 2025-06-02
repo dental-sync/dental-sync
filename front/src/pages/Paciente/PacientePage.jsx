@@ -7,7 +7,7 @@ import PacienteTable from '../../components/PacienteTable/PacienteTable'; //tabe
 import NotificationBell from '../../components/NotificationBell/NotificationBell'; //sininho de notificações (NotificationBell [componente])
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown'; //componente de exportação de dados
 import { useNavigate, useLocation } from 'react-router-dom'; //navegação e controle de rota (useNavigate [hook], useLocation [hook])
-import axios from 'axios'; //para fazer requisições HTTP (axios [biblioteca]) 
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const PacientePage = () => {
@@ -47,74 +47,15 @@ const PacientePage = () => {
 
   useEffect(() => {
     const fetchPacientes = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        
-        try {
-          console.log('Buscando dados de pacientes da API...');
-          const response = await axios.get('http://localhost:8080/paciente');
-          
-          
-          const pacientesFormatados = response.data.map(paciente => {
-            // Para garantir que não haja problemas com fuso horário, vamos processar manualmente a data
-            let dataFormatada = '-';
-            if (paciente.dataNascimento) {
-              // A data vem no formato ISO do backend (YYYY-MM-DD)
-              const [ano, mes, dia] = paciente.dataNascimento.split('-');
-              dataFormatada = `${dia}/${mes}/${ano}`;
-            }
-            
-            let ultimoServicoFormatado = '-';
-            if (paciente.ultimoPedido) {
-              const [ano, mes, dia] = paciente.ultimoPedido.split('-');
-              ultimoServicoFormatado = `${dia}/${mes}/${ano}`;
-            }
-            
-            return {
-              id: paciente.id,
-              nome: paciente.nome,
-              telefone: paciente.telefone || '-',
-              email: paciente.email || '-',
-              dataNascimento: dataFormatada,
-              ultimoServico: ultimoServicoFormatado,
-              isActive: paciente.isActive ? 'ATIVO' : 'INATIVO',
-              status: paciente.isActive ? 'ATIVO' : 'INATIVO'
-            };
-          });
-          
-          setPacientes(pacientesFormatados);
-          console.log('Dados de pacientes recebidos:', pacientesFormatados);
-        } catch (apiErr) {
-          console.error('Não foi possível acessar a API:', apiErr);
-         
-          setPacientes([]);
-          setError('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.');
-          
-          toast.error('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.', {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: false,
-            draggable: false
-          });
-        }
-        
+        const response = await api.get('/paciente');
+        setPacientes(response.data);
+      } catch (error) {
+        console.error('Erro ao buscar pacientes:', error);
+        toast.error('Erro ao carregar pacientes');
+      } finally {
         setLoading(false);
-      } catch (err) {
-        console.error('Erro ao buscar pacientes:', err);
-        setPacientes([]);
-        setLoading(false);
-        setError('Ocorreu um erro inesperado. Tente novamente mais tarde.');
-        
-        toast.error('Ocorreu um erro inesperado. Tente novamente mais tarde.', {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: false
-        });
       }
     };
     
@@ -204,13 +145,13 @@ const PacientePage = () => {
       setPacientes(prevPacientes =>
         prevPacientes.map(paciente =>
           paciente.id === pacienteId
-            ? { ...paciente, isActive: newStatus, status: newStatus }
+            ? { ...paciente, isActive: newStatus }
             : paciente
         )
       );
       
       // Exibir o toast de forma padronizada
-      const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
+      const statusText = newStatus ? 'Ativo' : 'Inativo';
       
       // Limpa qualquer estado de navegação existente
       window.history.replaceState({}, document.title);
@@ -229,8 +170,11 @@ const PacientePage = () => {
   const pacientesFiltrados = pacientes
     .filter(paciente => {
       
-      if (filtros.isActive !== 'todos' && paciente.isActive !== filtros.isActive) {
-        return false;
+      if (filtros.isActive !== 'todos') {
+        const isAtivo = filtros.isActive === 'ATIVO';
+        if (paciente.isActive !== isAtivo) {
+          return false;
+        }
       }
       
       

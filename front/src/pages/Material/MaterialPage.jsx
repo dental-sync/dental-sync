@@ -6,7 +6,7 @@ import NotificationBell from '../../components/NotificationBell/NotificationBell
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import MaterialTable from '../../components/MaterialTable/MaterialTable';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
@@ -32,47 +32,26 @@ const MaterialPage = () => {
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/categoria-material');
+        const response = await api.get('/categoria-material');
         setCategorias(response.data);
       } catch (error) {
         console.error('Erro ao buscar categorias:', error);
-        toast.error('Erro ao carregar categorias para filtro.');
+        toast.error('Erro ao carregar categorias');
       }
     };
 
     fetchCategorias();
   }, []);
   
-  // Função para buscar materiais da API
-  const fetchMateriaisData = async (pageNum, pageSize) => {
+  // Função para buscar materiais da API (para o hook useInfiniteScroll)
+  const fetchMateriais = async (pageNum = 0, pageSize = 20) => {
     try {
-      const response = await axios.get(`http://localhost:8080/material/paginado?page=${pageNum}&size=${pageSize}`);
-      
-      const responseData = response.data;
-      const materiaisFormatados = responseData.content.map(material => {
-        console.log('material recebido da API:', material);
-        return {
-          id: material.id,
-          nome: material.nome,
-          descricao: material.descricao || '-',
-          quantidade: material.quantidade,
-          unidadeMedida: material.unidadeMedida,
-          valorUnitario: material.valorUnitario,
-          categoriaMaterial: material.categoriaMaterial,
-          status: material.status,
-          isActive: material.isActive
-        };
-      });
-      
-      return {
-        content: materiaisFormatados,
-        totalElements: responseData.totalElements,
-        last: responseData.last
-      };
+      const response = await api.get(`/material/paginado?page=${pageNum}&size=${pageSize}`);
+      return response.data; // Retorna o objeto de paginação completo
     } catch (error) {
-      console.error('Não foi possível acessar a API:', error);
-      toast.error('Erro ao buscar materiais. Por favor, tente novamente.');
-      throw error;
+      console.error('Erro ao buscar materiais:', error);
+      toast.error('Erro ao carregar materiais');
+      throw error; // Re-lança o erro para o hook tratar
     }
   };
   
@@ -83,7 +62,7 @@ const MaterialPage = () => {
     loadingMore,
     lastElementRef: lastMaterialElementRef,
     refresh: refreshMateriais
-  } = useInfiniteScroll(fetchMateriaisData);
+  } = useInfiniteScroll(fetchMateriais);
 
   // Esconder dropdown de filtro ao clicar fora dele
   useEffect(() => {
@@ -167,26 +146,26 @@ const MaterialPage = () => {
   };
 
   const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:8080/material/${id}`);
-      toast.success('Material excluído com sucesso!');
-      refreshMateriais();
-    } catch (error) {
-      console.error('Erro ao excluir material:', error);
-      toast.error('Erro ao excluir material. Por favor, tente novamente.');
+    if (window.confirm('Tem certeza que deseja excluir este material?')) {
+      try {
+        await api.delete(`/material/${id}`);
+        toast.success('Material excluído com sucesso!');
+        refreshMateriais();
+      } catch (error) {
+        console.error('Erro ao excluir material:', error);
+        toast.error('Erro ao excluir material');
+      }
     }
   };
 
-  const handleStatusChange = async (id, isActive) => {
+  const handleToggleStatus = async (id, currentStatus) => {
     try {
-      await axios.patch(`http://localhost:8080/material/${id}`, { isActive });
+      await api.patch(`/material/${id}`, { isActive: !currentStatus });
+      toast.success('Status alterado com sucesso!');
       refreshMateriais();
-      setTimeout(() => {
-        toast.success(`Material ${isActive ? 'Ativado' : 'Inativado'} com sucesso!`);
-      }, 100);
     } catch (error) {
-      console.error('Erro ao alterar status do material:', error);
-      toast.error('Erro ao alterar status do material. Por favor, tente novamente.');
+      console.error('Erro ao alterar status:', error);
+      toast.error('Erro ao alterar status');
     }
   };
 
@@ -368,7 +347,7 @@ const MaterialPage = () => {
         <MaterialTable 
           materiais={sortedMateriais}
           onDelete={handleDelete}
-          onStatusChange={handleStatusChange}
+          onStatusChange={handleToggleStatus}
           lastElementRef={lastMaterialElementRef}
           sortConfig={sortConfig}
           onSort={handleSort}

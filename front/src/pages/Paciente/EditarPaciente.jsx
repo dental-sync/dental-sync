@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './EditarPaciente.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const EditarPaciente = () => {
@@ -13,7 +13,15 @@ const EditarPaciente = () => {
     email: '',
     telefone: '',
     dataNascimento: '',
-    isActive: true
+    isActive: true,
+    endereco: {
+      cep: '',
+      logradouro: '',
+      numero: '',
+      bairro: '',
+      cidade: '',
+      estado: ''
+    }
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -22,43 +30,38 @@ const EditarPaciente = () => {
 
   useEffect(() => {
     const fetchPaciente = async () => {
-      setLoading(true);
+      if (!id) return;
+      
       try {
-        const response = await axios.get(`http://localhost:8080/paciente/${id}`);
-        console.log('Dados recebidos do servidor:', response.data);
+        setLoading(true);
+        const response = await api.get(`/paciente/${id}`);
+        const paciente = response.data;
         
-       
-        const isActiveValue = typeof response.data.isActive === 'boolean' 
-          ? response.data.isActive 
-          : (response.data.isActive === 'true' || response.data.isActive === true);
-        
-        
-        let dataNascimentoFormatada = '';
-        if (response.data.dataNascimento) {
-          // A data vem no formato ISO do backend, pronta para o input type="date"
-          dataNascimentoFormatada = response.data.dataNascimento;
-          console.log('Data recebida do backend:', response.data.dataNascimento);
-          console.log('Data formatada para o formulário:', dataNascimentoFormatada);
-        }
-          
         setFormData({
-          nome: response.data.nome || '',
-          email: response.data.email || '',
-          telefone: response.data.telefone || '',
-          dataNascimento: dataNascimentoFormatada,
-          isActive: isActiveValue
+          nome: paciente.nome || '',
+          email: paciente.email || '',
+          telefone: paciente.telefone || '',
+          dataNascimento: paciente.dataNascimento || '',
+          endereco: {
+            cep: paciente.endereco?.cep || '',
+            logradouro: paciente.endereco?.logradouro || '',
+            numero: paciente.endereco?.numero || '',
+            bairro: paciente.endereco?.bairro || '',
+            cidade: paciente.endereco?.cidade || '',
+            estado: paciente.endereco?.estado || ''
+          }
         });
-        
-        setLoading(false);
-      } catch (err) {
-        console.error('Erro ao buscar dados do paciente:', err);
-        toast.error('Não foi possível carregar os dados do paciente. Tente novamente mais tarde.');
+      } catch (error) {
+        console.error('Erro ao buscar paciente:', error);
+        toast.error('Erro ao carregar dados do paciente');
+        navigate('/paciente');
+      } finally {
         setLoading(false);
       }
     };
 
     fetchPaciente();
-  }, [id]);
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -211,52 +214,25 @@ const EditarPaciente = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Aplicar trim() no nome e email antes da validação
-    setFormData(prev => ({
-      ...prev,
-      nome: prev.nome.trim(),
-      email: prev.email.trim()
-    }));
-    
-    if (!validateForm()) {
-      return;
-    }
-    
+    if (!validateForm()) return;
+
     setSaving(true);
-    
     try {
-      // Preparar os dados para enviar para o backen
       const pacienteData = {
-        ...formData,
-        nome: formData.nome.trim(),
-        email: formData.email.trim(),
-        dataNascimento: formatDateForAPI(formData.dataNascimento)
+        nome: formData.nome,
+        email: formData.email,
+        telefone: formData.telefone,
+        dataNascimento: formData.dataNascimento,
+        endereco: formData.endereco
       };
-      
-      // Certificar-se de que isActive é boolean
-      pacienteData.isActive = Boolean(pacienteData.isActive);
-      
-      console.log('Data de nascimento do formulário:', formData.dataNascimento);
-      console.log('Data de nascimento formatada para API:', pacienteData.dataNascimento);
-      console.log('Enviando dados para a API:', pacienteData);
-      
-      // Enviar a atualização para a API
-      const response = await axios.put(`http://localhost:8080/paciente/${id}`, pacienteData);
-      console.log('Resposta da API:', response.data);
-      
-      // Limpa qualquer estado de navegação existente
-      window.history.replaceState({}, document.title);
-      
-      // Navegar para a página de listagem com mensagem de sucesso
-      navigate('/paciente', { 
-        state: { 
-          success: `Paciente atualizado com sucesso!`,
-          refresh: true
-        } 
-      });
-    } catch (err) {
-      console.error('Erro ao atualizar paciente:', err);
-      toast.error('Ocorreu um erro ao salvar as alterações. Tente novamente.');
+
+      const response = await api.put(`/paciente/${id}`, pacienteData);
+      toast.success('Paciente atualizado com sucesso!');
+      navigate('/paciente');
+    } catch (error) {
+      console.error('Erro ao atualizar paciente:', error);
+      const errorMessage = error.response?.data?.message || 'Erro ao atualizar paciente';
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -266,36 +242,21 @@ const EditarPaciente = () => {
     navigate('/paciente');
   };
 
-  const handleToggleStatus = async () => {
+  const handleStatusToggle = async () => {
     try {
-      setSaving(true);
-      
-      const newStatus = !formData.isActive;
-      
-      
-      await axios.patch(`http://localhost:8080/paciente/${id}`, {
-        isActive: newStatus
+      await api.patch(`/paciente/${id}`, {
+        isActive: !formData.isActive
       });
       
+      setFormData(prev => ({
+        ...prev,
+        isActive: !prev.isActive
+      }));
       
-      setFormData({
-        ...formData,
-        isActive: newStatus
-      });
-      
-      window.history.replaceState({}, document.title);
-      
-      navigate('/paciente', { 
-        state: { 
-          success: `Status atualizado com sucesso para ${newStatus ? 'Ativo' : 'Inativo'}`,
-          refresh: true 
-        } 
-      });
-    } catch (err) {
-      console.error('Erro ao atualizar status do paciente:', err);
-      toast.error('Ocorreu um erro ao atualizar o status. Tente novamente.');
-    } finally {
-      setSaving(false);
+      toast.success('Status do paciente alterado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao alterar status:', error);
+      toast.error('Erro ao alterar status do paciente');
     }
   };
 

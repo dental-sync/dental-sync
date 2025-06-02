@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './EditarDentista.css';
-import axios from 'axios';
+import api from '../../axios-config';
 import ModalCadastroClinica from '../../components/ModalCadastroClinica/ModalCadastroClinica';
 import { toast } from 'react-toastify';
 
@@ -26,35 +26,36 @@ const EditarDentista = () => {
   const [showModalClinica, setShowModalClinica] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const loadData = async () => {
       try {
+        setLoading(true);
         const [dentistaResponse, clinicasResponse] = await Promise.all([
-          axios.get(`http://localhost:8080/dentistas/${id}`),
-          axios.get('http://localhost:8080/clinicas')
+          api.get(`/dentistas/${id}`),
+          api.get('/clinicas')
         ]);
         
         const dentista = dentistaResponse.data;
+        setClinicas(clinicasResponse.data);
+        
         setFormData({
-          ...formData,
-          nome: dentista.nome,
-          cro: dentista.cro,
-          telefone: dentista.telefone,
-          email: dentista.email,
-          clinicasAssociadas: dentista.clinicas || [],
+          nome: dentista.nome || '',
+          cro: dentista.cro || '',
+          telefone: dentista.telefone || '',
+          email: dentista.email || '',
+          clinica: dentista.clinica?.id || '',
           isActive: dentista.isActive
         });
-        
-        setClinicas(clinicasResponse.data);
-      } catch (err) {
-        console.error('Erro ao carregar dados:', err);
-        setErrors({ general: 'Não foi possível carregar os dados do dentista.' });
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        toast.error('Erro ao carregar dados do dentista');
+        navigate('/dentista');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [id]);
+    loadData();
+  }, [id, navigate]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -231,37 +232,14 @@ const EditarDentista = () => {
     setSaving(true);
     
     try {
-      // Verificar todas as validações simultaneamente
-      const [croResponse, emailResponse, telefoneResponse] = await Promise.all([
-        axios.get(`http://localhost:8080/dentistas/cro/${formData.cro}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/dentistas/email/${formData.email}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/dentistas/telefone/${formData.telefone}`).catch(() => ({ data: null }))
-      ]);
+      const errors = await checkUniqueFields();
 
-      const newErrors = {};
-
-      // Verifica se o CRO pertence a outro dentista
-      if (croResponse.data && croResponse.data.id !== parseInt(id)) {
-        newErrors.cro = "CRO já cadastrado";
-      }
-
-      // Verifica se o email pertence a outro dentista
-      if (emailResponse.data && emailResponse.data.id !== parseInt(id)) {
-        newErrors.email = "E-mail já cadastrado";
-      }
-
-      // Verifica se o telefone pertence a outro dentista
-      if (telefoneResponse.data && telefoneResponse.data.id !== parseInt(id)) {
-        newErrors.telefone = "Telefone já cadastrado";
-      }
-
-      if (Object.keys(newErrors).length > 0) {
-        setErrors(newErrors);
+      if (Object.keys(errors).length > 0) {
+        setErrors(errors);
         setSaving(false);
         return;
       }
 
-      // Se chegou aqui, nenhum dado está duplicado
       const dentistaData = {
         nome: formData.nome,
         cro: formData.cro,
@@ -271,7 +249,7 @@ const EditarDentista = () => {
         isActive: formData.isActive
       };
 
-      await axios.put(`http://localhost:8080/dentistas/${id}`, dentistaData);
+      await api.put(`/dentistas/${id}`, dentistaData);
       
       // Limpa qualquer estado de navegação existente
       window.history.replaceState({}, document.title);
@@ -324,6 +302,35 @@ const EditarDentista = () => {
       pauseOnHover: true,
       draggable: true
     });
+  };
+
+  const checkUniqueFields = async () => {
+    try {
+      const [croResponse, emailResponse, telefoneResponse] = await Promise.all([
+        api.get(`/dentistas/cro/${formData.cro}`).catch(() => ({ data: null })),
+        api.get(`/dentistas/email/${formData.email}`).catch(() => ({ data: null })),
+        api.get(`/dentistas/telefone/${formData.telefone}`).catch(() => ({ data: null }))
+      ]);
+
+      const errors = {};
+      
+      if (croResponse.data && croResponse.data.id !== parseInt(id)) {
+        errors.cro = 'CRO já cadastrado';
+      }
+      
+      if (emailResponse.data && emailResponse.data.id !== parseInt(id)) {
+        errors.email = 'Email já cadastrado';
+      }
+      
+      if (telefoneResponse.data && telefoneResponse.data.id !== parseInt(id)) {
+        errors.telefone = 'Telefone já cadastrado';
+      }
+      
+      return errors;
+    } catch (error) {
+      console.error('Erro ao verificar campos únicos:', error);
+      return {};
+    }
   };
 
   if (loading) {

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import './ActionMenuClinica.css';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
@@ -64,15 +64,18 @@ const ActionMenuClinica = ({ clinicaId, itemId, onClinicaDeleted, onItemDeleted 
     setIsOpen(false);
   };
 
-  const handleConfirmDelete = async () => {
-    try {
-      await axios.delete(`http://localhost:8080/clinicas/${id}`);
-      onDeleted(id);
-    } catch (error) {
-      console.error('Erro ao excluir clínica:', error);
-      toast.error('Erro ao excluir clínica. Tente novamente.');
+  const handleDelete = async () => {
+    if (window.confirm('Tem certeza que deseja excluir esta clínica?')) {
+      try {
+        await api.delete(`/clinicas/${id}`);
+        toast.success('Clínica excluída com sucesso!');
+        onDeleted(id);
+      } catch (error) {
+        console.error('Erro ao excluir clínica:', error);
+        toast.error('Erro ao excluir clínica');
+      }
     }
-    setShowDeleteModal(false);
+    setIsOpen(false);
   };
 
   const renderDropdown = () => {
@@ -122,7 +125,7 @@ const ActionMenuClinica = ({ clinicaId, itemId, onClinicaDeleted, onItemDeleted 
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleConfirmDelete}
+        onConfirm={handleDelete}
         title="Confirmar Exclusão"
         message="Tem certeza que deseja excluir permanentemente esta clínica? Esta ação não poderá ser desfeita."
       />

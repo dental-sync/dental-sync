@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import './CadastroProtetico.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { toast } from 'react-toastify';
 import api from '../../axios-config';
 

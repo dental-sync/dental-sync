@@ -6,7 +6,7 @@ import DentistaTable from '../../components/DentistaTable/DentistaTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const DentistaPage = () => {
@@ -34,9 +34,9 @@ const DentistaPage = () => {
 
   useEffect(() => {
     const fetchDentistas = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        const response = await axios.get('http://localhost:8080/dentistas');
+        const response = await api.get('/dentistas');
         const dentistasFormatados = response.data.map(dentista => ({
           id: dentista.id,
           nome: dentista.nome,
@@ -46,18 +46,9 @@ const DentistaPage = () => {
           isActive: dentista.isActive ? 'ATIVO' : 'INATIVO'
         }));
         setDentistas(dentistasFormatados);
-      } catch (err) {
-        console.error('Erro ao buscar dentistas:', err);
-        setDentistas([]);
-        setError('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.');
-        toast.error('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.', {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: false
-        });
+      } catch (error) {
+        console.error('Erro ao buscar dentistas:', error);
+        toast.error('Erro ao carregar dentistas');
       } finally {
         setLoading(false);
       }

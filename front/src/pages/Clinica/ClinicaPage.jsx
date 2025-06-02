@@ -6,7 +6,7 @@ import ClinicaTable from '../../components/ClinicaTable/ClinicaTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const ClinicaPage = () => {
@@ -31,27 +31,13 @@ const ClinicaPage = () => {
 
   useEffect(() => {
     const fetchClinicas = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        const response = await axios.get('http://localhost:8080/clinicas');
-        const clinicasFormatadas = response.data.map(clinica => ({
-          id: clinica.id,
-          nome: clinica.nome,
-          cnpj: clinica.cnpj
-        }));
-        setClinicas(clinicasFormatadas);
-      } catch (err) {
-        console.error('Erro ao buscar clínicas:', err);
-        setClinicas([]);
-        setError('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.');
-        toast.error('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.', {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: false
-        });
+        const response = await api.get('/clinicas');
+        setClinicas(response.data);
+      } catch (error) {
+        console.error('Erro ao buscar clínicas:', error);
+        toast.error('Erro ao carregar clínicas');
       } finally {
         setLoading(false);
       }

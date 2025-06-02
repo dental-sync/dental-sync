@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import './PacienteActionMenu.css';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
@@ -80,55 +80,37 @@ const PacienteActionMenu = ({ pacienteId, itemId, pacienteStatus, itemStatus, on
     setIsOpen(false);
   };
 
-  const handleToggleStatus = async () => {
+  const handleStatusChange = async (event) => {
+    const newStatus = event.target.value;
+    
     try {
-      const newStatus = !isActive;
-      console.log(`Atualizando status do paciente ${id} para ${newStatus ? 'Ativo' : 'Inativo'}`);
+      const requestBody = newStatus === 'ATIVO' ? { isActive: true } : { isActive: false };
       
-      const requestBody = { isActive: newStatus };
-      console.log('Corpo da requisição:', JSON.stringify(requestBody));
-      
-      const response = await axios.patch(`http://localhost:8080/paciente/${id}`, requestBody);
-      
-      console.log('Resposta da API:', response);
+      const response = await api.patch(`/paciente/${id}`, requestBody);
       
       if (response.status === 200) {
-        // Notificar o componente pai sobre a mudança de status
-        if (onStatusChange) {
-          onStatusChange(id, newStatus ? 'ATIVO' : 'INATIVO');
-        }
+        onStatusChange(id, newStatus);
+        toast.success(`Status alterado para ${newStatus} com sucesso!`);
       }
-      
-      setIsOpen(false);
     } catch (error) {
-      console.error('Erro ao alterar status do paciente:', error);
-      toast.error('Erro ao alterar status. Tente novamente.');
+      console.error('Erro ao alterar status:', error);
+      toast.error('Erro ao alterar status do paciente');
     }
   };
 
-  const handleConfirmDelete = async () => {
-    try {
-      setIsDeleting(true);
-      console.log(`Iniciando exclusão do paciente ID ${id}`);
-      
-      const response = await axios.delete(`http://localhost:8080/paciente/excluir/${id}`);
-      
-      console.log('Resposta da exclusão:', response.data);
-      
-      // Notificar o componente pai que o paciente foi excluído
-      if (onDeleted) {
-        onDeleted(id);
+  const handleDelete = async () => {
+    if (window.confirm('Tem certeza que deseja excluir este paciente?')) {
+      try {
+        const response = await api.delete(`/paciente/excluir/${id}`);
+        
+        if (response.status === 204) {
+          onDeleted(id);
+          toast.success('Paciente excluído com sucesso!');
+        }
+      } catch (error) {
+        console.error('Erro ao excluir:', error);
+        toast.error('Erro ao excluir paciente');
       }
-      
-    } catch (error) {
-      console.error('Erro ao excluir paciente:', error.response?.data || error.message);
-      
-      // Exibir mensagem de erro
-      const errorMessage = error.response?.data?.message || 'Erro ao excluir paciente. Tente novamente.';
-      toast.error(errorMessage);
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteModal(false);
     }
   };
 
@@ -181,7 +163,7 @@ const PacienteActionMenu = ({ pacienteId, itemId, pacienteStatus, itemStatus, on
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleConfirmDelete}
+        onConfirm={handleDelete}
         title="Confirmar Exclusão"
         message="Tem certeza que deseja excluir permanentemente este paciente? Esta ação não poderá ser desfeita."
       />

@@ -27,7 +27,7 @@ const GenericTable = ({
     try {
       const itemAtual = data.find(item => item.id === itemId);
       
-      const statusAtual = itemAtual[statusField] === 'ATIVO';
+      const statusAtual = itemAtual[statusField];
       if (statusAtual === newStatus) {
         return;
       }
@@ -36,7 +36,7 @@ const GenericTable = ({
         isActive: newStatus
       });
       
-      onStatusChange(itemId, newStatus ? 'ATIVO' : 'INATIVO');
+      onStatusChange(itemId, newStatus);
     } catch (error) {
       console.error('Erro ao alterar status:', error);
       toast.error('Erro ao alterar status. Tente novamente.');
@@ -99,7 +99,7 @@ const GenericTable = ({
                     return (
                       <td key={column.key}>
                         <StatusBadge
-                          status={item[statusField] === 'ATIVO'}
+                          status={item[statusField]}
                           onClick={(newStatus) => handleStatusChange(item.id, newStatus)}
                         />
                       </td>
@@ -117,7 +117,7 @@ const GenericTable = ({
                           pacienteId={item.id}
                           clinicaId={item.id}
                           materialId={item.id}
-                          isActive={item[statusField] === 'ATIVO'}
+                          isActive={item[statusField]}
                           url={url}
                         />
                       </td>

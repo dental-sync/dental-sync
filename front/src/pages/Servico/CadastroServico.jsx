@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './CadastroServico.css';
@@ -23,15 +23,16 @@ const CadastroServico = () => {
     status: 'ATIVO',
     isActive: true
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/categoria-servico');
+        const response = await api.get('/categoria-servico');
         setCategorias(response.data);
       } catch (error) {
         console.error('Erro ao buscar categorias:', error);
-        toast.error('Erro ao carregar categorias.');
+        toast.error('Erro ao carregar categorias');
       }
     };
 
@@ -109,27 +110,35 @@ const CadastroServico = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
       if (!formData.nome || !formData.valor || !formData.categoriaServico.id || !formData.tempoPrevisto) {
         toast.error('Por favor, preencha todos os campos obrigatórios.');
+        setLoading(false);
         return;
       }
+
       const servicoData = {
         nome: formData.nome,
         descricao: formData.descricao,
-        preco: parseFloat(formData.valor.replace(',', '.')),
-        tempoPrevisto: parseInt(formData.tempoPrevisto, 10) * 60,
-        categoriaServico: formData.categoriaServico,
+        preco: parseFloat(formData.valor),
+        categoria: { id: parseInt(formData.categoriaServico.id) },
+        tempoPrevisto: formData.tempoPrevisto,
         status: formData.status,
         isActive: formData.isActive,
         materiais: materiaisSelecionados.map(m => ({ material: { id: m.id }, quantidade: m.quantidadeUso }))
       };
-      await axios.post('http://localhost:8080/servico', servicoData);
+
+      await api.post('/servico', servicoData);
       toast.success('Serviço cadastrado com sucesso!');
       navigate('/servico');
     } catch (error) {
       console.error('Erro ao cadastrar serviço:', error);
-      toast.error('Erro ao cadastrar serviço. Por favor, tente novamente.');
+      const errorMessage = error.response?.data?.message || 'Erro ao cadastrar serviço';
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -333,13 +342,13 @@ const CadastroServico = () => {
           </div>
 
           <div className="form-actions">
-            <button type="submit" className="submit-button">
+            <button type="submit" className="submit-button" disabled={loading}>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-save">
                 <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path>
                 <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"></path>
                 <path d="M7 3v4a1 1 0 0 0 1 1h7"></path>
               </svg>
-              Salvar Serviço
+              {loading ? 'Salvando...' : 'Salvar Serviço'}
             </button>
           </div>
         </form>

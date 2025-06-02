@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import './ActionMenuDentista.css';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
@@ -71,12 +71,15 @@ const ActionMenuDentista = ({ dentistaId, itemId, onDentistaDeleted, onItemDelet
   };
 
   const handleConfirmDelete = async () => {
-    try {
-      await axios.delete(`http://localhost:8080/dentistas/${id}`);
-      onDeleted(id);
-    } catch (error) {
-      console.error('Erro ao excluir dentista:', error);
-      toast.error('Erro ao excluir dentista. Tente novamente.');
+    if (window.confirm('Tem certeza que deseja excluir este dentista?')) {
+      try {
+        await api.delete(`/dentistas/${id}`);
+        toast.success('Dentista excluído com sucesso!');
+        onDeleted(id);
+      } catch (error) {
+        console.error('Erro ao excluir dentista:', error);
+        toast.error('Erro ao excluir dentista');
+      }
     }
     setShowDeleteModal(false);
   };

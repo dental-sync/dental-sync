@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './ModalCadastroCategoriaMaterial.css';
+import api from '../axios-config';
 
 const ModalCadastroCategoriaMaterial = ({ isOpen, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -46,20 +47,9 @@ const ModalCadastroCategoriaMaterial = ({ isOpen, onClose, onSuccess }) => {
     
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/categoria-material', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await api.post('/categoria-material', formData);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao cadastrar categoria');
-      }
-
-      const categoriaData = await response.json();
+      const categoriaData = response.data;
       onSuccess(categoriaData);
       onClose();
     } catch (error) {

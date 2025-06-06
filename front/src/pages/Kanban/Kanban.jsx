@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../axios-config';
 import './Kanban.css';
+import DeleteConfirmationModal from '../../components/DeleteConfirmationModal/DeleteConfirmationModal';
+import { useNavigate } from 'react-router-dom';
 
 const statusLabels = {
   PENDENTE: 'Pendente',
@@ -20,6 +22,10 @@ function Kanban() {
   const [dragged, setDragged] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [menuOpenId, setMenuOpenId] = useState(null);
+  const [pedidoParaExcluir, setPedidoParaExcluir] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchPedidos();
@@ -52,6 +58,50 @@ function Kanban() {
     setDragged(null);
   };
 
+  const handleMoveStatus = async (pedido, novoStatus) => {
+    setMenuOpenId(null);
+    if (pedido.status !== novoStatus) {
+      try {
+        await api.patch(`/pedidos/${pedido.id}/status`, { status: novoStatus });
+        setPedidos((prev) => prev.map((p) => p.id === pedido.id ? { ...p, status: novoStatus } : p));
+      } catch {
+        setError('Erro ao atualizar status do pedido.');
+      }
+    }
+  };
+
+  const handleEditPedido = (id) => {
+    setMenuOpenId(null);
+    navigate(`/pedidos/editar/${id}`);
+  };
+
+  const handleDeletePedido = (id) => {
+    setMenuOpenId(null);
+    setPedidoParaExcluir(id);
+  };
+
+  const confirmarExclusaoPedido = async () => {
+    if (!pedidoParaExcluir) return;
+    setIsDeleting(true);
+    try {
+      await api.delete(`/pedidos/${pedidoParaExcluir}`);
+      setPedidos((prev) => prev.filter((p) => p.id !== pedidoParaExcluir));
+      setPedidoParaExcluir(null);
+    } catch {
+      setError('Erro ao excluir pedido.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleClick = () => setMenuOpenId(null);
+    if (menuOpenId !== null) {
+      document.addEventListener('mousedown', handleClick);
+      return () => document.removeEventListener('mousedown', handleClick);
+    }
+  }, [menuOpenId]);
+
   const renderCard = (pedido) => {
     const servico = pedido.servicos && pedido.servicos.length > 0 ? pedido.servicos[0].nome : '-';
     const iniciais = pedido.protetico?.nome
@@ -64,8 +114,39 @@ function Kanban() {
         className="kanban-card"
         draggable
         onDragStart={() => onDragStart(pedido)}
+        style={{ position: 'relative' }}
       >
-        <div className="kanban-card-menu">⋯</div>
+        <button
+          className="kanban-card-menu"
+          onClick={e => {
+            e.stopPropagation();
+            setMenuOpenId(menuOpenId === pedido.id ? null : pedido.id);
+          }}
+          aria-label="Abrir menu do card"
+          type="button"
+        >
+          ⋯
+        </button>
+        {menuOpenId === pedido.id && (
+          <div
+            className="kanban-card-dropdown"
+            onClick={e => e.stopPropagation()}
+            onMouseDown={e => e.stopPropagation()}
+            draggable={false}
+          >
+            {(pedido.status === 'PENDENTE' || pedido.status === 'CONCLUIDO') && (
+              <div onClick={() => handleMoveStatus(pedido, 'EM_ANDAMENTO')}>Mover para Em Andamento</div>
+            )}
+            {(pedido.status === 'EM_ANDAMENTO' || pedido.status === 'CONCLUIDO') && (
+              <div onClick={() => handleMoveStatus(pedido, 'PENDENTE')}>Mover para Pendente</div>
+            )}
+            {pedido.status !== 'CONCLUIDO' && (
+              <div onClick={() => handleMoveStatus(pedido, 'CONCLUIDO')}>Mover para Concluído</div>
+            )}
+            <div onClick={() => handleEditPedido(pedido.id)}>Editar</div>
+            <div className="danger" onClick={() => handleDeletePedido(pedido.id)}>Excluir</div>
+          </div>
+        )}
         <div className="kanban-card-title">{servico} - {pedido.cliente?.nome}</div>
         <div className="kanban-card-desc">{pedido.observacao || 'Sem descrição.'}</div>
         <div className="kanban-card-footer">
@@ -111,6 +192,13 @@ function Kanban() {
         {renderColumn('EM_ANDAMENTO')}
         {renderColumn('CONCLUIDO')}
       </div>
+      <DeleteConfirmationModal
+        isOpen={!!pedidoParaExcluir}
+        onClose={() => setPedidoParaExcluir(null)}
+        onConfirm={confirmarExclusaoPedido}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir permanentemente este pedido? Esta ação não poderá ser desfeita."
+      />
     </div>
   );
 }

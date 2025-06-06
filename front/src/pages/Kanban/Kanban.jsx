@@ -54,6 +54,10 @@ function Kanban() {
 
   const renderCard = (pedido) => {
     const servico = pedido.servicos && pedido.servicos.length > 0 ? pedido.servicos[0].nome : '-';
+    const iniciais = pedido.protetico?.nome
+      ? pedido.protetico.nome.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)
+      : '-';
+
     return (
       <div
         key={pedido.id}
@@ -61,6 +65,7 @@ function Kanban() {
         draggable
         onDragStart={() => onDragStart(pedido)}
       >
+        <div className="kanban-card-menu">⋯</div>
         <div className="kanban-card-title">{servico} - {pedido.cliente?.nome}</div>
         <div className="kanban-card-desc">{pedido.observacao || 'Sem descrição.'}</div>
         <div className="kanban-card-footer">
@@ -69,7 +74,13 @@ function Kanban() {
             {pedido.prioridade?.charAt(0) + pedido.prioridade?.slice(1).toLowerCase()}
           </span>
         </div>
-        <div className="kanban-card-resp">Responsável: {pedido.protetico?.nome || '-'}</div>
+        <div className="kanban-card-resp">
+          <span>Responsável:</span>
+          <span className="kanban-card-resp-info">
+            <span className="kanban-card-resp-circle">{iniciais}</span>
+            {pedido.protetico?.nome || '-'}
+          </span>
+        </div>
       </div>
     );
   };

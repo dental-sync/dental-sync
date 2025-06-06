@@ -9,12 +9,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Data
 @Entity
@@ -38,10 +41,15 @@ public class Pedido extends BaseEntity {
     @NotNull(message = "O protético é obrigatório")
     private Protetico protetico;
 
-    @ManyToOne
-    @JoinColumn(name = "servico_id")
-    @NotNull(message = "O serviço é obrigatório")
-    private Servico servico;
+    @ManyToMany
+    @JoinTable(
+        name = "pedido_servico",
+        joinColumns = @JoinColumn(name = "pedido_id"),
+        inverseJoinColumns = @JoinColumn(name = "servico_id")
+    )
+    @NotNull(message = "O pedido deve ter pelo menos um serviço")
+    @JsonManagedReference
+    private List<Servico> servicos;
 
     @NotNull(message = "A data de entrega é obrigatória")
     @Column(name = "data_entrega")
@@ -50,6 +58,10 @@ public class Pedido extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @NotNull(message = "A prioridade é obrigatória")
     private Prioridade prioridade;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull(message = "O status é obrigatório")
+    private Status status;
 
     @ElementCollection
     @Column(name = "odontograma")
@@ -60,5 +72,9 @@ public class Pedido extends BaseEntity {
 
     public enum Prioridade {
         BAIXA, MEDIA, ALTA, URGENTE
+    }
+
+    public enum Status {
+        PENDENTE, EM_ANDAMENTO, CONCLUIDO, CANCELADO
     }
 } 

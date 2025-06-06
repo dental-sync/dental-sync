@@ -34,6 +34,7 @@ import PedidoPage from './pages/Pedido/PedidoPage'
 import CadastroPedido from './pages/Pedido/CadastroPedido'
 import EditarPedido from './pages/Pedido/EditarPedido'
 import VisualizarPedido from './pages/Pedido/VisualizarPedido'  
+import Kanban from './pages/Kanban/Kanban'
 import './App.css'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -115,6 +116,7 @@ function App() {
             <Route path="/pedidos/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroPedido /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/pedidos/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarPedido /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/pedidos/visualizar/:id" element={<ProtectedRoute><ProtectedLayout><VisualizarPedido /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/kanban" element={<ProtectedRoute><ProtectedLayout><Kanban /></ProtectedLayout></ProtectedRoute>} />
           </Routes>
           <ToastContainer position="top-right" autoClose={3000} />
         </div>

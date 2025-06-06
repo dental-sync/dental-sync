@@ -30,10 +30,15 @@ import Relatorios from './pages/Relatorios'
 import ForgotPasswordPage from './pages/Login/ForgotPassword'
 import ResetPasswordPage from './pages/Login/ResetPassword'
 import PlanosPage from './pages/Planos'
+import PedidoPage from './pages/Pedido/PedidoPage'
+import CadastroPedido from './pages/Pedido/CadastroPedido'
+import EditarPedido from './pages/Pedido/EditarPedido'
+import VisualizarPedido from './pages/Pedido/VisualizarPedido'
 import './App.css'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
+
 
 const ProtectedLayout = ({ children }) => (
   <>
@@ -67,6 +72,7 @@ const PublicRoute = ({ children }) => {
 
 function App() {
   return (
+
     <AuthProvider>
       <Router>
         <div className="app">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from '../../axios-config';
 import './PedidoForm.css';
 
 const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
@@ -36,16 +37,19 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
   useEffect(() => {
     const fetchReferenceData = async () => {
       try {
+        // Recupera o token do localStorage
+        const token = localStorage.getItem('token');
+        const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
         const [
           clientesResponse, 
           dentistasResponse, 
           proteticosResponse, 
           servicosResponse
         ] = await Promise.all([
-          axios.get('http://localhost:8080/paciente'),
-          axios.get('http://localhost:8080/dentistas'),
-          axios.get('http://localhost:8080/proteticos'),
-          axios.get('http://localhost:8080/servico')
+          api.get('/paciente'),
+          api.get('/dentistas'),
+          api.get('/proteticos'),
+          api.get('/servico')
         ]);
         
         setClientes(clientesResponse.data);
@@ -67,7 +71,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
       const fetchPedido = async () => {
         try {
           setLoadingData(true);
-          const response = await axios.get(`http://localhost:8080/pedidos/${pedidoId}`);
+          const response = await api.get(`/pedidos/${pedidoId}`);
           const pedido = response.data;
           
           // Formatar a data para o formato esperado pelo input date (YYYY-MM-DD)
@@ -144,9 +148,9 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
       
       // Criar ou atualizar pedido
       if (pedidoId) {
-        await axios.put(`http://localhost:8080/pedidos/${pedidoId}`, dadosParaEnviar);
+        await api.put(`/pedidos/${pedidoId}`, dadosParaEnviar);
       } else {
-        await axios.post('http://localhost:8080/pedidos', dadosParaEnviar);
+        await api.post('/pedidos', dadosParaEnviar);
       }
       
       // Notificar sucesso e redirecionar

@@ -7,6 +7,7 @@ import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import PedidoTable from '../../components/PedidoTable/PedidoTable';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
@@ -36,8 +37,8 @@ const PedidoPage = () => {
     const fetchReferenceData = async () => {
       try {
         const [dentistasResponse, proteticosResponse] = await Promise.all([
-          axios.get('http://localhost:8080/dentistas'),
-          axios.get('http://localhost:8080/proteticos')
+          api.get('/dentistas'),
+          api.get('/proteticos')
         ]);
         
         setDentistas(dentistasResponse.data);
@@ -54,7 +55,7 @@ const PedidoPage = () => {
   // Função para buscar pedidos da API
   const fetchPedidosData = async (pageNum, pageSize) => {
     try {
-      const response = await axios.get(`http://localhost:8080/pedidos/paginado?page=${pageNum}&size=${pageSize}`);
+      const response = await api.get(`/pedidos/paginado?page=${pageNum}&size=${pageSize}`);
       
       const responseData = response.data;
       // Formatar os dados conforme necessário para exibição
@@ -188,7 +189,7 @@ const PedidoPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:8080/pedidos/${id}`);
+      await api.delete(`/pedidos/${id}`);
       toast.success('Pedido excluído com sucesso!');
       refreshPedidos();
     } catch (error) {

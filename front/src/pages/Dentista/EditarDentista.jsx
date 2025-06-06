@@ -42,7 +42,8 @@ const EditarDentista = () => {
           cro: dentista.cro || '',
           telefone: dentista.telefone || '',
           email: dentista.email || '',
-          clinica: dentista.clinica?.id || '',
+          clinicaId: '',
+          clinicasAssociadas: dentista.clinicasAssociadas || [],
           isActive: dentista.isActive
         });
       } catch (error) {
@@ -421,7 +422,7 @@ const EditarDentista = () => {
             <label htmlFor="clinicaId">Clínicas</label>
             <div className="clinicas-container">
               <div className="clinicas-tags">
-                {formData.clinicasAssociadas.map(clinica => (
+                {formData.clinicasAssociadas && formData.clinicasAssociadas.map(clinica => (
                   <div key={clinica.id} className="clinica-tag">
                     <span>{clinica.nome}</span>
                     <button
@@ -446,12 +447,12 @@ const EditarDentista = () => {
                   value={formData.clinicaId}
                   onChange={(e) => {
                     const clinicaId = e.target.value;
-                    if (clinicaId && !formData.clinicasAssociadas.some(c => c.id.toString() === clinicaId)) {
+                    if (clinicaId && (!formData.clinicasAssociadas || !formData.clinicasAssociadas.some(c => c.id.toString() === clinicaId))) {
                       const clinicaSelecionada = clinicas.find(c => c.id.toString() === clinicaId);
                       if (clinicaSelecionada) {
                         setFormData({
                           ...formData,
-                          clinicasAssociadas: [...formData.clinicasAssociadas, clinicaSelecionada],
+                          clinicasAssociadas: [...(formData.clinicasAssociadas || []), clinicaSelecionada],
                           clinicaId: ''
                         });
                       }
@@ -461,7 +462,7 @@ const EditarDentista = () => {
                 >
                   <option value="">Selecione uma clínica</option>
                   {clinicas
-                    .filter(clinica => !formData.clinicasAssociadas.some(c => c.id === clinica.id))
+                    .filter(clinica => !formData.clinicasAssociadas || !formData.clinicasAssociadas.some(c => c.id === clinica.id))
                     .map(clinica => (
                       <option key={clinica.id} value={clinica.id}>
                         {clinica.nome}

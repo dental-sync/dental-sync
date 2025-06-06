@@ -3,6 +3,9 @@ import api from '../../axios-config';
 import './Kanban.css';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal/DeleteConfirmationModal';
 import { useNavigate } from 'react-router-dom';
+import SearchBar from '../../components/SearchBar/SearchBar';
+import ActionButton from '../../components/ActionButton/ActionButton';
+import NotificationBell from '../../components/NotificationBell/NotificationBell';
 
 const statusLabels = {
   PENDENTE: 'Pendente',
@@ -26,6 +29,7 @@ function Kanban() {
   const [pedidoParaExcluir, setPedidoParaExcluir] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchPedidos();
@@ -102,6 +106,27 @@ function Kanban() {
     }
   }, [menuOpenId]);
 
+  const pedidosFiltrados = pedidos.filter((pedido) => {
+    const servico = pedido.servicos && pedido.servicos.length > 0 ? pedido.servicos[0].nome.toLowerCase() : '';
+    const paciente = pedido.cliente?.nome?.toLowerCase() || '';
+    const responsavel = pedido.protetico?.nome?.toLowerCase() || '';
+    if (!searchQuery) return true;
+    const termo = searchQuery.toLowerCase();
+    return (
+      servico.includes(termo) ||
+      paciente.includes(termo) ||
+      responsavel.includes(termo)
+    );
+  });
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
+
+  const handleNovoPedido = () => {
+    navigate('/pedidos/cadastro');
+  };
+
   const renderCard = (pedido) => {
     const servico = pedido.servicos && pedido.servicos.length > 0 ? pedido.servicos[0].nome : '-';
     const iniciais = pedido.protetico?.nome
@@ -173,10 +198,10 @@ function Kanban() {
       onDrop={() => onDrop(status)}
     >
       <div className="kanban-column-header">
-        {statusLabels[status]} <span className="kanban-column-count">{pedidos.filter(p => p.status === status).length}</span>
+        {statusLabels[status]} <span className="kanban-column-count">{pedidosFiltrados.filter(p => p.status === status).length}</span>
       </div>
       <div className="kanban-column-cards">
-        {pedidos.filter(p => p.status === status).map(renderCard)}
+        {pedidosFiltrados.filter(p => p.status === status).map(renderCard)}
       </div>
     </div>
   );
@@ -186,7 +211,21 @@ function Kanban() {
 
   return (
     <div className="kanban-container">
-      <h1 className="kanban-title">Kanban</h1>
+      <div className="page-top" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
+        <div className="notification-container" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <NotificationBell count={2} />
+        </div>
+      </div>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <h1 className="kanban-title" style={{ fontSize: 24, fontWeight: 700, color: '#212529', margin: 0 }}>Kanban</h1>
+        <div className="header-actions" style={{ display: 'flex', gap: 10, position: 'relative', alignItems: 'center' }}>
+          <SearchBar placeholder="Buscar pedidos..." onSearch={handleSearch} />
+          <div className="filter-container" style={{ position: 'relative' }}>
+            <ActionButton label="Filtrar" icon="filter" onClick={() => {}} />
+          </div>
+          <ActionButton label="Novo Pedido" icon="plus" variant="primary novo-button" onClick={handleNovoPedido} style={{ whiteSpace: 'nowrap', minWidth: 0 }} />
+        </div>
+      </div>
       <div className="kanban-board">
         {renderColumn('PENDENTE')}
         {renderColumn('EM_ANDAMENTO')}

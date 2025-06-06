@@ -113,7 +113,7 @@ const PedidoTable = ({ pedidos, onDelete, onStatusChange, lastElementRef, sortCo
               <td>{pedido.cliente?.nome || 'N/A'}</td>
               <td>{pedido.dentista?.nome || 'N/A'}</td>
               <td>{pedido.protetico?.nome || 'N/A'}</td>
-              <td>{pedido.servico?.nome || 'N/A'}</td>
+              <td>{pedido.servicos && pedido.servicos.length > 0 ? pedido.servicos.map(s => s.nome).join(', ') : 'N/A'}</td>
               <td>{formatarData(pedido.dataEntrega)}</td>
               <td>
                 <span 

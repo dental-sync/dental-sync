@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -28,6 +29,7 @@ public class Servico extends BaseEntity {
     private CategoriaServico categoriaServico;
 
     @ManyToMany(mappedBy = "servicos")
+    @JsonBackReference
     private List<Pedido> pedidos;
 
     private String nome;

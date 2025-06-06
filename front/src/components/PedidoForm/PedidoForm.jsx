@@ -82,7 +82,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
             cliente: pedido.cliente?.id || '',
             dentista: pedido.dentista?.id || '',
             protetico: pedido.protetico?.id || '',
-            servico: pedido.servico?.id || '',
+            servico: pedido.servicos && pedido.servicos.length > 0 ? pedido.servicos[0].id : '',
             dataEntrega,
             prioridade: pedido.prioridade || 'MEDIA',
             status: pedido.status || 'PENDENTE',
@@ -92,8 +92,8 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
           
           setDentesSelecionados(pedido.odontograma || []);
           
-          if (pedido.servico) {
-            setServicoSelecionado(pedido.servico);
+          if (pedido.servicos && pedido.servicos.length > 0) {
+            setServicoSelecionado(pedido.servicos[0]);
           }
         } catch (err) {
           console.error('Erro ao carregar pedido:', err);
@@ -141,10 +141,10 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
         cliente: { id: parseInt(formData.cliente) },
         dentista: { id: parseInt(formData.dentista) },
         protetico: { id: parseInt(formData.protetico) },
-        servico: { id: parseInt(formData.servico) },
+        servicos: [{ id: parseInt(formData.servico) }],
         dataEntrega: formData.dataEntrega,
         prioridade: formData.prioridade,
-        status: formData.status,
+        status: 'PENDENTE', // Garantindo que o status seja sempre PENDENTE para novos pedidos
         odontograma: dentesSelecionados,
         observacao: formData.observacao
       };

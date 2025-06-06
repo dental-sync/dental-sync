@@ -28,6 +28,8 @@ const PedidoPage = () => {
     key: null,
     direction: 'ascending'
   });
+  const [pedidos, setPedidos] = useState([]);
+  const [loading, setLoading] = useState(true);
   
   const filterRef = useRef(null);
   const navigate = useNavigate();
@@ -52,46 +54,34 @@ const PedidoPage = () => {
     fetchReferenceData();
   }, []);
   
-  // Função para buscar pedidos da API
-  const fetchPedidosData = async (pageNum, pageSize) => {
-    try {
-      const response = await api.get(`/pedidos/paginado?page=${pageNum}&size=${pageSize}`);
-      
-      const responseData = response.data;
-      // Formatar os dados conforme necessário para exibição
-      const pedidosFormatados = responseData.content.map(pedido => ({
-        id: pedido.id,
-        cliente: pedido.cliente,
-        dentista: pedido.dentista,
-        protetico: pedido.protetico,
-        servico: pedido.servico,
-        dataEntrega: pedido.dataEntrega,
-        prioridade: pedido.prioridade,
-        odontograma: pedido.odontograma,
-        observacao: pedido.observacao
-      }));
-      
-      return {
-        content: pedidosFormatados,
-        totalElements: responseData.totalElements,
-        last: responseData.last
-      };
-    } catch (error) {
-      console.error('Não foi possível acessar a API:', error);
-      toast.error('Erro ao buscar pedidos. Por favor, tente novamente.');
-      throw error;
-    }
-  };
+  // Buscar todos os pedidos ao montar o componente
+  useEffect(() => {
+    const fetchPedidos = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get('/pedidos');
+        const pedidosFormatados = response.data.map(pedido => ({
+          id: pedido.id,
+          cliente: pedido.cliente,
+          dentista: pedido.dentista,
+          protetico: pedido.protetico,
+          servicos: pedido.servicos,
+          dataEntrega: pedido.dataEntrega,
+          prioridade: pedido.prioridade,
+          odontograma: pedido.odontograma,
+          observacao: pedido.observacao
+        }));
+        setPedidos(pedidosFormatados);
+      } catch (error) {
+        console.error('Não foi possível acessar a API:', error);
+        toast.error('Erro ao buscar pedidos. Por favor, tente novamente.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPedidos();
+  }, []);
   
-  // Usar o hook de paginação infinita
-  const {
-    data: pedidos,
-    loading,
-    loadingMore,
-    lastElementRef: lastPedidoElementRef,
-    refresh: refreshPedidos
-  } = useInfiniteScroll(fetchPedidosData);
-
   // Esconder dropdown de filtro ao clicar fora dele
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -191,7 +181,8 @@ const PedidoPage = () => {
     try {
       await api.delete(`/pedidos/${id}`);
       toast.success('Pedido excluído com sucesso!');
-      refreshPedidos();
+      // Atualizar lista após exclusão
+      setPedidos(prev => prev.filter(p => p.id !== id));
     } catch (error) {
       console.error('Erro ao excluir pedido:', error);
       toast.error('Erro ao excluir pedido. Por favor, tente novamente.');
@@ -423,12 +414,9 @@ const PedidoPage = () => {
         <PedidoTable 
           pedidos={sortedPedidos}
           onDelete={handleDelete}
-          lastElementRef={lastPedidoElementRef}
           sortConfig={sortConfig}
           onSort={handleSort}
         />
-        
-        {loadingMore && <div className="loading-more">Carregando mais pedidos...</div>}
       </div>
     </div>
   );

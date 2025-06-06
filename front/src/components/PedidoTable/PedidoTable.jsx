@@ -31,26 +31,26 @@ const PedidoTable = ({ pedidos, onDelete, onStatusChange, lastElementRef, sortCo
     return data.toLocaleDateString('pt-BR');
   };
 
-  // Função para converter enum de prioridade para texto em português
-  const formatarPrioridade = (prioridade) => {
-    const prioridadeMap = {
-      'BAIXA': 'Baixa',
-      'MEDIA': 'Média',
-      'ALTA': 'Alta',
-      'URGENTE': 'Urgente'
+  // Função para converter enum de status para texto em português
+  const formatarStatus = (status) => {
+    const statusMap = {
+      'PENDENTE': 'Pendente',
+      'EM_ANDAMENTO': 'Em Andamento',
+      'CONCLUIDO': 'Concluído',
+      'CANCELADO': 'Cancelado'
     };
-    return prioridadeMap[prioridade] || prioridade;
+    return statusMap[status] || status;
   };
 
-  // Função para obter a cor da prioridade
-  const getPrioridadeColor = (prioridade) => {
+  // Função para obter a cor do status
+  const getStatusColor = (status) => {
     const colorMap = {
-      'BAIXA': '#28a745',
-      'MEDIA': '#17a2b8',
-      'ALTA': '#ffc107',
-      'URGENTE': '#dc3545'
+      'PENDENTE': '#ffc107',      // amarelo
+      'EM_ANDAMENTO': '#007bff', // azul
+      'CONCLUIDO': '#28a745',    // verde
+      'CANCELADO': '#dc3545'     // vermelho
     };
-    return colorMap[prioridade] || '#6c757d';
+    return colorMap[status] || '#6c757d';
   };
 
   return (
@@ -94,10 +94,10 @@ const PedidoTable = ({ pedidos, onDelete, onStatusChange, lastElementRef, sortCo
                 <div className="sort-icon">{getSortIcon('dataEntrega')}</div>
               </span>
             </th>
-            <th className="sortable-header" data-sortable="true" onClick={() => onSort && onSort('prioridade')}>
+            <th className="sortable-header" data-sortable="true" onClick={() => onSort && onSort('status')}>
               <span className="sortable-content">
-                Prioridade
-                <div className="sort-icon">{getSortIcon('prioridade')}</div>
+                Status
+                <div className="sort-icon">{getSortIcon('status')}</div>
               </span>
             </th>
             <th>Ações</th>
@@ -117,10 +117,10 @@ const PedidoTable = ({ pedidos, onDelete, onStatusChange, lastElementRef, sortCo
               <td>{formatarData(pedido.dataEntrega)}</td>
               <td>
                 <span 
-                  className="prioridade-badge"
-                  style={{ backgroundColor: getPrioridadeColor(pedido.prioridade) }}
+                  className="pedido-status-badge"
+                  style={{ backgroundColor: getStatusColor(pedido.status) }}
                 >
-                  {formatarPrioridade(pedido.prioridade)}
+                  {formatarStatus(pedido.status) || 'Sem status'}
                 </span>
               </td>
               <td>

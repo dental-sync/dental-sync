@@ -69,7 +69,8 @@ const PedidoPage = () => {
           dataEntrega: pedido.dataEntrega,
           prioridade: pedido.prioridade,
           odontograma: pedido.odontograma,
-          observacao: pedido.observacao
+          observacao: pedido.observacao,
+          status: pedido.status
         }));
         setPedidos(pedidosFormatados);
       } catch (error) {

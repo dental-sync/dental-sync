@@ -33,7 +33,7 @@ import PlanosPage from './pages/Planos'
 import PedidoPage from './pages/Pedido/PedidoPage'
 import CadastroPedido from './pages/Pedido/CadastroPedido'
 import EditarPedido from './pages/Pedido/EditarPedido'
-import VisualizarPedido from './pages/Pedido/VisualizarPedido'
+import VisualizarPedido from './pages/Pedido/VisualizarPedido'  
 import './App.css'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -111,6 +111,10 @@ function App() {
             <Route path="/servico/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarServico /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/configuracao" element={<ProtectedRoute><ProtectedLayout><Configuracao /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/relatorios" element={<ProtectedRoute><ProtectedLayout><Relatorios /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/pedidos" element={<ProtectedRoute><ProtectedLayout><PedidoPage /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/pedidos/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroPedido /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/pedidos/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarPedido /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/pedidos/visualizar/:id" element={<ProtectedRoute><ProtectedLayout><VisualizarPedido /></ProtectedLayout></ProtectedRoute>} />
           </Routes>
           <ToastContainer position="top-right" autoClose={3000} />
         </div>

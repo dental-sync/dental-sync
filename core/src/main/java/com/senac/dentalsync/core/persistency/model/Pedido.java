@@ -57,6 +57,10 @@ public class Pedido extends BaseEntity {
     @NotNull(message = "A prioridade é obrigatória")
     private Prioridade prioridade;
 
+    @Enumerated(EnumType.STRING)
+    @NotNull(message = "O status é obrigatório")
+    private Status status;
+
     @ElementCollection
     @Column(name = "odontograma")
     private List<Integer> odontograma;
@@ -66,5 +70,9 @@ public class Pedido extends BaseEntity {
 
     public enum Prioridade {
         BAIXA, MEDIA, ALTA, URGENTE
+    }
+
+    public enum Status {
+        PENDENTE, EM_ANDAMENTO, CONCLUIDO, CANCELADO
     }
 } 

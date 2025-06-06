@@ -25,6 +25,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
     servico: '',
     dataEntrega: '',
     prioridade: 'MEDIA',
+    status: 'PENDENTE',
     odontograma: [],
     observacao: ''
   });
@@ -84,6 +85,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
             servico: pedido.servico?.id || '',
             dataEntrega,
             prioridade: pedido.prioridade || 'MEDIA',
+            status: pedido.status || 'PENDENTE',
             odontograma: pedido.odontograma || [],
             observacao: pedido.observacao || ''
           });
@@ -142,6 +144,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
         servico: { id: parseInt(formData.servico) },
         dataEntrega: formData.dataEntrega,
         prioridade: formData.prioridade,
+        status: formData.status,
         odontograma: dentesSelecionados,
         observacao: formData.observacao
       };

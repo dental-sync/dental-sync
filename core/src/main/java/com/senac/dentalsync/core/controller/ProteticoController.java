@@ -4,6 +4,8 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,6 +28,19 @@ public class ProteticoController extends BaseController<Protetico, Long> {
     @Override
     protected BaseService<Protetico, Long> getService() {
         return proteticoService;
+    }
+    
+    @GetMapping("/me")
+    public ResponseEntity<Protetico> getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        String email = authentication.getName();
+        return proteticoService.findByEmail(email)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
     
     @GetMapping("/email/{email}")

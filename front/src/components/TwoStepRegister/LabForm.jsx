@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './TwoStepRegister.css';
+import api from '../../axios-config';
 import axios from 'axios';
 
 const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
@@ -14,7 +15,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
   // Chama onChange sempre que formData mudar (mas não no render inicial)
   useEffect(() => {
     if (onChange) onChange(formData);
-  }, [formData]);
+  }, [formData, onChange]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -105,6 +106,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
   const handleCepBusca = async (cep) => {
     setCepLoading(true);
     try {
+      // Usar axios nativo (sem withCredentials) para APIs externas como ViaCEP
       const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
       if (response.data.erro) return;
       setFormData(prev => ({

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './EditarProtetico.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const EditarProtetico = () => {
@@ -14,8 +14,6 @@ const EditarProtetico = () => {
     telefone: '',
     email: '',
     cargo: '',
-    senha: '',
-    confirmarSenha: '',
     isActive: true
   });
   
@@ -27,7 +25,7 @@ const EditarProtetico = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/proteticos/${id}`);
+        const response = await api.get(`/proteticos/${id}`);
         const protetico = response.data;
         
         setFormData({
@@ -89,16 +87,6 @@ const EditarProtetico = () => {
     
     if (!formData.cargo) {
       newErrors.cargo = 'O cargo é obrigatório';
-    }
-    
-    // Validar senha apenas se foi preenchida
-    if (formData.senha && formData.senha.length < 6) {
-      newErrors.senha = 'A senha deve ter pelo menos 6 caracteres';
-    }
-    
-    // Validar confirmação de senha
-    if (formData.senha && formData.senha !== formData.confirmarSenha) {
-      newErrors.confirmarSenha = 'As senhas não coincidem';
     }
     
     setErrors(newErrors);
@@ -239,79 +227,46 @@ const EditarProtetico = () => {
     setSaving(true);
     
     try {
-      // Verificar todas as validações simultaneamente
-      const [croResponse, emailResponse, telefoneResponse] = await Promise.all([
-        axios.get(`http://localhost:8080/proteticos/cro/${formData.cro}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/proteticos/email/${formData.email}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/proteticos/telefone/${formData.telefone}`).catch(() => ({ data: null }))
-      ]);
-
-      const newErrors = {};
-
-      // Verifica se o CRO pertence a outro protético
-      if (croResponse.data && croResponse.data.id !== parseInt(id)) {
-        newErrors.cro = "CRO já cadastrado";
-      }
-
-      // Verifica se o email pertence a outro protético
-      if (emailResponse.data && emailResponse.data.id !== parseInt(id)) {
-        newErrors.email = "E-mail já cadastrado";
-      }
-
-      // Verifica se o telefone pertence a outro protético
-      if (telefoneResponse.data && telefoneResponse.data.id !== parseInt(id)) {
-        newErrors.telefone = "Telefone já cadastrado";
-      }
-
-      if (Object.keys(newErrors).length > 0) {
-        setErrors(newErrors);
-        setSaving(false);
-        return;
-      }
-
-      // Se chegou aqui, nenhum dado está duplicado
-      const proteticoData = {
+      // Preparar dados para envio
+      const dataToSend = {
         nome: formData.nome,
         cro: formData.cro,
-        telefone: formData.telefone,
         email: formData.email,
-        isAdmin: formData.cargo === 'Admin',
-        isActive: formData.isActive
+        telefone: formData.telefone,
+        isAdmin: formData.cargo === 'Admin'
       };
-
-      // Incluir senha apenas se foi preenchida
-      if (formData.senha) {
-        proteticoData.senha = formData.senha;
-      }
-
-      await axios.put(`http://localhost:8080/proteticos/${id}`, proteticoData);
       
-      // Limpa qualquer estado de navegação existente
-      window.history.replaceState({}, document.title);
+      await api.put(`/proteticos/${id}`, dataToSend);
       
-      // Navegar para a página de listagem com mensagem de sucesso e flag de refresh
-      navigate('/protetico', { 
-        state: { 
-          success: 'Protético atualizado com sucesso!',
-          refresh: true 
-        } 
+      setSuccess(true);
+      toast.success('Protético atualizado com sucesso!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
       });
+      
+      // Redirecionar para a lista após sucesso
+      setTimeout(() => {
+        navigate('/protetico', { 
+          state: { 
+            success: "Protético atualizado com sucesso!",
+            refresh: true
+          }
+        });
+      }, 1500);
+      
     } catch (error) {
       console.error('Erro ao atualizar protético:', error);
       
-      if (error.response) {
-        const errorMessage = error.response.data;
-        console.log('Mensagem de erro:', errorMessage);
-        
-        if (typeof errorMessage === 'string') {
-          toast.error(errorMessage);
-        } else if (errorMessage.message) {
-          toast.error(errorMessage.message);
-        } else {
-          toast.error('Ocorreu um erro ao atualizar o protético. Tente novamente.');
-        }
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else if (error.response?.status === 400) {
+        toast.error('Dados inválidos. Verifique as informações e tente novamente.');
       } else {
-        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
+        toast.error('Erro ao atualizar protético. Tente novamente.');
       }
     } finally {
       setSaving(false);
@@ -420,34 +375,6 @@ const EditarProtetico = () => {
               <option value="Admin">Administrador</option>
             </select>
             {errors.cargo && <span className="error-text">{errors.cargo}</span>}
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="senha">Nova Senha (opcional)</label>
-            <input
-              type="password"
-              id="senha"
-              name="senha"
-              value={formData.senha}
-              onChange={handleChange}
-              className={errors.senha ? 'input-error' : ''}
-              placeholder="Digite a nova senha (mínimo 6 caracteres)"
-            />
-            {errors.senha && <span className="error-text">{errors.senha}</span>}
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="confirmarSenha">Confirmar Nova Senha</label>
-            <input
-              type="password"
-              id="confirmarSenha"
-              name="confirmarSenha"
-              value={formData.confirmarSenha}
-              onChange={handleChange}
-              className={errors.confirmarSenha ? 'input-error' : ''}
-              placeholder="Confirme a nova senha"
-            />
-            {errors.confirmarSenha && <span className="error-text">{errors.confirmarSenha}</span>}
           </div>
           
           <div className="form-group">

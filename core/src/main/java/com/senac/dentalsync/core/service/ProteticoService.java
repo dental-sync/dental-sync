@@ -7,20 +7,32 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.context.ApplicationContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 
+import com.senac.dentalsync.core.persistency.model.Laboratorio;
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.ProteticoRepository;
 
 @Service
-public class ProteticoService extends BaseService<Protetico, Long> {
+public class ProteticoService extends BaseService<Protetico, Long> implements UserDetailsService {
 
     @Autowired
     private ProteticoRepository proteticoRepository;
     
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Override
     protected BaseRepository<Protetico, Long> getRepository() {
@@ -34,8 +46,52 @@ public class ProteticoService extends BaseService<Protetico, Long> {
     
     @Override
     public Protetico save(Protetico protetico) {
+        System.out.println("=== Salvando protético: " + protetico.getEmail() + " ===");
+        System.out.println("ID do protético: " + protetico.getId());
+        
+        // Se é um novo protético (ID null) e não tem laboratório associado, 
+        // associar automaticamente com o laboratório do usuário logado
+        if (protetico.getId() == null && protetico.getLaboratorio() == null) {
+            try {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                if (authentication != null && authentication.isAuthenticated() && 
+                    !authentication.getName().equals("anonymousUser")) {
+                    
+                    String emailUsuarioLogado = authentication.getName();
+                    System.out.println("Usuário logado: " + emailUsuarioLogado);
+                    
+                    Optional<Laboratorio> laboratorioOpt = findLaboratorioByEmail(emailUsuarioLogado);
+                    if (laboratorioOpt.isPresent()) {
+                        protetico.setLaboratorio(laboratorioOpt.get());
+                        System.out.println("Laboratório setado automaticamente para o novo protético");
+                    } else {
+                        System.out.println("Laboratório não encontrado para o usuário logado: " + emailUsuarioLogado);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Erro ao obter laboratório do usuário logado: " + e.getMessage());
+                // Não interrompe o processo, apenas não associa o laboratório
+            }
+        }
+        
         verificarDuplicidade(protetico);
-        return super.save(protetico);
+        PasswordEncoder passwordEncoder = applicationContext.getBean(PasswordEncoder.class);
+        
+        boolean senhaFoiAlterada = isSenhaAlterada(protetico, passwordEncoder);
+        System.out.println("Senha foi alterada: " + senhaFoiAlterada);
+        System.out.println("Senha atual (primeiros 10 chars): " + (protetico.getSenha() != null ? protetico.getSenha().substring(0, Math.min(10, protetico.getSenha().length())) : "null"));
+        
+        if (protetico.getId() == null || senhaFoiAlterada) {
+            System.out.println("Criptografando senha...");
+            protetico.setSenha(passwordEncoder.encode(protetico.getSenha()));
+            System.out.println("Senha criptografada (primeiros 10 chars): " + protetico.getSenha().substring(0, 10));
+        } else {
+            System.out.println("Mantendo senha existente");
+        }
+        
+        Protetico savedProtetico = super.save(protetico);
+        System.out.println("Protético salvo com sucesso");
+        return savedProtetico;
     }
     
     private void verificarDuplicidade(Protetico protetico) {
@@ -73,6 +129,11 @@ public class ProteticoService extends BaseService<Protetico, Long> {
         return proteticoRepository.findByEmail(email);
     }
     
+    public Optional<Laboratorio> findLaboratorioByEmail(String email) {
+        return proteticoRepository.findByEmail(email)
+                .map(Protetico::getLaboratorio);
+    }
+    
     public Optional<Protetico> findByCro(String cro) {
         return proteticoRepository.findFirstByCro(cro);
     }
@@ -83,6 +144,10 @@ public class ProteticoService extends BaseService<Protetico, Long> {
     
     public List<Protetico> findByCroContaining(String cro) {
         return proteticoRepository.findByCroContaining(cro);
+    }
+    
+    public List<Protetico> findAll() {
+        return proteticoRepository.findAll();
     }
     
     public Protetico updateStatus(Long id, Boolean isActive) {
@@ -109,5 +174,70 @@ public class ProteticoService extends BaseService<Protetico, Long> {
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao excluir protético");
         }
+    }
+
+    private boolean isSenhaAlterada(Protetico protetico, PasswordEncoder passwordEncoder) {
+        if (protetico.getId() == null) {
+            System.out.println("Novo usuário - senha precisa ser criptografada");
+            return true;
+        }
+        
+        Protetico existente = findById(protetico.getId()).orElse(null);
+        if (existente == null) {
+            System.out.println("Usuário existente não encontrado - senha precisa ser criptografada");
+            return true;
+        }
+        
+        // Verificar se a senha atual já está criptografada (começa com $2a$ ou $2b$)
+        boolean senhaAtualJaCriptografada = protetico.getSenha() != null && 
+            (protetico.getSenha().startsWith("$2a$") || protetico.getSenha().startsWith("$2b$"));
+        
+        // Verificar se a senha existente já está criptografada
+        boolean senhaExistenteJaCriptografada = existente.getSenha() != null && 
+            (existente.getSenha().startsWith("$2a$") || existente.getSenha().startsWith("$2b$"));
+            
+        System.out.println("Senha atual já criptografada: " + senhaAtualJaCriptografada);
+        System.out.println("Senha existente já criptografada: " + senhaExistenteJaCriptografada);
+        
+        // Se a senha atual já está criptografada e é igual à existente, não alterar
+        if (senhaAtualJaCriptografada && senhaExistenteJaCriptografada) {
+            boolean senhasSaoIguais = protetico.getSenha().equals(existente.getSenha());
+            System.out.println("Senhas criptografadas são iguais: " + senhasSaoIguais);
+            return !senhasSaoIguais; // Retorna false se são iguais (não foi alterada)
+        }
+        
+        // Se a senha atual não está criptografada, verificar se corresponde à existente
+        if (!senhaAtualJaCriptografada && senhaExistenteJaCriptografada) {
+            boolean senhaCorresponde = passwordEncoder.matches(protetico.getSenha(), existente.getSenha());
+            System.out.println("Senha corresponde à existente: " + senhaCorresponde);
+            return !senhaCorresponde; // Retorna false se corresponde (não foi alterada)
+        }
+        
+        // Caso padrão: considera que foi alterada
+        System.out.println("Caso padrão - considerando senha alterada");
+        return true;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Protetico protetico = findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("Protético não encontrado com o email: " + email));
+        return User.builder()
+                .username(protetico.getEmail())
+                .password(protetico.getSenha())
+                .roles(protetico.getIsAdmin() != null && protetico.getIsAdmin() ? "ADMIN" : "USER")
+                .build();
+    }
+
+    /**
+     * Salva o protético sem verificar/alterar a senha
+     * Usado para operações como ativação de 2FA onde não queremos tocar na senha
+     */
+    public Protetico saveWithoutPasswordChange(Protetico protetico) {
+        System.out.println("=== Salvando protético SEM alterar senha: " + protetico.getEmail() + " ===");
+        verificarDuplicidade(protetico);
+        Protetico savedProtetico = super.save(protetico);
+        System.out.println("Protético salvo sem alteração de senha");
+        return savedProtetico;
     }
 } 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './CadastroServico.css';
@@ -27,48 +27,50 @@ const EditarServico = () => {
   const [materiaisSelecionados, setMateriaisSelecionados] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const loadData = async () => {
       try {
-        // Buscar categorias
-        const categoriasResponse = await axios.get('http://localhost:8080/categoria-servico');
+        setLoading(true);
+        const categoriasResponse = await api.get('/categoria-servico');
         setCategorias(categoriasResponse.data);
 
-        // Buscar dados do serviço
-        const servicoResponse = await axios.get(`http://localhost:8080/servico/${id}`);
-        const servicoData = servicoResponse.data;
-        
-        setServico({
-          nome: servicoData.nome,
-          descricao: servicoData.descricao || '',
-          valor: servicoData.preco != null
-            ? servicoData.preco.toFixed(2).replace('.', ',')
-            : '',
-          tempoPrevisto: servicoData.tempoPrevisto ? (servicoData.tempoPrevisto / 60).toString() : '',
-          categoriaServico: {
-            id: servicoData.categoriaServico?.id || ''
-          },
-          status: servicoData.status || 'ATIVO',
-          isActive: servicoData.isActive
-        });
-        // Carregar materiais utilizados (via ServicoMaterial)
-        setMateriaisSelecionados(
-          (servicoData.materiais || []).map(sm => ({
-            id: sm.material.id,
-            nome: sm.material.nome,
-            unidadeMedida: sm.material.unidadeMedida,
-            quantidadeEstoque: sm.material.quantidade,
-            quantidadeUso: sm.quantidade
-          }))
-        );
+        if (id) {
+          const servicoResponse = await api.get(`/servico/${id}`);
+          const servicoData = servicoResponse.data;
+          
+          setServico({
+            nome: servicoData.nome || '',
+            descricao: servicoData.descricao || '',
+            valor: servicoData.preco != null
+              ? servicoData.preco.toFixed(2).replace('.', ',')
+              : '',
+            tempoPrevisto: servicoData.tempoPrevisto ? (servicoData.tempoPrevisto / 60).toString() : '',
+            categoriaServico: {
+              id: servicoData.categoriaServico?.id || ''
+            },
+            status: servicoData.status || 'ATIVO',
+            isActive: servicoData.isActive
+          });
+          // Carregar materiais utilizados (via ServicoMaterial)
+          setMateriaisSelecionados(
+            (servicoData.materiais || []).map(sm => ({
+              id: sm.material.id,
+              nome: sm.material.nome,
+              unidadeMedida: sm.material.unidadeMedida,
+              quantidadeEstoque: sm.material.quantidade,
+              quantidadeUso: sm.quantidade
+            }))
+          );
+        }
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
-        toast.error('Erro ao carregar dados do serviço.');
-        navigate('/servico');
+        toast.error('Erro ao carregar dados');
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchData();
-  }, [id, navigate]);
+    loadData();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -119,14 +121,14 @@ const EditarServico = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    
+    if (!servico.nome || !servico.valor || !servico.categoriaServico.id || !servico.tempoPrevisto) {
+      toast.error('Por favor, preencha todos os campos obrigatórios.');
+      return;
+    }
 
+    setLoading(true);
     try {
-      if (!servico.nome || !servico.valor || !servico.categoriaServico.id || !servico.tempoPrevisto) {
-        toast.error('Por favor, preencha todos os campos obrigatórios.');
-        setLoading(false);
-        return;
-      }
       const servicoData = {
         nome: servico.nome,
         descricao: servico.descricao,
@@ -137,7 +139,8 @@ const EditarServico = () => {
         isActive: servico.isActive,
         materiais: materiaisSelecionados.map(m => ({ material: { id: m.id }, quantidade: m.quantidadeUso }))
       };
-      await axios.put(`http://localhost:8080/servico/${id}`, servicoData);
+
+      await api.put(`/servico/${id}`, servicoData);
       toast.success('Serviço atualizado com sucesso!');
       navigate('/servico');
     } catch (error) {

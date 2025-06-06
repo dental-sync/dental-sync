@@ -10,6 +10,7 @@ const LoginForm = ({ onSubmit }) => {
     password: '',
     rememberMe: false
   });
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -19,9 +20,30 @@ const LoginForm = ({ onSubmit }) => {
     });
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Validar email
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email é obrigatório';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email inválido';
+    }
+    
+    // Validar senha
+    if (!formData.password.trim()) {
+      newErrors.password = 'Senha é obrigatória';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    if (validateForm()) {
+      onSubmit(formData);
+    }
   };
 
   return (
@@ -34,13 +56,15 @@ const LoginForm = ({ onSubmit }) => {
           value={formData.email}
           onChange={handleChange}
           placeholder="seu@email.com"
+          className={errors.email ? 'error' : ''}
         />
+        {errors.email && <span className="error-message" style={{color: 'red', fontSize: '12px'}}>{errors.email}</span>}
       </div>
 
       <div className="form-group">
         <div className="form-label-row">
           <label htmlFor="password" className="form-label">Senha</label>
-          <Link to="/esqueci-senha" className="forgot-password-link">
+          <Link to="/forgot-password" className="forgot-password-link">
             Esqueceu a senha?
           </Link>
         </div>
@@ -50,7 +74,9 @@ const LoginForm = ({ onSubmit }) => {
           value={formData.password}
           onChange={handleChange}
           placeholder="Senha"
+          className={errors.password ? 'error' : ''}
         />
+        {errors.password && <span className="error-message" style={{color: 'red', fontSize: '12px'}}>{errors.password}</span>}
       </div>
 
       <div className="form-options">

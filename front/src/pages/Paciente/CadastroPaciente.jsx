@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './CadastroPaciente.css';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const CadastroPaciente = () => {
@@ -10,7 +10,8 @@ const CadastroPaciente = () => {
     nome: '',
     email: '',
     telefone: '',
-    dataNascimento: ''
+    dataNascimento: '',
+    endereco: ''
   });
   
   const [errors, setErrors] = useState({});
@@ -174,61 +175,26 @@ const CadastroPaciente = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    e.stopPropagation();
     
-    // Aplicar trim() no nome e email antes da validação
-    setFormData(prev => ({
-      ...prev,
-      nome: prev.nome.trim(),
-      email: prev.email.trim()
-    }));
-    
-    if (!validateForm()) {
-      return;
-    }
-    
+    if (!validateForm()) return;
+
     setLoading(true);
-    
     try {
       const pacienteData = {
         nome: formData.nome.trim(),
         email: formData.email.trim(),
-        telefone: formData.telefone.trim(),
-        dataNascimento: formatDateForAPI(formData.dataNascimento),
-        isActive: true
+        telefone: formData.telefone,
+        dataNascimento: formData.dataNascimento,
+        endereco: formData.endereco
       };
-      
-      await axios.post('http://localhost:8080/paciente', pacienteData);
-      
-      // Limpa qualquer estado de navegação existente
-      window.history.replaceState({}, document.title);
-      
-      // Navegar para a página de listagem com mensagem de sucesso e flag de refresh
-      navigate('/paciente', { 
-        state: { 
-          success: `Paciente cadastrado com sucesso!`,
-          refresh: true 
-        } 
-      });
+
+      await api.post('/paciente', pacienteData);
+      toast.success('Paciente cadastrado com sucesso!');
+      navigate('/paciente');
     } catch (error) {
       console.error('Erro ao cadastrar paciente:', error);
-      
-      if (error.response && error.response.data) {
-        //Tratamento de erros específicos da API
-        if (error.response.data.errors) {
-          const apiErrors = {};
-          error.response.data.errors.forEach(err => {
-            apiErrors[err.field] = err.message;
-          });
-          setErrors(apiErrors);
-        } else if (error.response.data.message) {
-          toast.error(error.response.data.message);
-        } else {
-          toast.error('Ocorreu um erro ao cadastrar o paciente. Tente novamente.');
-        }
-      } else {
-        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
-      }
+      const errorMessage = error.response?.data?.message || 'Erro ao cadastrar paciente';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -308,6 +274,21 @@ const CadastroPaciente = () => {
               noValidate
             />
             {errors.dataNascimento && <span className="error-text">{errors.dataNascimento}</span>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="endereco" className="required">Endereço</label>
+            <input
+              type="text"
+              id="endereco"
+              name="endereco"
+              value={formData.endereco}
+              onChange={handleChange}
+              className={errors.endereco ? 'input-error' : ''}
+              placeholder="Digite o endereço"
+              maxLength={MAX_CHARS}
+            />
+            {errors.endereco && <span className="error-text">{errors.endereco}</span>}
           </div>
           
           <div className="form-actions">

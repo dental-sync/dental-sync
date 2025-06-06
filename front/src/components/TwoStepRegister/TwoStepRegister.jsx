@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../axios-config';
 import { toast } from 'react-toastify';
@@ -55,9 +55,9 @@ const TwoStepRegister = () => {
   };
 
   // Atualiza labData em tempo real
-  const handleLabFormChange = (newLabData) => {
+  const handleLabFormChange = useCallback((newLabData) => {
     setLabData(newLabData);
-  };
+  }, []);
 
   // Finaliza o registro
   const handleFinish = async (formData) => {
@@ -65,15 +65,35 @@ const TwoStepRegister = () => {
     setLoading(true);
 
     try {
-      // Primeiro registrar o laboratório
-      const labResponse = await api.post('labs/register', formData);
-      const labId = labResponse.id;
+      // Montar payload do laboratório
+      const labPayload = {
+        nomeLaboratorio: formData.nome,
+        cnpj: formData.cnpj,
+        emailLaboratorio: formData.email,
+        telefoneLaboratorio: formData.telefone,
+        endereco: {
+          cep: formData.cep,
+          logradouro: formData.endereco,
+          numero: formData.numero,
+          bairro: formData.bairro,
+          cidade: formData.cidade,
+          estado: formData.estado
+        }
+      };
+      
+      // Registrar laboratório primeiro
+      const labResponse = await api.post('/laboratorios', labPayload);
+      const laboratorioId = labResponse.data.id;
 
-      // Depois registrar o usuário associado ao laboratório
-      await api.post('users/register', {
+      // Montar payload do protético associado ao laboratório
+      const proteticoPayload = {
         ...userData,
-        labId
-      });
+        isAdmin: true, // sempre admin no primeiro cadastro
+        laboratorio: {
+          id: laboratorioId
+        }
+      };
+      await api.post('/proteticos', proteticoPayload);
 
       toast.success('Registro concluído com sucesso!');
       navigate('/login');

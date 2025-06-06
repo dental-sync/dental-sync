@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './EditarClinica.css';
-import axios from 'axios';
+import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const EditarClinica = () => {
@@ -17,24 +17,29 @@ const EditarClinica = () => {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchClinica = async () => {
+      if (!id) return;
+      
       try {
-        const response = await axios.get(`http://localhost:8080/clinicas/${id}`);
+        setLoading(true);
+        const response = await api.get(`/clinicas/${id}`);
         const clinica = response.data;
+        
         setFormData({
-          nome: clinica.nome,
-          cnpj: clinica.cnpj
+          nome: clinica.nome || '',
+          cnpj: clinica.cnpj || ''
         });
-      } catch (err) {
-        console.error('Erro ao carregar dados:', err);
-        setErrors({ general: 'Não foi possível carregar os dados da clínica.' });
+      } catch (error) {
+        console.error('Erro ao buscar clínica:', error);
+        toast.error('Erro ao carregar dados da clínica');
+        navigate('/clinica');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [id]);
+    fetchClinica();
+  }, [id, navigate]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -115,22 +120,20 @@ const EditarClinica = () => {
     setSaving(true);
     
     try {
-      // Verificar se o CNPJ já existe em outra clínica
-      const cnpjResponse = await axios.get(`http://localhost:8080/clinicas/cnpj/${formData.cnpj}`).catch(() => ({ data: null }));
-
-      if (cnpjResponse.data && cnpjResponse.data.id !== parseInt(id)) {
-        setErrors({ cnpj: "CNPJ já cadastrado em outra clínica" });
+      const cnpjResponse = await checkUniqueCNPJ();
+      
+      if (cnpjResponse.cnpj) {
+        setErrors(cnpjResponse);
         setSaving(false);
         return;
       }
 
-      // Se chegou aqui, o CNPJ não está duplicado
       const clinicaData = {
         nome: formData.nome,
         cnpj: formData.cnpj
       };
 
-      await axios.put(`http://localhost:8080/clinicas/${id}`, clinicaData);
+      await api.put(`/clinicas/${id}`, clinicaData);
       
       // Limpa qualquer estado de navegação existente
       window.history.replaceState({}, document.title);
@@ -166,6 +169,21 @@ const EditarClinica = () => {
 
   const handleVoltar = () => {
     navigate('/clinica');
+  };
+
+  const checkUniqueCNPJ = async () => {
+    try {
+      const cnpjResponse = await api.get(`/clinicas/cnpj/${formData.cnpj}`).catch(() => ({ data: null }));
+      
+      if (cnpjResponse.data && cnpjResponse.data.id !== parseInt(id)) {
+        return { cnpj: 'CNPJ já cadastrado' };
+      }
+      
+      return {};
+    } catch (error) {
+      console.error('Erro ao verificar CNPJ:', error);
+      return {};
+    }
   };
 
   if (loading) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './CadastroMaterial.css';
@@ -27,33 +27,43 @@ const CadastroMaterial = () => {
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/categoria-material');
+        const response = await api.get('/categoria-material');
         setCategorias(response.data);
       } catch (error) {
         console.error('Erro ao buscar categorias:', error);
-        setErrors(prev => ({
-          ...prev,
-          categoria: 'Erro ao carregar categorias. Por favor, recarregue a página.'
-        }));
+        toast.error('Erro ao carregar categorias');
       }
     };
 
-    fetchCategorias();
-
+    const fetchMaterial = async () => {
     if (id) {
-      const fetchMaterial = async () => {
         try {
-          const response = await axios.get(`http://localhost:8080/material/${id}`);
-          setMaterial(response.data);
+          setLoading(true);
+          const response = await api.get(`/material/${id}`);
+          const material = response.data;
+          
+          setMaterial({
+            nome: material.nome || '',
+            descricao: material.descricao || '',
+            quantidade: material.quantidade || '',
+            unidadeMedida: material.unidadeMedida || '',
+            valorUnitario: material.valorUnitario || '',
+            categoriaMaterial: material.categoriaMaterial?.id || '',
+            estoqueMinimo: material.estoqueMinimo || '',
+            isActive: material.isActive || true
+          });
         } catch (error) {
           console.error('Erro ao buscar material:', error);
-          toast.error('Erro ao carregar dados do material.');
+          toast.error('Erro ao carregar dados do material');
           navigate('/material');
+        } finally {
+          setLoading(false);
+        }
         }
       };
 
+    fetchCategorias();
       fetchMaterial();
-    }
   }, [id, navigate]);
 
   const handleInputChange = (e) => {
@@ -137,47 +147,35 @@ const CadastroMaterial = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      toast.error('Por favor, corrija os erros no formulário antes de salvar.');
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
-    setErrors({});
-
     try {
       const materialData = {
-        ...material,
-        quantidade: parseFloat(material.quantidade),
+        nome: material.nome,
+        descricao: material.descricao,
+        quantidade: parseInt(material.quantidade),
+        unidadeMedida: material.unidadeMedida,
         valorUnitario: parseFloat(material.valorUnitario),
-        estoqueMinimo: parseFloat(material.estoqueMinimo)
+        estoqueMinimo: parseFloat(material.estoqueMinimo),
+        categoriaMaterial: { id: material.categoriaMaterial?.id },
+        isActive: material.isActive
       };
 
       if (id) {
-        await axios.put(`http://localhost:8080/material/${id}`, materialData);
+        await api.put(`/material/${id}`, materialData);
         toast.success('Material atualizado com sucesso!');
       } else {
-        await axios.post('http://localhost:8080/material', materialData);
+        await api.post('/material', materialData);
         toast.success('Material cadastrado com sucesso!');
       }
 
       navigate('/material');
     } catch (error) {
       console.error('Erro ao salvar material:', error);
-      
-      if (error.response?.data?.errors) {
-        const apiErrors = {};
-        error.response.data.errors.forEach(err => {
-          apiErrors[err.field] = err.message;
-        });
-        setErrors(apiErrors);
-        toast.error('Existem erros no formulário. Por favor, verifique os campos destacados.');
-      } else {
-        setErrors({
-          submit: 'Erro ao salvar material. Por favor, verifique os dados e tente novamente.'
-        });
-        toast.error('Erro ao salvar material. Por favor, tente novamente.');
-      }
+      const errorMessage = error.response?.data?.message || 
+        `Erro ao ${id ? 'atualizar' : 'cadastrar'} material`;
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

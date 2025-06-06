@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 import Logo from './Logo';
 import NavItem from './NavItem';
@@ -16,9 +16,12 @@ import {
   ConfiguracaoIcon,
   ClinicaIcon
 } from './icons';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout, isAdmin } = useAuth();
   const [activeItem, setActiveItem] = useState(() => {
     const path = location.pathname;
     if (path.includes('kanban')) return 'kanban';
@@ -34,7 +37,21 @@ const Sidebar = () => {
     return 'kanban'; // Item padrão caso nenhuma rota seja encontrada
   });
 
-  const menuItems = [
+  // Menu items base
+  const baseMenuItems = [
+    { id: 'kanban', text: 'Kanban', icon: <KanbanIcon />, to: '/kanban' },
+    { id: 'pedidos', text: 'Pedidos', icon: <PedidosIcon />, to: '/pedidos' },
+    { id: 'pacientes', text: 'Pacientes', icon: <PacientesIcon />, to: '/paciente' },
+    { id: 'dentistas', text: 'Dentistas', icon: <DentistaIcon />, to: '/dentista' },
+    { id: 'clinicas', text: 'Clínicas', icon: <ClinicaIcon />, to: '/clinica' },
+    { id: 'servicos', text: 'Serviços', icon: <ServicosIcon />, to: '/servico' },
+    { id: 'materiais', text: 'Materiais', icon: <MaterialIcon />, to: '/material' },
+    { id: 'relatorios', text: 'Relatórios', icon: <RelatoriosIcon />, to: '/relatorios' },
+    { id: 'configuracoes', text: 'Configurações', icon: <ConfiguracaoIcon />, to: '/configuracao' },
+  ];
+
+  // Adicionar menu de protéticos apenas para admins
+  const menuItems = isAdmin ? [
     { id: 'kanban', text: 'Kanban', icon: <KanbanIcon />, to: '/kanban' },
     { id: 'pedidos', text: 'Pedidos', icon: <PedidosIcon />, to: '/pedidos' },
     { id: 'pacientes', text: 'Pacientes', icon: <PacientesIcon />, to: '/paciente' },
@@ -45,14 +62,14 @@ const Sidebar = () => {
     { id: 'materiais', text: 'Materiais', icon: <MaterialIcon />, to: '/material' },
     { id: 'relatorios', text: 'Relatórios', icon: <RelatoriosIcon />, to: '/relatorios' },
     { id: 'configuracoes', text: 'Configurações', icon: <ConfiguracaoIcon />, to: '/configuracao' },
-  ];
+  ] : baseMenuItems;
 
   const handleItemClick = (id) => {
     setActiveItem(id);
   };
 
   const handleLogout = () => {
-    console.log('Logout clicked');
+    logout();
   };
 
   return (
@@ -73,8 +90,8 @@ const Sidebar = () => {
         ))}
       </div>
       <UserSection
-        userName="Usuário demo"
-        userEmail="usuario@dental.com"
+        userName={user?.name || user?.nome || user?.email?.split('@')[0] || "Usuário"}
+        userEmail={user?.email || "usuario@dental.com"}
         onLogout={handleLogout}
       />
     </div>

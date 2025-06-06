@@ -4,6 +4,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import Sidebar from './components/Sidebar/Sidebar'
 import LoginPage from './pages/Login'
 import RegisterPage from './pages/Register'
+import TwoFactorPage from './pages/TwoFactor'
 import ProteticoPage from './pages/Protetico/ProteticoPage'
 import CadastroProtetico from './pages/Protetico/CadastroProtetico'
 import HistoricoProtetico from './pages/Protetico/HistoricoProtetico'
@@ -34,6 +35,9 @@ import CadastroPedido from './pages/Pedido/CadastroPedido'
 import EditarPedido from './pages/Pedido/EditarPedido'
 import VisualizarPedido from './pages/Pedido/VisualizarPedido'
 import './App.css'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 
 
 const ProtectedLayout = ({ children }) => (
@@ -45,50 +49,73 @@ const ProtectedLayout = ({ children }) => (
   </>
 );
 
+// Componente para redirecionar se já estiver logado
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  
+  // Aguardar verificação de autenticação antes de redirecionar
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}>
+        <div>Carregando...</div>
+      </div>
+    );
+  }
+  
+  return isAuthenticated ? <Navigate to="/paciente" replace /> : children;
+};
+
 function App() {
   return (
-    <Router>
-      <div className="app">
-        <Routes>
-          {/* Rotas públicas */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/registre-se" element={<RegisterPage />} />
-          <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
-          <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
-          <Route path="/planos" element={<PlanosPage />} />
-          
-          {/* Rotas protegidas */}
-          <Route path="/protetico" element={<ProtectedLayout><ProteticoPage /></ProtectedLayout>} />
-          <Route path="/pedidos" element={<ProtectedLayout><PedidoPage /></ProtectedLayout>} />
-          <Route path="/pedidos/cadastro" element={<ProtectedLayout><CadastroPedido /></ProtectedLayout>} />
-          <Route path="/pedidos/editar/:id" element={<ProtectedLayout><EditarPedido /></ProtectedLayout>} />
-          <Route path="/pedidos/:id" element={<ProtectedLayout><VisualizarPedido /></ProtectedLayout>} />
-          <Route path="/protetico/cadastro" element={<ProtectedLayout><CadastroProtetico /></ProtectedLayout>} />
-          <Route path="/proteticos/historico/:id" element={<ProtectedLayout><HistoricoProtetico /></ProtectedLayout>} />
-          <Route path="/proteticos/editar/:id" element={<ProtectedLayout><EditarProtetico /></ProtectedLayout>} />
-          <Route path="/paciente" element={<ProtectedLayout><PacientePage /></ProtectedLayout>} />
-          <Route path="/paciente/cadastro" element={<ProtectedLayout><CadastroPaciente /></ProtectedLayout>} />
-          <Route path="/paciente/historico/:id" element={<ProtectedLayout><HistoricoPaciente /></ProtectedLayout>} />
-          <Route path="/paciente/editar/:id" element={<ProtectedLayout><EditarPaciente /></ProtectedLayout>} />
-          <Route path="/dentista" element={<ProtectedLayout><DentistaPage /></ProtectedLayout>} />
-          <Route path="/dentista/cadastro" element={<ProtectedLayout><CadastroDentista /></ProtectedLayout>} />
-          <Route path="/dentista/editar/:id" element={<ProtectedLayout><EditarDentista /></ProtectedLayout>} />
-          <Route path="/clinica" element={<ProtectedLayout><ClinicaPage /></ProtectedLayout>} />
-          <Route path="/clinica/cadastro" element={<ProtectedLayout><CadastroClinica /></ProtectedLayout>} />
-          <Route path="/clinica/editar/:id" element={<ProtectedLayout><EditarClinica /></ProtectedLayout>} />
-          <Route path="/material" element={<ProtectedLayout><MaterialPage /></ProtectedLayout>} />
-          <Route path="/material/cadastro" element={<ProtectedLayout><CadastroMaterial /></ProtectedLayout>} />
-          <Route path="/material/editar/:id" element={<ProtectedLayout><EditarMaterial /></ProtectedLayout>} />
-          <Route path="/servico" element={<ProtectedLayout><ServicoPage /></ProtectedLayout>} />
-          <Route path="/servico/cadastro" element={<ProtectedLayout><CadastroServico /></ProtectedLayout>} />
-          <Route path="/servico/editar/:id" element={<ProtectedLayout><EditarServico /></ProtectedLayout>} />
-          <Route path="/configuracao" element={<ProtectedLayout><Configuracao /></ProtectedLayout>} />
-          <Route path="/relatorios" element={<ProtectedLayout><Relatorios /></ProtectedLayout>} />
-        </Routes>
-        <ToastContainer position="top-right" autoClose={3000} />
-      </div>
-    </Router>
+
+    <AuthProvider>
+      <Router>
+        <div className="app">
+          <Routes>
+            {/* Rotas públicas */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+            <Route path="/two-factor" element={<PublicRoute><TwoFactorPage /></PublicRoute>} />
+            <Route path="/registre-se" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+            <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+            <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
+            <Route path="/planos" element={<PlanosPage />} />
+            
+            {/* Rotas protegidas apenas para admins */}
+            <Route path="/protetico" element={<AdminRoute><ProtectedLayout><ProteticoPage /></ProtectedLayout></AdminRoute>} />
+            <Route path="/protetico/cadastro" element={<AdminRoute><ProtectedLayout><CadastroProtetico /></ProtectedLayout></AdminRoute>} />
+            <Route path="/proteticos/historico/:id" element={<AdminRoute><ProtectedLayout><HistoricoProtetico /></ProtectedLayout></AdminRoute>} />
+            <Route path="/proteticos/editar/:id" element={<AdminRoute><ProtectedLayout><EditarProtetico /></ProtectedLayout></AdminRoute>} />
+            
+            {/* Rotas protegidas para todos os usuários autenticados */}
+            <Route path="/paciente" element={<ProtectedRoute><ProtectedLayout><PacientePage /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/paciente/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroPaciente /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/paciente/historico/:id" element={<ProtectedRoute><ProtectedLayout><HistoricoPaciente /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/paciente/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarPaciente /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/dentista" element={<ProtectedRoute><ProtectedLayout><DentistaPage /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/dentista/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroDentista /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/dentista/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarDentista /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/clinica" element={<ProtectedRoute><ProtectedLayout><ClinicaPage /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/clinica/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroClinica /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/clinica/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarClinica /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/material" element={<ProtectedRoute><ProtectedLayout><MaterialPage /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/material/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroMaterial /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/material/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarMaterial /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/servico" element={<ProtectedRoute><ProtectedLayout><ServicoPage /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/servico/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroServico /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/servico/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarServico /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/configuracao" element={<ProtectedRoute><ProtectedLayout><Configuracao /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/relatorios" element={<ProtectedRoute><ProtectedLayout><Relatorios /></ProtectedLayout></ProtectedRoute>} />
+          </Routes>
+          <ToastContainer position="top-right" autoClose={3000} />
+        </div>
+      </Router>
+    </AuthProvider>
   )
 }
 

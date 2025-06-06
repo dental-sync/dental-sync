@@ -11,9 +11,10 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-            .allowedOrigins("http://localhost:5173") // URL do seu frontend Vite
+            .allowedOrigins("http://localhost:5173", "http://localhost:8080") // Frontend Vite e backend direto
             .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
             .allowedHeaders("*")
-            .allowCredentials(true);
+            .allowCredentials(true)
+            .maxAge(3600); // Cache das configurações de CORS por 1 hora
     }
 }

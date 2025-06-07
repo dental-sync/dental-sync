@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 import Logo from './Logo';
 import NavItem from './NavItem';
 import UserSection from './UserSection';
+import { useSidebar } from '../../contexts/SidebarContext';
 import {
   KanbanIcon,
   PedidosIcon,
@@ -22,20 +23,21 @@ const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout, isAdmin } = useAuth();
-  const [activeItem, setActiveItem] = useState(() => {
+  const { activeItem, setActiveItem } = useSidebar();
+
+  useEffect(() => {
     const path = location.pathname;
-    if (path.includes('kanban')) return 'kanban';
-    if (path.includes('pedidos')) return 'pedidos';
-    if (path.includes('paciente')) return 'pacientes';
-    if (path.includes('protetico')) return 'proteticos';
-    if (path.includes('dentista')) return 'dentistas';
-    if (path.includes('servico')) return 'servicos';
-    if (path.includes('material')) return 'materiais';
-    if (path.includes('relatorios')) return 'relatorios';
-    if (path.includes('configuracao')) return 'configuracoes';
-    if (path.includes('clinica')) return 'clinicas';
-    return 'kanban'; // Item padrão caso nenhuma rota seja encontrada
-  });
+    if (path.includes('kanban')) setActiveItem('kanban');
+    else if (path.includes('pedidos')) setActiveItem('pedidos');
+    else if (path.includes('paciente')) setActiveItem('pacientes');
+    else if (path.includes('protetico')) setActiveItem('proteticos');
+    else if (path.includes('dentista')) setActiveItem('dentistas');
+    else if (path.includes('servico')) setActiveItem('servicos');
+    else if (path.includes('material')) setActiveItem('materiais');
+    else if (path.includes('relatorios')) setActiveItem('relatorios');
+    else if (path.includes('configuracao')) setActiveItem('configuracoes');
+    else if (path.includes('clinica')) setActiveItem('clinicas');
+  }, [location.pathname, setActiveItem]);
 
   // Menu items base
   const baseMenuItems = [

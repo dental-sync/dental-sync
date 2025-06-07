@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import { useSidebar } from '../../contexts/SidebarContext';
 
 const statusLabels = {
   PENDENTE: 'Pendente',
@@ -21,6 +22,7 @@ const prioridadeColors = {
 };
 
 function Kanban() {
+  const { setActiveItem } = useSidebar();
   const [pedidos, setPedidos] = useState([]);
   const [dragged, setDragged] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
@@ -96,6 +98,7 @@ function Kanban() {
 
   const handleEditPedido = (id) => {
     setMenuOpenId(null);
+    setActiveItem('pedidos');
     navigate(`/pedidos/editar/${id}`);
   };
 
@@ -180,6 +183,7 @@ function Kanban() {
   };
 
   const handleNovoPedido = () => {
+    setActiveItem('pedidos');
     navigate('/pedidos/cadastro');
   };
 

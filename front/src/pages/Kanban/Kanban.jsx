@@ -219,7 +219,7 @@ function Kanban() {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <h1 className="kanban-title" style={{ fontSize: 24, fontWeight: 700, color: '#212529', margin: 0 }}>Kanban</h1>
         <div className="header-actions" style={{ display: 'flex', gap: 10, position: 'relative', alignItems: 'center' }}>
-          <SearchBar placeholder="Buscar pedidos..." onSearch={handleSearch} />
+          <SearchBar placeholder="Buscar pedidos..." onSearch={handleSearch} variant="kanban" />
           <div className="filter-container" style={{ position: 'relative' }}>
             <ActionButton label="Filtrar" icon="filter" onClick={() => {}} />
           </div>

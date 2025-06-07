@@ -2,11 +2,28 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import './StatusBadge.css';
 
-const StatusBadge = ({ status, onClick }) => {
+const StatusBadge = ({ status, onClick, tipo }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const badgeRef = useRef(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  
+  // Se for status de pedido, mostrar badge simples
+  if (tipo === 'pedido') {
+    // Mapeamento de status do pedido para cor e texto
+    const pedidoMap = {
+      'PENDENTE': { texto: 'Pendente', cor: '#ffc107' },
+      'EM_ANDAMENTO': { texto: 'Em Andamento', cor: '#007bff' },
+      'CONCLUIDO': { texto: 'Concluído', cor: '#28a745' },
+      'CANCELADO': { texto: 'Cancelado', cor: '#dc3545' }
+    };
+    const info = pedidoMap[status] || { texto: status, cor: '#6c757d' };
+    return (
+      <span className="status-badge status-badge-pedido" style={{ backgroundColor: info.cor, color: '#fff', cursor: 'default', minWidth: 40, fontSize: '12px', padding: '3px 10px', borderRadius: '6px', boxShadow: 'none', transition: 'none', fontWeight: 600, display: 'inline-block', textAlign: 'center' }}>
+        {info.texto}
+      </span>
+    );
+  }
   
   // Verifica se o status é boolean ou string e normaliza
   const isActive = typeof status === 'boolean' ? status : 

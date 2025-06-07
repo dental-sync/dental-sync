@@ -91,6 +91,25 @@ const CadastroPaciente = () => {
         delete updatedErrors[name];
         setErrors(updatedErrors);
       }
+    } else if (name === "dataNascimento") {
+      // Permitir apenas datas com ano de até 4 dígitos
+      let partes = value.split('-');
+      if (partes.length === 3) {
+        if (partes[0].length > 4) {
+          partes[0] = partes[0].slice(0, 4);
+          // Corrige o valor para o formato yyyy-MM-dd
+          const valorCorrigido = partes.join('-');
+          setFormData({
+            ...formData,
+            [name]: valorCorrigido
+          });
+          return;
+        }
+      }
+      setFormData({
+        ...formData,
+        [name]: value
+      });
     } else {
       setFormData({
         ...formData,

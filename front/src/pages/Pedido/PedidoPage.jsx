@@ -62,16 +62,19 @@ const PedidoPage = () => {
         const response = await api.get('/pedidos');
         const pedidosFormatados = response.data.map(pedido => ({
           id: pedido.id,
-          cliente: pedido.cliente,
+          paciente: pedido.cliente,
           dentista: pedido.dentista,
           protetico: pedido.protetico,
           servicos: pedido.servicos,
           dataEntrega: pedido.dataEntrega,
+          createdAt: pedido.createdAt || pedido.created_at,
           prioridade: pedido.prioridade,
           odontograma: pedido.odontograma,
           observacao: pedido.observacao,
-          status: pedido.status
+          status: pedido.status,
+          valorTotal: Array.isArray(pedido.servicos) ? pedido.servicos.reduce((acc, s) => acc + (s.preco || 0), 0) : 0
         }));
+        console.log('[LOG] pedidosFormatados:', pedidosFormatados);
         setPedidos(pedidosFormatados);
       } catch (error) {
         console.error('Não foi possível acessar a API:', error);
@@ -128,10 +131,10 @@ const PedidoPage = () => {
       if (searchQuery) {
         const searchLower = searchQuery.toLowerCase();
         return (
-          pedido.cliente?.nome?.toLowerCase().includes(searchLower) ||
+          pedido.paciente?.nome?.toLowerCase().includes(searchLower) ||
           pedido.dentista?.nome?.toLowerCase().includes(searchLower) ||
           pedido.protetico?.nome?.toLowerCase().includes(searchLower) ||
-          pedido.servico?.nome?.toLowerCase().includes(searchLower) ||
+          pedido.servicos?.nome?.toLowerCase().includes(searchLower) ||
           (pedido.id?.toString() || '').toLowerCase().includes(searchLower)
         );
       }
@@ -270,6 +273,9 @@ const PedidoPage = () => {
     return data.toLocaleDateString('pt-BR');
   };
 
+  // Função utilitária para formatar o ID do pedido
+  const formatPedidoId = (id) => `PD${String(id).padStart(4, '0')}`;
+
   return (
     <div className="pedido-page">
       <ToastContainer 
@@ -381,11 +387,11 @@ const PedidoPage = () => {
           
           <ExportDropdown 
             data={pedidosFiltrados.map(pedido => ({
-              id: pedido.id,
-              cliente: pedido.cliente?.nome || 'N/A',
+              id: formatPedidoId(pedido.id),
+              cliente: pedido.paciente?.nome || 'N/A',
               dentista: pedido.dentista?.nome || 'N/A',
               protetico: pedido.protetico?.nome || 'N/A',
-              servico: pedido.servico?.nome || 'N/A',
+              servico: pedido.servicos?.nome || 'N/A',
               dataEntrega: formatarData(pedido.dataEntrega),
               prioridade: pedido.prioridade
             }))}
@@ -413,10 +419,120 @@ const PedidoPage = () => {
 
       <div className="table-container">
         <PedidoTable 
-          pedidos={sortedPedidos}
+          pedidos={sortedPedidos.map(p => ({ ...p, idFormatado: formatPedidoId(p.id) }))}
           onDelete={handleDelete}
           sortConfig={sortConfig}
           onSort={handleSort}
+          columns={[
+            {
+              key: 'periodo', 
+              label: 'Período', 
+              render: (value, item) => {
+                const formatDate = (date, label) => {
+                  if (!date) {
+                    console.log(`[LOG] ${label} está vazio ou null:`, date);
+                    return 'N/A';
+                  }
+                  const safeDate = typeof date === 'string' ? date.replace(/(\\.\\d{3})\\d+/, '$1') : date;
+                  const d = new Date(safeDate);
+                  console.log(`[LOG] ${label} original:`, date, '| Tratado:', safeDate, '| Date:', d, '| isNaN:', isNaN(d.getTime()));
+                  return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString('pt-BR');
+                };
+                // ATENÇÃO: use exatamente o nome do campo, com a mesma capitalização!
+                return (
+                  <div>
+                    <div>{formatDate(item?.createdAt, 'createdAt')}</div>
+                    <div>{formatDate(item?.dataEntrega, 'dataEntrega')}</div>
+                  </div>
+                );
+              }
+            },
+            {
+              key: 'id',
+              label: 'ID',
+              render: (value, item) => {
+                return <div>{item.idFormatado}</div>;
+              }
+            },
+            {
+              key: 'cliente',
+              label: 'Cliente',
+              render: (value, item) => {
+                return <div>{item.paciente?.nome || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'dentista',
+              label: 'Dentista',
+              render: (value, item) => {
+                return <div>{item.dentista?.nome || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'protetico',
+              label: 'Protético',
+              render: (value, item) => {
+                return <div>{item.protetico?.nome || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'servico',
+              label: 'Serviço',
+              render: (value, item) => {
+                return <div>{item.servicos?.nome || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'prioridade',
+              label: 'Prioridade',
+              render: (value, item) => {
+                return <div>{item.prioridade || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'odontograma',
+              label: 'Odontograma',
+              render: (value, item) => {
+                return <div>{item.odontograma ? item.odontograma.split(',').join(', ') : 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'observacao',
+              label: 'Observação',
+              render: (value, item) => {
+                return <div>{item.observacao || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              render: (value, item) => {
+                return <div>{item.status || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'valorTotal',
+              label: 'Valor Total',
+              render: (value, item) => {
+                return <div>{item.valorTotal || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'actions',
+              label: 'Ações',
+              render: (value, item) => {
+                return (
+                  <div className="actions">
+                    <ActionButton 
+                      label="Excluir" 
+                      variant="danger"
+                      onClick={() => handleDelete(item.id)}
+                    />
+                  </div>
+                );
+              }
+            }
+          ]}
         />
       </div>
     </div>

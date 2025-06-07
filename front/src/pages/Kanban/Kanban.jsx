@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import api from '../../axios-config';
 import './Kanban.css';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal/DeleteConfirmationModal';
@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import { useSidebar } from '../../contexts/SidebarContext';
 
 const statusLabels = {
   PENDENTE: 'Pendente',
@@ -21,8 +22,10 @@ const prioridadeColors = {
 };
 
 function Kanban() {
+  const { setActiveItem } = useSidebar();
   const [pedidos, setPedidos] = useState([]);
   const [dragged, setDragged] = useState(null);
+  const [dragOverColumn, setDragOverColumn] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [menuOpenId, setMenuOpenId] = useState(null);
@@ -30,6 +33,11 @@ function Kanban() {
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filtros, setFiltros] = useState({
+    prioridade: 'todos'
+  });
+  const filterRef = useRef(null);
 
   useEffect(() => {
     fetchPedidos();
@@ -51,15 +59,29 @@ function Kanban() {
     setDragged(pedido);
   };
 
+  const onDragOver = (e, status) => {
+    e.preventDefault();
+    setDragOverColumn(status);
+  };
+
+  const onDragLeave = () => {
+    setDragOverColumn(null);
+  };
+
   const onDrop = async (status) => {
-    if (!dragged || dragged.status === status) return;
-    try {
-      await api.patch(`/pedidos/${dragged.id}/status`, { status });
-      setPedidos((prev) => prev.map((p) => p.id === dragged.id ? { ...p, status } : p));
-    } catch {
-      setError('Erro ao atualizar status do pedido.');
+    if (!dragged) return;
+    
+    if (dragged.status !== status) {
+      try {
+        await api.patch(`/pedidos/${dragged.id}/status`, { status });
+        setPedidos((prev) => prev.map((p) => p.id === dragged.id ? { ...p, status } : p));
+      } catch {
+        setError('Erro ao atualizar status do pedido.');
+      }
     }
+    
     setDragged(null);
+    setDragOverColumn(null);
   };
 
   const handleMoveStatus = async (pedido, novoStatus) => {
@@ -76,6 +98,7 @@ function Kanban() {
 
   const handleEditPedido = (id) => {
     setMenuOpenId(null);
+    setActiveItem('pedidos');
     navigate(`/pedidos/editar/${id}`);
   };
 
@@ -106,10 +129,46 @@ function Kanban() {
     }
   }, [menuOpenId]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setIsFilterOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const toggleFiltro = () => {
+    setIsFilterOpen(!isFilterOpen);
+  };
+
+  const handleFiltroChange = (e) => {
+    const { name, value } = e.target;
+    setFiltros({
+      ...filtros,
+      [name]: value
+    });
+  };
+
+  const handleLimparFiltros = () => {
+    setFiltros({
+      prioridade: 'todos'
+    });
+  };
+
   const pedidosFiltrados = pedidos.filter((pedido) => {
     const servico = pedido.servicos && pedido.servicos.length > 0 ? pedido.servicos[0].nome.toLowerCase() : '';
     const paciente = pedido.cliente?.nome?.toLowerCase() || '';
     const responsavel = pedido.protetico?.nome?.toLowerCase() || '';
+    
+    if (filtros.prioridade !== 'todos' && pedido.prioridade !== filtros.prioridade) {
+      return false;
+    }
+
     if (!searchQuery) return true;
     const termo = searchQuery.toLowerCase();
     return (
@@ -124,6 +183,7 @@ function Kanban() {
   };
 
   const handleNovoPedido = () => {
+    setActiveItem('pedidos');
     navigate('/pedidos/cadastro');
   };
 
@@ -136,7 +196,7 @@ function Kanban() {
     return (
       <div
         key={pedido.id}
-        className="kanban-card"
+        className={`kanban-card ${dragged?.id === pedido.id ? 'dragging' : ''}`}
         draggable
         onDragStart={() => onDragStart(pedido)}
         style={{ position: 'relative' }}
@@ -193,8 +253,9 @@ function Kanban() {
 
   const renderColumn = (status) => (
     <div
-      className="kanban-column"
-      onDragOver={e => e.preventDefault()}
+      className={`kanban-column ${dragOverColumn === status ? 'drag-over' : ''}`}
+      onDragOver={(e) => onDragOver(e, status)}
+      onDragLeave={onDragLeave}
       onDrop={() => onDrop(status)}
     >
       <div className="kanban-column-header">
@@ -219,9 +280,45 @@ function Kanban() {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <h1 className="kanban-title" style={{ fontSize: 24, fontWeight: 700, color: '#212529', margin: 0 }}>Kanban</h1>
         <div className="header-actions" style={{ display: 'flex', gap: 10, position: 'relative', alignItems: 'center' }}>
-          <SearchBar placeholder="Buscar pedidos..." onSearch={handleSearch} />
-          <div className="filter-container" style={{ position: 'relative' }}>
-            <ActionButton label="Filtrar" icon="filter" onClick={() => {}} />
+          <SearchBar placeholder="Buscar pedidos..." onSearch={handleSearch} variant="kanban" />
+          <div className="filter-container" ref={filterRef} style={{ position: 'relative' }}>
+            <ActionButton 
+              label="Filtrar" 
+              icon="filter" 
+              onClick={toggleFiltro}
+              active={isFilterOpen || filtros.prioridade !== 'todos'}
+            />
+            
+            {isFilterOpen && (
+              <div className="filter-dropdown">
+                <h3>Filtros</h3>
+                <div className="filter-group">
+                  <label htmlFor="prioridade">Prioridade</label>
+                  <select
+                    id="prioridade"
+                    name="prioridade"
+                    value={filtros.prioridade}
+                    onChange={handleFiltroChange}
+                    className="filter-select"
+                  >
+                    <option value="todos">Todas</option>
+                    <option value="BAIXA">Baixa</option>
+                    <option value="MEDIA">Média</option>
+                    <option value="ALTA">Alta</option>
+                    <option value="URGENTE">Urgente</option>
+                  </select>
+                </div>
+                <div className="filter-actions">
+                  <button
+                    type="button"
+                    className="clear-filter-button"
+                    onClick={handleLimparFiltros}
+                  >
+                    Limpar Filtros
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           <ActionButton label="Novo Pedido" icon="plus" variant="primary novo-button" onClick={handleNovoPedido} style={{ whiteSpace: 'nowrap', minWidth: 0 }} />
         </div>

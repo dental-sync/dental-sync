@@ -90,4 +90,21 @@
 
 .status-container:hover .status-arrow {
   transform: translateY(1px);
+}
+
+.status-badge-pedido {
+  font-size: 12px !important;
+  padding: 5px 10px !important;
+  border-radius: 6px !important;
+  min-width: unset !important;
+  height: auto !important;
+  box-shadow: none !important;
+  transition: none !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+}
+
+.status-badge-pedido:hover {
+  box-shadow: none !important;
+  transform: none !important;
 } 

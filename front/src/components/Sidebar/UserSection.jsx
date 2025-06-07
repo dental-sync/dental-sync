@@ -7,8 +7,8 @@ const UserSection = ({ userName, userEmail, onLogout }) => {
       <div className="user-info">
         <Avatar name={userName} email={userEmail} size={40} />
         <div className="user-details">
-          <span className="user-name">{userName}</span>
-          <span className="user-email">{userEmail}</span>
+          <span className="user-name" title={userName}>{userName}</span>
+          <span className="user-email" title={userEmail}>{userEmail}</span>
         </div>
       </div>
       <button className="logout-button" onClick={onLogout}>

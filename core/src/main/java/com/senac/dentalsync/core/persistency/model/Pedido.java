@@ -63,9 +63,8 @@ public class Pedido extends BaseEntity {
     @NotNull(message = "O status é obrigatório")
     private Status status;
 
-    @ElementCollection
-    @Column(name = "odontograma")
-    private List<Integer> odontograma;
+    @Column(name = "odontograma", columnDefinition = "TEXT")
+    private String odontograma;
 
     @Column(columnDefinition = "TEXT")
     private String observacao;

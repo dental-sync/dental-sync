@@ -11,7 +11,11 @@ const columns = [
   { key: 'telefone', label: 'Telefone' },
   { key: 'email', label: 'Email' },
   { key: 'dataNascimento', label: 'Data de Nascimento' },
-  { key: 'ultimoServico', label: 'Último Serviço' },
+  { 
+    key: 'ultimoServico', 
+    label: 'Último Serviço',
+    render: (value) => value ? new Date(value).toLocaleDateString('pt-BR') : '-'
+  },
   { key: 'isActive', label: 'Status', sortable: true },
   { key: 'actions', label: 'Ações' }
 ];

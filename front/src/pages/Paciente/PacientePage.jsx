@@ -16,6 +16,7 @@ const PacientePage = () => {
 
   
   const [pacientes, setPacientes] = useState([]);
+  const [pacientesComHistorico, setPacientesComHistorico] = useState({});
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,7 +51,39 @@ const PacientePage = () => {
       setLoading(true);
       try {
         const response = await api.get('/paciente');
-        setPacientes(response.data);
+        const pacientesData = response.data;
+        setPacientes(pacientesData);
+        
+        // Buscar histórico para cada paciente
+        const historicoPromises = pacientesData.map(async (paciente) => {
+          try {
+            const historicoResponse = await api.get(`/paciente/${paciente.id}/historico`);
+            const historico = historicoResponse.data;
+            // Ordenar por data de entrega e pegar o mais recente
+            const pedidoMaisRecente = historico.sort((a, b) => 
+              new Date(b.dataEntrega) - new Date(a.dataEntrega)
+            )[0];
+            
+            return {
+              pacienteId: paciente.id,
+              ultimoServico: pedidoMaisRecente ? pedidoMaisRecente.dataEntrega : null
+            };
+          } catch (error) {
+            console.error(`Erro ao buscar histórico do paciente ${paciente.id}:`, error);
+            return {
+              pacienteId: paciente.id,
+              ultimoServico: null
+            };
+          }
+        });
+        
+        const historicos = await Promise.all(historicoPromises);
+        const historicoMap = historicos.reduce((acc, curr) => {
+          acc[curr.pacienteId] = curr.ultimoServico;
+          return acc;
+        }, {});
+        
+        setPacientesComHistorico(historicoMap);
       } catch (error) {
         console.error('Erro ao buscar pacientes:', error);
         toast.error('Erro ao carregar pacientes');
@@ -189,6 +222,10 @@ const PacientePage = () => {
       
       return true;
     })
+    .map(paciente => ({
+      ...paciente,
+      ultimoServico: pacientesComHistorico[paciente.id] || null
+    }))
     .sort((a, b) => {
       if (!sortConfig.key) return 0;
       

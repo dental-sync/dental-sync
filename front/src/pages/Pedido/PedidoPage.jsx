@@ -493,7 +493,7 @@ const PedidoPage = () => {
               key: 'odontograma',
               label: 'Odontograma',
               render: (value, item) => {
-                return <div>{item.odontograma || 'N/A'}</div>;
+                return <div>{item.odontograma ? item.odontograma.split(',').join(', ') : 'N/A'}</div>;
               }
             },
             {

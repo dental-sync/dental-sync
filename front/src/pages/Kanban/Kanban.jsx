@@ -23,6 +23,7 @@ const prioridadeColors = {
 function Kanban() {
   const [pedidos, setPedidos] = useState([]);
   const [dragged, setDragged] = useState(null);
+  const [dragOverColumn, setDragOverColumn] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [menuOpenId, setMenuOpenId] = useState(null);
@@ -51,15 +52,29 @@ function Kanban() {
     setDragged(pedido);
   };
 
+  const onDragOver = (e, status) => {
+    e.preventDefault();
+    setDragOverColumn(status);
+  };
+
+  const onDragLeave = () => {
+    setDragOverColumn(null);
+  };
+
   const onDrop = async (status) => {
-    if (!dragged || dragged.status === status) return;
-    try {
-      await api.patch(`/pedidos/${dragged.id}/status`, { status });
-      setPedidos((prev) => prev.map((p) => p.id === dragged.id ? { ...p, status } : p));
-    } catch {
-      setError('Erro ao atualizar status do pedido.');
+    if (!dragged) return;
+    
+    if (dragged.status !== status) {
+      try {
+        await api.patch(`/pedidos/${dragged.id}/status`, { status });
+        setPedidos((prev) => prev.map((p) => p.id === dragged.id ? { ...p, status } : p));
+      } catch {
+        setError('Erro ao atualizar status do pedido.');
+      }
     }
+    
     setDragged(null);
+    setDragOverColumn(null);
   };
 
   const handleMoveStatus = async (pedido, novoStatus) => {
@@ -136,7 +151,7 @@ function Kanban() {
     return (
       <div
         key={pedido.id}
-        className="kanban-card"
+        className={`kanban-card ${dragged?.id === pedido.id ? 'dragging' : ''}`}
         draggable
         onDragStart={() => onDragStart(pedido)}
         style={{ position: 'relative' }}
@@ -193,8 +208,9 @@ function Kanban() {
 
   const renderColumn = (status) => (
     <div
-      className="kanban-column"
-      onDragOver={e => e.preventDefault()}
+      className={`kanban-column ${dragOverColumn === status ? 'drag-over' : ''}`}
+      onDragOver={(e) => onDragOver(e, status)}
+      onDragLeave={onDragLeave}
       onDrop={() => onDrop(status)}
     >
       <div className="kanban-column-header">

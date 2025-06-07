@@ -99,11 +99,21 @@
   flex-direction: column;
   gap: 10px;
   position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
 .kanban-card:active {
   box-shadow: 0 4px 16px rgba(67,97,238,0.18);
   transform: scale(1.01);
 }
+
+.kanban-card.dragging {
+  opacity: 0.5;
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(67,97,238,0.2);
+  cursor: grabbing;
+}
+
 .kanban-card-title {
   font-size: 0.98rem;
   font-weight: 600;
@@ -230,4 +240,9 @@
   display: flex;
   align-items: center;
   gap: 20px;
+}
+
+.kanban-column.drag-over {
+  background: rgba(67,97,238,0.05);
+  transition: background-color 0.2s ease;
 } 

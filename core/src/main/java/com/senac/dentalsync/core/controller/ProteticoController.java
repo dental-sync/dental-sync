@@ -1,5 +1,6 @@
 package com.senac.dentalsync.core.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.senac.dentalsync.core.dto.HistoricoProteticoDTO;
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.service.BaseService;
+import com.senac.dentalsync.core.service.PedidoService;
 import com.senac.dentalsync.core.service.ProteticoService;
 
 @RestController
@@ -24,6 +27,9 @@ public class ProteticoController extends BaseController<Protetico, Long> {
 
     @Autowired
     private ProteticoService proteticoService;
+    
+    @Autowired
+    private PedidoService pedidoService;
     
     @Override
     protected BaseService<Protetico, Long> getService() {
@@ -74,5 +80,11 @@ public class ProteticoController extends BaseController<Protetico, Long> {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         proteticoService.deleteProtetico(id);
         return ResponseEntity.noContent().build();
+    }
+    
+    @GetMapping("/{id}/historico")
+    public ResponseEntity<List<HistoricoProteticoDTO>> getHistoricoProtetico(@PathVariable Long id) {
+        List<HistoricoProteticoDTO> historico = pedidoService.buscarHistoricoPorProtetico(id);
+        return ResponseEntity.ok(historico);
     }
 } 

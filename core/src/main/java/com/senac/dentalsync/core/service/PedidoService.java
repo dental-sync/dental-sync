@@ -2,6 +2,8 @@ package com.senac.dentalsync.core.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,8 @@ import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.PedidoRepository;
+import com.senac.dentalsync.core.dto.HistoricoProteticoDTO;
+import com.senac.dentalsync.core.persistency.model.Servico;
 
 @Service
 public class PedidoService extends BaseService<Pedido, Long> {
@@ -64,5 +68,32 @@ public class PedidoService extends BaseService<Pedido, Long> {
     
     public List<Pedido> findByPrioridade(Pedido.Prioridade prioridade) {
         return pedidoRepository.findByPrioridade(prioridade);
+    }
+
+    public List<HistoricoProteticoDTO> buscarHistoricoPorProtetico(Long proteticoId) {
+        Protetico protetico = new Protetico();
+        protetico.setId(proteticoId);
+        List<Pedido> pedidos = pedidoRepository.findByProtetico(protetico);
+        List<HistoricoProteticoDTO> historico = new ArrayList<>();
+        for (Pedido pedido : pedidos) {
+            HistoricoProteticoDTO dto = new HistoricoProteticoDTO();
+            // Pega o primeiro serviço (ou adapte conforme sua regra)
+            if (pedido.getServicos() != null && !pedido.getServicos().isEmpty()) {
+                Servico servico = pedido.getServicos().get(0);
+                dto.setNomeServico(servico.getNome());
+            } else {
+                dto.setNomeServico("Serviço não informado");
+            }
+            dto.setNomePaciente(pedido.getCliente().getNome());
+            dto.setNomeDentista(pedido.getDentista().getNome());
+            dto.setDataEntrega(pedido.getDataEntrega());
+            // Soma dos valores dos serviços
+            BigDecimal valorTotal = pedido.getServicos().stream()
+                .map(Servico::getPreco)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            dto.setValorTotal(valorTotal);
+            historico.add(dto);
+        }
+        return historico;
     }
 } 

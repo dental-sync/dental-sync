@@ -12,9 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.senac.dentalsync.core.persistency.model.Dentista;
 import com.senac.dentalsync.core.service.BaseService;
 import com.senac.dentalsync.core.service.DentistaService;
+import com.senac.dentalsync.core.dto.HistoricoDentistaDTO;
+import com.senac.dentalsync.core.service.PedidoService;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.List;
 
 @RestController
 @RequestMapping("/dentistas")
@@ -22,6 +25,9 @@ public class DentistaController extends BaseController<Dentista, Long> {
 
     @Autowired
     private DentistaService dentistaService;
+    
+    @Autowired
+    private PedidoService pedidoService;
     
     @Override
     protected BaseService<Dentista, Long> getService() {
@@ -57,5 +63,11 @@ public class DentistaController extends BaseController<Dentista, Long> {
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/{id}/historico")
+    public ResponseEntity<List<HistoricoDentistaDTO>> getHistoricoDentista(@PathVariable Long id) {
+        List<HistoricoDentistaDTO> historico = pedidoService.buscarHistoricoPorDentista(id);
+        return ResponseEntity.ok(historico);
     }
 } 

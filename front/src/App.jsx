@@ -39,6 +39,7 @@ import './App.css'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
+import HistoricoDentista from './pages/Dentista/HistoricoDentista'
 
 
 const ProtectedLayout = ({ children }) => (
@@ -101,6 +102,7 @@ function App() {
             <Route path="/dentista" element={<ProtectedRoute><ProtectedLayout><DentistaPage /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/dentista/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroDentista /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/dentista/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarDentista /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/dentista/historico/:id" element={<ProtectedRoute><ProtectedLayout><HistoricoDentista /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/clinica" element={<ProtectedRoute><ProtectedLayout><ClinicaPage /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/clinica/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroClinica /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/clinica/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarClinica /></ProtectedLayout></ProtectedRoute>} />

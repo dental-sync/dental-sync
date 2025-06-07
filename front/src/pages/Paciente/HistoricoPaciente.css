@@ -1,3 +1,5 @@
+@import '../Protetico/HistoricoProtetico.css';
+
 .historico-paciente-page {
   padding: 20px;
   max-width: 1200px;
@@ -186,4 +188,50 @@
   height: 150px;
   color: #888;
   font-style: italic;
+}
+
+.trabalhos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.trabalho-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fafbfc;
+  border-radius: 7px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  padding: 10px 14px;
+  transition: box-shadow 0.2s;
+}
+
+.trabalho-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trabalho-servico {
+  font-size: 18px;
+  font-weight: 700;
+  color: #222;
+}
+
+.trabalho-detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 14px;
+  color: #6b6b6b;
+}
+
+.trabalho-valor {
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
+  min-width: 90px;
+  text-align: right;
 }

@@ -18,6 +18,8 @@ import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.PedidoRepository;
 import com.senac.dentalsync.core.dto.HistoricoProteticoDTO;
 import com.senac.dentalsync.core.persistency.model.Servico;
+import com.senac.dentalsync.core.dto.HistoricoPacienteDTO;
+import com.senac.dentalsync.core.dto.HistoricoDentistaDTO;
 
 @Service
 public class PedidoService extends BaseService<Pedido, Long> {
@@ -88,6 +90,52 @@ public class PedidoService extends BaseService<Pedido, Long> {
             dto.setNomeDentista(pedido.getDentista().getNome());
             dto.setDataEntrega(pedido.getDataEntrega());
             // Soma dos valores dos serviços
+            BigDecimal valorTotal = pedido.getServicos().stream()
+                .map(Servico::getPreco)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            dto.setValorTotal(valorTotal);
+            historico.add(dto);
+        }
+        return historico;
+    }
+
+    public List<HistoricoPacienteDTO> buscarHistoricoPorPaciente(Long pacienteId) {
+        Paciente paciente = new Paciente();
+        paciente.setId(pacienteId);
+        List<Pedido> pedidos = pedidoRepository.findByCliente(paciente);
+        List<HistoricoPacienteDTO> historico = new ArrayList<>();
+        for (Pedido pedido : pedidos) {
+            HistoricoPacienteDTO dto = new HistoricoPacienteDTO();
+            if (pedido.getServicos() != null && !pedido.getServicos().isEmpty()) {
+                dto.setNomeServico(pedido.getServicos().get(0).getNome());
+            } else {
+                dto.setNomeServico("Serviço não informado");
+            }
+            dto.setNomeDentista(pedido.getDentista().getNome());
+            dto.setDataEntrega(pedido.getDataEntrega());
+            BigDecimal valorTotal = pedido.getServicos().stream()
+                .map(Servico::getPreco)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            dto.setValorTotal(valorTotal);
+            historico.add(dto);
+        }
+        return historico;
+    }
+
+    public List<HistoricoDentistaDTO> buscarHistoricoPorDentista(Long dentistaId) {
+        Dentista dentista = new Dentista();
+        dentista.setId(dentistaId);
+        List<Pedido> pedidos = pedidoRepository.findByDentista(dentista);
+        List<HistoricoDentistaDTO> historico = new ArrayList<>();
+        for (Pedido pedido : pedidos) {
+            HistoricoDentistaDTO dto = new HistoricoDentistaDTO();
+            if (pedido.getServicos() != null && !pedido.getServicos().isEmpty()) {
+                dto.setNomeServico(pedido.getServicos().get(0).getNome());
+            } else {
+                dto.setNomeServico("Serviço não informado");
+            }
+            dto.setNomePaciente(pedido.getCliente().getNome());
+            dto.setDataEntrega(pedido.getDataEntrega());
             BigDecimal valorTotal = pedido.getServicos().stream()
                 .map(Servico::getPreco)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

@@ -123,10 +123,8 @@ const CadastroServico = () => {
         nome: formData.nome,
         descricao: formData.descricao,
         preco: parseFloat(formData.valor),
-        categoria: { id: parseInt(formData.categoriaServico.id) },
-        tempoPrevisto: formData.tempoPrevisto,
-        status: formData.status,
-        isActive: formData.isActive,
+        categoriaServico: { id: parseInt(formData.categoriaServico.id) },
+        tempoPrevisto: parseFloat(formData.tempoPrevisto) * 60, // Converter horas para minutos
         materiais: materiaisSelecionados.map(m => ({ material: { id: m.id }, quantidade: m.quantidadeUso }))
       };
 

@@ -3,10 +3,9 @@ package com.senac.dentalsync.core.persistency.model;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
@@ -29,7 +28,7 @@ public class Servico extends BaseEntity {
     private CategoriaServico categoriaServico;
 
     @ManyToMany(mappedBy = "servicos")
-    @JsonBackReference
+    @JsonIgnore
     private List<Pedido> pedidos;
 
     private String nome;

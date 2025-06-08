@@ -8,14 +8,15 @@ import './styles.css';
 const LoginForm = ({ onSubmit, loading }) => {
   const [formData, setFormData] = useState({
     email: '',
-    senha: ''
+    senha: '',
+    rememberMe: false
   });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -61,7 +62,12 @@ const LoginForm = ({ onSubmit, loading }) => {
       </div>
       
       <div className="form-group">
-        <label htmlFor="senha" className="required">Senha</label>
+        <div className="form-label-row">
+          <label htmlFor="senha" className="required">Senha</label>
+          <Link to="/forgot-password" className="forgot-password-link">
+            Esqueceu a senha?
+          </Link>
+        </div>
         <PasswordInput
           id="senha"
           name="senha"
@@ -72,9 +78,30 @@ const LoginForm = ({ onSubmit, loading }) => {
         />
       </div>
       
+      <div className="form-options">
+        <div className="checkbox-group">
+          <input
+            type="checkbox"
+            id="rememberMe"
+            name="rememberMe"
+            checked={formData.rememberMe}
+            onChange={handleChange}
+            className="checkbox-input"
+          />
+          <label htmlFor="rememberMe" className="checkbox-label">Lembrar de mim</label>
+        </div>
+      </div>
+      
       <button type="submit" className="btn-primary" disabled={loading}>
         {loading ? 'Entrando...' : 'Entrar'}
       </button>
+      
+      <div className="register-link-container">
+        <span>Não tem uma conta?</span>
+        <Link to="/registre-se" className="register-link">
+          Registre-se
+        </Link>
+      </div>
     </form>
   );
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AuthLayout from '../../components/AuthLayout';
@@ -10,13 +10,15 @@ import { useAuth } from '../../contexts/AuthContext';
 const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (formData) => {
+    setLoading(true);
     try {
       // Spring Security espera username e password
       const params = new URLSearchParams();
       params.append('username', formData.email);
-      params.append('password', formData.password);
+      params.append('password', formData.senha);
       params.append('rememberMe', formData.rememberMe);
       
       const response = await api.post('/login', params, {
@@ -67,12 +69,14 @@ const LoginPage = () => {
         // Erro de rede ou outro
         toast.error('Erro de conexão. Tente novamente.');
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <AuthLayout>
-      <LoginCard onSubmit={handleLogin} />
+      <LoginCard onSubmit={handleLogin} loading={loading} />
     </AuthLayout>
   );
 };

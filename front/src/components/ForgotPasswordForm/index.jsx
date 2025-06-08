@@ -156,6 +156,15 @@ const ForgotPasswordForm = () => {
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!email.trim()) {
+      toast.error('O email é obrigatório');
+      return;
+    } else if (!/^[^\s@]+@[^\s@]+\.com$/.test(email)) {
+      toast.error('Formato de email inválido. O email deve terminar com .com');
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -253,7 +262,7 @@ const ForgotPasswordForm = () => {
       <p className="forgot-subtitle">Informe seu e-mail para receber instruções de recuperação</p>
       
       <div className="forgot-group">
-        <label htmlFor="email" className="forgot-label">E-mail</label>
+        <label htmlFor="email" className="forgot-label required">E-mail</label>
         <div className="forgot-input-container">
           <span className="forgot-input-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -266,8 +275,9 @@ const ForgotPasswordForm = () => {
             id="email"
             name="email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="seu@email.com"
+            className="forgot-input"
             required
             disabled={loading}
           />

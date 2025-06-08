@@ -1,46 +1,46 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import PasswordInput from '../PasswordInput';
 import EmailInput from '../EmailInput';
 import './styles.css';
 
-const LoginForm = ({ onSubmit }) => {
+const LoginForm = ({ onSubmit, loading }) => {
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    rememberMe: false
+    senha: ''
   });
-  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const validateForm = () => {
-    const newErrors = {};
-    
     // Validar email
     if (!formData.email.trim()) {
-      newErrors.email = 'Email é obrigatório';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email inválido';
+      toast.error('O email é obrigatório');
+      return false;
+    } else if (!/^[^\s@]+@[^\s@]+\.com$/.test(formData.email)) {
+      toast.error('Formato de email inválido. O email deve terminar com .com');
+      return false;
     }
     
     // Validar senha
-    if (!formData.password.trim()) {
-      newErrors.password = 'Senha é obrigatória';
+    if (!formData.senha) {
+      toast.error('A senha é obrigatória');
+      return false;
     }
     
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return true;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
     if (validateForm()) {
       onSubmit(formData);
     }
@@ -49,60 +49,32 @@ const LoginForm = ({ onSubmit }) => {
   return (
     <form className="login-form" onSubmit={handleSubmit}>
       <div className="form-group">
-        <label htmlFor="email" className="form-label">E-mail</label>
+        <label htmlFor="email" className="required">Email</label>
         <EmailInput
           id="email"
           name="email"
           value={formData.email}
           onChange={handleChange}
-          placeholder="seu@email.com"
-          className={errors.email ? 'error' : ''}
+          placeholder="seu.email@exemplo.com"
+          required
         />
-        {errors.email && <span className="error-message" style={{color: 'red', fontSize: '12px'}}>{errors.email}</span>}
       </div>
-
+      
       <div className="form-group">
-        <div className="form-label-row">
-          <label htmlFor="password" className="form-label">Senha</label>
-          <Link to="/forgot-password" className="forgot-password-link">
-            Esqueceu a senha?
-          </Link>
-        </div>
+        <label htmlFor="senha" className="required">Senha</label>
         <PasswordInput
-          id="password"
-          name="password"
-          value={formData.password}
+          id="senha"
+          name="senha"
+          value={formData.senha}
           onChange={handleChange}
-          placeholder="Senha"
-          className={errors.password ? 'error' : ''}
+          placeholder="Sua senha"
+          required
         />
-        {errors.password && <span className="error-message" style={{color: 'red', fontSize: '12px'}}>{errors.password}</span>}
       </div>
-
-      <div className="form-options">
-        <div className="checkbox-group">
-          <input
-            type="checkbox"
-            id="rememberMe"
-            name="rememberMe"
-            checked={formData.rememberMe}
-            onChange={handleChange}
-            className="checkbox-input"
-          />
-          <label htmlFor="rememberMe" className="checkbox-label">Lembrar de mim</label>
-        </div>
-      </div>
-
-      <button type="submit" className="login-button">
-        Entrar
+      
+      <button type="submit" className="btn-primary" disabled={loading}>
+        {loading ? 'Entrando...' : 'Entrar'}
       </button>
-
-      <div className="register-link-container">
-        <span>Não tem uma conta?</span>
-        <Link to="/registre-se" className="register-link">
-          Registre-se
-        </Link>
-      </div>
     </form>
   );
 };

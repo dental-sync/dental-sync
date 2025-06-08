@@ -24,6 +24,13 @@
   color: #333;
 }
 
+/* Estilo para campos obrigatórios */
+.form-label.required::after {
+  content: " *";
+  color: #dc3545;
+  font-weight: bold;
+}
+
 .input-container {
   position: relative;
   display: flex;

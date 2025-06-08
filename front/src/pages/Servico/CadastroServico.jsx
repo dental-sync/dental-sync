@@ -74,7 +74,8 @@ const CadastroServico = () => {
         return {
           ...m,
           quantidadeEstoque: m.quantidade ?? m.quantidadeEstoque ?? 0,
-          quantidadeUso: antigo ? antigo.quantidadeUso : 1
+          quantidadeUso: antigo ? antigo.quantidadeUso : 1,
+          valorUnitario: m.valorUnitario || 0
         };
       });
     });
@@ -142,6 +143,23 @@ const CadastroServico = () => {
 
   const handleCancel = () => {
     navigate('/servico');
+  };
+
+  // Calcular valor total dos materiais selecionados
+  const calcularValorMateriais = () => {
+    return materiaisSelecionados.reduce((total, material) => {
+      const preco = material.valorUnitario || 0;
+      const quantidade = material.quantidadeUso || 1;
+      console.log('Material:', material.nome, 'Preço:', preco, 'Quantidade:', quantidade);
+      return total + (preco * quantidade);
+    }, 0);
+  };
+
+  // Calcular valor total do serviço (preço + materiais)
+  const calcularValorTotal = () => {
+    const precoServico = parseFloat(formData.valor.replace(',', '.')) || 0;
+    const valorMateriais = calcularValorMateriais();
+    return precoServico + valorMateriais;
   };
 
   return (
@@ -334,6 +352,21 @@ const CadastroServico = () => {
                       ))}
                     </ul>
                   )}
+                </div>
+              </div>
+              
+              <div className="total-servico">
+                <div className="total-item">
+                  <span className="total-label">Preço do Serviço:</span>
+                  <span className="total-valor">R$ {formData.valor || '0,00'}</span>
+                </div>
+                <div className="total-item">
+                  <span className="total-label">Valor dos Materiais:</span>
+                  <span className="total-valor">R$ {calcularValorMateriais().toFixed(2).replace('.', ',')}</span>
+                </div>
+                <div className="total-item total-final">
+                  <span className="total-label">Total Geral:</span>
+                  <span className="total-valor">R$ {calcularValorTotal().toFixed(2).replace('.', ',')}</span>
                 </div>
               </div>
             </div>

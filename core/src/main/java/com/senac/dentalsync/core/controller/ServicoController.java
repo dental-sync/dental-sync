@@ -29,5 +29,4 @@ public class ServicoController extends BaseController<Servico, Long> {
     public ResponseEntity<Servico> update(@PathVariable Long id, @RequestBody Servico servico) {
         return ResponseEntity.ok(servicoService.updateServico(servico, id));
     }
-
 }

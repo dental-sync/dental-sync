@@ -17,7 +17,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Data
 @Entity
@@ -48,7 +47,6 @@ public class Pedido extends BaseEntity {
         inverseJoinColumns = @JoinColumn(name = "servico_id")
     )
     @NotNull(message = "O pedido deve ter pelo menos um serviço")
-    @JsonManagedReference
     private List<Servico> servicos;
 
     @NotNull(message = "A data de entrega é obrigatória")

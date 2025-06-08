@@ -145,7 +145,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
         dataEntrega: formData.dataEntrega,
         prioridade: formData.prioridade,
         status: 'PENDENTE', // Garantindo que o status seja sempre PENDENTE para novos pedidos
-        odontograma: dentesSelecionados,
+        odontograma: dentesSelecionados.join(','), // Converter array para string separada por vírgulas
         observacao: formData.observacao
       };
       

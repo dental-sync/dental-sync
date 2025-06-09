@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import PasswordInput from '../PasswordInput';
 import './styles.css';
 
@@ -23,34 +24,46 @@ const SuccessMessage = () => (
 );
 
 const ResetPasswordForm = ({ onSubmit, loading, success }) => {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState({});
+  const [formData, setFormData] = useState({
+    password: '',
+    confirmPassword: ''
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const validateForm = () => {
-    const newErrors = {};
-
-    if (!password) {
-      newErrors.password = 'Nova senha é obrigatória';
-    } else if (password.length < 6) {
-      newErrors.password = 'A senha deve ter pelo menos 6 caracteres';
+    // Validar senha
+    if (!formData.password) {
+      toast.error('A nova senha é obrigatória');
+      return false;
+    } else if (formData.password.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres');
+      return false;
     }
-
-    if (!confirmPassword) {
-      newErrors.confirmPassword = 'Confirmação de senha é obrigatória';
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = 'As senhas não coincidem';
+    
+    // Validar confirmação de senha
+    if (!formData.confirmPassword) {
+      toast.error('Confirme sua nova senha');
+      return false;
+    } else if (formData.password !== formData.confirmPassword) {
+      toast.error('As senhas não coincidem');
+      return false;
     }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    
+    return true;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
     if (validateForm()) {
-      onSubmit && onSubmit({ password, confirmPassword });
+      onSubmit(formData);
     }
   };
 
@@ -59,45 +72,35 @@ const ResetPasswordForm = ({ onSubmit, loading, success }) => {
   }
 
   return (
-    <form className="reset-form" onSubmit={handleSubmit}>
+    <form className="reset-password-form" onSubmit={handleSubmit}>
       <h2 className="reset-title">Redefinir senha</h2>
       <p className="reset-subtitle">Crie uma nova senha para sua conta</p>
       
-      <div className="reset-group">
-        <label htmlFor="password" className="reset-label">Nova senha</label>
+      <div className="form-group">
+        <label htmlFor="password" className="required">Nova Senha</label>
         <PasswordInput
           id="password"
           name="password"
-          value={password}
-          onChange={e => {
-            setPassword(e.target.value);
-            if (errors.password) setErrors(prev => ({ ...prev, password: null }));
-          }}
-          placeholder="Nova senha"
-          disabled={loading}
-          className={errors.password ? 'error' : ''}
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="Crie uma nova senha"
+          required
         />
-        {errors.password && <span className="reset-field-error">{errors.password}</span>}
       </div>
       
-      <div className="reset-group">
-        <label htmlFor="confirmPassword" className="reset-label">Confirmar nova senha</label>
+      <div className="form-group">
+        <label htmlFor="confirmPassword" className="required">Confirmar Nova Senha</label>
         <PasswordInput
           id="confirmPassword"
           name="confirmPassword"
-          value={confirmPassword}
-          onChange={e => {
-            setConfirmPassword(e.target.value);
-            if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: null }));
-          }}
-          placeholder="Confirmar nova senha"
-          disabled={loading}
-          className={errors.confirmPassword ? 'error' : ''}
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          placeholder="Confirme sua nova senha"
+          required
         />
-        {errors.confirmPassword && <span className="reset-field-error">{errors.confirmPassword}</span>}
       </div>
       
-      <button type="submit" className="reset-btn" disabled={loading}>
+      <button type="submit" className="btn-primary" disabled={loading}>
         {loading ? 'Redefinindo...' : 'Redefinir senha'}
       </button>
       

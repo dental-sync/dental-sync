@@ -48,7 +48,7 @@ const CadastroMaterial = () => {
             quantidade: material.quantidade || '',
             unidadeMedida: material.unidadeMedida || '',
             valorUnitario: material.valorUnitario || '',
-            categoriaMaterial: material.categoriaMaterial?.id || '',
+            categoriaMaterial: material.categoriaMaterial || null,
             estoqueMinimo: material.estoqueMinimo || '',
             isActive: material.isActive || true
           });
@@ -161,6 +161,11 @@ const CadastroMaterial = () => {
         categoriaMaterial: { id: material.categoriaMaterial?.id },
         isActive: material.isActive
       };
+
+      // Adicionar o ID para edição (evitar criar novo registro)
+      if (id) {
+        materialData.id = parseInt(id);
+      }
 
       if (id) {
         await api.put(`/material/${id}`, materialData);

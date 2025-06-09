@@ -5,10 +5,10 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   width: 100%;
   max-width: 700px;
-  margin: 0 auto;
+  margin: 40px auto; /* Mais margem para dar espaço à tooltip */
   padding: 30px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Barra de progresso */
@@ -77,6 +77,8 @@
 .form-container {
   position: relative;
   transition: transform 0.3s ease, opacity 0.3s ease;
+  padding-top: 80px; /* Mais espaço para tooltips */
+  margin-top: -80px; /* Compensar o padding */
 }
 
 .form-container.slide-left {
@@ -93,6 +95,8 @@
 .user-form,
 .lab-form {
   width: 100%;
+  overflow: visible;
+  position: relative;
 }
 
 h2 {
@@ -110,6 +114,8 @@ h2 {
 .form-group {
   margin-bottom: 20px;
   width: 100%;
+  position: relative;
+  overflow: visible;
 }
 
 .form-row {
@@ -128,6 +134,95 @@ label {
   margin-bottom: 8px;
   font-weight: 500;
   color: #495057;
+}
+
+/* Estilo para campos obrigatórios */
+label.required::after {
+  content: " *";
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.tooltip-icon {
+  color: #6c757d;
+  background: #f8f9fa;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  margin-left: 5px;
+  cursor: help;
+  position: relative;
+  z-index: 1000;
+}
+
+.tooltip-icon:hover {
+  background: #e9ecef;
+}
+
+.tooltip-icon:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 200%; /* Muito mais alto */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10000;
+  opacity: 1;
+  visibility: visible;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  min-width: max-content;
+  max-width: 300px;
+}
+
+.tooltip-icon:hover::before {
+  content: "";
+  position: absolute;
+  bottom: 185%; /* Ajustar proporcionalmente */
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #333;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+/* Seção de endereço no LabForm */
+.form-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+.form-section h3 {
+  color: #495057;
+  font-size: 18px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.form-group-wide {
+  flex: 2;
+}
+
+.form-group-narrow {
+  flex: 0.8;
+  min-width: 120px;
+}
+
+.loading-text {
+  color: #0070d6;
+  font-size: 12px;
+  font-style: italic;
 }
 
 .input-container {
@@ -160,13 +255,6 @@ input:focus, select:focus {
 
 input.error, select.error {
   border-color: #dc3545;
-}
-
-.error-message {
-  color: #dc3545;
-  font-size: 13px;
-  margin-top: 5px;
-  display: block;
 }
 
 /* Estilos para os campos de senha */

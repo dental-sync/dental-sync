@@ -74,7 +74,8 @@ const CadastroServico = () => {
         return {
           ...m,
           quantidadeEstoque: m.quantidade ?? m.quantidadeEstoque ?? 0,
-          quantidadeUso: antigo ? antigo.quantidadeUso : 1
+          quantidadeUso: antigo ? antigo.quantidadeUso : 1,
+          valorUnitario: m.valorUnitario || 0
         };
       });
     });
@@ -94,6 +95,16 @@ const CadastroServico = () => {
   };
 
   const handleQuantidadeChange = (id, value) => {
+    // Permitir valor vazio temporariamente para edição
+    if (value === '') {
+      setMateriaisSelecionados(prev => prev.map(m =>
+        m.id === id
+          ? { ...m, quantidadeUso: '' }
+          : m
+      ));
+      return;
+    }
+    
     const quantidade = Math.max(1, Math.floor(Number(value)));
     setMateriaisSelecionados(prev => prev.map(m =>
       m.id === id
@@ -122,7 +133,7 @@ const CadastroServico = () => {
       const servicoData = {
         nome: formData.nome,
         descricao: formData.descricao,
-        preco: parseFloat(formData.valor),
+        preco: calcularValorTotal(), // Enviar o total geral
         categoriaServico: { id: parseInt(formData.categoriaServico.id) },
         tempoPrevisto: parseFloat(formData.tempoPrevisto) * 60, // Converter horas para minutos
         materiais: materiaisSelecionados.map(m => ({ material: { id: m.id }, quantidade: m.quantidadeUso }))
@@ -142,6 +153,22 @@ const CadastroServico = () => {
 
   const handleCancel = () => {
     navigate('/servico');
+  };
+
+  // Calcular valor total dos materiais selecionados
+  const calcularValorMateriais = () => {
+    return materiaisSelecionados.reduce((total, material) => {
+      const preco = material.valorUnitario || 0;
+      const quantidade = material.quantidadeUso || 1;
+      return total + (preco * quantidade);
+    }, 0);
+  };
+
+  // Calcular valor total do serviço (preço + materiais)
+  const calcularValorTotal = () => {
+    const precoServico = parseFloat(formData.valor.replace(',', '.')) || 0;
+    const valorMateriais = calcularValorMateriais();
+    return precoServico + valorMateriais;
   };
 
   return (
@@ -307,10 +334,24 @@ const CadastroServico = () => {
                                 max={m.quantidadeEstoque}
                                 value={m.quantidadeUso}
                                 onChange={e => {
-                                  let val = parseInt(e.target.value, 10);
-                                  if (isNaN(val) || val < 1) val = 1;
-                                  if (val > m.quantidadeEstoque) val = m.quantidadeEstoque;
-                                  handleQuantidadeChange(m.id, val);
+                                  const val = e.target.value;
+                                  // Permitir campo vazio temporariamente para edição
+                                  if (val === '') {
+                                    handleQuantidadeChange(m.id, '');
+                                    return;
+                                  }
+                                  
+                                  const numVal = parseInt(val, 10);
+                                  if (!isNaN(numVal) && numVal >= 1 && numVal <= m.quantidadeEstoque) {
+                                    handleQuantidadeChange(m.id, numVal);
+                                  }
+                                }}
+                                onBlur={e => {
+                                  // Ao sair do campo, garantir valor mínimo
+                                  const val = parseInt(e.target.value, 10);
+                                  if (isNaN(val) || val < 1) {
+                                    handleQuantidadeChange(m.id, 1);
+                                  }
                                 }}
                                 className="input-quantidade-material"
                               />
@@ -334,6 +375,21 @@ const CadastroServico = () => {
                       ))}
                     </ul>
                   )}
+                </div>
+              </div>
+              
+              <div className="total-servico">
+                <div className="total-item">
+                  <span className="total-label">Preço do Serviço:</span>
+                  <span className="total-valor">R$ {formData.valor || '0,00'}</span>
+                </div>
+                <div className="total-item">
+                  <span className="total-label">Valor dos Materiais:</span>
+                  <span className="total-valor">R$ {calcularValorMateriais().toFixed(2).replace('.', ',')}</span>
+                </div>
+                <div className="total-item total-final">
+                  <span className="total-label">Total Geral:</span>
+                  <span className="total-valor">R$ {calcularValorTotal().toFixed(2).replace('.', ',')}</span>
                 </div>
               </div>
             </div>

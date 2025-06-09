@@ -16,8 +16,11 @@ import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.PedidoRepository;
+import com.senac.dentalsync.core.persistency.repository.ServicoMaterialRepository;
 import com.senac.dentalsync.core.dto.HistoricoProteticoDTO;
 import com.senac.dentalsync.core.persistency.model.Servico;
+import com.senac.dentalsync.core.persistency.model.ServicoMaterial;
+import com.senac.dentalsync.core.persistency.model.Material;
 import com.senac.dentalsync.core.dto.HistoricoPacienteDTO;
 import com.senac.dentalsync.core.dto.HistoricoDentistaDTO;
 
@@ -29,6 +32,12 @@ public class PedidoService extends BaseService<Pedido, Long> {
     
     @Autowired
     private UsuarioService usuarioService;
+    
+    @Autowired
+    private MaterialService materialService;
+    
+    @Autowired
+    private ServicoMaterialRepository servicoMaterialRepository;
 
     @Override
     protected BaseRepository<Pedido, Long> getRepository() {
@@ -45,11 +54,86 @@ public class PedidoService extends BaseService<Pedido, Long> {
     @Override
     @Transactional
     public Pedido save(Pedido pedido) {
+        System.out.println("=== SALVANDO PEDIDO ===");
+        System.out.println("Pedido ID: " + pedido.getId());
+        System.out.println("Status: " + pedido.getStatus());
+        
         // Se for um novo pedido, garantir que o status seja PENDENTE
         if (pedido.getId() == null && pedido.getStatus() == null) {
             pedido.setStatus(Pedido.Status.PENDENTE);
         }
+        
+        // Se for um novo pedido, descontar estoque dos materiais dos serviços
+        if (pedido.getId() == null) {
+            System.out.println("Novo pedido detectado, processando desconto de estoque...");
+            descontarEstoqueMateriais(pedido);
+        } else {
+            System.out.println("Pedido existente, não descontando estoque.");
+        }
+        
         return super.save(pedido);
+    }
+    
+    private void descontarEstoqueMateriais(Pedido pedido) {
+        System.out.println("=== DESCONTANDO ESTOQUE DE MATERIAIS ===");
+        
+        if (pedido.getServicos() == null || pedido.getServicos().isEmpty()) {
+            System.out.println("AVISO: Pedido não possui serviços!");
+            return;
+        }
+        
+        System.out.println("Quantidade de serviços no pedido: " + pedido.getServicos().size());
+        
+        for (Servico servico : pedido.getServicos()) {
+            System.out.println("Processando serviço: " + servico.getNome() + " (ID: " + servico.getId() + ")");
+            
+            // Busca explicitamente os materiais do serviço no banco para evitar problemas de lazy loading
+            List<ServicoMaterial> materiais = servicoMaterialRepository.findByServicoId(servico.getId());
+            
+            if (materiais == null || materiais.isEmpty()) {
+                System.out.println("AVISO: Serviço " + servico.getNome() + " não possui materiais!");
+                continue;
+            }
+            
+            System.out.println("Quantidade de materiais no serviço: " + materiais.size());
+            
+            for (ServicoMaterial servicoMaterial : materiais) {
+                Material material = servicoMaterial.getMaterial();
+                BigDecimal quantidadeNecessaria = servicoMaterial.getQuantidade();
+                
+                System.out.println("Processando material: " + material.getNome() + " (ID: " + material.getId() + ")");
+                System.out.println("Quantidade necessária: " + quantidadeNecessaria);
+                
+                if (quantidadeNecessaria != null && quantidadeNecessaria.compareTo(BigDecimal.ZERO) > 0) {
+                    // Busca o material atualizado do banco
+                    Material materialAtualizado = materialService.getRepository()
+                        .findById(material.getId())
+                        .orElseThrow(() -> new RuntimeException("Material não encontrado: " + material.getNome()));
+                    
+                    System.out.println("Estoque atual do material " + materialAtualizado.getNome() + ": " + materialAtualizado.getQuantidade());
+                    
+                    // Verifica se há estoque suficiente
+                    if (materialAtualizado.getQuantidade().compareTo(quantidadeNecessaria) < 0) {
+                        String erro = "Estoque insuficiente para o material: " + 
+                            materialAtualizado.getNome() + " (Disponível: " + 
+                            materialAtualizado.getQuantidade() + ", Necessário: " + quantidadeNecessaria + ")";
+                        System.out.println("ERRO: " + erro);
+                        throw new RuntimeException(erro);
+                    }
+                    
+                    // Desconta a quantidade do estoque
+                    BigDecimal novoEstoque = materialAtualizado.getQuantidade().subtract(quantidadeNecessaria);
+                    materialAtualizado.setQuantidade(novoEstoque);
+                    materialService.save(materialAtualizado);
+                    
+                    System.out.println("Estoque atualizado do material " + materialAtualizado.getNome() + ": " + novoEstoque);
+                } else {
+                    System.out.println("AVISO: Quantidade necessária é zero ou nula para o material: " + material.getNome());
+                }
+            }
+        }
+        
+        System.out.println("=== FIM DO DESCONTO DE ESTOQUE ===");
     }
     
     public List<Pedido> findByDentista(Dentista dentista) {

@@ -50,6 +50,7 @@ const EditarServico = () => {
             status: servicoData.status || 'ATIVO',
             isActive: servicoData.isActive
           });
+          
           // Carregar materiais utilizados (via ServicoMaterial)
           setMateriaisSelecionados(
             (servicoData.materiais || []).map(sm => ({
@@ -113,6 +114,16 @@ const EditarServico = () => {
   };
 
   const handleQuantidadeChange = (id, value) => {
+    // Permitir valor vazio temporariamente para edição
+    if (value === '') {
+      setMateriaisSelecionados(prev => prev.map(m =>
+        m.id === id
+          ? { ...m, quantidadeUso: '' }
+          : m
+      ));
+      return;
+    }
+    
     const quantidade = Math.max(1, Math.floor(Number(value)));
     setMateriaisSelecionados(prev => prev.map(m =>
       m.id === id
@@ -132,11 +143,12 @@ const EditarServico = () => {
     setLoading(true);
     try {
       const servicoData = {
+        id: parseInt(id), // Adicionar o ID para que seja UPDATE e não INSERT
         nome: servico.nome,
         descricao: servico.descricao,
-        preco: parseFloat(servico.valor.replace(',', '.')),
+        preco: calcularValorTotal(), // Enviar o total geral
         tempoPrevisto: parseInt(servico.tempoPrevisto, 10) * 60,
-        categoriaServico: servico.categoriaServico,
+        categoriaServico: { id: parseInt(servico.categoriaServico.id) },
         status: servico.status,
         isActive: servico.isActive,
         materiais: materiaisSelecionados.map(m => ({ material: { id: m.id }, quantidade: m.quantidadeUso }))
@@ -303,10 +315,24 @@ const EditarServico = () => {
                                 max={m.quantidadeEstoque}
                                 value={m.quantidadeUso}
                                 onChange={e => {
-                                  let val = parseInt(e.target.value, 10);
-                                  if (isNaN(val) || val < 1) val = 1;
-                                  if (val > m.quantidadeEstoque) val = m.quantidadeEstoque;
-                                  handleQuantidadeChange(m.id, val);
+                                  const val = e.target.value;
+                                  // Permitir campo vazio temporariamente para edição
+                                  if (val === '') {
+                                    handleQuantidadeChange(m.id, '');
+                                    return;
+                                  }
+                                  
+                                  const numVal = parseInt(val, 10);
+                                  if (!isNaN(numVal) && numVal >= 1 && numVal <= m.quantidadeEstoque) {
+                                    handleQuantidadeChange(m.id, numVal);
+                                  }
+                                }}
+                                onBlur={e => {
+                                  // Ao sair do campo, garantir valor mínimo
+                                  const val = parseInt(e.target.value, 10);
+                                  if (isNaN(val) || val < 1) {
+                                    handleQuantidadeChange(m.id, 1);
+                                  }
                                 }}
                                 className="input-quantidade-material"
                               />

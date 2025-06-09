@@ -20,6 +20,8 @@ const ModalSelecionarMateriais = ({ isOpen, onClose, onConfirm, materiaisSelecio
       };
       
       fetchMateriais();
+      // Garantir que os selecionados sejam atualizados quando o modal abrir
+      setSelecionados(materiaisSelecionados);
     }
   }, [isOpen]);
 

@@ -2,6 +2,11 @@
   width: 100%;
 }
 
+.search-bar-container.kanban {
+  width: auto;
+  max-width: 260px;
+}
+
 .search-form {
   width: 100%;
 }

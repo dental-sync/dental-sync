@@ -35,9 +35,9 @@ const HistoricoProtetico = () => {
           status: statusText
         });
         
-        // Comentado temporariamente a busca do histórico
-        // const historicoResponse = await api.get(`/proteticos/${id}/historico`);
-        // setHistorico(historicoResponse.data);
+        // Buscar histórico de trabalhos
+        const historicoResponse = await api.get(`/proteticos/${id}/historico`);
+        setHistorico(historicoResponse.data);
         
         setLoading(false);
       } catch (err) {
@@ -79,64 +79,46 @@ const HistoricoProtetico = () => {
       
       {protetico && (
         <div className="protetico-info">
-          <h2>{protetico.nome}</h2>
-          <div className="protetico-details">
-            <div className="detail-item">
-              <span className="detail-label">ID:</span>
-              <span className="detail-value protetico-id">{protetico.id}</span>
-            </div>
-            <div className="detail-item">
-              <span className="detail-label">Email:</span>
-              <span className="detail-value">{protetico.email}</span>
-            </div>
-            <div className="detail-item">
-              <span className="detail-label">Telefone:</span>
-              <span className="detail-value">{protetico.telefone}</span>
-            </div>
-            <div className="detail-item">
-              <span className="detail-label">CRO:</span>
-              <span className="detail-value">{protetico.cro}</span>
-            </div>
-            <div className="detail-item">
-              <span className="detail-label">Cargo:</span>
-              <span className="detail-value">{protetico.cargo}</span>
-            </div>
-            <div className="detail-item">
-              <span className="detail-label">Status:</span>
-              <span className={`detail-value status-${protetico.status?.toLowerCase()}`}>
-                {protetico.status}
-              </span>
-            </div>
+          <h2 className="protetico-info-title">Informações do Protético</h2>
+          <div className="protetico-details protetico-details-grid">
+            <span className="detail-label">Nome:</span>
+            <span className="detail-value">{protetico.nome}</span>
+            <span className="detail-label">Email:</span>
+            <span className="detail-value">{protetico.email}</span>
+            <span className="detail-label">Telefone:</span>
+            <span className="detail-value">{protetico.telefone}</span>
+            <span className="detail-label">CRO:</span>
+            <span className="detail-value">{protetico.cro}</span>
+            <span className="detail-label">Cargo:</span>
+            <span className="detail-value">{protetico.cargo}</span>
           </div>
         </div>
       )}
       
       <div className="historico-container">
-        <h3>Histórico de Alterações</h3>
-        
+        <h3>Histórico de Trabalhos</h3>
         {historico.length === 0 ? (
-          <p className="no-history">Nenhum registro de alteração encontrado.</p>
+          <p className="no-history">Nenhum trabalho encontrado para este protético.</p>
         ) : (
-          <div className="historico-table">
-            <div className="historico-header">
-              <div className="historico-cell">Data</div>
-              <div className="historico-cell">Descrição</div>
-              <div className="historico-cell">Usuário</div>
-            </div>
-            
-            {historico.map((item) => (
-              <div key={item.id} className="historico-row">
-                <div className="historico-cell" data-label="Data">
-                  {new Date(item.data).toLocaleDateString('pt-BR')}
+          <div className="trabalhos-lista">
+            {historico
+              .slice() // para não mutar o estado
+              .sort((a, b) => new Date(b.dataEntrega) - new Date(a.dataEntrega))
+              .map((item, idx) => (
+                <div className="trabalho-card" key={idx}>
+                  <div className="trabalho-info">
+                    <div className="trabalho-servico">{item.nomeServico}</div>
+                    <div className="trabalho-detalhes">
+                      <span className="trabalho-paciente">Paciente: {item.nomePaciente}</span>
+                      <span className="trabalho-dentista">Dentista: {item.nomeDentista}</span>
+                      <span className="trabalho-data">Data: {new Date(item.dataEntrega).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                  </div>
+                  <div className="trabalho-valor">
+                    {item.valorTotal?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </div>
                 </div>
-                <div className="historico-cell" data-label="Descrição">
-                  {item.descricao}
-                </div>
-                <div className="historico-cell" data-label="Usuário">
-                  {item.usuario}
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         )}
       </div>

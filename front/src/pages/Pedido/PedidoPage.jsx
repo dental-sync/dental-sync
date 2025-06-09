@@ -7,6 +7,7 @@ import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import PedidoTable from '../../components/PedidoTable/PedidoTable';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
@@ -27,6 +28,8 @@ const PedidoPage = () => {
     key: null,
     direction: 'ascending'
   });
+  const [pedidos, setPedidos] = useState([]);
+  const [loading, setLoading] = useState(true);
   
   const filterRef = useRef(null);
   const navigate = useNavigate();
@@ -36,8 +39,8 @@ const PedidoPage = () => {
     const fetchReferenceData = async () => {
       try {
         const [dentistasResponse, proteticosResponse] = await Promise.all([
-          axios.get('http://localhost:8080/dentistas'),
-          axios.get('http://localhost:8080/proteticos')
+          api.get('/dentistas'),
+          api.get('/proteticos')
         ]);
         
         setDentistas(dentistasResponse.data);
@@ -51,46 +54,38 @@ const PedidoPage = () => {
     fetchReferenceData();
   }, []);
   
-  // Função para buscar pedidos da API
-  const fetchPedidosData = async (pageNum, pageSize) => {
-    try {
-      const response = await axios.get(`http://localhost:8080/pedidos/paginado?page=${pageNum}&size=${pageSize}`);
-      
-      const responseData = response.data;
-      // Formatar os dados conforme necessário para exibição
-      const pedidosFormatados = responseData.content.map(pedido => ({
-        id: pedido.id,
-        cliente: pedido.cliente,
-        dentista: pedido.dentista,
-        protetico: pedido.protetico,
-        servico: pedido.servico,
-        dataEntrega: pedido.dataEntrega,
-        prioridade: pedido.prioridade,
-        odontograma: pedido.odontograma,
-        observacao: pedido.observacao
-      }));
-      
-      return {
-        content: pedidosFormatados,
-        totalElements: responseData.totalElements,
-        last: responseData.last
-      };
-    } catch (error) {
-      console.error('Não foi possível acessar a API:', error);
-      toast.error('Erro ao buscar pedidos. Por favor, tente novamente.');
-      throw error;
-    }
-  };
+  // Buscar todos os pedidos ao montar o componente
+  useEffect(() => {
+    const fetchPedidos = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get('/pedidos');
+        const pedidosFormatados = response.data.map(pedido => ({
+          id: pedido.id,
+          paciente: pedido.cliente,
+          dentista: pedido.dentista,
+          protetico: pedido.protetico,
+          servicos: pedido.servicos,
+          dataEntrega: pedido.dataEntrega,
+          createdAt: pedido.createdAt || pedido.created_at,
+          prioridade: pedido.prioridade,
+          odontograma: pedido.odontograma,
+          observacao: pedido.observacao,
+          status: pedido.status,
+          valorTotal: Array.isArray(pedido.servicos) ? pedido.servicos.reduce((acc, s) => acc + (s.preco || 0), 0) : 0
+        }));
+        console.log('[LOG] pedidosFormatados:', pedidosFormatados);
+        setPedidos(pedidosFormatados);
+      } catch (error) {
+        console.error('Não foi possível acessar a API:', error);
+        toast.error('Erro ao buscar pedidos. Por favor, tente novamente.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPedidos();
+  }, []);
   
-  // Usar o hook de paginação infinita
-  const {
-    data: pedidos,
-    loading,
-    loadingMore,
-    lastElementRef: lastPedidoElementRef,
-    refresh: refreshPedidos
-  } = useInfiniteScroll(fetchPedidosData);
-
   // Esconder dropdown de filtro ao clicar fora dele
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -136,10 +131,10 @@ const PedidoPage = () => {
       if (searchQuery) {
         const searchLower = searchQuery.toLowerCase();
         return (
-          pedido.cliente?.nome?.toLowerCase().includes(searchLower) ||
+          pedido.paciente?.nome?.toLowerCase().includes(searchLower) ||
           pedido.dentista?.nome?.toLowerCase().includes(searchLower) ||
           pedido.protetico?.nome?.toLowerCase().includes(searchLower) ||
-          pedido.servico?.nome?.toLowerCase().includes(searchLower) ||
+          pedido.servicos?.nome?.toLowerCase().includes(searchLower) ||
           (pedido.id?.toString() || '').toLowerCase().includes(searchLower)
         );
       }
@@ -188,9 +183,10 @@ const PedidoPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:8080/pedidos/${id}`);
+      await api.delete(`/pedidos/${id}`);
       toast.success('Pedido excluído com sucesso!');
-      refreshPedidos();
+      // Atualizar lista após exclusão
+      setPedidos(prev => prev.filter(p => p.id !== id));
     } catch (error) {
       console.error('Erro ao excluir pedido:', error);
       toast.error('Erro ao excluir pedido. Por favor, tente novamente.');
@@ -276,6 +272,9 @@ const PedidoPage = () => {
     const data = new Date(dataString);
     return data.toLocaleDateString('pt-BR');
   };
+
+  // Função utilitária para formatar o ID do pedido
+  const formatPedidoId = (id) => `PD${String(id).padStart(4, '0')}`;
 
   return (
     <div className="pedido-page">
@@ -388,11 +387,11 @@ const PedidoPage = () => {
           
           <ExportDropdown 
             data={pedidosFiltrados.map(pedido => ({
-              id: pedido.id,
-              cliente: pedido.cliente?.nome || 'N/A',
+              id: formatPedidoId(pedido.id),
+              cliente: pedido.paciente?.nome || 'N/A',
               dentista: pedido.dentista?.nome || 'N/A',
               protetico: pedido.protetico?.nome || 'N/A',
-              servico: pedido.servico?.nome || 'N/A',
+              servico: pedido.servicos?.nome || 'N/A',
               dataEntrega: formatarData(pedido.dataEntrega),
               prioridade: pedido.prioridade
             }))}
@@ -420,14 +419,121 @@ const PedidoPage = () => {
 
       <div className="table-container">
         <PedidoTable 
-          pedidos={sortedPedidos}
+          pedidos={sortedPedidos.map(p => ({ ...p, idFormatado: formatPedidoId(p.id) }))}
           onDelete={handleDelete}
-          lastElementRef={lastPedidoElementRef}
           sortConfig={sortConfig}
           onSort={handleSort}
+          columns={[
+            {
+              key: 'periodo', 
+              label: 'Período', 
+              render: (value, item) => {
+                const formatDate = (date, label) => {
+                  if (!date) {
+                    console.log(`[LOG] ${label} está vazio ou null:`, date);
+                    return 'N/A';
+                  }
+                  const safeDate = typeof date === 'string' ? date.replace(/(\\.\\d{3})\\d+/, '$1') : date;
+                  const d = new Date(safeDate);
+                  console.log(`[LOG] ${label} original:`, date, '| Tratado:', safeDate, '| Date:', d, '| isNaN:', isNaN(d.getTime()));
+                  return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString('pt-BR');
+                };
+                // ATENÇÃO: use exatamente o nome do campo, com a mesma capitalização!
+                return (
+                  <div>
+                    <div>{formatDate(item?.createdAt, 'createdAt')}</div>
+                    <div>{formatDate(item?.dataEntrega, 'dataEntrega')}</div>
+                  </div>
+                );
+              }
+            },
+            {
+              key: 'id',
+              label: 'ID',
+              render: (value, item) => {
+                return <div>{item.idFormatado}</div>;
+              }
+            },
+            {
+              key: 'cliente',
+              label: 'Cliente',
+              render: (value, item) => {
+                return <div>{item.paciente?.nome || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'dentista',
+              label: 'Dentista',
+              render: (value, item) => {
+                return <div>{item.dentista?.nome || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'protetico',
+              label: 'Protético',
+              render: (value, item) => {
+                return <div>{item.protetico?.nome || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'servico',
+              label: 'Serviço',
+              render: (value, item) => {
+                return <div>{item.servicos?.nome || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'prioridade',
+              label: 'Prioridade',
+              render: (value, item) => {
+                return <div>{item.prioridade || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'odontograma',
+              label: 'Odontograma',
+              render: (value, item) => {
+                return <div>{item.odontograma ? item.odontograma.split(',').join(', ') : 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'observacao',
+              label: 'Observação',
+              render: (value, item) => {
+                return <div>{item.observacao || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              render: (value, item) => {
+                return <div>{item.status || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'valorTotal',
+              label: 'Valor Total',
+              render: (value, item) => {
+                return <div>{item.valorTotal || 'N/A'}</div>;
+              }
+            },
+            {
+              key: 'actions',
+              label: 'Ações',
+              render: (value, item) => {
+                return (
+                  <div className="actions">
+                    <ActionButton 
+                      label="Excluir" 
+                      variant="danger"
+                      onClick={() => handleDelete(item.id)}
+                    />
+                  </div>
+                );
+              }
+            }
+          ]}
         />
-        
-        {loadingMore && <div className="loading-more">Carregando mais pedidos...</div>}
       </div>
     </div>
   );

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import './TwoStepRegister.css';
 import api from '../../axios-config';
 import axios from 'axios';
 
 const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
   const [formData, setFormData] = useState(initialData);
-  const [errors, setErrors] = useState({});
   const [cepLoading, setCepLoading] = useState(false);
 
   useEffect(() => {
@@ -19,79 +19,243 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    if (name === 'nome') {
+      // Remove números do nome do laboratório
+      const nomeSemNumeros = value.replace(/[0-9]/g, '');
+      setFormData(prev => ({
+        ...prev,
+        [name]: nomeSemNumeros
+      }));
+      return;
+    }
+    
+    if (name === 'cnpj') {
+      // Remove tudo que não for número
+      const apenasNumeros = value.replace(/\D/g, '');
+      
+      // Limita a 14 dígitos
+      const limitado = apenasNumeros.substring(0, 14);
+      
+      // Aplica a máscara do CNPJ
+      let formattedValue = limitado;
+      if (limitado.length > 2) {
+        formattedValue = limitado.substring(0, 2) + '.' + limitado.substring(2);
+      }
+      if (limitado.length > 5) {
+        formattedValue = formattedValue.substring(0, 6) + '.' + formattedValue.substring(6);
+      }
+      if (limitado.length > 8) {
+        formattedValue = formattedValue.substring(0, 10) + '/' + formattedValue.substring(10);
+      }
+      if (limitado.length > 12) {
+        formattedValue = formattedValue.substring(0, 15) + '-' + formattedValue.substring(15);
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: formattedValue
+      }));
+      return;
+    }
+    
+    if (name === 'telefone') {
+      const digits = value.replace(/\D/g, '');
+      let formattedValue = '';
+      
+      if (digits.length > 0) {
+        // Limita a 11 dígitos (2 do DDD + 9 do número)
+        const limitedDigits = digits.substring(0, 11);
+        
+        // Adiciona o DDD
+        formattedValue = `(${limitedDigits.substring(0, 2)}`;
+        
+        if (limitedDigits.length > 2) {
+          // Adiciona o espaço após o DDD
+          formattedValue += ') ';
+          
+          // Adiciona os números após o DDD
+          const remainingDigits = limitedDigits.substring(2);
+          formattedValue += remainingDigits;
+        }
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: formattedValue
+      }));
+      return;
+    }
+    
+    if (name === 'cep') {
+      // Remove tudo que não for número
+      const apenasNumeros = value.replace(/\D/g, '');
+      
+      // Limita a 8 dígitos
+      const limitado = apenasNumeros.substring(0, 8);
+      
+      // Aplica a máscara do CEP
+      let formattedValue = limitado;
+      if (limitado.length > 5) {
+        formattedValue = limitado.substring(0, 5) + '-' + limitado.substring(5);
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: formattedValue
+      }));
+      
+      // Se for o campo CEP e ficou válido, dispara a busca
+      if (limitado.length === 8) {
+        handleCepBusca(limitado);
+      }
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+  };
 
-    // Limpa o erro do campo que está sendo editado
-    if (errors[name]) {
-      setErrors(prev => ({
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === 'telefone') {
+      const digits = value.replace(/\D/g, '');
+      let formattedValue = '';
+      
+      if (digits.length > 0) {
+        // Adiciona o DDD
+        formattedValue = `(${digits.substring(0, 2)}`;
+        
+        if (digits.length > 2) {
+          // Adiciona o espaço após o DDD
+          formattedValue += ') ';
+          
+          // Adiciona os números após o DDD
+          const remainingDigits = digits.substring(2);
+          
+          if (remainingDigits.length >= 8) {
+            // Identifica se é fixo (8 dígitos) ou celular (9 dígitos)
+            const isCelular = remainingDigits.length >= 9;
+            const splitPoint = isCelular ? 5 : 4;
+            formattedValue += `${remainingDigits.substring(0, splitPoint)}-${remainingDigits.substring(splitPoint, splitPoint + 4)}`;
+          } else {
+            formattedValue += remainingDigits;
+          }
+        }
+      }
+      
+      setFormData(prev => ({
         ...prev,
-        [name]: null
+        [name]: formattedValue
       }));
     }
-
-    // Se for o campo CEP e ficou válido, dispara a busca
+    
     if (name === 'cep') {
-      const cepNumeros = value.replace(/\D/g, '');
-      if (cepNumeros.length === 8) {
-        handleCepBusca(cepNumeros);
+      const cep = value.replace(/\D/g, '');
+      if (cep.length === 8) {
+        handleCepBusca(cep);
       }
     }
   };
 
   const validateForm = () => {
-    const newErrors = {};
-    
     // Validar nome do laboratório
     if (!formData.nome.trim()) {
-      newErrors.nome = 'Nome do laboratório é obrigatório';
+      toast.error('O nome do laboratório é obrigatório');
+      return false;
+    } else if (formData.nome.length > 255) {
+      toast.error('O nome do laboratório não pode ultrapassar 255 caracteres');
+      return false;
+    } else if (/\d/.test(formData.nome)) {
+      toast.error('O nome do laboratório não pode conter números');
+      return false;
     }
     
     // Validar CNPJ
     if (!formData.cnpj.trim()) {
-      newErrors.cnpj = 'CNPJ é obrigatório';
-    } else if (!/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(formData.cnpj) && !/^\d{14}$/.test(formData.cnpj)) {
-      newErrors.cnpj = 'CNPJ inválido';
+      toast.error('O CNPJ é obrigatório');
+      return false;
+    } else if (!/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(formData.cnpj)) {
+      toast.error('CNPJ inválido. Use o formato: 00.000.000/0000-00');
+      return false;
     }
     
     // Validar email
     if (!formData.email.trim()) {
-      newErrors.email = 'Email é obrigatório';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email inválido';
+      toast.error('O email é obrigatório');
+      return false;
+    } else if (!/^[^\s@]+@[^\s@]+\.com$/.test(formData.email)) {
+      toast.error('Formato de email inválido. O email deve terminar com .com');
+      return false;
+    } else if (formData.email.length > 255) {
+      toast.error('O email não pode ultrapassar 255 caracteres');
+      return false;
     }
     
     // Validar telefone
     if (!formData.telefone.trim()) {
-      newErrors.telefone = 'Telefone é obrigatório';
-    }
-    
-    // Validar endereço
-    if (!formData.endereco.trim()) {
-      newErrors.endereco = 'Endereço é obrigatório';
-    }
-    
-    // Validar cidade
-    if (!formData.cidade.trim()) {
-      newErrors.cidade = 'Cidade é obrigatória';
-    }
-    
-    // Validar estado
-    if (!formData.estado.trim()) {
-      newErrors.estado = 'Estado é obrigatório';
+      toast.error('O telefone é obrigatório');
+      return false;
+    } else if (!/^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(formData.telefone)) {
+      toast.error('Formato de telefone inválido. Use o formato: (99) 99999-9999 para celular ou (99) 9999-9999 para fixo');
+      return false;
     }
     
     // Validar CEP
     if (!formData.cep.trim()) {
-      newErrors.cep = 'CEP é obrigatório';
-    } else if (!/^\d{5}-\d{3}$/.test(formData.cep) && !/^\d{8}$/.test(formData.cep)) {
-      newErrors.cep = 'CEP inválido';
+      toast.error('O CEP é obrigatório');
+      return false;
+    } else if (!/^\d{5}-\d{3}$/.test(formData.cep)) {
+      toast.error('CEP inválido. Use o formato: 00000-000');
+      return false;
     }
     
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    // Validar endereço
+    if (!formData.endereco.trim()) {
+      toast.error('O endereço é obrigatório');
+      return false;
+    } else if (formData.endereco.length > 255) {
+      toast.error('O endereço não pode ultrapassar 255 caracteres');
+      return false;
+    }
+    
+    // Validar número
+    if (!formData.numero.trim()) {
+      toast.error('O número é obrigatório');
+      return false;
+    }
+    
+    // Validar bairro
+    if (!formData.bairro.trim()) {
+      toast.error('O bairro é obrigatório');
+      return false;
+    } else if (formData.bairro.length > 100) {
+      toast.error('O bairro não pode ultrapassar 100 caracteres');
+      return false;
+    }
+    
+    // Validar cidade
+    if (!formData.cidade.trim()) {
+      toast.error('A cidade é obrigatória');
+      return false;
+    } else if (formData.cidade.length > 100) {
+      toast.error('A cidade não pode ultrapassar 100 caracteres');
+      return false;
+    }
+    
+    // Validar estado
+    if (!formData.estado.trim()) {
+      toast.error('O estado é obrigatório');
+      return false;
+    } else if (formData.estado.length !== 2) {
+      toast.error('O estado deve ter 2 caracteres (UF)');
+      return false;
+    }
+    
+    return true;
   };
 
   const handleSubmit = (e) => {
@@ -123,14 +287,6 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
     }
   };
 
-  // O onBlur do CEP agora só serve para garantir busca caso o usuário cole o CEP e saia do campo
-  const handleCepBlur = () => {
-    const cep = formData.cep.replace(/\D/g, '');
-    if (cep.length === 8) {
-      handleCepBusca(cep);
-    }
-  };
-
   return (
     <form className="lab-form" onSubmit={handleSubmit}>
       <h2>Dados do Laboratório</h2>
@@ -138,7 +294,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
 
       {/* Campos principais do laboratório */}
       <div className="form-group">
-        <label htmlFor="nome">Nome do Laboratório</label>
+        <label htmlFor="nome" className="required">Nome do Laboratório</label>
         <div className="input-container">
           <span className="input-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
@@ -150,13 +306,12 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
             value={formData.nome || ''}
             onChange={handleChange}
             placeholder="Nome do laboratório"
-            className={errors.nome ? 'error' : ''}
+            required
           />
         </div>
-        {errors.nome && <span className="error-message">{errors.nome}</span>}
       </div>
       <div className="form-group">
-        <label htmlFor="cnpj">CNPJ</label>
+        <label htmlFor="cnpj" className="required">CNPJ</label>
         <div className="input-container">
           <span className="input-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -168,14 +323,13 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
             value={formData.cnpj || ''}
             onChange={handleChange}
             placeholder="00.000.000/0000-00"
-            className={errors.cnpj ? 'error' : ''}
+            required
           />
         </div>
-        {errors.cnpj && <span className="error-message">{errors.cnpj}</span>}
       </div>
       <div className="form-row">
         <div className="form-group">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email" className="required">Email</label>
           <input
             type="email"
             id="email"
@@ -183,168 +337,119 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
             value={formData.email || ''}
             onChange={handleChange}
             placeholder="laboratorio@exemplo.com"
-            className={errors.email ? 'error' : ''}
+            required
           />
-          {errors.email && <span className="error-message">{errors.email}</span>}
         </div>
         <div className="form-group">
-          <label htmlFor="telefone">Telefone</label>
+          <label htmlFor="telefone" className="required">Telefone</label>
           <input
             type="tel"
             id="telefone"
             name="telefone"
             value={formData.telefone || ''}
             onChange={handleChange}
+            onBlur={handleBlur}
             placeholder="(00) 00000-0000"
-            className={errors.telefone ? 'error' : ''}
+            required
           />
-          {errors.telefone && <span className="error-message">{errors.telefone}</span>}
         </div>
       </div>
 
-      {/* Bloco de endereço abaixo dos outros campos */}
-      {/* Campo de CEP primeiro */}
-      <div className="form-group">
-        <label htmlFor="cep">CEP</label>
-        <div className="input-container">
-          <span className="input-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-          </span>
+      {/* Seção de endereço */}
+      <div className="form-section">
+        <h3>Endereço</h3>
+        
+        <div className="form-group">
+          <label htmlFor="cep" className="required">
+            CEP
+            {cepLoading && <span className="loading-text"> (Buscando...)</span>}
+          </label>
           <input
             type="text"
             id="cep"
             name="cep"
             value={formData.cep || ''}
             onChange={handleChange}
-            onBlur={handleCepBlur}
+            onBlur={handleBlur}
             placeholder="00000-000"
-            className={errors.cep ? 'error' : ''}
-            maxLength={9}
-            autoComplete="postal-code"
-            disabled={cepLoading}
+            required
           />
         </div>
-        {errors.cep && <span className="error-message">{errors.cep}</span>}
-      </div>
-
-      {/* Só mostra os campos de endereço após buscar o CEP */}
-      {(formData.endereco || formData.cidade || formData.estado) && (
-        <>
+        
+        <div className="form-row">
+          <div className="form-group form-group-wide">
+            <label htmlFor="endereco" className="required">Endereço</label>
+            <input
+              type="text"
+              id="endereco"
+              name="endereco"
+              value={formData.endereco || ''}
+              onChange={handleChange}
+              placeholder="Rua, Avenida, etc."
+              required
+            />
+          </div>
+          <div className="form-group form-group-narrow">
+            <label htmlFor="numero" className="required">Número</label>
+            <input
+              type="text"
+              id="numero"
+              name="numero"
+              value={formData.numero || ''}
+              onChange={handleChange}
+              placeholder="123"
+              required
+            />
+          </div>
+        </div>
+        
+        <div className="form-row">
           <div className="form-group">
-            <label htmlFor="endereco">Logradouro</label>
-            <div className="input-container">
-              <span className="input-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-              </span>
-              <input
-                type="text"
-                id="endereco"
-                name="endereco"
-                value={formData.endereco}
-                onChange={handleChange}
-                placeholder="Logradouro"
-                className={errors.endereco ? 'error' : ''}
-              />
-            </div>
-            {errors.endereco && <span className="error-message">{errors.endereco}</span>}
+            <label htmlFor="bairro" className="required">Bairro</label>
+            <input
+              type="text"
+              id="bairro"
+              name="bairro"
+              value={formData.bairro || ''}
+              onChange={handleChange}
+              placeholder="Nome do bairro"
+              required
+            />
           </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="numero">Número</label>
-              <div className="input-container">
-                <span className="input-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>
-                </span>
-                <input
-                  type="text"
-                  id="numero"
-                  name="numero"
-                  value={formData.numero || ''}
-                  onChange={handleChange}
-                  placeholder="Número"
-                  className={errors.numero ? 'error' : ''}
-                />
-              </div>
-              {errors.numero && <span className="error-message">{errors.numero}</span>}
-            </div>
+          <div className="form-group">
+            <label htmlFor="cidade" className="required">Cidade</label>
+            <input
+              type="text"
+              id="cidade"
+              name="cidade"
+              value={formData.cidade || ''}
+              onChange={handleChange}
+              placeholder="Nome da cidade"
+              required
+            />
           </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="bairro">Bairro</label>
-              <div className="input-container">
-                <span className="input-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>
-                </span>
-                <input
-                  type="text"
-                  id="bairro"
-                  name="bairro"
-                  value={formData.bairro || ''}
-                  onChange={handleChange}
-                  placeholder="Bairro"
-                  className={errors.bairro ? 'error' : ''}
-                  readOnly
-                />
-              </div>
-              {errors.bairro && <span className="error-message">{errors.bairro}</span>}
-            </div>
-            <div className="form-group">
-              <label htmlFor="cidade">Cidade</label>
-              <div className="input-container">
-                <span className="input-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>
-                </span>
-                <input
-                  type="text"
-                  id="cidade"
-                  name="cidade"
-                  value={formData.cidade || ''}
-                  onChange={handleChange}
-                  placeholder="Cidade"
-                  className={errors.cidade ? 'error' : ''}
-                  readOnly
-                />
-              </div>
-              {errors.cidade && <span className="error-message">{errors.cidade}</span>}
-            </div>
-            <div className="form-group">
-              <label htmlFor="estado">Estado</label>
-              <div className="input-container">
-                <span className="input-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>
-                </span>
-                <input
-                  type="text"
-                  id="estado"
-                  name="estado"
-                  value={formData.estado || ''}
-                  onChange={handleChange}
-                  placeholder="Estado"
-                  className={errors.estado ? 'error' : ''}
-                  readOnly
-                />
-              </div>
-              {errors.estado && <span className="error-message">{errors.estado}</span>}
-            </div>
+          <div className="form-group form-group-narrow">
+            <label htmlFor="estado" className="required">Estado</label>
+            <input
+              type="text"
+              id="estado"
+              name="estado"
+              value={formData.estado || ''}
+              onChange={handleChange}
+              placeholder="UF"
+              maxLength="2"
+              required
+            />
           </div>
-        </>
-      )}
-
+        </div>
+      </div>
+      
       <div className="form-actions">
-        <button 
-          type="button" 
-          className="btn-secondary" 
-          onClick={() => onBack(formData)}
-          disabled={loading}
-        >
+        <button type="button" className="btn-secondary" onClick={onBack}>
           Voltar
         </button>
-        <button 
-          type="submit" 
-          className="btn-primary"
-          disabled={loading}
-        >
-          {loading ? 'Registrando...' : 'Finalizar Registro'}
+        <button type="submit" className="btn-primary" disabled={loading}>
+          {loading ? 'Criando Conta...' : 'Criar Conta'}
         </button>
       </div>
     </form>

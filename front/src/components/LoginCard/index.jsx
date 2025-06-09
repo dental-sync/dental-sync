@@ -3,7 +3,7 @@ import Logo from '../Logo';
 import LoginForm from '../LoginForm';
 import './styles.css';
 
-const LoginCard = ({ onSubmit }) => {
+const LoginCard = ({ onSubmit, loading }) => {
   return (
     <div className="login-card">
       <div className="login-card-header">
@@ -12,7 +12,7 @@ const LoginCard = ({ onSubmit }) => {
         <p className="login-subtitle">Entre com seu e-mail e senha para acessar o sistema</p>
       </div>
       
-      <LoginForm onSubmit={onSubmit} />
+      <LoginForm onSubmit={onSubmit} loading={loading} />
     </div>
   );
 };

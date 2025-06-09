@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from '../../axios-config';
 import './PedidoForm.css';
 
 const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
@@ -24,6 +25,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
     servico: '',
     dataEntrega: '',
     prioridade: 'MEDIA',
+    status: 'PENDENTE',
     odontograma: [],
     observacao: ''
   });
@@ -36,16 +38,19 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
   useEffect(() => {
     const fetchReferenceData = async () => {
       try {
+        // Recupera o token do localStorage
+        const token = localStorage.getItem('token');
+        const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
         const [
           clientesResponse, 
           dentistasResponse, 
           proteticosResponse, 
           servicosResponse
         ] = await Promise.all([
-          axios.get('http://localhost:8080/paciente'),
-          axios.get('http://localhost:8080/dentistas'),
-          axios.get('http://localhost:8080/proteticos'),
-          axios.get('http://localhost:8080/servico')
+          api.get('/paciente'),
+          api.get('/dentistas'),
+          api.get('/proteticos'),
+          api.get('/servico')
         ]);
         
         setClientes(clientesResponse.data);
@@ -67,7 +72,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
       const fetchPedido = async () => {
         try {
           setLoadingData(true);
-          const response = await axios.get(`http://localhost:8080/pedidos/${pedidoId}`);
+          const response = await api.get(`/pedidos/${pedidoId}`);
           const pedido = response.data;
           
           // Formatar a data para o formato esperado pelo input date (YYYY-MM-DD)
@@ -77,17 +82,18 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
             cliente: pedido.cliente?.id || '',
             dentista: pedido.dentista?.id || '',
             protetico: pedido.protetico?.id || '',
-            servico: pedido.servico?.id || '',
+            servico: pedido.servicos && pedido.servicos.length > 0 ? pedido.servicos[0].id : '',
             dataEntrega,
             prioridade: pedido.prioridade || 'MEDIA',
+            status: pedido.status || 'PENDENTE',
             odontograma: pedido.odontograma || [],
             observacao: pedido.observacao || ''
           });
           
           setDentesSelecionados(pedido.odontograma || []);
           
-          if (pedido.servico) {
-            setServicoSelecionado(pedido.servico);
+          if (pedido.servicos && pedido.servicos.length > 0) {
+            setServicoSelecionado(pedido.servicos[0]);
           }
         } catch (err) {
           console.error('Erro ao carregar pedido:', err);
@@ -135,18 +141,19 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
         cliente: { id: parseInt(formData.cliente) },
         dentista: { id: parseInt(formData.dentista) },
         protetico: { id: parseInt(formData.protetico) },
-        servico: { id: parseInt(formData.servico) },
+        servicos: [{ id: parseInt(formData.servico) }],
         dataEntrega: formData.dataEntrega,
         prioridade: formData.prioridade,
-        odontograma: dentesSelecionados,
+        status: 'PENDENTE', // Garantindo que o status seja sempre PENDENTE para novos pedidos
+        odontograma: dentesSelecionados.join(','), // Converter array para string separada por vírgulas
         observacao: formData.observacao
       };
       
       // Criar ou atualizar pedido
       if (pedidoId) {
-        await axios.put(`http://localhost:8080/pedidos/${pedidoId}`, dadosParaEnviar);
+        await api.put(`/pedidos/${pedidoId}`, dadosParaEnviar);
       } else {
-        await axios.post('http://localhost:8080/pedidos', dadosParaEnviar);
+        await api.post('/pedidos', dadosParaEnviar);
       }
       
       // Notificar sucesso e redirecionar

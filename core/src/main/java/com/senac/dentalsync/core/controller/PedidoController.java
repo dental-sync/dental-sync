@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +23,7 @@ import com.senac.dentalsync.core.service.DentistaService;
 import com.senac.dentalsync.core.service.PacienteService;
 import com.senac.dentalsync.core.service.PedidoService;
 import com.senac.dentalsync.core.service.ProteticoService;
+import com.senac.dentalsync.core.dto.AtualizarStatusPedidoDTO;
 
 @RestController
 @RequestMapping("/pedidos")
@@ -73,5 +76,16 @@ public class PedidoController extends BaseController<Pedido, Long> {
     @GetMapping("/prioridade/{prioridade}")
     public ResponseEntity<List<Pedido>> findByPrioridade(@PathVariable Pedido.Prioridade prioridade) {
         return ResponseEntity.ok(pedidoService.findByPrioridade(prioridade));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> atualizarStatus(@PathVariable Long id, @RequestBody AtualizarStatusPedidoDTO dto) {
+        return getService().findById(id)
+            .map(pedido -> {
+                pedido.setStatus(dto.getStatus());
+                getService().save(pedido);
+                return ResponseEntity.ok().build();
+            })
+            .orElse(ResponseEntity.notFound().build());
     }
 } 

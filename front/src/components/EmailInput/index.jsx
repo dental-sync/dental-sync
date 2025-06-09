@@ -1,7 +1,7 @@
 import React from 'react';
 import './styles.css';
 
-const EmailInput = ({ id, name, value, onChange, placeholder }) => {
+const EmailInput = ({ id, name, value, onChange, placeholder, className, required, ...props }) => {
   return (
     <div className="email-input-container">
       <div className="input-icon">
@@ -17,8 +17,10 @@ const EmailInput = ({ id, name, value, onChange, placeholder }) => {
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="email-input"
+        className={`email-input ${className || ''}`}
         autoComplete="email"
+        required={required}
+        {...props}
       />
     </div>
   );

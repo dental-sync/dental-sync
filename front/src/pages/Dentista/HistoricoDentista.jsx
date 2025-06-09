@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import './HistoricoPaciente.css';
+import './HistoricoDentista.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import api from '../../axios-config';
 
-const HistoricoPaciente = () => {
+const HistoricoDentista = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [paciente, setPaciente] = useState(null);
+  const [dentista, setDentista] = useState(null);
   const [historico, setHistorico] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,17 +16,17 @@ const HistoricoPaciente = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Buscar dados do paciente
-        const pacienteResponse = await api.get(`/paciente/${id}`);
-        setPaciente({
-          id: pacienteResponse.data.id,
-          nome: pacienteResponse.data.nome,
-          email: pacienteResponse.data.email,
-          telefone: pacienteResponse.data.telefone || '-',
-          dataNascimento: pacienteResponse.data.dataNascimento
+        // Buscar dados do dentista
+        const dentistaResponse = await api.get(`/dentistas/${id}`);
+        setDentista({
+          id: dentistaResponse.data.id,
+          nome: dentistaResponse.data.nome,
+          email: dentistaResponse.data.email,
+          telefone: dentistaResponse.data.telefone || '-',
+          cro: dentistaResponse.data.cro
         });
         // Buscar histórico de trabalhos
-        const historicoResponse = await api.get(`/paciente/${id}/historico`);
+        const historicoResponse = await api.get(`/dentistas/${id}/historico`);
         setHistorico(historicoResponse.data);
         setLoading(false);
       } catch (err) {
@@ -39,7 +39,7 @@ const HistoricoPaciente = () => {
   }, [id]);
 
   const handleVoltar = () => {
-    navigate('/paciente');
+    navigate('/dentista');
   };
 
   if (loading) {
@@ -59,28 +59,28 @@ const HistoricoPaciente = () => {
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
         </button>
-        <h1 className="page-title">Histórico do Paciente</h1>
+        <h1 className="page-title">Histórico do Dentista</h1>
       </div>
       {error && <div className="error-message">{error}</div>}
-      {paciente && (
+      {dentista && (
         <div className="protetico-info">
-          <h2 className="protetico-info-title">Informações do Paciente</h2>
+          <h2 className="protetico-info-title">Informações do Dentista</h2>
           <div className="protetico-details protetico-details-grid">
             <span className="detail-label">Nome:</span>
-            <span className="detail-value">{paciente.nome}</span>
+            <span className="detail-value">{dentista.nome}</span>
             <span className="detail-label">Email:</span>
-            <span className="detail-value">{paciente.email}</span>
+            <span className="detail-value">{dentista.email}</span>
             <span className="detail-label">Telefone:</span>
-            <span className="detail-value">{paciente.telefone}</span>
-            <span className="detail-label">Data de Nascimento:</span>
-            <span className="detail-value">{paciente.dataNascimento ? new Date(paciente.dataNascimento).toLocaleDateString('pt-BR') : '-'}</span>
+            <span className="detail-value">{dentista.telefone}</span>
+            <span className="detail-label">CRO:</span>
+            <span className="detail-value">{dentista.cro}</span>
           </div>
         </div>
       )}
       <div className="historico-container">
         <h3>Histórico de Trabalhos</h3>
         {historico.length === 0 ? (
-          <p className="no-history">Nenhum trabalho encontrado para este paciente.</p>
+          <p className="no-history">Nenhum trabalho encontrado para este dentista.</p>
         ) : (
           <div className="trabalhos-lista">
             {historico
@@ -91,7 +91,7 @@ const HistoricoPaciente = () => {
                   <div className="trabalho-info">
                     <div className="trabalho-servico">{item.nomeServico}</div>
                     <div className="trabalho-detalhes">
-                      <span className="trabalho-dentista">Dentista: {item.nomeDentista}</span>
+                      <span className="trabalho-paciente">Paciente: {item.nomePaciente}</span>
                       <span className="trabalho-data">Data: {new Date(item.dataEntrega).toLocaleDateString('pt-BR')}</span>
                     </div>
                   </div>
@@ -107,4 +107,4 @@ const HistoricoPaciente = () => {
   );
 };
 
-export default HistoricoPaciente;
+export default HistoricoDentista; 

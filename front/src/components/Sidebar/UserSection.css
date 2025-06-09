@@ -28,11 +28,19 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--sidebar-text-color);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-email {
   font-size: 12px;
   color: var(--primary-color);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .logout-button {

@@ -7,65 +7,155 @@ import BarChart from '../../components/BarChart';
 import HorizontalBarChart from '../../components/HorizontalBarChart';
 import RecentOrdersList from '../../components/RecentOrdersList';
 
+// Funções auxiliares para cálculos
+const calcularCrescimento = (atual, anterior) => {
+  if (!anterior || anterior === 0) return '+0%';
+  const crescimento = ((atual - anterior) / anterior) * 100;
+  return `${crescimento > 0 ? '+' : ''}${crescimento.toFixed(1)}% em relação ao mês anterior`;
+};
+
+const calcularTaxaConclusao = (concluidos, total) => {
+  if (!total || total === 0) return '0% de taxa de conclusão';
+  const taxa = (concluidos / total) * 100;
+  return `${taxa.toFixed(1)}% de taxa de conclusão`;
+};
+
+const calcularCrescimentoDentistas = (atual, anterior) => {
+  if (!anterior) return '+0 novos dentistas este mês';
+  const crescimento = atual - anterior;
+  return `${crescimento > 0 ? '+' : ''}${crescimento} ${Math.abs(crescimento) === 1 ? 'novo dentista' : 'novos dentistas'} este mês`;
+};
+
+const processarDadosBackend = (dados) => {
+  if (!dados) return null;
+
+  // Garante que todos os campos necessários existam
+  const dadosProcessados = {
+    totalPedidos: dados.totalPedidos || 0,
+    pedidosConcluidos: dados.pedidosConcluidos || 0,
+    dentistasAtivos: dados.dentistasAtivos || 0,
+    pedidosPorMes: dados.pedidosPorMes || [],
+    pedidosPorTipo: dados.pedidosPorTipo || [],
+    statusPedidos: dados.statusPedidos || [],
+    pedidosRecentes: dados.pedidosRecentes || [],
+    // Dados do mês anterior (em produção viriam do backend)
+    dadosAnteriores: dados.dadosAnteriores || {
+      totalPedidos: 0,
+      dentistasAtivos: 0
+    }
+  };
+
+  // Calcula as métricas derivadas
+  return {
+    ...dadosProcessados,
+    crescimentoPedidos: calcularCrescimento(
+      dadosProcessados.totalPedidos,
+      dadosProcessados.dadosAnteriores.totalPedidos
+    ),
+    taxaConclusao: calcularTaxaConclusao(
+      dadosProcessados.pedidosConcluidos,
+      dadosProcessados.totalPedidos
+    ),
+    crescimentoDentistas: calcularCrescimentoDentistas(
+      dadosProcessados.dentistasAtivos,
+      dadosProcessados.dadosAnteriores.dentistasAtivos
+    )
+  };
+};
+
 // Dados mockados para testes - podem ser substituídos pela API
 const mockData = {
-  totalPedidos: 458,
-  crescimentoPedidos: '+12.5% em relação ao mês anterior',
-  pedidosConcluidos: 298,
-  taxaConclusao: '65% de taxa de conclusão',
-  dentistasAtivos: 24,
-  crescimentoDentistas: '+2 novos dentistas este mês',
+  totalPedidos: 1458,
+  pedidosConcluidos: 987,
+  dentistasAtivos: 156,
+  dadosAnteriores: {
+    totalPedidos: 1100,
+    dentistasAtivos: 141
+  },
   pedidosPorMes: [
-    { mes: 'Jan', total: 35 },
-    { mes: 'Fev', total: 28 },
-    { mes: 'Mar', total: 42 },
-    { mes: 'Abr', total: 50 },
-    { mes: 'Mai', total: 55 },
-    { mes: 'Jun', total: 48 },
-    { mes: 'Jul', total: 45 },
-    { mes: 'Ago', total: 60 },
-    { mes: 'Set', total: 70 },
-    { mes: 'Out', total: 65 },
-    { mes: 'Nov', total: 62 },
-    { mes: 'Dez', total: 75 }
+    { mes: 'Jan', total: 135 },
+    { mes: 'Fev', total: 228 },
+    { mes: 'Mar', total: 342 },
+    { mes: 'Abr', total: 450 },
+    { mes: 'Mai', total: 555 },
+    { mes: 'Jun', total: 648 },
+    { mes: 'Jul', total: 745 },
+    { mes: 'Ago', total: 860 },
+    { mes: 'Set', total: 970 },
+    { mes: 'Out', total: 1165 },
+    { mes: 'Nov', total: 1262 },
+    { mes: 'Dez', total: 1458 }
   ],
   pedidosPorTipo: [
-    { tipo: 'Prótese Total', percentual: 35 },
-    { tipo: 'Prótese Parcial', percentual: 25 },
-    { tipo: 'Coroa', percentual: 20 },
-    { tipo: 'Faceta', percentual: 10 },
-    { tipo: 'Implante', percentual: 5 },
-    { tipo: 'Outros', percentual: 5 }
+    { tipo: 'Prótese Total', percentual: 38 },
+    { tipo: 'Prótese Parcial', percentual: 27 },
+    { tipo: 'Coroa', percentual: 18 },
+    { tipo: 'Faceta', percentual: 12 },
+    { tipo: 'Implante', percentual: 3 },
+    { tipo: 'Outros', percentual: 2 }
   ],
   statusPedidos: [
-    { status: 'Concluído', percentual: 65 },
-    { status: 'Em Andamento', percentual: 20 },
-    { status: 'Pendente', percentual: 10 },
-    { status: 'Cancelado', percentual: 5 }
+    { status: 'Concluído', percentual: 67.7 },
+    { status: 'Em Andamento', percentual: 22.3 },
+    { status: 'Pendente', percentual: 8 },
+    { status: 'Cancelado', percentual: 2 }
   ],
   pedidosRecentes: [
-    { id: '458', tipo: 'Prótese Total', status: 'Pendente' },
-    { id: '457', tipo: 'Coroa de Porcelana', status: 'Pendente' },
-    { id: '456', tipo: 'Prótese Parcial Removível', status: 'Pendente' },
-    { id: '455', tipo: 'Faceta de Porcelana', status: 'Em Andamento' },
-    { id: '454', tipo: 'Implante Dentário', status: 'Concluído' }
+    { id: '1458', tipo: 'Prótese Total', status: 'Pendente', dentista: 'Dr. Carlos Silva', paciente: 'Maria Oliveira' },
+    { id: '1457', tipo: 'Coroa de Porcelana', status: 'Em Andamento', dentista: 'Dra. Ana Santos', paciente: 'João Pedro' },
+    { id: '1456', tipo: 'Prótese Parcial Removível', status: 'Pendente', dentista: 'Dr. Ricardo Lima', paciente: 'Sandra Costa' },
+    { id: '1455', tipo: 'Faceta de Porcelana', status: 'Em Andamento', dentista: 'Dra. Patricia Mendes', paciente: 'Roberto Alves' },
+    { id: '1454', tipo: 'Implante Dentário', status: 'Concluído', dentista: 'Dr. Marcos Paulo', paciente: 'Fernanda Santos' },
+    { id: '1453', tipo: 'Prótese Total', status: 'Concluído', dentista: 'Dra. Julia Costa', paciente: 'Antonio Pereira' },
+    { id: '1452', tipo: 'Coroa de Zircônia', status: 'Em Andamento', dentista: 'Dr. Felipe Souza', paciente: 'Carmen Silva' },
+    { id: '1451', tipo: 'Faceta', status: 'Concluído', dentista: 'Dra. Marina Lima', paciente: 'Paulo Oliveira' }
   ]
 };
 
 const Relatorios = () => {
   const [periodo, setPeriodo] = useState('Último Mês');
-  const [dadosRelatorio, setDadosRelatorio] = useState(mockData);
+  const [dadosRelatorio, setDadosRelatorio] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
-  // Simulação de carregamento de dados do backend
   useEffect(() => {
-    // Aqui seria feita a chamada para a API
-    // Exemplo: api.get('/relatorios', { params: { periodo } })
-    //   .then(response => setDadosRelatorio(response.data))
-    //   .catch(error => console.error('Erro ao carregar relatórios:', error));
-    
-    // Por enquanto, mantemos os dados mockados
-    setDadosRelatorio(mockData);
+    const carregarDados = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Aqui seria feita a chamada para a API
+        // const response = await api.get('/relatorios', { params: { periodo } });
+        // const dadosBrutos = response.data;
+        
+        // Por enquanto, usamos dados mockados
+        const dadosBrutos = mockData;
+        
+        // Processa os dados brutos
+        const dadosProcessados = processarDadosBackend(dadosBrutos);
+        setDadosRelatorio(dadosProcessados);
+      } catch (erro) {
+        console.error('Erro ao carregar relatórios:', erro);
+        setError('Não foi possível carregar os dados do relatório');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    carregarDados();
   }, [periodo]);
+
+  if (loading) {
+    return <div className="loading">Carregando...</div>;
+  }
+
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
+
+  if (!dadosRelatorio) {
+    return <div className="no-data">Nenhum dado disponível</div>;
+  }
 
   return (
     <div className="relatorios-page">
@@ -98,7 +188,7 @@ const Relatorios = () => {
           title="Total de Pedidos"
           value={dadosRelatorio.totalPedidos}
           description={dadosRelatorio.crescimentoPedidos}
-          trend="up"
+          trend={dadosRelatorio.totalPedidos > (dadosRelatorio.dadosAnteriores?.totalPedidos || 0) ? "up" : "down"}
         />
         <StatCard 
           title="Pedidos Concluídos"
@@ -110,7 +200,7 @@ const Relatorios = () => {
           title="Dentistas Ativos"
           value={dadosRelatorio.dentistasAtivos}
           description={dadosRelatorio.crescimentoDentistas}
-          trend="up"
+          trend={dadosRelatorio.dentistasAtivos > (dadosRelatorio.dadosAnteriores?.dentistasAtivos || 0) ? "up" : "down"}
         />
       </div>
 

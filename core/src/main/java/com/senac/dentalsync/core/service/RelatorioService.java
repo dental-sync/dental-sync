@@ -3,6 +3,7 @@ package com.senac.dentalsync.core.service;
 import com.senac.dentalsync.core.dto.*;
 import com.senac.dentalsync.core.persistency.repository.PedidoRepository;
 import com.senac.dentalsync.core.persistency.repository.DentistaRepository;
+import com.senac.dentalsync.core.persistency.model.Pedido;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,12 +24,12 @@ public class RelatorioService {
 
         // Obtém dados atuais
         Long totalPedidos = pedidoRepository.count();
-        Long pedidosConcluidos = pedidoRepository.countByStatus("CONCLUIDO");
-        Long dentistasAtivos = dentistaRepository.countByAtivoTrue();
+        Long pedidosConcluidos = pedidoRepository.countByStatus(Pedido.Status.CONCLUIDO);
+        Long dentistasAtivos = dentistaRepository.countByIsActiveTrue();
 
         // Obtém dados do mês anterior
-        Long totalPedidosAnterior = pedidoRepository.countByDataCriacaoBefore(mesAnterior);
-        Long dentistasAtivosAnterior = dentistaRepository.countByAtivoTrueAndDataCadastroBefore(mesAnterior);
+        Long totalPedidosAnterior = pedidoRepository.countByCreatedAtBefore(mesAnterior);
+        Long dentistasAtivosAnterior = dentistaRepository.countByIsActiveTrueAndCreatedAtBefore(mesAnterior);
 
         // Monta o DTO
         RelatorioDTO relatorio = new RelatorioDTO();
@@ -43,7 +44,7 @@ public class RelatorioService {
         relatorio.setDadosAnteriores(dadosAnteriores);
         
         // Dados dos gráficos
-        relatorio.setPedidosPorMes(pedidoRepository.findPedidosPorMes(dataAtual));
+        relatorio.setPedidosPorMes(pedidoRepository.findPedidosPorMes());
         relatorio.setPedidosPorTipo(pedidoRepository.findPedidosPorTipo());
         relatorio.setStatusPedidos(pedidoRepository.findStatusPedidos());
         

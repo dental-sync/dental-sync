@@ -17,6 +17,6 @@ public interface DentistaRepository extends BaseRepository<Dentista, Long> {
     List<Dentista> findByClinicas_Id(Long clinicaId);
 
     //relatorio
-    Long countByAtivoTrue();
-    Long countByAtivoTrueAndDataCadastroBefore(LocalDateTime data);
+    Long countByIsActiveTrue();
+    Long countByIsActiveTrueAndCreatedAtBefore(LocalDateTime data);
 } 

@@ -7,7 +7,7 @@ import BarChart from '../../components/BarChart';
 import HorizontalBarChart from '../../components/HorizontalBarChart';
 import RecentOrdersList from '../../components/RecentOrdersList';
 
-// Funções auxiliares para cálculos
+//Funções auxiliares para cálculos
 const calcularCrescimento = (atual, anterior) => {
   if (!anterior || anterior === 0) return '+0%';
   const crescimento = ((atual - anterior) / anterior) * 100;
@@ -29,7 +29,7 @@ const calcularCrescimentoDentistas = (atual, anterior) => {
 const processarDadosBackend = (dados) => {
   if (!dados) return null;
 
-  // Garante que todos os campos necessários existam
+  //Garante que todos os campos necessários existam
   const dadosProcessados = {
     totalPedidos: dados.totalPedidos || 0,
     pedidosConcluidos: dados.pedidosConcluidos || 0,
@@ -45,7 +45,6 @@ const processarDadosBackend = (dados) => {
     }
   };
 
-  // Calcula as métricas derivadas
   return {
     ...dadosProcessados,
     crescimentoPedidos: calcularCrescimento(
@@ -63,7 +62,7 @@ const processarDadosBackend = (dados) => {
   };
 };
 
-// Dados mockados para testes - podem ser substituídos pela API
+//Dados mockados para testes - podem ser substituídos pela API
 const mockData = {
   totalPedidos: 1458,
   pedidosConcluidos: 987,
@@ -124,14 +123,14 @@ const Relatorios = () => {
         setLoading(true);
         setError(null);
         
-        // Aqui seria feita a chamada para a API
-        // const response = await api.get('/relatorios', { params: { periodo } });
-        // const dadosBrutos = response.data;
+        //Aqui seria feita a chamada para a API
+        //const response = await api.get('/relatorios', { params: { periodo } });
+        //const dadosBrutos = response.data;
         
-        // Por enquanto, usamos dados mockados
+        //Por enquanto, usamos dados mockados
         const dadosBrutos = mockData;
         
-        // Processa os dados brutos
+        //Processa os dados brutos
         const dadosProcessados = processarDadosBackend(dadosBrutos);
         setDadosRelatorio(dadosProcessados);
       } catch (erro) {

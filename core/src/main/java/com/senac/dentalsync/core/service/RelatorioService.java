@@ -44,7 +44,15 @@ public class RelatorioService {
         relatorio.setDadosAnteriores(dadosAnteriores);
         
         // Dados dos gráficos
-        relatorio.setPedidosPorMes(pedidoRepository.findPedidosPorMes());
+        List<Object[]> pedidosPorMesRaw = pedidoRepository.findPedidosPorMes(dataAtual);
+        List<PedidosPorMesDTO> pedidosPorMes = pedidosPorMesRaw.stream()
+            .map(row -> new PedidosPorMesDTO(
+                ((Number) row[0]).intValue(),
+                ((Number) row[1]).longValue()
+            ))
+            .collect(Collectors.toList());
+        relatorio.setPedidosPorMes(pedidosPorMes);
+        
         relatorio.setPedidosPorTipo(pedidoRepository.findPedidosPorTipo());
         relatorio.setStatusPedidos(pedidoRepository.findStatusPedidos());
         

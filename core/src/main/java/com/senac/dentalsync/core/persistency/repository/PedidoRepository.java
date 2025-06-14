@@ -33,13 +33,12 @@ public interface PedidoRepository extends BaseRepository<Pedido, Long> {
     Long countByStatus(Pedido.Status status);
     Long countByCreatedAtBefore(LocalDateTime data);
 
-    @Query("SELECT new com.senac.dentalsync.core.dto.PedidosPorMesDTO(" +
-           "TO_CHAR(p.createdAt, 'Mon'), COUNT(p)) " +
-           "FROM Pedido p " +
-           "WHERE p.createdAt >= :dataInicio " +
-           "GROUP BY TO_CHAR(p.createdAt, 'Mon') " +
-           "ORDER BY MIN(p.createdAt)")
-    List<PedidosPorMesDTO> findPedidosPorMes(@Param("dataInicio") LocalDateTime dataInicio);
+    @Query(value = "SELECT MONTH(created_at) as mes, COUNT(*) as total " +
+           "FROM pedidos " +
+           "WHERE created_at >= :dataInicio " +
+           "GROUP BY MONTH(created_at) " +
+           "ORDER BY MONTH(created_at)", nativeQuery = true)
+    List<Object[]> findPedidosPorMes(@Param("dataInicio") LocalDateTime dataInicio);
 
     @Query("SELECT new com.senac.dentalsync.core.dto.PedidosPorTipoDTO(" +
            "s.nome, " +
@@ -49,7 +48,7 @@ public interface PedidoRepository extends BaseRepository<Pedido, Long> {
     List<PedidosPorTipoDTO> findPedidosPorTipo();
 
     @Query("SELECT new com.senac.dentalsync.core.dto.StatusPedidosDTO(" +
-           "p.status, " +
+           "CAST(p.status AS string), " +
            "COUNT(p) * 100.0 / (SELECT COUNT(p2) FROM Pedido p2)) " +
            "FROM Pedido p " +
            "GROUP BY p.status")

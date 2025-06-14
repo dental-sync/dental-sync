@@ -6,8 +6,9 @@ import PeriodSelector from '../../components/PeriodSelector';
 import BarChart from '../../components/BarChart';
 import HorizontalBarChart from '../../components/HorizontalBarChart';
 import RecentOrdersList from '../../components/RecentOrdersList';
+import api from '../../axios-config';
 
-// Funções auxiliares para cálculos
+//Funções auxiliares para cálculos
 const calcularCrescimento = (atual, anterior) => {
   if (!anterior || anterior === 0) return '+0%';
   const crescimento = ((atual - anterior) / anterior) * 100;
@@ -29,7 +30,7 @@ const calcularCrescimentoDentistas = (atual, anterior) => {
 const processarDadosBackend = (dados) => {
   if (!dados) return null;
 
-  // Garante que todos os campos necessários existam
+  //Garante que todos os campos necessários existam
   const dadosProcessados = {
     totalPedidos: dados.totalPedidos || 0,
     pedidosConcluidos: dados.pedidosConcluidos || 0,
@@ -38,14 +39,12 @@ const processarDadosBackend = (dados) => {
     pedidosPorTipo: dados.pedidosPorTipo || [],
     statusPedidos: dados.statusPedidos || [],
     pedidosRecentes: dados.pedidosRecentes || [],
-    // Dados do mês anterior (em produção viriam do backend)
     dadosAnteriores: dados.dadosAnteriores || {
       totalPedidos: 0,
       dentistasAtivos: 0
     }
   };
 
-  // Calcula as métricas derivadas
   return {
     ...dadosProcessados,
     crescimentoPedidos: calcularCrescimento(
@@ -63,55 +62,6 @@ const processarDadosBackend = (dados) => {
   };
 };
 
-// Dados mockados para testes - podem ser substituídos pela API
-const mockData = {
-  totalPedidos: 1458,
-  pedidosConcluidos: 987,
-  dentistasAtivos: 156,
-  dadosAnteriores: {
-    totalPedidos: 1100,
-    dentistasAtivos: 141
-  },
-  pedidosPorMes: [
-    { mes: 'Jan', total: 135 },
-    { mes: 'Fev', total: 228 },
-    { mes: 'Mar', total: 342 },
-    { mes: 'Abr', total: 450 },
-    { mes: 'Mai', total: 555 },
-    { mes: 'Jun', total: 648 },
-    { mes: 'Jul', total: 745 },
-    { mes: 'Ago', total: 860 },
-    { mes: 'Set', total: 970 },
-    { mes: 'Out', total: 1165 },
-    { mes: 'Nov', total: 1262 },
-    { mes: 'Dez', total: 1458 }
-  ],
-  pedidosPorTipo: [
-    { tipo: 'Prótese Total', percentual: 38 },
-    { tipo: 'Prótese Parcial', percentual: 27 },
-    { tipo: 'Coroa', percentual: 18 },
-    { tipo: 'Faceta', percentual: 12 },
-    { tipo: 'Implante', percentual: 3 },
-    { tipo: 'Outros', percentual: 2 }
-  ],
-  statusPedidos: [
-    { status: 'Concluído', percentual: 67.7 },
-    { status: 'Em Andamento', percentual: 22.3 },
-    { status: 'Pendente', percentual: 8 },
-    { status: 'Cancelado', percentual: 2 }
-  ],
-  pedidosRecentes: [
-    { id: '1458', tipo: 'Prótese Total', status: 'Pendente', dentista: 'Dr. Carlos Silva', paciente: 'Maria Oliveira' },
-    { id: '1457', tipo: 'Coroa de Porcelana', status: 'Em Andamento', dentista: 'Dra. Ana Santos', paciente: 'João Pedro' },
-    { id: '1456', tipo: 'Prótese Parcial Removível', status: 'Pendente', dentista: 'Dr. Ricardo Lima', paciente: 'Sandra Costa' },
-    { id: '1455', tipo: 'Faceta de Porcelana', status: 'Em Andamento', dentista: 'Dra. Patricia Mendes', paciente: 'Roberto Alves' },
-    { id: '1454', tipo: 'Implante Dentário', status: 'Concluído', dentista: 'Dr. Marcos Paulo', paciente: 'Fernanda Santos' },
-    { id: '1453', tipo: 'Prótese Total', status: 'Concluído', dentista: 'Dra. Julia Costa', paciente: 'Antonio Pereira' },
-    { id: '1452', tipo: 'Coroa de Zircônia', status: 'Em Andamento', dentista: 'Dr. Felipe Souza', paciente: 'Carmen Silva' },
-    { id: '1451', tipo: 'Faceta', status: 'Concluído', dentista: 'Dra. Marina Lima', paciente: 'Paulo Oliveira' }
-  ]
-};
-
 const Relatorios = () => {
   const [periodo, setPeriodo] = useState('Último Mês');
   const [dadosRelatorio, setDadosRelatorio] = useState(null);
@@ -124,14 +74,11 @@ const Relatorios = () => {
         setLoading(true);
         setError(null);
         
-        // Aqui seria feita a chamada para a API
-        // const response = await api.get('/relatorios', { params: { periodo } });
-        // const dadosBrutos = response.data;
+        //Chamada para a API
+        const response = await api.get('/relatorios/dashboard');
+        const dadosBrutos = response.data;
         
-        // Por enquanto, usamos dados mockados
-        const dadosBrutos = mockData;
-        
-        // Processa os dados brutos
+        //Processa os dados brutos
         const dadosProcessados = processarDadosBackend(dadosBrutos);
         setDadosRelatorio(dadosProcessados);
       } catch (erro) {

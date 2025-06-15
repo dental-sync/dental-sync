@@ -6,12 +6,17 @@ import 'react-toastify/dist/ReactToastify.css';
 import './CadastroServico.css';
 import Dropdown from '../../components/Dropdown/Dropdown';
 import ModalCadastroCategoriaServico from '../../components/Modals/ModalCadastroCategoriaServico';
+import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import DeleteConfirmationModal from '../../components/DeleteConfirmationModal/DeleteConfirmationModal';
 
 const CadastroServico = () => {
   const navigate = useNavigate();
   const [categorias, setCategorias] = useState([]);
   const [materiais, setMateriais] = useState([]);
   const [showModalCategoria, setShowModalCategoria] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [categoriaToEdit, setCategoriaToEdit] = useState(null);
+  const [categoriaToDelete, setCategoriaToDelete] = useState(null);
   const [materiaisSelecionados, setMateriaisSelecionados] = useState([]);
   const [formData, setFormData] = useState({
     nome: '',
@@ -24,6 +29,7 @@ const CadastroServico = () => {
     isActive: true
   });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,8 +49,22 @@ const CadastroServico = () => {
     fetchData();
   }, []);
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.nome) newErrors.nome = 'Nome do serviço é obrigatório';
+    if (!formData.categoriaServico.id) newErrors.categoriaServico = 'Categoria é obrigatória';
+    if (!formData.valor) newErrors.valor = 'Preço é obrigatório';
+    if (!formData.tempoPrevisto) newErrors.tempoPrevisto = 'Tempo previsto é obrigatório';
+    if (materiaisSelecionados.length === 0) newErrors.materiais = 'Selecione pelo menos um material';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
     
     if (name === 'categoriaServico') {
       setFormData(prev => ({
@@ -61,14 +81,71 @@ const CadastroServico = () => {
     }
   };
 
-  const handleCategoriaSuccess = (novaCategoria) => {
-    setCategorias(prev => [...prev, novaCategoria]);
-    setFormData(prev => ({
-      ...prev,
-      categoriaServico: { id: novaCategoria.id }
-    }));
+  const handleCategoriaSuccess = (categoriaData, action) => {
+    if (action === 'edit') {
+      // Atualizar categoria existente na lista
+      setCategorias(prev => prev.map(cat => 
+        cat.id === categoriaData.id ? categoriaData : cat
+      ));
+      // Se a categoria editada é a selecionada, atualizar também
+      if (formData.categoriaServico && formData.categoriaServico.id === categoriaData.id) {
+        setFormData(prev => ({
+          ...prev,
+          categoriaServico: { id: categoriaData.id }
+        }));
+      }
+      toast.success('Categoria editada com sucesso!');
+    } else {
+      // Adicionar nova categoria
+      setCategorias(prev => [...prev, categoriaData]);
+      setFormData(prev => ({
+        ...prev,
+        categoriaServico: { id: categoriaData.id }
+      }));
+      toast.success('Categoria cadastrada com sucesso!');
+    }
     setShowModalCategoria(false);
-    toast.success('Categoria cadastrada com sucesso!');
+    setCategoriaToEdit(null);
+  };
+
+  const handleEditCategoria = (categoria) => {
+    setCategoriaToEdit(categoria);
+    setShowModalCategoria(true);
+  };
+
+  const handleDeleteCategoria = (categoria) => {
+    setCategoriaToDelete(categoria);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteCategoria = async () => {
+    try {
+      await api.delete(`/categoria-servico/${categoriaToDelete.id}`);
+      
+      // Remover categoria da lista
+      setCategorias(prev => prev.filter(cat => cat.id !== categoriaToDelete.id));
+      
+      // Se a categoria deletada era a selecionada, limpar seleção
+      if (formData.categoriaServico && formData.categoriaServico.id === categoriaToDelete.id) {
+        setFormData(prev => ({
+          ...prev,
+          categoriaServico: { id: '' }
+        }));
+      }
+      
+      toast.success('Categoria excluída com sucesso!');
+    } catch (error) {
+      console.error('Erro ao excluir categoria:', error);
+      toast.error('Não é possível excluir esta categoria pois há serviços vinculados a ela.');
+    } finally {
+      setShowDeleteModal(false);
+      setCategoriaToDelete(null);
+    }
+  };
+
+  const cancelDeleteCategoria = () => {
+    setShowDeleteModal(false);
+    setCategoriaToDelete(null);
   };
 
   const handleCategoriaChange = (selectedCategoria) => {
@@ -76,6 +153,9 @@ const CadastroServico = () => {
       ...prev,
       categoriaServico: { id: selectedCategoria?.id || '' }
     }));
+    if (errors.categoriaServico) {
+      setErrors(prev => ({ ...prev, categoriaServico: '' }));
+    }
   };
 
   const handleMateriaisChange = (selectedMateriais) => {
@@ -93,6 +173,9 @@ const CadastroServico = () => {
       ...prev,
       materiais: materiaisArray.map(m => ({ material: { id: m.id }, quantidade: 1 }))
     }));
+    if (errors.materiais) {
+      setErrors(prev => ({ ...prev, materiais: '' }));
+    }
   };
 
   const handleRemoverMaterial = (id) => {
@@ -133,11 +216,20 @@ const CadastroServico = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
 
     try {
       if (!formData.nome || !formData.valor || !formData.categoriaServico.id || !formData.tempoPrevisto) {
         toast.error('Por favor, preencha todos os campos obrigatórios.');
+        setLoading(false);
+        return;
+      }
+      if (materiaisSelecionados.length === 0) {
+        toast.error('Selecione pelo menos um material.');
         setLoading(false);
         return;
       }
@@ -183,31 +275,46 @@ const CadastroServico = () => {
       <ToastContainer />
       <ModalCadastroCategoriaServico
         isOpen={showModalCategoria}
-        onClose={() => setShowModalCategoria(false)}
+        onClose={() => {
+          setShowModalCategoria(false);
+          setCategoriaToEdit(null);
+        }}
         onSuccess={handleCategoriaSuccess}
+        categoriaToEdit={categoriaToEdit}
       />
 
-      <div className="cadastro-servico-container">
-        <div className="page-header">
-          <button className="back-button" onClick={handleCancel}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-left">
-              <path d="m12 19-7-7 7-7"></path>
-              <path d="M19 12H5"></path>
-            </svg>
-          </button>
-          <h1>Novo Serviço</h1>
-        </div>
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={cancelDeleteCategoria}
+        onConfirm={confirmDeleteCategoria}
+        title="Excluir Categoria"
+        message={`Tem certeza que deseja excluir a categoria "${categoriaToDelete?.nome}"? Esta ação não pode ser desfeita.`}
+      />
 
+      <div className="page-top">
+        <div className="notification-container">
+          <NotificationBell count={2} />
+        </div>
+      </div>
+
+      <div className="back-navigation">
+        <button className="back-button" onClick={handleCancel}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <h1 className="page-title">Novo Serviço</h1>
+      </div>
+
+      <div className="cadastro-servico-container">
         <form onSubmit={handleSubmit} className="cadastro-servico-form">
           {/* Primeiro Container */}
           <div className="form-card">
-            <div className="card-header">
-              <h2>Informações do Serviço</h2>
-            </div>
             <div className="card-content">
               <div className="form-grid">
                 <div className="form-group">
-                  <label htmlFor="nome">Nome do Serviço</label>
+                  <label htmlFor="nome" className="required">Nome do Serviço</label>
                   <input
                     type="text"
                     id="nome"
@@ -215,12 +322,13 @@ const CadastroServico = () => {
                     value={formData.nome}
                     onChange={handleChange}
                     placeholder="Nome do serviço"
-                    required
+                    className={errors.nome ? 'input-error' : ''}
                   />
+                  {errors.nome && <span className="error-text">{errors.nome}</span>}
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="categoriaServico">Categoria</label>
+                  <label htmlFor="categoriaServico" className="required">Categoria</label>
                   <Dropdown
                     items={categorias}
                     value={categorias.find(c => c.id === formData.categoriaServico.id) || null}
@@ -233,11 +341,16 @@ const CadastroServico = () => {
                     showAddButton={true}
                     addButtonTitle="Adicionar nova categoria"
                     onAddClick={() => setShowModalCategoria(true)}
+                    showActionButtons={true}
+                    onEditClick={handleEditCategoria}
+                    onDeleteClick={handleDeleteCategoria}
+                    className={errors.categoriaServico ? 'input-error' : ''}
                   />
+                  {errors.categoriaServico && <span className="error-text">{errors.categoriaServico}</span>}
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="valor">Preço (R$)</label>
+                  <label htmlFor="valor" className="required">Preço (R$)</label>
                   <input
                     type="text"
                     id="valor"
@@ -245,12 +358,13 @@ const CadastroServico = () => {
                     value={formData.valor}
                     onChange={handleChange}
                     placeholder="0,00"
-                    required
+                    className={errors.valor ? 'input-error' : ''}
                   />
+                  {errors.valor && <span className="error-text">{errors.valor}</span>}
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="tempoPrevisto">Tempo Previsto (horas)</label>
+                  <label htmlFor="tempoPrevisto" className="required">Tempo Previsto (horas)</label>
                   <input
                     type="number"
                     id="tempoPrevisto"
@@ -259,8 +373,9 @@ const CadastroServico = () => {
                     onChange={handleChange}
                     placeholder="Horas"
                     min="1"
-                    required
+                    className={errors.tempoPrevisto ? 'input-error' : ''}
                   />
+                  {errors.tempoPrevisto && <span className="error-text">{errors.tempoPrevisto}</span>}
                 </div>
 
                 <div className="form-group full-width">
@@ -285,7 +400,7 @@ const CadastroServico = () => {
             </div>
             <div className="card-content">
               <div className="form-group">
-                <label htmlFor="materiais">Materiais</label>
+                <label htmlFor="materiais" className="required">Materiais</label>
                 <Dropdown
                   items={materiais}
                   value={materiaisSelecionados}
@@ -301,7 +416,9 @@ const CadastroServico = () => {
                   showItemValue={true}
                   valueDisplayProperty="valorUnitario"
                   valuePrefix="R$ "
+                  className={errors.materiais ? 'input-error' : ''}
                 />
+                {errors.materiais && <span className="error-text">{errors.materiais}</span>}
                 <div className="materiais-selecionados-lista">
                   {materiaisSelecionados.length === 0 ? (
                     <div className="empty-state">Nenhum material selecionado</div>
@@ -398,13 +515,11 @@ const CadastroServico = () => {
           </div>
 
           <div className="form-actions">
-            <button type="submit" className="submit-button" disabled={loading}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-save">
-                <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path>
-                <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"></path>
-                <path d="M7 3v4a1 1 0 0 0 1 1h7"></path>
-              </svg>
-              {loading ? 'Salvando...' : 'Salvar Serviço'}
+            <button type="button" onClick={handleCancel} className="btn-cancelar">
+              Cancelar
+            </button>
+            <button type="submit" className="btn-cadastrar" disabled={loading}>
+              {loading ? 'Salvando...' : 'Cadastrar'}
             </button>
           </div>
         </form>

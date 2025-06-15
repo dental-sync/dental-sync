@@ -36,7 +36,24 @@ const EditarDentista = () => {
         ]);
         
         const dentista = dentistaResponse.data;
-        setClinicas(clinicasResponse.data);
+        const todasClinicas = clinicasResponse.data;
+        
+        setClinicas(todasClinicas);
+        
+        // Processar as clínicas associadas - garantir que temos os objetos completos
+        let clinicasAssociadas = [];
+        if (dentista.clinicas && Array.isArray(dentista.clinicas)) {
+          // Se vier como array de objetos completos
+          clinicasAssociadas = dentista.clinicas;
+        } else if (dentista.clinicasAssociadas && Array.isArray(dentista.clinicasAssociadas)) {
+          // Se vier como clinicasAssociadas
+          clinicasAssociadas = dentista.clinicasAssociadas;
+        } else if (dentista.clinicaIds && Array.isArray(dentista.clinicaIds)) {
+          // Se vier apenas os IDs, buscar os objetos completos
+          clinicasAssociadas = dentista.clinicaIds.map(clinicaId => 
+            todasClinicas.find(c => c.id === clinicaId)
+          ).filter(Boolean);
+        }
         
         setFormData({
           nome: dentista.nome || '',
@@ -44,7 +61,7 @@ const EditarDentista = () => {
           telefone: dentista.telefone || '',
           email: dentista.email || '',
           clinicaId: '',
-          clinicasAssociadas: dentista.clinicasAssociadas || [],
+          clinicasAssociadas: clinicasAssociadas,
           isActive: dentista.isActive
         });
       } catch (error) {

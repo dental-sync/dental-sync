@@ -706,4 +706,64 @@
 .dropdown-add-button svg {
   width: 16px;
   height: 16px;
+}
+
+/* Estilos para botões de ação dos itens */
+.dropdown-item.with-actions {
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dropdown-item-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-left: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.dropdown-item:hover .dropdown-item-actions {
+  opacity: 1;
+}
+
+.dropdown-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+  color: #6b7280;
+}
+
+.dropdown-action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-action-btn.edit-btn:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.dropdown-action-btn.delete-btn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.dropdown-action-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.dropdown-item.with-actions .dropdown-item-text {
+  flex: 1;
+  margin-right: 8px;
 } 

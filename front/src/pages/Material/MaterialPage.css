@@ -1,6 +1,6 @@
 .material-page {
   padding: 20px;
-  background-color: var(--background-color);
+  background-color: #f5f5f5;
   min-height: 100vh;
   position: relative;
 }

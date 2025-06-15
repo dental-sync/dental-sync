@@ -92,7 +92,8 @@ function App() {
               <Route path="/protetico/cadastro" element={<AdminRoute><ProtectedLayout><CadastroProtetico /></ProtectedLayout></AdminRoute>} />
               <Route path="/proteticos/historico/:id" element={<AdminRoute><ProtectedLayout><HistoricoProtetico /></ProtectedLayout></AdminRoute>} />
               <Route path="/proteticos/editar/:id" element={<AdminRoute><ProtectedLayout><EditarProtetico /></ProtectedLayout></AdminRoute>} />
-              
+              <Route path="/relatorios" element={<AdminRoute><ProtectedLayout><Relatorios /></ProtectedLayout></AdminRoute>} />
+
               {/* Rotas protegidas para todos os usuários autenticados */}
               <Route path="/paciente" element={<ProtectedRoute><ProtectedLayout><PacientePage /></ProtectedLayout></ProtectedRoute>} />
               <Route path="/paciente/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroPaciente /></ProtectedLayout></ProtectedRoute>} />
@@ -112,7 +113,6 @@ function App() {
               <Route path="/servico/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroServico /></ProtectedLayout></ProtectedRoute>} />
               <Route path="/servico/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarServico /></ProtectedLayout></ProtectedRoute>} />
               <Route path="/configuracao" element={<ProtectedRoute><ProtectedLayout><Configuracao /></ProtectedLayout></ProtectedRoute>} />
-              <Route path="/relatorios" element={<ProtectedRoute><ProtectedLayout><Relatorios /></ProtectedLayout></ProtectedRoute>} />
               <Route path="/pedidos" element={<ProtectedRoute><ProtectedLayout><PedidoPage /></ProtectedLayout></ProtectedRoute>} />
               <Route path="/pedidos/cadastro" element={<ProtectedRoute><ProtectedLayout><CadastroPedido /></ProtectedLayout></ProtectedRoute>} />
               <Route path="/pedidos/editar/:id" element={<ProtectedRoute><ProtectedLayout><EditarPedido /></ProtectedLayout></ProtectedRoute>} />

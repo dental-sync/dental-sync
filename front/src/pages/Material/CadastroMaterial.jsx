@@ -7,6 +7,7 @@ import './CadastroMaterial.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ModalCadastroCategoriaMaterial from '../../components/Modals/ModalCadastroCategoriaMaterial';
 import Dropdown from '../../components/Dropdown/Dropdown';
+import DeleteConfirmationModal from '../../components/DeleteConfirmationModal/DeleteConfirmationModal';
 
 const CadastroMaterial = () => {
   const navigate = useNavigate();

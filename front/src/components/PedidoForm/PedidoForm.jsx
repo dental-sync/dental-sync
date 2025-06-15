@@ -320,13 +320,13 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
                   <div className="dentes-row">
                     {dentesSuperiores.map((numero, index) => (
                       <React.Fragment key={numero}>
-                        <button
-                          type="button"
-                          className={`dente ${dentesSelecionados.includes(numero) ? 'selecionado' : ''}`}
-                          onClick={() => toggleDente(numero)}
-                        >
-                          {numero}
-                        </button>
+                      <button
+                        type="button"
+                        className={`dente ${dentesSelecionados.includes(numero) ? 'selecionado' : ''}`}
+                        onClick={() => toggleDente(numero)}
+                      >
+                        {numero}
+                      </button>
                         {numero === 11 && <div className="dente-spacer"></div>}
                       </React.Fragment>
                     ))}
@@ -334,13 +334,13 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
                   <div className="dentes-row">
                     {dentesInferiores.map((numero, index) => (
                       <React.Fragment key={numero}>
-                        <button
-                          type="button"
-                          className={`dente ${dentesSelecionados.includes(numero) ? 'selecionado' : ''}`}
-                          onClick={() => toggleDente(numero)}
-                        >
-                          {numero}
-                        </button>
+                      <button
+                        type="button"
+                        className={`dente ${dentesSelecionados.includes(numero) ? 'selecionado' : ''}`}
+                        onClick={() => toggleDente(numero)}
+                      >
+                        {numero}
+                      </button>
                         {numero === 41 && <div className="dente-spacer"></div>}
                       </React.Fragment>
                     ))}
@@ -373,13 +373,13 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
                   <div key={servico.id} className="servico-item">
                     <span className="servico-nome">{servico.nome}</span>
                     <span>R$ {(servico.preco || 0).toFixed(2).replace('.', ',')}</span>
-                  </div>
+                </div>
                 ))
               ) : (
                 <p className="nenhum-servico">Nenhum serviço selecionado</p>
               )}
-            </div>
-            
+          </div>
+
             <div className="valor-total">
               <span>Valor total: <strong>R$ {valorTotal.toFixed(2).replace('.', ',')}</strong></span>
             </div>

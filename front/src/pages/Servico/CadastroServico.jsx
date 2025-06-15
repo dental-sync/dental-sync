@@ -82,10 +82,13 @@ const CadastroServico = () => {
   const handleMateriaisChange = (selectedMateriais) => {
     const materiaisArray = Array.isArray(selectedMateriais) ? selectedMateriais : [];
     setMateriaisSelecionados(materiaisArray.map(m => ({
-      ...m,
-      quantidadeEstoque: m.quantidade ?? m.quantidadeEstoque ?? 0,
-      quantidadeUso: 1,
-      valorUnitario: m.valorUnitario || 0
+          ...m,
+      id: m.id,
+      nome: m.nome,
+      valorUnitario: m.valorUnitario || 0,
+      unidadeMedida: m.unidadeMedida || '',
+          quantidadeEstoque: m.quantidade ?? m.quantidadeEstoque ?? 0,
+      quantidadeUso: 1
     })));
     setFormData(prev => ({
       ...prev,
@@ -112,18 +115,21 @@ const CadastroServico = () => {
       return;
     }
     
+    // Permite qualquer quantidade positiva, sem limite de estoque
     const quantidade = Math.max(1, Math.floor(Number(value)));
-    setMateriaisSelecionados(prev => prev.map(m =>
-      m.id === id
-        ? { ...m, quantidadeUso: quantidade }
-        : m
-    ));
-    setFormData(prev => ({
-      ...prev,
-      materiais: prev.materiais.map(sm =>
-        (sm.material.id === id) ? { ...sm, quantidade } : sm
-      )
-    }));
+    if (!isNaN(quantidade)) {
+      setMateriaisSelecionados(prev => prev.map(m =>
+        m.id === id
+          ? { ...m, quantidadeUso: quantidade }
+          : m
+      ));
+      setFormData(prev => ({
+        ...prev,
+        materiais: prev.materiais.map(sm =>
+          (sm.material.id === id) ? { ...sm, quantidade } : sm
+        )
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -137,14 +143,25 @@ const CadastroServico = () => {
         return;
       }
 
+      // Filtrar e validar materiais antes de enviar
+      const materiaisValidos = materiaisSelecionados
+        .filter(m => m.id && m.quantidadeUso && m.quantidadeUso > 0)
+        .map(m => ({
+          material: { id: parseInt(m.id) },
+          quantidade: parseInt(m.quantidadeUso) || 1
+        }));
+
       const servicoData = {
         nome: formData.nome,
         descricao: formData.descricao,
-        preco: calcularValorTotal(), // Enviar o total geral
+        preco: parseFloat(formData.valor.replace(',', '.')) || 0, // Apenas o valor da mão de obra
         categoriaServico: { id: parseInt(formData.categoriaServico.id) },
-        tempoPrevisto: parseFloat(formData.tempoPrevisto) * 60, // Converter horas para minutos
-        materiais: materiaisSelecionados.map(m => ({ material: { id: m.id }, quantidade: m.quantidadeUso }))
+        tempoPrevisto: parseFloat(formData.tempoPrevisto) * 60,
+        materiais: materiaisValidos
+        // valorMateriais e valorTotal serão calculados automaticamente no backend
       };
+
+      console.log('Dados sendo enviados:', servicoData); // Para debug
 
       await api.post('/servico', servicoData);
       toast.success('Serviço cadastrado com sucesso!');
@@ -160,22 +177,6 @@ const CadastroServico = () => {
 
   const handleCancel = () => {
     navigate('/servico');
-  };
-
-  // Calcular valor total dos materiais selecionados
-  const calcularValorMateriais = () => {
-    return materiaisSelecionados.reduce((total, material) => {
-      const preco = material.valorUnitario || 0;
-      const quantidade = material.quantidadeUso || 1;
-      return total + (preco * quantidade);
-    }, 0);
-  };
-
-  // Calcular valor total do serviço (preço + materiais)
-  const calcularValorTotal = () => {
-    const precoServico = parseFloat(formData.valor.replace(',', '.')) || 0;
-    const valorMateriais = calcularValorMateriais();
-    return precoServico + valorMateriais;
   };
 
   return (
@@ -323,7 +324,6 @@ const CadastroServico = () => {
                               <input
                                 type="number"
                                 min={1}
-                                max={m.quantidadeEstoque}
                                 value={m.quantidadeUso}
                                 onChange={e => {
                                   const val = e.target.value;
@@ -334,7 +334,7 @@ const CadastroServico = () => {
                                   }
                                   
                                   const numVal = parseInt(val, 10);
-                                  if (!isNaN(numVal) && numVal >= 1 && numVal <= m.quantidadeEstoque) {
+                                  if (!isNaN(numVal) && numVal >= 1) {
                                     handleQuantidadeChange(m.id, numVal);
                                   }
                                 }}
@@ -350,8 +350,7 @@ const CadastroServico = () => {
                               <button
                                 type="button"
                                 className="btn-quantidade"
-                                onClick={() => handleQuantidadeChange(m.id, Math.min(m.quantidadeEstoque, m.quantidadeUso + 1))}
-                                disabled={m.quantidadeUso >= m.quantidadeEstoque}
+                                onClick={() => handleQuantidadeChange(m.id, m.quantidadeUso + 1)}
                                 tabIndex={0}
                               >+</button>
                             </div>
@@ -377,11 +376,23 @@ const CadastroServico = () => {
                 </div>
                 <div className="total-item">
                   <span className="total-label">Valor dos Materiais:</span>
-                  <span className="total-valor">R$ {calcularValorMateriais().toFixed(2).replace('.', ',')}</span>
+                  <span className="total-valor">R$ {materiaisSelecionados.reduce((total, material) => {
+                    const preco = material.valorUnitario || 0;
+                    const quantidade = material.quantidadeUso || 1;
+                    return total + (preco * quantidade);
+                  }, 0).toFixed(2).replace('.', ',')}</span>
                 </div>
                 <div className="total-item total-final">
                   <span className="total-label">Total Geral:</span>
-                  <span className="total-valor">R$ {calcularValorTotal().toFixed(2).replace('.', ',')}</span>
+                  <span className="total-valor">R$ {(() => {
+                    const precoServico = parseFloat(formData.valor.replace(',', '.')) || 0;
+                    const valorMateriais = materiaisSelecionados.reduce((total, material) => {
+                      const preco = material.valorUnitario || 0;
+                      const quantidade = material.quantidadeUso || 1;
+                      return total + (preco * quantidade);
+                    }, 0);
+                    return (precoServico + valorMateriais).toFixed(2).replace('.', ',');
+                  })()}</span>
                 </div>
               </div>
             </div>

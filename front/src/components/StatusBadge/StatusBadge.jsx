@@ -121,7 +121,7 @@ const StatusBadge = ({ status, onClick, tipo, pedidoId }) => {
           style={{ backgroundColor: info.cor, color: '#fff' }}
           onClick={toggleDropdown}
         >
-          {info.texto}
+        {info.texto}
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
             width="12" 

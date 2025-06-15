@@ -47,6 +47,7 @@ const ServicoPage = () => {
           nome: servico.nome,
           descricao: servico.descricao || '-',
           valor: servico.preco,
+          valorTotal: servico.valorTotal, // Campo que será exibido na tabela
           tempoPrevisto: servico.tempoPrevisto || '-',
           categoriaServico: servico.categoriaServico,
           isActive: servico.isActive ? 'ATIVO' : 'INATIVO'
@@ -186,7 +187,7 @@ const ServicoPage = () => {
           servico.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           servico.descricao?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           servico.categoriaServico?.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (servico.valor?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (servico.valorTotal?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
           (servico.id?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
@@ -342,8 +343,8 @@ const ServicoPage = () => {
           
           <ExportDropdown 
             data={sortedServicos}
-            headers={['ID', 'Nome', 'Categoria', 'Preço', 'Tempo Previsto', 'Descrição']}
-            fields={['id', 'nome', 'categoriaServico', 'valor', 'tempoPrevisto', 'descricao']}
+            headers={['ID', 'Nome', 'Categoria', 'Valor Total', 'Tempo Previsto', 'Descrição']}
+            fields={['id', 'nome', 'categoriaServico', 'valorTotal', 'tempoPrevisto', 'descricao']}
             filename="servicos"
             isOpen={isExportOpen}
             toggleExport={toggleExport}
@@ -356,7 +357,7 @@ const ServicoPage = () => {
       
       <div className="search-container">
         <SearchBar
-          placeholder="Buscar por ID, nome, descrição, categoria ou valor..."
+          placeholder="Buscar por ID, nome, descrição, categoria, valor..."
           onSearch={handleSearch}
         />
         <ActionButton

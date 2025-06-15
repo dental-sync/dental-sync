@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.senac.dentalsync.core.persistency.model.Clinica;
+import com.senac.dentalsync.core.persistency.model.Dentista;
 import com.senac.dentalsync.core.service.BaseService;
 import com.senac.dentalsync.core.service.ClinicaService;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -37,5 +39,11 @@ public class ClinicaController extends BaseController<Clinica, Long> {
         return clinicaService.findByCnpj(cnpj)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+    
+    @GetMapping("/{id}/dentistas")
+    public ResponseEntity<List<Dentista>> getDentistasByClinica(@PathVariable Long id) {
+        List<Dentista> dentistas = clinicaService.findDentistasByClinicaId(id);
+        return ResponseEntity.ok(dentistas);
     }
 } 

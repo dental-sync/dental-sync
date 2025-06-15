@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './ClinicaPage.css';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
-import ClinicaTable from '../../components/ClinicaTable/ClinicaTable';
+import ExpandableClinicaTable from '../../components/ClinicaTable/ExpandableClinicaTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -254,7 +254,7 @@ const ClinicaPage = () => {
             Nenhuma clínica encontrada para a busca "{searchQuery}".
           </div>
         )}
-        <ClinicaTable 
+        <ExpandableClinicaTable 
           clinicas={sortedClinicas} 
           onClinicaDeleted={handleClinicaDeleted}
           sortConfig={sortConfig}

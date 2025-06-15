@@ -115,6 +115,17 @@
   border-bottom: none;
 }
 
+/* Alinhar apenas a coluna de ações à direita */
+.generic-table th[data-column="actions"] {
+  text-align: right;
+  padding-right: 19px;
+}
+
+.generic-table td[data-column="actions"] {
+  text-align: right;
+  padding-right: 30px;
+}
+
 /* Ajustando a responsividade */
 @media (max-width: 768px) {
   .generic-table th,

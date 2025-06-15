@@ -72,7 +72,7 @@ const PedidoPage = () => {
           odontograma: pedido.odontograma,
           observacao: pedido.observacao,
           status: pedido.status,
-          valorTotal: Array.isArray(pedido.servicos) ? pedido.servicos.reduce((acc, s) => acc + (s.preco || 0), 0) : 0
+          valorTotal: Array.isArray(pedido.servicos) ? pedido.servicos.reduce((acc, s) => acc + (s.valorTotal || s.preco || 0), 0) : 0
         }));
         console.log('[LOG] pedidosFormatados:', pedidosFormatados);
         setPedidos(pedidosFormatados);

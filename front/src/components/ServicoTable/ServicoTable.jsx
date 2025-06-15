@@ -34,8 +34,8 @@ const columns = [
   { key: 'nome', label: 'Nome', sortable: true },
   { key: 'categoriaServico', label: 'Categoria', sortable: true },
   { key: 'valorTotal', label: 'Valor', sortable: true },
-  { key: 'tempoPrevisto', label: 'Tempo Previsto', sortable: true },
-  { key: 'descricao', label: 'Descrição', sortable: true },
+  { key: 'tempoPrevisto', label: 'Tempo Previsto', sortable: false },
+  { key: 'descricao', label: 'Descrição', sortable: false },
   { key: 'actions', label: 'Ações' }
 ];
 

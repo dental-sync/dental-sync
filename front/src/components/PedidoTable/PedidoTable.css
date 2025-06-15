@@ -1,9 +1,11 @@
 .pedido-table-container {
   width: 100%;
   overflow-x: auto;
+  overflow-y: visible;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   background-color: #fff;
+  position: relative;
 }
 
 .pedido-table {

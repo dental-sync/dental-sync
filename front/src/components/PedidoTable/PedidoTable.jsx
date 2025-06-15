@@ -1,7 +1,7 @@
 import React from 'react';
 import './PedidoTable.css';
 import GenericTable from '../GenericTable/GenericTable';
-import PedidoActionMenu from './PedidoActionMenu';
+import ActionMenu from '../ActionMenu/ActionMenu';
 import StatusBadge from '../StatusBadge/StatusBadge';
 
 const formatPedidoId = (id) => `PD${String(id).padStart(4, '0')}`;
@@ -50,11 +50,13 @@ const columns = [
       formatId={formatPedidoId}
       sortConfig={sortConfig}
       onSort={onSort}
-      ActionMenuComponent={({ itemId }) => (
-        <PedidoActionMenu pedidoId={itemId} onDelete={onDelete} />
-      )}
+      ActionMenuComponent={ActionMenu}
+      onItemDeleted={onDelete}
       emptyMessage="Nenhum pedido cadastrado"
       apiEndpoint="/pedidos"
+      url="pedidos"
+      alwaysAllowDelete={true}
+      hideOptions={['historico']}
     />
   );
 };

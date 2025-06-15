@@ -65,15 +65,23 @@ const DatePicker = ({
   // Fecha o calendário quando clica fora
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (calendarRef.current && !calendarRef.current.contains(event.target) && 
+      if (showCalendar && 
+          calendarRef.current && !calendarRef.current.contains(event.target) && 
           inputRef.current && !inputRef.current.contains(event.target)) {
         setShowCalendar(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (showCalendar) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [showCalendar]);
 
   // Máscara para o input
   const applyMask = (value) => {
@@ -134,8 +142,8 @@ const DatePicker = ({
     }
   };
 
-  const handleInputFocus = () => {
-    setShowCalendar(true);
+  const handleInputClick = () => {
+    setShowCalendar(!showCalendar);
   };
 
   const handleArrowClick = (e) => {
@@ -214,7 +222,7 @@ const DatePicker = ({
           id={id}
           value={inputValue}
           onChange={handleInputChange}
-          onFocus={handleInputFocus}
+          onClick={handleInputClick}
           placeholder={placeholder}
           required={required}
           disabled={disabled}

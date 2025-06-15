@@ -344,9 +344,7 @@
   padding: 8px 0;
 }
 
-.resumo-item:not(:last-child) {
-  border-bottom: 1px solid #e0e0e0;
-}
+
 
 .resumo-label {
   font-size: 14px;
@@ -463,16 +461,15 @@
 }
 
 /* Status Container do Pedido */
-.pedido-status-container {
+.pedido-form-status-container {
   padding: 35px;
   background: white;
   border-radius: 12px;
   border: 1px solid #e0e0e0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
 }
 
-.pedido-status-container h3 {
+.pedido-form-status-container h3 {
   font-size: 16px;
   font-weight: 600;
   color: #333;

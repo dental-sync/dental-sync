@@ -192,6 +192,29 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
     });
   };
 
+  const handleStatusChange = (status) => {
+    setFormData({
+      ...formData,
+      status: status ? status.value : 'PENDENTE'
+    });
+  };
+
+  const getStatusDisplayValue = () => {
+    if (!formData.status) return null;
+    
+    const statusMap = {
+      'PENDENTE': 'Pendente',
+      'EM_ANDAMENTO': 'Em Andamento', 
+      'FINALIZADO': 'Concluído',
+      'CANCELADO': 'Cancelado'
+    };
+    
+    return {
+      value: formData.status,
+      nome: statusMap[formData.status] || formData.status
+    };
+  };
+
   const handleServicosChange = (servicos) => {
     // Mapear serviços adicionando quantidade padrão
     const servicosComQuantidade = servicos.map(servico => {
@@ -278,7 +301,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
         })),
         dataEntrega: formData.dataEntrega,
         prioridade: formData.prioridade,
-        status: pedidoId ? formData.status : 'PENDENTE', // Manter status atual se editando, PENDENTE se novo
+        status: formData.status || 'PENDENTE', // Usar status selecionado ou PENDENTE como padrão
         odontograma: dentesSelecionados.join(','), // Converter array para string separada por vírgulas
         observacao: formData.observacao
       };
@@ -527,21 +550,22 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
               </div>
 
               {/* Status do Pedido */}
-              <div className="pedido-status-container">
+              <div className="pedido-form-status-container">
                 <h3>Status do Pedido</h3>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  className="form-select status-select"
-                  disabled={pedidoId} // Só permite alterar status se estiver editando
-                >
-                  <option value="PENDENTE">Pendente</option>
-                  <option value="EM_ANDAMENTO">Em Andamento</option>
-                  <option value="FINALIZADO">Concluído</option>
-                  <option value="CANCELADO">Cancelado</option>
-                </select>
+                <Dropdown
+                  items={[
+                    { value: 'PENDENTE', nome: 'Pendente' },
+                    { value: 'EM_ANDAMENTO', nome: 'Em Andamento' },
+                    { value: 'FINALIZADO', nome: 'Concluído' },
+                    { value: 'CANCELADO', nome: 'Cancelado' }
+                  ]}
+                  value={getStatusDisplayValue()}
+                  onChange={handleStatusChange}
+                  placeholder="Selecionar status"
+                  displayProperty="nome"
+                  valueProperty="value"
+                  searchable={false}
+                />
               </div>
 
               {/* Observações */}

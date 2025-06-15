@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import api from '../../axios-config';
+import Dropdown from '../Dropdown/Dropdown';
 import './PedidoForm.css';
 
 const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
@@ -19,10 +20,10 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
   
   // Dados do formulário
   const [formData, setFormData] = useState({
-    cliente: '',
-    dentista: '',
-    protetico: '',
-    servico: '',
+    cliente: null,
+    dentista: null,
+    protetico: null,
+    servicos: [],
     dataEntrega: '',
     prioridade: 'MEDIA',
     status: 'PENDENTE',
@@ -32,7 +33,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
   
   // Estado para controlar quais dentes estão selecionados no odontograma
   const [dentesSelecionados, setDentesSelecionados] = useState([]);
-  const [servicoSelecionado, setServicoSelecionado] = useState(null);
+  const [servicosSelecionados, setServicosSelecionados] = useState([]);
   
   // Efeito para carregar dados de referência ao montar o componente
   useEffect(() => {
@@ -79,10 +80,10 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
           const dataEntrega = pedido.dataEntrega ? new Date(pedido.dataEntrega).toISOString().split('T')[0] : '';
           
           setFormData({
-            cliente: pedido.cliente?.id || '',
-            dentista: pedido.dentista?.id || '',
-            protetico: pedido.protetico?.id || '',
-            servico: pedido.servicos && pedido.servicos.length > 0 ? pedido.servicos[0].id : '',
+            cliente: pedido.cliente || null,
+            dentista: pedido.dentista || null,
+            protetico: pedido.protetico || null,
+            servicos: pedido.servicos || [],
             dataEntrega,
             prioridade: pedido.prioridade || 'MEDIA',
             status: pedido.status || 'PENDENTE',
@@ -91,10 +92,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
           });
           
           setDentesSelecionados(pedido.odontograma || []);
-          
-          if (pedido.servicos && pedido.servicos.length > 0) {
-            setServicoSelecionado(pedido.servicos[0]);
-          }
+          setServicosSelecionados(pedido.servicos || []);
         } catch (err) {
           console.error('Erro ao carregar pedido:', err);
           setError('Não foi possível carregar os dados do pedido.');
@@ -113,11 +111,35 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
       ...formData,
       [name]: value
     });
-    
-    if (name === 'servico' && value) {
-      const servico = servicos.find(s => s.id === parseInt(value));
-      setServicoSelecionado(servico);
-    }
+  };
+
+  const handleClienteChange = (cliente) => {
+    setFormData({
+      ...formData,
+      cliente
+    });
+  };
+
+  const handleDentistaChange = (dentista) => {
+    setFormData({
+      ...formData,
+      dentista
+    });
+  };
+
+  const handleProteticoChange = (protetico) => {
+    setFormData({
+      ...formData,
+      protetico
+    });
+  };
+
+  const handleServicosChange = (servicos) => {
+    setFormData({
+      ...formData,
+      servicos
+    });
+    setServicosSelecionados(servicos);
   };
   
   const toggleDente = (numero) => {
@@ -138,13 +160,13 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
     try {
       // Preparar dados para envio
       const dadosParaEnviar = {
-        cliente: { id: parseInt(formData.cliente) },
-        dentista: { id: parseInt(formData.dentista) },
-        protetico: { id: parseInt(formData.protetico) },
-        servicos: [{ id: parseInt(formData.servico) }],
+        cliente: formData.cliente ? { id: formData.cliente.id } : null,
+        dentista: formData.dentista ? { id: formData.dentista.id } : null,
+        protetico: formData.protetico ? { id: formData.protetico.id } : null,
+        servicos: formData.servicos.map(servico => ({ id: servico.id })),
         dataEntrega: formData.dataEntrega,
         prioridade: formData.prioridade,
-        status: 'PENDENTE', // Garantindo que o status seja sempre PENDENTE para novos pedidos
+        status: pedidoId ? formData.status : 'PENDENTE', // Manter status atual se editando, PENDENTE se novo
         odontograma: dentesSelecionados.join(','), // Converter array para string separada por vírgulas
         observacao: formData.observacao
       };
@@ -173,7 +195,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
   const dentesSuperiores = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
   const dentesInferiores = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
   
-  const valorTotal = servicoSelecionado ? servicoSelecionado.preco || 0 : 0;
+  const valorTotal = servicosSelecionados.reduce((total, servico) => total + (servico.preco || 0), 0);
   
   if (loadingData) {
     return <div className="loading">Carregando dados do pedido...</div>;
@@ -203,21 +225,17 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
             <div className="inputs-container">
               <div className="form-group">
                 <label htmlFor="cliente">Cliente</label>
-                <select
-                  id="cliente"
-                  name="cliente"
+                <Dropdown
+                  items={clientes}
                   value={formData.cliente}
-                  onChange={handleInputChange}
-                  required
-                  className="form-select"
-                >
-                  <option value="">Selecionar cliente</option>
-                  {clientes.map(cliente => (
-                    <option key={cliente.id} value={cliente.id}>
-                      {cliente.nome}
-                    </option>
-                  ))}
-                </select>
+                  onChange={handleClienteChange}
+                  placeholder="Selecionar cliente"
+                  searchPlaceholder="Buscar cliente..."
+                  displayProperty="nome"
+                  valueProperty="id"
+                  searchBy="nome"
+                  searchable={true}
+                />
               </div>
 
               <div className="form-group">
@@ -235,59 +253,53 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
 
               <div className="form-group">
                 <label htmlFor="dentista">Dentista</label>
-                <select
-                  id="dentista"
-                  name="dentista"
+                <Dropdown
+                  items={dentistas}
                   value={formData.dentista}
-                  onChange={handleInputChange}
-                  required
-                  className="form-select"
-                >
-                  <option value="">Selecionar dentista</option>
-                  {dentistas.map(dentista => (
-                    <option key={dentista.id} value={dentista.id}>
-                      {dentista.nome}
-                    </option>
-                  ))}
-                </select>
+                  onChange={handleDentistaChange}
+                  placeholder="Selecionar dentista"
+                  searchPlaceholder="Buscar dentista..."
+                  displayProperty="nome"
+                  valueProperty="id"
+                  searchBy="nome"
+                  searchable={true}
+                />
               </div>
 
               <div className="form-group">
                 <label htmlFor="protetico">Protético</label>
-                <select
-                  id="protetico"
-                  name="protetico"
+                <Dropdown
+                  items={proteticos}
                   value={formData.protetico}
-                  onChange={handleInputChange}
-                  required
-                  className="form-select"
-                >
-                  <option value="">Selecionar protético</option>
-                  {proteticos.map(protetico => (
-                    <option key={protetico.id} value={protetico.id}>
-                      {protetico.nome}
-                    </option>
-                  ))}
-                </select>
+                  onChange={handleProteticoChange}
+                  placeholder="Selecionar protético"
+                  searchPlaceholder="Buscar protético..."
+                  displayProperty="nome"
+                  valueProperty="id"
+                  searchBy="nome"
+                  searchable={true}
+                />
               </div>
 
               <div className="form-group">
-                <label htmlFor="servico">Serviço</label>
-                <select
-                  id="servico"
-                  name="servico"
-                  value={formData.servico}
-                  onChange={handleInputChange}
-                  required
-                  className="form-select"
-                >
-                  <option value="">Selecionar serviços</option>
-                  {servicos.map(servico => (
-                    <option key={servico.id} value={servico.id}>
-                      {servico.nome}
-                    </option>
-                  ))}
-                </select>
+                <label htmlFor="servico">Serviços</label>
+                <Dropdown
+                  items={servicos}
+                  value={formData.servicos}
+                  onChange={handleServicosChange}
+                  placeholder="Selecionar serviços"
+                  searchPlaceholder="Buscar serviços..."
+                  displayProperty="nome"
+                  valueProperty="id"
+                  searchBy="nome"
+                  searchable={true}
+                  allowMultiple={true}
+                  showCheckbox={true}
+                  showItemValue={true}
+                  valueDisplayProperty="preco"
+                  valuePrefix="R$ "
+                  maxHeight="250px"
+                />
               </div>
 
               <div className="form-group">
@@ -362,11 +374,13 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
           <div className="servicos-container">
             <h3>Serviços Selecionados</h3>
             <div className="servicos-content">
-              {servicoSelecionado ? (
-                <div className="servico-item">
-                  <span>{servicoSelecionado.nome}</span>
-                  <span>R$ {(servicoSelecionado.preco || 0).toFixed(2).replace('.', ',')}</span>
-                </div>
+              {servicosSelecionados.length > 0 ? (
+                servicosSelecionados.map(servico => (
+                  <div key={servico.id} className="servico-item">
+                    <span>{servico.nome}</span>
+                    <span>R$ {(servico.preco || 0).toFixed(2).replace('.', ',')}</span>
+                  </div>
+                ))
               ) : (
                 <p className="nenhum-servico">Nenhum serviço selecionado</p>
               )}

@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './CadastroMaterial.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ModalCadastroCategoriaMaterial from '../../components/ModalCadastroCategoriaMaterial';
+import Dropdown from '../../components/Dropdown/Dropdown';
 
 const CadastroMaterial = () => {
   const navigate = useNavigate();
@@ -23,6 +24,16 @@ const CadastroMaterial = () => {
     estoqueMinimo: '',
     isActive: true
   });
+
+  const unidadesMedida = [
+    { id: 'Uni.', nome: 'Unidade' },
+    { id: 'Quilograma', nome: 'Quilograma' },
+    { id: 'Grama', nome: 'Grama' },
+    { id: 'Mililitro', nome: 'Mililitro' },
+    { id: 'Litro', nome: 'Litro' },
+    { id: 'Metro', nome: 'Metro' },
+    { id: 'Centímetro', nome: 'Centímetro' }
+  ];
 
   useEffect(() => {
     const fetchCategorias = async () => {
@@ -97,18 +108,30 @@ const CadastroMaterial = () => {
     }
   };
 
-  const handleCategoriaChange = (e) => {
-    const categoriaId = e.target.value;
-    const categoria = categorias.find(cat => cat.id === parseInt(categoriaId));
+  const handleCategoriaChange = (selectedCategoria) => {
     setMaterial(prev => ({
       ...prev,
-      categoriaMaterial: categoria
+      categoriaMaterial: selectedCategoria
     }));
     
     if (errors.categoriaMaterial) {
       setErrors(prev => ({
         ...prev,
         categoriaMaterial: ''
+      }));
+    }
+  };
+
+  const handleUnidadeMedidaChange = (selectedUnidade) => {
+    setMaterial(prev => ({
+      ...prev,
+      unidadeMedida: selectedUnidade ? selectedUnidade.id : ''
+    }));
+    
+    if (errors.unidadeMedida) {
+      setErrors(prev => ({
+        ...prev,
+        unidadeMedida: ''
       }));
     }
   };
@@ -251,33 +274,20 @@ const CadastroMaterial = () => {
 
         <div className="form-group">
           <label htmlFor="categoriaMaterial">Categoria*</label>
-          <div className="categoria-container">
-            <select
-              id="categoriaMaterial"
-              name="categoriaMaterial"
-              value={material.categoriaMaterial?.id || ''}
-              onChange={handleCategoriaChange}
-              className={errors.categoriaMaterial ? 'input-error' : ''}
-            >
-              <option value="">Selecione uma categoria</option>
-              {categorias.map(categoria => (
-                <option key={categoria.id} value={categoria.id}>
-                  {categoria.nome}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              className="btn-add-categoria"
-              onClick={() => setShowModalCategoria(true)}
-              title="Adicionar nova categoria"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-            </button>
-          </div>
+          <Dropdown
+            items={categorias}
+            value={material.categoriaMaterial}
+            onChange={handleCategoriaChange}
+            placeholder="Selecione uma categoria"
+            displayProperty="nome"
+            valueProperty="id"
+            searchable={false}
+            showCheckbox={false}
+            showAddButton={true}
+            addButtonTitle="Adicionar nova categoria"
+            onAddClick={() => setShowModalCategoria(true)}
+            className={errors.categoriaMaterial ? 'input-error' : ''}
+          />
           {errors.categoriaMaterial && <span className="error-text">{errors.categoriaMaterial}</span>}
         </div>
 
@@ -298,22 +308,17 @@ const CadastroMaterial = () => {
 
           <div className="form-group">
             <label htmlFor="unidadeMedida">Unidade de Medida*</label>
-            <select
-              id="unidadeMedida"
-              name="unidadeMedida"
-              value={material.unidadeMedida}
-              onChange={handleInputChange}
+            <Dropdown
+              items={unidadesMedida}
+              value={unidadesMedida.find(u => u.id === material.unidadeMedida) || null}
+              onChange={handleUnidadeMedidaChange}
+              placeholder="Selecione"
+              displayProperty="nome"
+              valueProperty="id"
+              searchable={false}
+              showCheckbox={false}
               className={errors.unidadeMedida ? 'input-error' : ''}
-            >
-              <option value="">Selecione</option>
-              <option value="Uni.">Unidade</option>
-              <option value="Quilograma">Quilograma</option>
-              <option value="Grama">Grama</option>
-              <option value="Mililitro">Mililitro</option>
-              <option value="Litro">Litro</option>
-              <option value="Metro">Metro</option>
-              <option value="Centímetro">Centímetro</option>
-            </select>
+            />
             {errors.unidadeMedida && <span className="error-text">{errors.unidadeMedida}</span>}
           </div>
         </div>

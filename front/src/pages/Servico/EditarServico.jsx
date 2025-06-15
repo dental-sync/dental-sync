@@ -4,13 +4,14 @@ import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './CadastroServico.css';
-import ModalSelecionarMateriais from '../../components/ModalSelecionarMateriais';
+import Dropdown from '../../components/Dropdown/Dropdown';
 
 const EditarServico = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [categorias, setCategorias] = useState([]);
+  const [materiais, setMateriais] = useState([]);
   const [errors, setErrors] = useState({});
   const [servico, setServico] = useState({
     nome: '',
@@ -23,15 +24,18 @@ const EditarServico = () => {
     status: 'ATIVO',
     isActive: true
   });
-  const [showModalMateriais, setShowModalMateriais] = useState(false);
   const [materiaisSelecionados, setMateriaisSelecionados] = useState([]);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const categoriasResponse = await api.get('/categoria-servico');
+        const [categoriasResponse, materiaisResponse] = await Promise.all([
+          api.get('/categoria-servico'),
+          api.get('/material')
+        ]);
         setCategorias(categoriasResponse.data);
+        setMateriais(materiaisResponse.data);
 
         if (id) {
           const servicoResponse = await api.get(`/servico/${id}`);
@@ -94,19 +98,20 @@ const EditarServico = () => {
     }
   };
 
-  const handleMateriaisConfirm = (materiais) => {
-    setMateriaisSelecionados(prev => {
-      return materiais.map(m => {
-        const antigo = prev.find(pm => pm.id === m.id);
-        return {
-          ...m,
-          quantidadeEstoque: m.quantidade ?? m.quantidadeEstoque ?? 0,
-          quantidadeUso: antigo ? antigo.quantidadeUso : 1,
-          valorUnitario: m.valorUnitario || 0
-        };
-      });
-    });
-    setShowModalMateriais(false);
+  const handleCategoriaChange = (selectedCategoria) => {
+    setServico(prev => ({
+      ...prev,
+      categoriaServico: {
+        id: selectedCategoria ? selectedCategoria.id : ''
+      }
+    }));
+  };
+
+  const handleMateriaisChange = (selectedMateriais) => {
+    setMateriaisSelecionados(selectedMateriais.map(material => ({
+      ...material,
+      quantidadeUso: material.quantidadeUso || 1
+    })));
   };
 
   const handleRemoverMaterial = (id) => {
@@ -239,20 +244,16 @@ const EditarServico = () => {
               <label htmlFor="categoriaServico">
                 Categoria <span className="required">*</span>
               </label>
-              <select
-                id="categoriaServico"
-                name="categoriaServico"
-                value={servico.categoriaServico.id}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Selecione uma categoria</option>
-                {categorias.map((categoria) => (
-                  <option key={categoria.id} value={categoria.id}>
-                    {categoria.nome}
-                  </option>
-                ))}
-              </select>
+              <Dropdown
+                items={categorias}
+                value={categorias.find(c => c.id === servico.categoriaServico.id) || null}
+                onChange={handleCategoriaChange}
+                placeholder="Selecione a categoria"
+                displayProperty="nome"
+                valueProperty="id"
+                searchable={false}
+                showCheckbox={false}
+              />
             </div>
           </div>
 
@@ -270,27 +271,29 @@ const EditarServico = () => {
             />
           </div>
 
-          <ModalSelecionarMateriais
-            isOpen={showModalMateriais}
-            onClose={() => setShowModalMateriais(false)}
-            onConfirm={handleMateriaisConfirm}
-            materiaisSelecionados={materiaisSelecionados.map(m => m.id)}
-          />
           <div className="form-card">
             <div className="card-header">
               <h2>Materiais Necessários</h2>
             </div>
             <div className="card-content">
               <div className="form-group">
-                <div className="material-select">
-                  <button type="button" className="select-materiais-button" onClick={() => setShowModalMateriais(true)}>
-                    Selecionar materiais
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search">
-                      <circle cx="11" cy="11" r="8"></circle>
-                      <path d="m21 21-4.3-4.3"></path>
-                    </svg>
-                  </button>
-                </div>
+                <label htmlFor="materiais">Materiais</label>
+                <Dropdown
+                  items={materiais}
+                  value={materiaisSelecionados}
+                  onChange={handleMateriaisChange}
+                  placeholder="Selecionar materiais"
+                  searchPlaceholder="Buscar materiais..."
+                  displayProperty="nome"
+                  valueProperty="id"
+                  searchBy="nome"
+                  searchable={true}
+                  allowMultiple={true}
+                  showCheckbox={true}
+                  showItemValue={true}
+                  valueDisplayProperty="valorUnitario"
+                  valuePrefix="R$ "
+                />
                 <div className="materiais-selecionados-lista">
                   {materiaisSelecionados.length === 0 ? (
                     <div className="empty-state">Nenhum material selecionado</div>

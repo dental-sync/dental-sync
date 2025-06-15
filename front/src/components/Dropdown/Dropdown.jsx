@@ -57,6 +57,12 @@ const Dropdown = ({
   emptyMessage = "Nenhum item encontrado",
   loadingMessage = "Carregando...",
   
+  // Configurações do botão de adicionar
+  showAddButton = false, // mostrar botão de adicionar
+  addButtonText = "Adicionar",
+  addButtonTitle = "Adicionar novo item",
+  onAddClick = () => {},
+  
   // Eventos
   onOpen = () => {},
   onClose = () => {},
@@ -299,7 +305,7 @@ const Dropdown = ({
         <button
           ref={buttonRef}
           type="button"
-          className={`dropdown-trigger ${variant} ${size} ${buttonClassName} ${disabled ? 'disabled' : ''}`}
+          className={`dropdown-trigger ${variant} ${size} ${buttonClassName} ${disabled ? 'disabled' : ''} ${(allowMultiple ? selectedItems.length > 0 : singleValue) ? 'has-value' : ''}`}
           style={buttonStyle}
           onClick={handleOpen}
           disabled={disabled}
@@ -338,33 +344,49 @@ const Dropdown = ({
   
   return (
     <div className={`dropdown ${variant} ${size}`} ref={dropdownRef}>
-      <button
-        ref={buttonRef}
-        type="button"
-        className={`dropdown-trigger ${buttonClassName} ${disabled ? 'disabled' : ''} ${isOpen ? 'open' : ''}`}
-        style={buttonStyle}
-        onClick={handleOpen}
-        disabled={disabled}
-      >
-        <span className="dropdown-trigger-text">{getDisplayText()}</span>
-        {showArrow && (
-          <svg className={`dropdown-arrow ${isOpen ? 'open' : ''}`} width="12" height="12" viewBox="0 0 12 12">
-            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-          </svg>
-        )}
-        {allowClear && (allowMultiple ? selectedItems.length > 0 : singleValue) && (
+      <div className={`dropdown-container ${showAddButton ? 'with-add-button' : ''}`}>
+        <button
+          ref={buttonRef}
+          type="button"
+          className={`dropdown-trigger ${buttonClassName} ${disabled ? 'disabled' : ''} ${isOpen ? 'open' : ''} ${(allowMultiple ? selectedItems.length > 0 : singleValue) ? 'has-value' : ''}`}
+          style={buttonStyle}
+          onClick={handleOpen}
+          disabled={disabled}
+        >
+          <span className="dropdown-trigger-text">{getDisplayText()}</span>
+          {showArrow && (
+            <svg className={`dropdown-arrow ${isOpen ? 'open' : ''}`} width="12" height="12" viewBox="0 0 12 12">
+              <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+            </svg>
+          )}
+          {allowClear && (allowMultiple ? selectedItems.length > 0 : singleValue) && (
+            <button
+              type="button"
+              className="dropdown-clear"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClear();
+              }}
+            >
+              ×
+            </button>
+          )}
+        </button>
+        
+        {showAddButton && (
           <button
             type="button"
-            className="dropdown-clear"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleClear();
-            }}
+            className="dropdown-add-button"
+            onClick={onAddClick}
+            title={addButtonTitle}
           >
-            ×
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
           </button>
         )}
-      </button>
+      </div>
       
       {isOpen && (
         <div className="dropdown-wrapper">

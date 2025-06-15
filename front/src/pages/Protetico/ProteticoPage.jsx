@@ -146,39 +146,48 @@ const ProteticoPage = () => {
 
   const handleStatusChange = (proteticoId, newStatus) => {
     // Encontrar o protético atual
-    const proteticoAtual = proteticos.find(d => d.id === proteticoId);
+    const proteticoAtual = proteticos.find(p => p.id === proteticoId);
+    
+    if (!proteticoAtual) {
+      console.error('Protético não encontrado:', proteticoId);
+      return;
+    }
     
     // Verificar se o status está realmente mudando
-    const statusAtual = proteticoAtual.isActive === 'ATIVO';
-    if (statusAtual === (newStatus === 'ATIVO')) {
-      return; // Não faz nada se o status for o mesmo
+    const statusAtual = proteticoAtual.isActive;
+    
+    // Se o status for o mesmo, não faz nada
+    if (statusAtual === newStatus) {
+      return;
     }
 
-    // Atualizar o status do protético na lista
-    if (newStatus !== null) {
-      setProteticos(prevProteticos =>
-        prevProteticos.map(protetico =>
-          protetico.id === proteticoId
-            ? { ...protetico, isActive: newStatus }
-            : protetico
-        )
-      );
-      
-      // Exibir o toast de forma padronizada
-      const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
-      
-      // Limpa qualquer estado de navegação existente
-      window.history.replaceState({}, document.title);
-      
-      // Adicionamos uma mensagem de sucesso usando o padrão de state
-      navigate('', { 
-        state: { 
-          success: `Status atualizado com sucesso para ${statusText}`,
-          refresh: false // Não precisamos de refresh pois já atualizamos localmente
-        },
-        replace: true // Importante usar replace para não adicionar nova entrada no histórico
-      });
-    }
+    // Atualizar o status do protético na lista imediatamente
+    const proteticosAtualizados = proteticos.map(protetico =>
+      protetico.id === proteticoId
+        ? { ...protetico, isActive: newStatus }
+        : protetico
+    );
+    
+    // Atualizar o estado imediatamente
+    setProteticos(proteticosAtualizados);
+    
+    // Forçar uma re-renderização para garantir que os filtros sejam aplicados corretamente
+    setRefreshData(prev => prev + 1);
+    
+    // Exibir o toast de forma padronizada
+    const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
+    
+    // Limpa qualquer estado de navegação existente
+    window.history.replaceState({}, document.title);
+    
+    // Adicionamos uma mensagem de sucesso usando o padrão de state
+    navigate('', { 
+      state: { 
+        success: `Status atualizado com sucesso para ${statusText}`,
+        refresh: false // Não precisamos de refresh pois já atualizamos localmente
+      },
+      replace: true // Importante usar replace para não adicionar nova entrada no histórico
+    });
   };
 
   // Função utilitária para formatar o ID

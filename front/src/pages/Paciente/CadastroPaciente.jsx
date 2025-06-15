@@ -10,8 +10,7 @@ const CadastroPaciente = () => {
     nome: '',
     email: '',
     telefone: '',
-    dataNascimento: '',
-    endereco: ''
+    dataNascimento: ''
   });
   
   const [errors, setErrors] = useState({});
@@ -203,8 +202,7 @@ const CadastroPaciente = () => {
         nome: formData.nome.trim(),
         email: formData.email.trim(),
         telefone: formData.telefone,
-        dataNascimento: formData.dataNascimento,
-        endereco: formData.endereco
+        dataNascimento: formData.dataNascimento
       };
 
       await api.post('/paciente', pacienteData);
@@ -293,21 +291,6 @@ const CadastroPaciente = () => {
               noValidate
             />
             {errors.dataNascimento && <span className="error-text">{errors.dataNascimento}</span>}
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="endereco" className="required">Endereço</label>
-            <input
-              type="text"
-              id="endereco"
-              name="endereco"
-              value={formData.endereco}
-              onChange={handleChange}
-              className={errors.endereco ? 'input-error' : ''}
-              placeholder="Digite o endereço"
-              maxLength={MAX_CHARS}
-            />
-            {errors.endereco && <span className="error-text">{errors.endereco}</span>}
           </div>
           
           <div className="form-actions">

@@ -203,18 +203,6 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
   
   return (
     <div className="pedido-form-container">
-      <div className="pedido-header">
-        <button className="back-button" onClick={() => navigate('/pedidos')}>
-          ← Cadastro Pedido
-        </button>
-        <button type="button" className="btn-microfone">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-          </svg>
-        </button>
-      </div>
-
       <form id="pedido-form" className="pedido-form" onSubmit={handleSubmit}>
         {error && <div className="error-message">{error}</div>}
         
@@ -248,6 +236,8 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
                   onChange={handleInputChange}
                   required
                   className="form-input"
+                  lang="pt-BR"
+                  placeholder="dd/mm/aaaa"
                 />
               </div>
 
@@ -328,27 +318,31 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
                 <h3>Odontograma</h3>
                 <div className="odontograma">
                   <div className="dentes-row">
-                    {dentesSuperiores.map(numero => (
-                      <button
-                        key={numero}
-                        type="button"
-                        className={`dente ${dentesSelecionados.includes(numero) ? 'selecionado' : ''}`}
-                        onClick={() => toggleDente(numero)}
-                      >
-                        {numero}
-                      </button>
+                    {dentesSuperiores.map((numero, index) => (
+                      <React.Fragment key={numero}>
+                        <button
+                          type="button"
+                          className={`dente ${dentesSelecionados.includes(numero) ? 'selecionado' : ''}`}
+                          onClick={() => toggleDente(numero)}
+                        >
+                          {numero}
+                        </button>
+                        {numero === 11 && <div className="dente-spacer"></div>}
+                      </React.Fragment>
                     ))}
                   </div>
                   <div className="dentes-row">
-                    {dentesInferiores.map(numero => (
-                      <button
-                        key={numero}
-                        type="button"
-                        className={`dente ${dentesSelecionados.includes(numero) ? 'selecionado' : ''}`}
-                        onClick={() => toggleDente(numero)}
-                      >
-                        {numero}
-                      </button>
+                    {dentesInferiores.map((numero, index) => (
+                      <React.Fragment key={numero}>
+                        <button
+                          type="button"
+                          className={`dente ${dentesSelecionados.includes(numero) ? 'selecionado' : ''}`}
+                          onClick={() => toggleDente(numero)}
+                        >
+                          {numero}
+                        </button>
+                        {numero === 41 && <div className="dente-spacer"></div>}
+                      </React.Fragment>
                     ))}
                   </div>
                 </div>
@@ -377,7 +371,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
               {servicosSelecionados.length > 0 ? (
                 servicosSelecionados.map(servico => (
                   <div key={servico.id} className="servico-item">
-                    <span>{servico.nome}</span>
+                    <span className="servico-nome">{servico.nome}</span>
                     <span>R$ {(servico.preco || 0).toFixed(2).replace('.', ',')}</span>
                   </div>
                 ))
@@ -385,22 +379,22 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
                 <p className="nenhum-servico">Nenhum serviço selecionado</p>
               )}
             </div>
-          </div>
-
-          {/* Contêiner do Valor Total */}
-          <div className="valor-container">
+            
             <div className="valor-total">
               <span>Valor total: <strong>R$ {valorTotal.toFixed(2).replace('.', ',')}</strong></span>
+            </div>
+            
+            <div className="form-actions">
+              <button type="button" className="btn-cancelar" onClick={() => navigate('/pedidos')}>
+                Cancelar
+              </button>
+              <button type="submit" form="pedido-form" className="btn-salvar-pedido" disabled={loading}>
+                {loading ? 'Salvando...' : 'Salvar'}
+              </button>
             </div>
           </div>
         </div>
       </form>
-
-      <div className="form-footer">
-        <button type="submit" form="pedido-form" className="btn-salvar-pedido" disabled={loading}>
-          {loading ? 'Salvando...' : 'Salvar Pedido'}
-        </button>
-      </div>
     </div>
   );
 };

@@ -16,6 +16,7 @@ const PacientePage = () => {
 
   
   const [pacientes, setPacientes] = useState([]);
+  const [pacientesComHistorico, setPacientesComHistorico] = useState({});
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -45,12 +46,67 @@ const PacientePage = () => {
   // Criando um ref para armazenar mensagens recentes e evitar duplicação de toasts
   const recentMessages = useRef(new Set());
 
+  // Função para formatar data do padrão americano para brasileiro
+  const formatDateToBR = (dateString) => {
+    if (!dateString) return '-';
+    
+    try {
+      // Se a data já está no formato brasileiro, retorna como está
+      if (dateString.includes('/')) {
+        return dateString;
+      }
+      
+      // Converte de YYYY-MM-DD para DD/MM/YYYY
+      const date = new Date(dateString + 'T00:00:00'); // Adiciona horário para evitar problemas de timezone
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      
+      return `${day}/${month}/${year}`;
+    } catch (error) {
+      console.error('Erro ao formatar data:', error);
+      return dateString; // Retorna a data original em caso de erro
+    }
+  };
+
   useEffect(() => {
     const fetchPacientes = async () => {
       setLoading(true);
       try {
         const response = await api.get('/paciente');
-        setPacientes(response.data);
+        const pacientesData = response.data;
+        setPacientes(pacientesData);
+        
+        // Buscar histórico para cada paciente
+        const historicoPromises = pacientesData.map(async (paciente) => {
+          try {
+            const historicoResponse = await api.get(`/paciente/${paciente.id}/historico`);
+            const historico = historicoResponse.data;
+            // Ordenar por data de entrega e pegar o mais recente
+            const pedidoMaisRecente = historico.sort((a, b) => 
+              new Date(b.dataEntrega) - new Date(a.dataEntrega)
+            )[0];
+            
+            return {
+              pacienteId: paciente.id,
+              ultimoServico: pedidoMaisRecente ? pedidoMaisRecente.dataEntrega : null
+            };
+          } catch (error) {
+            console.error(`Erro ao buscar histórico do paciente ${paciente.id}:`, error);
+            return {
+              pacienteId: paciente.id,
+              ultimoServico: null
+            };
+          }
+        });
+        
+        const historicos = await Promise.all(historicoPromises);
+        const historicoMap = historicos.reduce((acc, curr) => {
+          acc[curr.pacienteId] = curr.ultimoServico;
+          return acc;
+        }, {});
+        
+        setPacientesComHistorico(historicoMap);
       } catch (error) {
         console.error('Erro ao buscar pacientes:', error);
         toast.error('Erro ao carregar pacientes');
@@ -140,31 +196,49 @@ const PacientePage = () => {
 
  
   const handleStatusChange = (pacienteId, newStatus) => {
-    // Atualizar o status do paciente na lista
-    if (newStatus !== null) {
-      setPacientes(prevPacientes =>
-        prevPacientes.map(paciente =>
-          paciente.id === pacienteId
-            ? { ...paciente, isActive: newStatus }
-            : paciente
-        )
-      );
-      
-      // Exibir o toast de forma padronizada
-      const statusText = newStatus ? 'Ativo' : 'Inativo';
-      
-      // Limpa qualquer estado de navegação existente
-      window.history.replaceState({}, document.title);
-      
-      // Adicionamos uma mensagem de sucesso usando o padrão de state
-      navigate('', { 
-        state: { 
-          success: `Status atualizado com sucesso para ${statusText}`,
-          refresh: false // Não precisamos de refresh pois já atualizamos localmente
-        },
-        replace: true // Importante usar replace para não adicionar nova entrada no histórico
-      });
+    // Encontrar o paciente atual
+    const pacienteAtual = pacientes.find(p => p.id === pacienteId);
+    
+    if (!pacienteAtual) {
+      console.error('Paciente não encontrado:', pacienteId);
+      return;
     }
+    
+    // Verificar se o status está realmente mudando
+    const statusAtual = pacienteAtual.isActive;
+    
+    // Se o status for o mesmo, não faz nada
+    if (statusAtual === newStatus) {
+      return;
+    }
+
+    // Atualizar o status do paciente na lista imediatamente
+    const pacientesAtualizados = pacientes.map(paciente =>
+      paciente.id === pacienteId
+        ? { ...paciente, isActive: newStatus }
+        : paciente
+    );
+    
+    // Atualizar o estado imediatamente
+    setPacientes(pacientesAtualizados);
+    
+    // Forçar uma re-renderização para garantir que os filtros sejam aplicados corretamente
+    setRefreshData(prev => prev + 1);
+    
+    // Exibir o toast de forma padronizada
+    const statusText = newStatus ? 'Ativo' : 'Inativo';
+    
+    // Limpa qualquer estado de navegação existente
+    window.history.replaceState({}, document.title);
+    
+    // Adicionamos uma mensagem de sucesso usando o padrão de state
+    navigate('', { 
+      state: { 
+        success: `Status atualizado com sucesso para ${statusText}`,
+        refresh: false // Não precisamos de refresh pois já atualizamos localmente
+      },
+      replace: true // Importante usar replace para não adicionar nova entrada no histórico
+    });
   };
  
   const pacientesFiltrados = pacientes
@@ -189,6 +263,11 @@ const PacientePage = () => {
       
       return true;
     })
+    .map(paciente => ({
+      ...paciente,
+      dataNascimento: formatDateToBR(paciente.dataNascimento),
+      ultimoServico: pacientesComHistorico[paciente.id] || null
+    }))
     .sort((a, b) => {
       if (!sortConfig.key) return 0;
       

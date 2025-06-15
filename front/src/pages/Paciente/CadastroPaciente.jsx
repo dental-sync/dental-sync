@@ -10,8 +10,7 @@ const CadastroPaciente = () => {
     nome: '',
     email: '',
     telefone: '',
-    dataNascimento: '',
-    endereco: ''
+    dataNascimento: ''
   });
   
   const [errors, setErrors] = useState({});
@@ -91,6 +90,25 @@ const CadastroPaciente = () => {
         delete updatedErrors[name];
         setErrors(updatedErrors);
       }
+    } else if (name === "dataNascimento") {
+      // Permitir apenas datas com ano de até 4 dígitos
+      let partes = value.split('-');
+      if (partes.length === 3) {
+        if (partes[0].length > 4) {
+          partes[0] = partes[0].slice(0, 4);
+          // Corrige o valor para o formato yyyy-MM-dd
+          const valorCorrigido = partes.join('-');
+          setFormData({
+            ...formData,
+            [name]: valorCorrigido
+          });
+          return;
+        }
+      }
+      setFormData({
+        ...formData,
+        [name]: value
+      });
     } else {
       setFormData({
         ...formData,
@@ -184,8 +202,7 @@ const CadastroPaciente = () => {
         nome: formData.nome.trim(),
         email: formData.email.trim(),
         telefone: formData.telefone,
-        dataNascimento: formData.dataNascimento,
-        endereco: formData.endereco
+        dataNascimento: formData.dataNascimento
       };
 
       await api.post('/paciente', pacienteData);
@@ -274,21 +291,6 @@ const CadastroPaciente = () => {
               noValidate
             />
             {errors.dataNascimento && <span className="error-text">{errors.dataNascimento}</span>}
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="endereco" className="required">Endereço</label>
-            <input
-              type="text"
-              id="endereco"
-              name="endereco"
-              value={formData.endereco}
-              onChange={handleChange}
-              className={errors.endereco ? 'input-error' : ''}
-              placeholder="Digite o endereço"
-              maxLength={MAX_CHARS}
-            />
-            {errors.endereco && <span className="error-text">{errors.endereco}</span>}
           </div>
           
           <div className="form-actions">

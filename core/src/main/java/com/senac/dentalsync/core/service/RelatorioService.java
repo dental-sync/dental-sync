@@ -1,0 +1,74 @@
+package com.senac.dentalsync.core.service;
+
+import com.senac.dentalsync.core.dto.*;
+import com.senac.dentalsync.core.persistency.repository.PedidoRepository;
+import com.senac.dentalsync.core.persistency.repository.DentistaRepository;
+import com.senac.dentalsync.core.persistency.model.Pedido;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class RelatorioService {
+    private final PedidoRepository pedidoRepository;
+    private final DentistaRepository dentistaRepository;
+
+    @Transactional(readOnly = true)
+    public RelatorioDTO obterDadosDashboard() {
+        LocalDateTime dataAtual = LocalDateTime.now();
+        LocalDateTime mesAnterior = dataAtual.minusMonths(1);
+
+        // Obtém dados atuais
+        Long totalPedidos = pedidoRepository.count();
+        Long pedidosConcluidos = pedidoRepository.countByStatus(Pedido.Status.CONCLUIDO);
+        Long dentistasAtivos = dentistaRepository.countByIsActiveTrue();
+
+        // Obtém dados do mês anterior
+        Long totalPedidosAnterior = pedidoRepository.countByCreatedAtBefore(mesAnterior);
+        Long dentistasAtivosAnterior = dentistaRepository.countByIsActiveTrueAndCreatedAtBefore(mesAnterior);
+
+        // Monta o DTO
+        RelatorioDTO relatorio = new RelatorioDTO();
+        relatorio.setTotalPedidos(totalPedidos);
+        relatorio.setPedidosConcluidos(pedidosConcluidos);
+        relatorio.setDentistasAtivos(dentistasAtivos);
+        
+        // Dados anteriores
+        DadosAnterioresDTO dadosAnteriores = new DadosAnterioresDTO();
+        dadosAnteriores.setTotalPedidos(totalPedidosAnterior);
+        dadosAnteriores.setDentistasAtivos(dentistasAtivosAnterior);
+        relatorio.setDadosAnteriores(dadosAnteriores);
+        
+        // Dados dos gráficos
+        List<Object[]> pedidosPorMesRaw = pedidoRepository.findPedidosPorMes(dataAtual);
+        List<PedidosPorMesDTO> pedidosPorMes = pedidosPorMesRaw.stream()
+            .map(row -> new PedidosPorMesDTO(
+                ((Number) row[0]).intValue(),
+                ((Number) row[1]).longValue()
+            ))
+            .collect(Collectors.toList());
+        relatorio.setPedidosPorMes(pedidosPorMes);
+        
+        relatorio.setPedidosPorTipo(pedidoRepository.findPedidosPorTipo());
+        relatorio.setStatusPedidos(pedidoRepository.findStatusPedidos());
+        
+        // Pedidos recentes
+        List<PedidosRecentesDTO> pedidosRecentes = pedidoRepository.findPedidosRecentes()
+            .stream()
+            .map(pedido -> new PedidosRecentesDTO(
+                pedido.getId().toString(),
+                pedido.getServicos().get(0).getNome(),
+                pedido.getStatus().toString(),
+                pedido.getDentista().getNome(),
+                pedido.getCliente().getNome()
+            ))
+            .collect(Collectors.toList());
+        relatorio.setPedidosRecentes(pedidosRecentes);
+
+        return relatorio;
+    }
+}

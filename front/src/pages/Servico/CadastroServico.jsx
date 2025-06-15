@@ -4,14 +4,14 @@ import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './CadastroServico.css';
-import ModalCadastroCategoriaServico from '../../components/ModalCadastroCategoriaServico';
-import ModalSelecionarMateriais from '../../components/ModalSelecionarMateriais';
+import Dropdown from '../../components/Dropdown/Dropdown';
+import ModalCadastroCategoriaServico from '../../components/Modals/ModalCadastroCategoriaServico';
 
 const CadastroServico = () => {
   const navigate = useNavigate();
   const [categorias, setCategorias] = useState([]);
+  const [materiais, setMateriais] = useState([]);
   const [showModalCategoria, setShowModalCategoria] = useState(false);
-  const [showModalMateriais, setShowModalMateriais] = useState(false);
   const [materiaisSelecionados, setMateriaisSelecionados] = useState([]);
   const [formData, setFormData] = useState({
     nome: '',
@@ -26,17 +26,21 @@ const CadastroServico = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchCategorias = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/categoria-servico');
-        setCategorias(response.data);
+        const [categoriasResponse, materiaisResponse] = await Promise.all([
+          api.get('/categoria-servico'),
+          api.get('/material')
+        ]);
+        setCategorias(categoriasResponse.data);
+        setMateriais(materiaisResponse.data);
       } catch (error) {
-        console.error('Erro ao buscar categorias:', error);
-        toast.error('Erro ao carregar categorias');
+        console.error('Erro ao buscar dados:', error);
+        toast.error('Erro ao carregar dados');
       }
     };
 
-    fetchCategorias();
+    fetchData();
   }, []);
 
   const handleChange = (e) => {
@@ -67,22 +71,28 @@ const CadastroServico = () => {
     toast.success('Categoria cadastrada com sucesso!');
   };
 
-  const handleMateriaisConfirm = (materiais) => {
-    setMateriaisSelecionados(prev => {
-      return materiais.map(m => {
-        const antigo = prev.find(pm => pm.id === m.id);
-        return {
-          ...m,
-          quantidadeEstoque: m.quantidade ?? m.quantidadeEstoque ?? 0,
-          quantidadeUso: antigo ? antigo.quantidadeUso : 1
-        };
-      });
-    });
+  const handleCategoriaChange = (selectedCategoria) => {
     setFormData(prev => ({
       ...prev,
-      materiais: materiais.map(m => ({ material: { id: m.id }, quantidade: 1 }))
+      categoriaServico: { id: selectedCategoria?.id || '' }
     }));
-    setShowModalMateriais(false);
+  };
+
+  const handleMateriaisChange = (selectedMateriais) => {
+    const materiaisArray = Array.isArray(selectedMateriais) ? selectedMateriais : [];
+    setMateriaisSelecionados(materiaisArray.map(m => ({
+          ...m,
+      id: m.id,
+      nome: m.nome,
+      valorUnitario: m.valorUnitario || 0,
+      unidadeMedida: m.unidadeMedida || '',
+          quantidadeEstoque: m.quantidade ?? m.quantidadeEstoque ?? 0,
+      quantidadeUso: 1
+    })));
+    setFormData(prev => ({
+      ...prev,
+      materiais: materiaisArray.map(m => ({ material: { id: m.id }, quantidade: 1 }))
+    }));
   };
 
   const handleRemoverMaterial = (id) => {
@@ -94,18 +104,31 @@ const CadastroServico = () => {
   };
 
   const handleQuantidadeChange = (id, value) => {
+    // Permitir valor vazio temporariamente para edição
+    if (value === '') {
+      setMateriaisSelecionados(prev => prev.map(m =>
+        m.id === id
+          ? { ...m, quantidadeUso: '' }
+          : m
+      ));
+      return;
+    }
+    
+    // Permite qualquer quantidade positiva, sem limite de estoque
     const quantidade = Math.max(1, Math.floor(Number(value)));
-    setMateriaisSelecionados(prev => prev.map(m =>
-      m.id === id
-        ? { ...m, quantidadeUso: quantidade }
-        : m
-    ));
-    setFormData(prev => ({
-      ...prev,
-      materiais: prev.materiais.map(sm =>
-        (sm.material.id === id) ? { ...sm, quantidade } : sm
-      )
-    }));
+    if (!isNaN(quantidade)) {
+      setMateriaisSelecionados(prev => prev.map(m =>
+        m.id === id
+          ? { ...m, quantidadeUso: quantidade }
+          : m
+      ));
+      setFormData(prev => ({
+        ...prev,
+        materiais: prev.materiais.map(sm =>
+          (sm.material.id === id) ? { ...sm, quantidade } : sm
+        )
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -119,16 +142,25 @@ const CadastroServico = () => {
         return;
       }
 
+      // Filtrar e validar materiais antes de enviar
+      const materiaisValidos = materiaisSelecionados
+        .filter(m => m.id && m.quantidadeUso && m.quantidadeUso > 0)
+        .map(m => ({
+          material: { id: parseInt(m.id) },
+          quantidade: parseInt(m.quantidadeUso) || 1
+        }));
+
       const servicoData = {
         nome: formData.nome,
         descricao: formData.descricao,
-        preco: parseFloat(formData.valor),
-        categoria: { id: parseInt(formData.categoriaServico.id) },
-        tempoPrevisto: formData.tempoPrevisto,
-        status: formData.status,
-        isActive: formData.isActive,
-        materiais: materiaisSelecionados.map(m => ({ material: { id: m.id }, quantidade: m.quantidadeUso }))
+        preco: parseFloat(formData.valor.replace(',', '.')) || 0, // Apenas o valor da mão de obra
+        categoriaServico: { id: parseInt(formData.categoriaServico.id) },
+        tempoPrevisto: parseFloat(formData.tempoPrevisto) * 60,
+        materiais: materiaisValidos
+        // valorMateriais e valorTotal serão calculados automaticamente no backend
       };
+
+      console.log('Dados sendo enviados:', servicoData); // Para debug
 
       await api.post('/servico', servicoData);
       toast.success('Serviço cadastrado com sucesso!');
@@ -154,12 +186,7 @@ const CadastroServico = () => {
         onClose={() => setShowModalCategoria(false)}
         onSuccess={handleCategoriaSuccess}
       />
-      <ModalSelecionarMateriais
-        isOpen={showModalMateriais}
-        onClose={() => setShowModalMateriais(false)}
-        onConfirm={handleMateriaisConfirm}
-        materiaisSelecionados={materiaisSelecionados.map(m => m.id)}
-      />
+
       <div className="cadastro-servico-container">
         <div className="page-header">
           <button className="back-button" onClick={handleCancel}>
@@ -194,33 +221,19 @@ const CadastroServico = () => {
 
                 <div className="form-group">
                   <label htmlFor="categoriaServico">Categoria</label>
-                  <div className="categoria-select">
-                    <select
-                      id="categoriaServico"
-                      name="categoriaServico"
-                      value={formData.categoriaServico.id}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Selecione a categoria</option>
-                      {categorias.map((categoria) => (
-                        <option key={categoria.id} value={categoria.id}>
-                          {categoria.nome}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      className="nova-categoria-button"
-                      onClick={() => setShowModalCategoria(true)}
-                      title="Adicionar nova categoria"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                      </svg>
-                    </button>
-                  </div>
+                  <Dropdown
+                    items={categorias}
+                    value={categorias.find(c => c.id === formData.categoriaServico.id) || null}
+                    onChange={handleCategoriaChange}
+                    placeholder="Selecione a categoria"
+                    displayProperty="nome"
+                    valueProperty="id"
+                    searchable={false}
+                    showCheckbox={false}
+                    showAddButton={true}
+                    addButtonTitle="Adicionar nova categoria"
+                    onAddClick={() => setShowModalCategoria(true)}
+                  />
                 </div>
 
                 <div className="form-group">
@@ -272,19 +285,23 @@ const CadastroServico = () => {
             </div>
             <div className="card-content">
               <div className="form-group">
-                <div className="material-select">
-                  <button
-                    type="button"
-                    className="select-materiais-button"
-                    onClick={() => setShowModalMateriais(true)}
-                  >
-                    Selecionar materiais
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search">
-                      <circle cx="11" cy="11" r="8"></circle>
-                      <path d="m21 21-4.3-4.3"></path>
-                    </svg>
-                  </button>
-                </div>
+                <label htmlFor="materiais">Materiais</label>
+                <Dropdown
+                  items={materiais}
+                  value={materiaisSelecionados}
+                  onChange={handleMateriaisChange}
+                  placeholder="Selecionar materiais"
+                  searchPlaceholder="Buscar materiais..."
+                  displayProperty="nome"
+                  valueProperty="id"
+                  searchBy="nome"
+                  searchable={true}
+                  allowMultiple={true}
+                  showCheckbox={true}
+                  showItemValue={true}
+                  valueDisplayProperty="valorUnitario"
+                  valuePrefix="R$ "
+                />
                 <div className="materiais-selecionados-lista">
                   {materiaisSelecionados.length === 0 ? (
                     <div className="empty-state">Nenhum material selecionado</div>
@@ -306,21 +323,33 @@ const CadastroServico = () => {
                               <input
                                 type="number"
                                 min={1}
-                                max={m.quantidadeEstoque}
                                 value={m.quantidadeUso}
                                 onChange={e => {
-                                  let val = parseInt(e.target.value, 10);
-                                  if (isNaN(val) || val < 1) val = 1;
-                                  if (val > m.quantidadeEstoque) val = m.quantidadeEstoque;
-                                  handleQuantidadeChange(m.id, val);
+                                  const val = e.target.value;
+                                  // Permitir campo vazio temporariamente para edição
+                                  if (val === '') {
+                                    handleQuantidadeChange(m.id, '');
+                                    return;
+                                  }
+                                  
+                                  const numVal = parseInt(val, 10);
+                                  if (!isNaN(numVal) && numVal >= 1) {
+                                    handleQuantidadeChange(m.id, numVal);
+                                  }
+                                }}
+                                onBlur={e => {
+                                  // Ao sair do campo, garantir valor mínimo
+                                  const val = parseInt(e.target.value, 10);
+                                  if (isNaN(val) || val < 1) {
+                                    handleQuantidadeChange(m.id, 1);
+                                  }
                                 }}
                                 className="input-quantidade-material"
                               />
                               <button
                                 type="button"
                                 className="btn-quantidade"
-                                onClick={() => handleQuantidadeChange(m.id, Math.min(m.quantidadeEstoque, m.quantidadeUso + 1))}
-                                disabled={m.quantidadeUso >= m.quantidadeEstoque}
+                                onClick={() => handleQuantidadeChange(m.id, m.quantidadeUso + 1)}
                                 tabIndex={0}
                               >+</button>
                             </div>
@@ -336,6 +365,33 @@ const CadastroServico = () => {
                       ))}
                     </ul>
                   )}
+                </div>
+              </div>
+              
+              <div className="total-servico">
+                <div className="total-item">
+                  <span className="total-label">Preço do Serviço:</span>
+                  <span className="total-valor">R$ {formData.valor || '0,00'}</span>
+                </div>
+                <div className="total-item">
+                  <span className="total-label">Valor dos Materiais:</span>
+                  <span className="total-valor">R$ {materiaisSelecionados.reduce((total, material) => {
+                    const preco = material.valorUnitario || 0;
+                    const quantidade = material.quantidadeUso || 1;
+                    return total + (preco * quantidade);
+                  }, 0).toFixed(2).replace('.', ',')}</span>
+                </div>
+                <div className="total-item total-final">
+                  <span className="total-label">Total Geral:</span>
+                  <span className="total-valor">R$ {(() => {
+                    const precoServico = parseFloat(formData.valor.replace(',', '.')) || 0;
+                    const valorMateriais = materiaisSelecionados.reduce((total, material) => {
+                      const preco = material.valorUnitario || 0;
+                      const quantidade = material.quantidadeUso || 1;
+                      return total + (preco * quantidade);
+                    }, 0);
+                    return (precoServico + valorMateriais).toFixed(2).replace('.', ',');
+                  })()}</span>
                 </div>
               </div>
             </div>

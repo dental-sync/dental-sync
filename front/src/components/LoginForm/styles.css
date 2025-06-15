@@ -24,6 +24,13 @@
   color: #333;
 }
 
+/* Estilo para campos obrigatórios */
+.form-label.required::after {
+  content: " *";
+  color: #dc3545;
+  font-weight: bold;
+}
+
 .input-container {
   position: relative;
   display: flex;
@@ -93,7 +100,6 @@
 
 .checkbox-group {
   display: flex;
-  align-items: center;
   gap: 0.5rem;
 }
 
@@ -106,6 +112,38 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
+}
+
+.forgot-password-link {
+  color: #2563EB;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
+
+.register-link-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #4B5563;
+  width: 100%;
+}
+
+.register-link {
+  color: #2563EB;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.register-link:hover {
+  text-decoration: underline;
 }
 
 .remember-me-info {

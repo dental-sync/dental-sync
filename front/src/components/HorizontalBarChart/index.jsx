@@ -11,9 +11,9 @@ const getBarColor = (colorScale, index, label) => {
   
   // Escala de cores para status (concluído, em andamento, pendente, cancelado)
   if (colorScale === 'status') {
-    if (label.toLowerCase().includes('concluído')) return '#10b981';  // Verde
-    if (label.toLowerCase().includes('andamento')) return '#f59e0b';  // Amarelo
-    if (label.toLowerCase().includes('pendente')) return '#3b82f6';   // Azul
+    if (label.toLowerCase().includes('concluido')) return '#10b981';  // Verde
+    if (label.toLowerCase().includes('em_andamento')) return '#3b82f6';  // Azul
+    if (label.toLowerCase().includes('pendente')) return '#f59e0b';   // Amarelo
     if (label.toLowerCase().includes('cancelado')) return '#ef4444';  // Vermelho
     return '#94a3b8';  // Cinza para outros casos
   }
@@ -45,7 +45,7 @@ const HorizontalBarChart = ({ data, colorScale = 'default' }) => {
                 ></div>
                 <span>{label}</span>
               </div>
-              <span className="horizontal-bar-value">{value}%</span>
+              <span className="horizontal-bar-value">{Number(value).toFixed(2)}%</span>
             </div>
             <div className="horizontal-bar-container">
               <div 

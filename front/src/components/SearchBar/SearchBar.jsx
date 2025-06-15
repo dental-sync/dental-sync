@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './SearchBar.css';
 
-const SearchBar = ({ placeholder, onSearch }) => {
+const SearchBar = ({ placeholder, onSearch, variant = 'default' }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleChange = (e) => {
@@ -13,7 +13,7 @@ const SearchBar = ({ placeholder, onSearch }) => {
   };
 
   return (
-    <div className="search-bar-container">
+    <div className={`search-bar-container ${variant}`}>
       <div className="search-input-wrapper">
         <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="11" cy="11" r="8"></circle>

@@ -39,6 +39,13 @@
   color: #374151;
 }
 
+/* Estilo para campos obrigatórios */
+.forgot-label.required::after {
+  content: " *";
+  color: #dc3545;
+  font-weight: bold;
+}
+
 .forgot-input-container {
   position: relative;
 }

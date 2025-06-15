@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './ModalCadastroCategoriaServico.css';
-import api from '../axios-config';
+import api from '../../axios-config';
 
 const ModalCadastroCategoriaServico = ({ isOpen, onClose, onSuccess }) => {
   const [nome, setNome] = useState('');

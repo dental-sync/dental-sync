@@ -19,7 +19,9 @@ const GenericTable = ({
   emptyMessage,
   ActionMenuComponent,
   useCustomStatusRender = false,
-  url
+  url,
+  hideOptions = [],
+  alwaysAllowDelete = false
 }) => {
   const navigate = useNavigate();
 
@@ -70,6 +72,7 @@ const GenericTable = ({
                 key={column.key}
                 className={column.sortable ? 'sortable-header' : ''}
                 data-sortable={column.sortable}
+                data-column={column.key}
                 onClick={column.sortable ? () => onSort(column.key) : undefined}
               >
                 {column.sortable ? (
@@ -90,14 +93,14 @@ const GenericTable = ({
               <tr key={item.id}>
                 {columns.map((column) => {
                   if (column.key === 'id') {
-                    return <td key={column.key}>{formatId(item.id)}</td>;
+                    return <td key={column.key} data-column={column.key}>{formatId(item.id)}</td>;
                   }
                   if (column.key === statusField) {
                     if (useCustomStatusRender && column.render) {
-                      return <td key={column.key}>{column.render(item[statusField])}</td>;
+                      return <td key={column.key} data-column={column.key}>{column.render(item[statusField])}</td>;
                     }
                     return (
-                      <td key={column.key}>
+                      <td key={column.key} data-column={column.key}>
                         <StatusBadge
                           status={item[statusField]}
                           onClick={(newStatus) => handleStatusChange(item.id, newStatus)}
@@ -107,7 +110,7 @@ const GenericTable = ({
                   }
                   if (column.key === 'actions') {
                     return (
-                      <td key={column.key}>
+                      <td key={column.key} data-column={column.key}>
                         <ActionMenuComponent 
                           itemId={item.id} 
                           onItemDeleted={onItemDeleted}
@@ -119,14 +122,16 @@ const GenericTable = ({
                           materialId={item.id}
                           isActive={item[statusField]}
                           url={url}
+                          hideOptions={hideOptions}
+                          alwaysAllowDelete={alwaysAllowDelete}
                         />
                       </td>
                     );
                   }
                   if (column.render) {
-                    return <td key={column.key}>{column.render(item[column.key])}</td>;
+                    return <td key={column.key}>{column.render(item[column.key], item)}</td>;
                   }
-                  return <td key={column.key}>{item[column.key]}</td>;
+                  return <td key={column.key} data-column={column.key}>{item[column.key]}</td>;
                 })}
               </tr>
             ))

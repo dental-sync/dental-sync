@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './styles.css';
 
-const PasswordInput = ({ id, name, value, onChange, placeholder }) => {
+const PasswordInput = ({ id, name, value, onChange, placeholder, className, required, disabled, ...props }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -33,13 +33,17 @@ const PasswordInput = ({ id, name, value, onChange, placeholder }) => {
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="password-input"
+        className={`password-input ${className || ''}`}
+        required={required}
+        disabled={disabled}
+        {...props}
       />
       <button 
         type="button" 
         className="toggle-password-btn"
         onClick={togglePasswordVisibility}
         aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'}
+        disabled={disabled}
       >
         <svg 
           xmlns="http://www.w3.org/2000/svg" 

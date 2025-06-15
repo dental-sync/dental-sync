@@ -134,13 +134,14 @@ const EditarServico = () => {
       return;
     }
     
+    // Permite qualquer quantidade positiva, sem limite de estoque
     const quantidade = Math.max(1, Math.floor(Number(value)));
     if (!isNaN(quantidade)) {
-    setMateriaisSelecionados(prev => prev.map(m =>
-      m.id === id
-        ? { ...m, quantidadeUso: quantidade }
-        : m
-    ));
+      setMateriaisSelecionados(prev => prev.map(m =>
+        m.id === id
+          ? { ...m, quantidadeUso: quantidade }
+          : m
+      ));
     }
   };
 
@@ -316,7 +317,6 @@ const EditarServico = () => {
                               <input
                                 type="number"
                                 min={1}
-                                max={m.quantidadeEstoque}
                                 value={m.quantidadeUso}
                                 onChange={e => {
                                   const val = e.target.value;
@@ -327,7 +327,7 @@ const EditarServico = () => {
                                   }
                                   
                                   const numVal = parseInt(val, 10);
-                                  if (!isNaN(numVal) && numVal >= 1 && numVal <= m.quantidadeEstoque) {
+                                  if (!isNaN(numVal) && numVal >= 1) {
                                     handleQuantidadeChange(m.id, numVal);
                                   }
                                 }}
@@ -343,8 +343,7 @@ const EditarServico = () => {
                               <button
                                 type="button"
                                 className="btn-quantidade"
-                                onClick={() => handleQuantidadeChange(m.id, Math.min(m.quantidadeEstoque, m.quantidadeUso + 1))}
-                                disabled={m.quantidadeUso >= m.quantidadeEstoque}
+                                onClick={() => handleQuantidadeChange(m.id, m.quantidadeUso + 1)}
                                 tabIndex={0}
                               >+</button>
                             </div>

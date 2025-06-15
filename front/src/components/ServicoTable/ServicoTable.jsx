@@ -5,6 +5,12 @@ import ActionMenu from '../ActionMenu/ActionMenu';
 // Função utilitária para formatar o ID
 const formatServicoId = (id) => `S${String(id).padStart(4, '0')}`;
 
+// Função para formatar valores monetários
+const formatCurrency = (value) => {
+  if (value == null || value === undefined) return 'R$ 0,00';
+  return `R$ ${Number(value).toFixed(2).replace('.', ',')}`;
+};
+
 // Função para formatar o tempo previsto em horas e minutos
 const formatTempoPrevisto = (minutos) => {
   if (!minutos) return '-';
@@ -18,9 +24,7 @@ const formatTempoPrevisto = (minutos) => {
 // Função para formatar os dados do serviço
 const formatServicoData = (servico) => ({
   ...servico,
-  valor: servico.valor != null
-    ? `R$ ${Number(servico.valor).toFixed(2).replace('.', ',')}`
-    : '-',
+  valorTotal: formatCurrency(servico.valorTotal), // Apenas valor total
   tempoPrevisto: formatTempoPrevisto(servico.tempoPrevisto),
   categoriaServico: servico.categoriaServico?.nome || '-'
 });
@@ -29,9 +33,9 @@ const columns = [
   { key: 'id', label: 'ID', sortable: true },
   { key: 'nome', label: 'Nome', sortable: true },
   { key: 'categoriaServico', label: 'Categoria', sortable: true },
-  { key: 'valor', label: 'Preço', sortable: true },
-  { key: 'tempoPrevisto', label: 'Tempo Previsto', sortable: true },
-  { key: 'descricao', label: 'Descrição', sortable: true },
+  { key: 'valorTotal', label: 'Valor', sortable: true },
+  { key: 'tempoPrevisto', label: 'Tempo Previsto', sortable: false },
+  { key: 'descricao', label: 'Descrição', sortable: false },
   { key: 'actions', label: 'Ações' }
 ];
 

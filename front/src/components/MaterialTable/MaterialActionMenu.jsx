@@ -50,11 +50,6 @@ const MaterialActionMenu = ({ materialId, materialStatus, onDelete }) => {
     };
   }, []);
 
-  const handleVerHistorico = () => {
-    navigate(`/material/historico/${materialId}`);
-    setIsOpen(false);
-  };
-
   const handleEditar = () => {
     navigate(`/material/editar/${materialId}`);
     setIsOpen(false);
@@ -94,7 +89,6 @@ const MaterialActionMenu = ({ materialId, materialStatus, onDelete }) => {
       >
         <ul>
           <li onClick={handleEditar}>Editar</li>
-          <li onClick={handleVerHistorico}>Histórico</li>
           {!isActive && (
             <li onClick={handleExcluir} className="delete-option">Excluir</li>
           )}

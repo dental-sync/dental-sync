@@ -57,9 +57,11 @@
 
 /* Opções dentro do dropdown */
 .status-option {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border: none;
   background: none;
   text-align: left;
@@ -75,6 +77,14 @@
 .status-option.active {
   background-color: #e9ecef;
   font-weight: 500;
+}
+
+/* Bolinha colorida para status */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 /* Animação para o badge */
@@ -107,4 +117,46 @@
 .status-badge-pedido:hover {
   box-shadow: none !important;
   transform: none !important;
+}
+
+/* Estilo para badge de pedido com dropdown */
+.status-badge-pedido-dropdown {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  font-size: 12px !important;
+  padding: 6px 14px !important;
+  border-radius: 6px !important;
+  min-width: 110px !important;
+  height: auto !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  cursor: pointer !important;
+  border: none !important;
+  transition: all 0.2s !important;
+}
+
+.status-badge-pedido-dropdown:hover {
+  opacity: 0.9 !important;
+  transform: scale(1.05) !important;
+}
+
+/* Dropdown específico para pedidos */
+.status-dropdown-pedido {
+  min-width: 130px !important;
+  /* Largura será definida dinamicamente pelo JavaScript para ficar igual ao badge */
+}
+
+/* Estilo para o período */
+.periodo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.periodo-texto {
+  font-size: 13px;
+  color: #374151;
+  white-space: nowrap;
 } 

@@ -137,37 +137,46 @@ const DentistaPage = () => {
     // Encontrar o dentista atual
     const dentistaAtual = dentistas.find(d => d.id === dentistaId);
     
+    if (!dentistaAtual) {
+      console.error('Dentista não encontrado:', dentistaId);
+      return;
+    }
+    
     // Verificar se o status está realmente mudando
-    const statusAtual = dentistaAtual.isActive === 'ATIVO';
-    if (statusAtual === (newStatus === 'ATIVO')) {
-      return; // Não faz nada se o status for o mesmo
+    const statusAtual = dentistaAtual.isActive;
+    
+    // Se o status for o mesmo, não faz nada
+    if (statusAtual === newStatus) {
+      return;
     }
 
-    // Atualizar o status do dentista na lista
-    if (newStatus !== null) {
-      setDentistas(prevDentistas =>
-        prevDentistas.map(dentista =>
-          dentista.id === dentistaId
-            ? { ...dentista, isActive: newStatus }
-            : dentista
-        )
-      );
-      
-      // Exibir o toast de forma padronizada
-      const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
-      
-      // Limpa qualquer estado de navegação existente
-      window.history.replaceState({}, document.title);
-      
-      // Adicionamos uma mensagem de sucesso usando o padrão de state
-      navigate('', { 
-        state: { 
-          success: `Status atualizado com sucesso para ${statusText}`,
-          refresh: false // Não precisamos de refresh pois já atualizamos localmente
-        },
-        replace: true // Importante usar replace para não adicionar nova entrada no histórico
-      });
-    }
+    // Atualizar o status do dentista na lista imediatamente
+    const dentistasAtualizados = dentistas.map(dentista =>
+      dentista.id === dentistaId
+        ? { ...dentista, isActive: newStatus }
+        : dentista
+    );
+    
+    // Atualizar o estado imediatamente
+    setDentistas(dentistasAtualizados);
+    
+    // Forçar uma re-renderização para garantir que os filtros sejam aplicados corretamente
+    setRefreshData(prev => prev + 1);
+    
+    // Exibir o toast de forma padronizada
+    const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
+    
+    // Limpa qualquer estado de navegação existente
+    window.history.replaceState({}, document.title);
+    
+    // Adicionamos uma mensagem de sucesso usando o padrão de state
+    navigate('', { 
+      state: { 
+        success: `Status atualizado com sucesso para ${statusText}`,
+        refresh: false // Não precisamos de refresh pois já atualizamos localmente
+      },
+      replace: true // Importante usar replace para não adicionar nova entrada no histórico
+    });
   };
 
   // Função utilitária para formatar o ID

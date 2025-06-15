@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import './TwoStepRegister.css';
+import { useNavigate } from 'react-router-dom';
 
 const UserForm = ({ initialData, onSubmit }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState(initialData);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -369,9 +371,14 @@ const UserForm = ({ initialData, onSubmit }) => {
       </div>
       
       <div className="form-actions">
+      
+        <button type="button" className="btn-voltar" onClick={() => navigate('/login')}>
+          Voltar
+        </button>
         <button type="submit" className="btn-primary">
           Continuar
         </button>
+
       </div>
     </form>
   );

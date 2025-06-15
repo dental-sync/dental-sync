@@ -272,69 +272,71 @@ function Kanban() {
 
   return (
     <div className="kanban-container">
-      <div className="page-top" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
-        <div className="notification-container" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <NotificationBell count={2} />
-        </div>
-      </div>
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1 className="kanban-title" style={{ fontSize: 24, fontWeight: 700, color: '#212529', margin: 0 }}>Kanban</h1>
-        <div className="header-actions" style={{ display: 'flex', gap: 10, position: 'relative', alignItems: 'center' }}>
-          <SearchBar placeholder="Buscar pedidos..." onSearch={handleSearch} variant="kanban" />
-          <div className="filter-container" ref={filterRef} style={{ position: 'relative' }}>
-            <ActionButton 
-              label="Filtrar" 
-              icon="filter" 
-              onClick={toggleFiltro}
-              active={isFilterOpen || filtros.prioridade !== 'todos'}
-            />
-            
-            {isFilterOpen && (
-              <div className="filter-dropdown">
-                <h3>Filtros</h3>
-                <div className="filter-group">
-                  <label htmlFor="prioridade">Prioridade</label>
-                  <select
-                    id="prioridade"
-                    name="prioridade"
-                    value={filtros.prioridade}
-                    onChange={handleFiltroChange}
-                    className="filter-select"
-                  >
-                    <option value="todos">Todas</option>
-                    <option value="BAIXA">Baixa</option>
-                    <option value="MEDIA">Média</option>
-                    <option value="ALTA">Alta</option>
-                    <option value="URGENTE">Urgente</option>
-                  </select>
-                </div>
-                <div className="filter-actions">
-                  <button
-                    type="button"
-                    className="clear-filter-button"
-                    onClick={handleLimparFiltros}
-                  >
-                    Limpar Filtros
-                  </button>
-                </div>
-              </div>
-            )}
+      <div className="kanban-content">
+        <div className="page-top" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
+          <div className="notification-container" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <NotificationBell count={2} />
           </div>
-          <ActionButton label="Novo Pedido" icon="plus" variant="primary novo-button" onClick={handleNovoPedido} style={{ whiteSpace: 'nowrap', minWidth: 0 }} />
         </div>
+        <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h1 className="kanban-title" style={{ fontSize: 24, fontWeight: 700, color: '#212529', margin: 0 }}>Kanban</h1>
+          <div className="header-actions" style={{ display: 'flex', gap: 10, position: 'relative', alignItems: 'center' }}>
+            <SearchBar placeholder="Buscar pedidos..." onSearch={handleSearch} variant="kanban" />
+            <div className="filter-container" ref={filterRef} style={{ position: 'relative' }}>
+              <ActionButton 
+                label="Filtrar" 
+                icon="filter" 
+                onClick={toggleFiltro}
+                active={isFilterOpen || filtros.prioridade !== 'todos'}
+              />
+              
+              {isFilterOpen && (
+                <div className="filter-dropdown">
+                  <h3>Filtros</h3>
+                  <div className="filter-group">
+                    <label htmlFor="prioridade">Prioridade</label>
+                    <select
+                      id="prioridade"
+                      name="prioridade"
+                      value={filtros.prioridade}
+                      onChange={handleFiltroChange}
+                      className="filter-select"
+                    >
+                      <option value="todos">Todas</option>
+                      <option value="BAIXA">Baixa</option>
+                      <option value="MEDIA">Média</option>
+                      <option value="ALTA">Alta</option>
+                      <option value="URGENTE">Urgente</option>
+                    </select>
+                  </div>
+                  <div className="filter-actions">
+                    <button
+                      type="button"
+                      className="clear-filter-button"
+                      onClick={handleLimparFiltros}
+                    >
+                      Limpar Filtros
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <ActionButton label="Novo Pedido" icon="plus" variant="primary novo-button" onClick={handleNovoPedido} style={{ whiteSpace: 'nowrap', minWidth: 0 }} />
+          </div>
+        </div>
+        <div className="kanban-board">
+          {renderColumn('PENDENTE')}
+          {renderColumn('EM_ANDAMENTO')}
+          {renderColumn('CONCLUIDO')}
+        </div>
+        <DeleteConfirmationModal
+          isOpen={!!pedidoParaExcluir}
+          onClose={() => setPedidoParaExcluir(null)}
+          onConfirm={confirmarExclusaoPedido}
+          title="Confirmar Exclusão"
+          message="Tem certeza que deseja excluir permanentemente este pedido? Esta ação não poderá ser desfeita."
+        />
       </div>
-      <div className="kanban-board">
-        {renderColumn('PENDENTE')}
-        {renderColumn('EM_ANDAMENTO')}
-        {renderColumn('CONCLUIDO')}
-      </div>
-      <DeleteConfirmationModal
-        isOpen={!!pedidoParaExcluir}
-        onClose={() => setPedidoParaExcluir(null)}
-        onConfirm={confirmarExclusaoPedido}
-        title="Confirmar Exclusão"
-        message="Tem certeza que deseja excluir permanentemente este pedido? Esta ação não poderá ser desfeita."
-      />
     </div>
   );
 }

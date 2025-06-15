@@ -72,7 +72,7 @@ const PedidoPage = () => {
           odontograma: pedido.odontograma,
           observacao: pedido.observacao,
           status: pedido.status,
-          valorTotal: Array.isArray(pedido.servicos) ? pedido.servicos.reduce((acc, s) => acc + (s.preco || 0), 0) : 0
+          valorTotal: Array.isArray(pedido.servicos) ? pedido.servicos.reduce((acc, s) => acc + (s.valorTotal || s.preco || 0), 0) : 0
         }));
         console.log('[LOG] pedidosFormatados:', pedidosFormatados);
         setPedidos(pedidosFormatados);
@@ -190,6 +190,19 @@ const PedidoPage = () => {
     } catch (error) {
       console.error('Erro ao excluir pedido:', error);
       toast.error('Erro ao excluir pedido. Por favor, tente novamente.');
+    }
+  };
+
+  const handleStatusChange = async (newStatus, pedidoId) => {
+    try {
+      await api.patch(`/pedidos/${pedidoId}/status`, { status: newStatus });
+      toast.success('Status do pedido atualizado com sucesso!');
+      setPedidos(prev => prev.map(p => 
+        p.id === pedidoId ? { ...p, status: newStatus } : p
+      ));
+    } catch (error) {
+      console.error('Erro ao atualizar status do pedido:', error);
+      toast.error('Erro ao atualizar status. Por favor, tente novamente.');
     }
   };
 
@@ -419,120 +432,11 @@ const PedidoPage = () => {
 
       <div className="table-container">
         <PedidoTable 
-          pedidos={sortedPedidos.map(p => ({ ...p, idFormatado: formatPedidoId(p.id) }))}
+          pedidos={sortedPedidos}
           onDelete={handleDelete}
+          onStatusChange={handleStatusChange}
           sortConfig={sortConfig}
           onSort={handleSort}
-          columns={[
-            {
-              key: 'periodo', 
-              label: 'Período', 
-              render: (value, item) => {
-                const formatDate = (date, label) => {
-                  if (!date) {
-                    console.log(`[LOG] ${label} está vazio ou null:`, date);
-                    return 'N/A';
-                  }
-                  const safeDate = typeof date === 'string' ? date.replace(/(\\.\\d{3})\\d+/, '$1') : date;
-                  const d = new Date(safeDate);
-                  console.log(`[LOG] ${label} original:`, date, '| Tratado:', safeDate, '| Date:', d, '| isNaN:', isNaN(d.getTime()));
-                  return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString('pt-BR');
-                };
-                // ATENÇÃO: use exatamente o nome do campo, com a mesma capitalização!
-                return (
-                  <div>
-                    <div>{formatDate(item?.createdAt, 'createdAt')}</div>
-                    <div>{formatDate(item?.dataEntrega, 'dataEntrega')}</div>
-                  </div>
-                );
-              }
-            },
-            {
-              key: 'id',
-              label: 'ID',
-              render: (value, item) => {
-                return <div>{item.idFormatado}</div>;
-              }
-            },
-            {
-              key: 'cliente',
-              label: 'Cliente',
-              render: (value, item) => {
-                return <div>{item.paciente?.nome || 'N/A'}</div>;
-              }
-            },
-            {
-              key: 'dentista',
-              label: 'Dentista',
-              render: (value, item) => {
-                return <div>{item.dentista?.nome || 'N/A'}</div>;
-              }
-            },
-            {
-              key: 'protetico',
-              label: 'Protético',
-              render: (value, item) => {
-                return <div>{item.protetico?.nome || 'N/A'}</div>;
-              }
-            },
-            {
-              key: 'servico',
-              label: 'Serviço',
-              render: (value, item) => {
-                return <div>{item.servicos?.nome || 'N/A'}</div>;
-              }
-            },
-            {
-              key: 'prioridade',
-              label: 'Prioridade',
-              render: (value, item) => {
-                return <div>{item.prioridade || 'N/A'}</div>;
-              }
-            },
-            {
-              key: 'odontograma',
-              label: 'Odontograma',
-              render: (value, item) => {
-                return <div>{item.odontograma ? item.odontograma.split(',').join(', ') : 'N/A'}</div>;
-              }
-            },
-            {
-              key: 'observacao',
-              label: 'Observação',
-              render: (value, item) => {
-                return <div>{item.observacao || 'N/A'}</div>;
-              }
-            },
-            {
-              key: 'status',
-              label: 'Status',
-              render: (value, item) => {
-                return <div>{item.status || 'N/A'}</div>;
-              }
-            },
-            {
-              key: 'valorTotal',
-              label: 'Valor Total',
-              render: (value, item) => {
-                return <div>{item.valorTotal || 'N/A'}</div>;
-              }
-            },
-            {
-              key: 'actions',
-              label: 'Ações',
-              render: (value, item) => {
-                return (
-                  <div className="actions">
-                    <ActionButton 
-                      label="Excluir" 
-                      variant="danger"
-                      onClick={() => handleDelete(item.id)}
-                    />
-                  </div>
-                );
-              }
-            }
-          ]}
         />
       </div>
     </div>

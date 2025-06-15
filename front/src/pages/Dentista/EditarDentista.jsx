@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './EditarDentista.css';
 import api from '../../axios-config';
+import Dropdown from '../../components/Dropdown/Dropdown';
 import ModalCadastroClinica from '../../components/ModalCadastroClinica/ModalCadastroClinica';
 import { toast } from 'react-toastify';
 
@@ -35,7 +36,24 @@ const EditarDentista = () => {
         ]);
         
         const dentista = dentistaResponse.data;
-        setClinicas(clinicasResponse.data);
+        const todasClinicas = clinicasResponse.data;
+        
+        setClinicas(todasClinicas);
+        
+        // Processar as clínicas associadas - garantir que temos os objetos completos
+        let clinicasAssociadas = [];
+        if (dentista.clinicas && Array.isArray(dentista.clinicas)) {
+          // Se vier como array de objetos completos
+          clinicasAssociadas = dentista.clinicas;
+        } else if (dentista.clinicasAssociadas && Array.isArray(dentista.clinicasAssociadas)) {
+          // Se vier como clinicasAssociadas
+          clinicasAssociadas = dentista.clinicasAssociadas;
+        } else if (dentista.clinicaIds && Array.isArray(dentista.clinicaIds)) {
+          // Se vier apenas os IDs, buscar os objetos completos
+          clinicasAssociadas = dentista.clinicaIds.map(clinicaId => 
+            todasClinicas.find(c => c.id === clinicaId)
+          ).filter(Boolean);
+        }
         
         setFormData({
           nome: dentista.nome || '',
@@ -43,7 +61,7 @@ const EditarDentista = () => {
           telefone: dentista.telefone || '',
           email: dentista.email || '',
           clinicaId: '',
-          clinicasAssociadas: dentista.clinicasAssociadas || [],
+          clinicasAssociadas: clinicasAssociadas,
           isActive: dentista.isActive
         });
       } catch (error) {
@@ -305,6 +323,13 @@ const EditarDentista = () => {
     });
   };
 
+  const handleClinicasChange = (selectedClinicas) => {
+    setFormData({
+      ...formData,
+      clinicasAssociadas: Array.isArray(selectedClinicas) ? selectedClinicas : []
+    });
+  };
+
   const checkUniqueFields = async () => {
     try {
       const [croResponse, emailResponse, telefoneResponse] = await Promise.all([
@@ -420,64 +445,22 @@ const EditarDentista = () => {
           
           <div className="form-group">
             <label htmlFor="clinicaId">Clínicas</label>
-            <div className="clinicas-container">
-              <div className="clinicas-tags">
-                {formData.clinicasAssociadas && formData.clinicasAssociadas.map(clinica => (
-                  <div key={clinica.id} className="clinica-tag">
-                    <span>{clinica.nome}</span>
-                    <button
-                      type="button"
-                      className="remove-clinica"
-                      onClick={() => {
-                        setFormData({
-                          ...formData,
-                          clinicasAssociadas: formData.clinicasAssociadas.filter(c => c.id !== clinica.id)
-                        });
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <div className="clinica-options">
-                <select
-                  id="clinicaId"
-                  name="clinicaId"
-                  value={formData.clinicaId}
-                  onChange={(e) => {
-                    const clinicaId = e.target.value;
-                    if (clinicaId && (!formData.clinicasAssociadas || !formData.clinicasAssociadas.some(c => c.id.toString() === clinicaId))) {
-                      const clinicaSelecionada = clinicas.find(c => c.id.toString() === clinicaId);
-                      if (clinicaSelecionada) {
-                        setFormData({
-                          ...formData,
-                          clinicasAssociadas: [...(formData.clinicasAssociadas || []), clinicaSelecionada],
-                          clinicaId: ''
-                        });
-                      }
-                    }
-                  }}
-                  className={errors.clinicaId ? 'input-error' : ''}
-                >
-                  <option value="">Selecione uma clínica</option>
-                  {clinicas
-                    .filter(clinica => !formData.clinicasAssociadas || !formData.clinicasAssociadas.some(c => c.id === clinica.id))
-                    .map(clinica => (
-                      <option key={clinica.id} value={clinica.id}>
-                        {clinica.nome}
-                      </option>
-                    ))}
-                </select>
-                <button
-                  type="button"
-                  className="toggle-nova-clinica"
-                  onClick={() => setShowModalClinica(true)}
-                >
-                  +
-                </button>
-              </div>
-            </div>
+            <Dropdown
+              items={clinicas}
+              value={formData.clinicasAssociadas}
+              onChange={handleClinicasChange}
+              placeholder="Selecionar clínicas"
+              searchPlaceholder="Buscar clínicas..."
+              displayProperty="nome"
+              valueProperty="id"
+              searchBy="nome"
+              searchable={true}
+              allowMultiple={true}
+              showCheckbox={true}
+              showAddButton={true}
+              addButtonTitle="Adicionar nova clínica"
+              onAddClick={() => setShowModalClinica(true)}
+            />
             {errors.clinicaId && <span className="error-text">{errors.clinicaId}</span>}
           </div>
           

@@ -1,10 +1,13 @@
 import React from 'react';
+import './PedidoTable.css';
 import GenericTable from '../GenericTable/GenericTable';
-import PedidoActionMenu from './PedidoActionMenu';
+import ActionMenu from '../ActionMenu/ActionMenu';
 import StatusBadge from '../StatusBadge/StatusBadge';
 
 const formatPedidoId = (id) => `PD${String(id).padStart(4, '0')}`;
 
+const PedidoTable = ({ pedidos, onDelete, sortConfig, onSort, onStatusChange }) => {
+  // Move columns definition inside component to access onStatusChange prop
 const columns = [
   { key: 'id', label: 'ID', sortable: true },
   { key: 'paciente', label: 'Paciente', sortable: true, render: (paciente) => paciente?.nome || 'N/A' },
@@ -18,19 +21,21 @@ const columns = [
       const d = new Date(safeDate);
       return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString('pt-BR');
     };
+      
+      const dataInicio = formatDate(periodo?.createdAt, 'createdAt');
+      const dataFim = formatDate(periodo?.dataEntrega, 'dataEntrega');
+      
     return (
-      <div>
-        <div>{formatDate(periodo?.createdAt, 'createdAt')}</div>
-        <div>{formatDate(periodo?.dataEntrega, 'dataEntrega')}</div>
+        <div className="periodo-container">
+          <span className="periodo-texto">{dataInicio} - {dataFim}</span>
       </div>
     );
   } },
   { key: 'valorTotal', label: 'Valor', render: (valor) => valor ? valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00' },
-  { key: 'status', label: 'Status', render: (status) => <StatusBadge status={status} tipo="pedido" /> },
+    { key: 'status', label: 'Status', render: (status, item) => <StatusBadge status={status} tipo="pedido" pedidoId={item.id} onClick={onStatusChange} /> },
   { key: 'actions', label: 'Ações' }
 ];
 
-const PedidoTable = ({ pedidos, onDelete, sortConfig, onSort }) => {
   // Adaptar os dados para o formato esperado pelo GenericTable
   const data = pedidos.map(p => ({
     ...p,
@@ -45,11 +50,13 @@ const PedidoTable = ({ pedidos, onDelete, sortConfig, onSort }) => {
       formatId={formatPedidoId}
       sortConfig={sortConfig}
       onSort={onSort}
-      ActionMenuComponent={({ itemId }) => (
-        <PedidoActionMenu pedidoId={itemId} onDelete={onDelete} />
-      )}
+      ActionMenuComponent={ActionMenu}
+      onItemDeleted={onDelete}
       emptyMessage="Nenhum pedido cadastrado"
       apiEndpoint="/pedidos"
+      url="pedidos"
+      alwaysAllowDelete={true}
+      hideOptions={['historico']}
     />
   );
 };

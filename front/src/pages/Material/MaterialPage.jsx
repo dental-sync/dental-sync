@@ -28,6 +28,9 @@ const MaterialPage = () => {
   const filterRef = useRef(null);
   const navigate = useNavigate();
   
+  // Função utilitária para formatar o ID
+  const formatMaterialId = (id) => `M${String(id).padStart(4, '0')}`;
+  
   // Buscar categorias ao montar o componente
   useEffect(() => {
     const fetchCategorias = async () => {
@@ -96,9 +99,10 @@ const MaterialPage = () => {
         const searchLower = searchQuery.toLowerCase();
         return (
           material.nome?.toLowerCase().includes(searchLower) ||
-          material.descricao?.toLowerCase().includes(searchLower) ||
           material.categoriaMaterial?.nome?.toLowerCase().includes(searchLower) ||
-          (material.id?.toString() || '').toLowerCase().includes(searchLower)
+          material.unidadeMedida?.toLowerCase().includes(searchLower) ||
+          (material.id?.toString() || '').toLowerCase().includes(searchLower) ||
+          formatMaterialId(material.id).toLowerCase().includes(searchLower)
         );
       }
       
@@ -217,6 +221,15 @@ const MaterialPage = () => {
             ? aValue.localeCompare(bValue)
             : bValue.localeCompare(aValue);
         }
+
+        // Para ordenação de preço (números)
+        if (sortConfig.key === 'valorUnitario') {
+          const aValue = Number(a.valorUnitario) || 0;
+          const bValue = Number(b.valorUnitario) || 0;
+          return sortConfig.direction === 'ascending'
+            ? aValue - bValue
+            : bValue - aValue;
+        }
         
         // Para ordenação de strings (nome)
         const aValue = String(a[sortConfig.key]).toLowerCase();
@@ -327,13 +340,15 @@ const MaterialPage = () => {
             isOpen={isExportOpen}
             toggleExport={toggleExport}
             onCloseDropdown={handleCloseExport}
+            title="Lista de Materiais"
+            formatIdFn={formatMaterialId}
           />
         </div>
       </div>
       
       <div className="search-container">
         <SearchBar 
-          placeholder="Buscar por nome, descrição ou tipo..." 
+          placeholder="Buscar por ID, nome, categoria ou unidade..." 
           onSearch={handleSearch} 
         />
         <ActionButton 
@@ -344,6 +359,17 @@ const MaterialPage = () => {
       </div>
 
       <div className="table-container">
+        {searchQuery && materiaisFiltrados.length === 0 && (
+          <div className="search-info">
+            Nenhum material encontrado para a busca "{searchQuery}".
+          </div>
+        )}
+        {!searchQuery && materiaisFiltrados.length === 0 && (filtros.status !== 'todos' || filtros.tipo !== 'todos') ? (
+          <div className="filter-info">
+            Nenhum material encontrado com os filtros aplicados.
+          </div>
+        ) : null}
+        
         <MaterialTable 
           materiais={sortedMateriais}
           onDelete={handleDelete}
@@ -351,6 +377,7 @@ const MaterialPage = () => {
           lastElementRef={lastMaterialElementRef}
           sortConfig={sortConfig}
           onSort={handleSort}
+          hasFiltersApplied={filtros.status !== 'todos' || filtros.tipo !== 'todos' || searchQuery}
         />
         
         {loadingMore && <div className="loading-more">Carregando mais materiais...</div>}

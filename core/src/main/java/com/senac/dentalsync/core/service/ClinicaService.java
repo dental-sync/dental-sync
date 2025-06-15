@@ -78,6 +78,10 @@ public class ClinicaService extends BaseService<Clinica, Long> {
         return clinicaRepository.findByNomeContaining(nome);
     }
 
+    public List<Dentista> findDentistasByClinicaId(Long clinicaId) {
+        return dentistaRepository.findByClinicas_Id(clinicaId);
+    }
+
     @Override
     public void delete(Long id) {
         // Remover vínculo da clínica com todos os dentistas

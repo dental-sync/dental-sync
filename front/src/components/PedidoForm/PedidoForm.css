@@ -220,25 +220,103 @@
   background: white;
 }
 
+/* Servico Item Melhorado */
 .servico-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  padding: 15px 0;
   border-bottom: 1px solid #e0e0e0;
+  gap: 20px;
 }
 
 .servico-item:last-child {
   border-bottom: none;
 }
 
-.servico-nome {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 300px;
+.servico-info {
   flex: 1;
-  margin-right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.servico-nome {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+}
+
+.servico-valores {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.servico-valores small {
+  color: #666;
+  font-size: 13px;
+}
+
+.servico-valores strong {
+  color: #4361ee;
+  font-size: 14px;
+}
+
+/* Controles de Quantidade */
+.quantidade-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.quantidade-controls label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.btn-quantidade {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d0d0d0;
+  background: white;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.btn-quantidade:hover:not(:disabled) {
+  background: #f0f4ff;
+  border-color: #4361ee;
+  color: #4361ee;
+}
+
+.btn-quantidade:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quantidade-input {
+  width: 60px;
+  height: 32px;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.quantidade-input:focus {
+  border-color: #4361ee;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
 }
 
 .nenhum-servico {
@@ -246,6 +324,57 @@
   text-align: center;
   margin: 0;
   font-style: italic;
+}
+
+/* Resumo de Valores */
+.resumo-valores {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.resumo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.resumo-item:not(:last-child) {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.resumo-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.resumo-valor {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.resumo-total {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 2px solid #4361ee !important;
+  border-bottom: none !important;
+}
+
+.resumo-total .resumo-label {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+}
+
+.resumo-total .resumo-valor {
+  font-weight: 700;
+  color: #4361ee;
+  font-size: 18px;
 }
 
 /* Valor total dentro do container de serviços */
@@ -331,6 +460,148 @@
   font-size: 16px;
 }
 
+/* Status Container do Pedido */
+.pedido-status-container {
+  padding: 35px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.pedido-status-container h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px 0;
+}
+
+.status-select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.status-select:focus {
+  border-color: #4361ee;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.status-select:disabled {
+  background-color: #f8f9fa;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* Observações Expandidas */
+.observacoes-expandida {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.observacoes-expandida .form-textarea {
+  flex: 1;
+  min-height: 200px;
+  resize: vertical;
+}
+
+/* Correção das cores para azul padrão do sistema */
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: #4361ee !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1) !important;
+}
+
+/* Input de data específico */
+.date-input {
+  position: relative;
+  cursor: pointer;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  position: absolute;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+}
+
+.date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Garantir que o campo inteiro seja clicável */
+.date-input:focus {
+  cursor: text;
+}
+
+.dente {
+  border: 2px solid #4361ee !important;
+  color: #4361ee !important;
+}
+
+.dente:hover {
+  background-color: rgba(67, 97, 238, 0.1) !important;
+}
+
+.dente.selecionado {
+  background-color: #4361ee !important;
+  color: white !important;
+}
+
+.btn-quantidade:hover:not(:disabled) {
+  background: rgba(67, 97, 238, 0.1) !important;
+  border-color: #4361ee !important;
+  color: #4361ee !important;
+}
+
+.quantidade-input:focus {
+  border-color: #4361ee !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1) !important;
+}
+
+.resumo-total {
+  border-top: 2px solid #4361ee !important;
+}
+
+.resumo-total .resumo-valor {
+  color: #4361ee !important;
+}
+
+.servico-valores strong {
+  color: #4361ee !important;
+}
+
+.btn-salvar-pedido {
+  background: #4361ee !important;
+}
+
+.btn-salvar-pedido:hover {
+  background: #3a56d4 !important;
+  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4) !important;
+}
+
+/* Layout responsivo melhorado */
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
 /* Responsividade */
 @media (max-width: 1024px) {
   .main-layout {
@@ -340,6 +611,38 @@
   
   .pedido-form {
     padding: 20px;
+  }
+  
+  .right-column {
+    height: auto;
+  }
+  
+  .observacoes-expandida .form-textarea {
+    min-height: 150px;
+  }
+  
+  .servico-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .quantidade-controls {
+    align-self: flex-end;
+  }
+  
+  .resumo-valores {
+    padding: 15px;
+  }
+  
+  .resumo-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .resumo-valor {
+    align-self: flex-end;
   }
 }
 

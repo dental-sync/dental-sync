@@ -96,8 +96,8 @@
 
 .dropdown-trigger:focus,
 .dropdown-trigger.open {
-  border-color: #2196f3;
-  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+  border-color: #4361ee;
+  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
 }
 
 .dropdown-trigger.disabled {
@@ -249,7 +249,7 @@
 }
 
 .dropdown .search-input:focus {
-  border-color: var(--primary-color, #3b82f6) !important;
+  border-color: #4361ee !important;
 }
 
 .dropdown .search-input::placeholder {
@@ -329,18 +329,18 @@
 }
 
 .dropdown-item.selected {
-  background-color: #eff6ff;
-  color: var(--primary-color, #3b82f6);
+  background-color: rgba(67, 97, 238, 0.1);
+  color: #4361ee;
 }
 
 .dropdown-item.selected:hover {
-  background-color: #dbeafe;
+  background-color: rgba(67, 97, 238, 0.15);
 }
 
 .dropdown-item.selected .dropdown-item-value {
-  background-color: var(--primary-color, #3b82f6);
+  background-color: #4361ee;
   color: #fff;
-  border-color: var(--primary-color, #3b82f6);
+  border-color: #4361ee;
 }
 
 /* Texto do item */
@@ -406,7 +406,7 @@
 
 /* Checkbox para múltipla seleção */
 .dropdown-checkbox {
-  accent-color: var(--primary-color, #3b82f6) !important;
+  accent-color: #4361ee !important;
   width: 16px !important;
   height: 16px !important;
   min-width: 16px !important;
@@ -465,12 +465,12 @@
 }
 
 .dropdown-btn-confirm {
-  background-color: var(--primary-color, #3b82f6);
+  background-color: #4361ee;
   color: #fff;
 }
 
 .dropdown-btn-confirm:hover {
-  background-color: #2563eb;
+  background-color: #3a56d4;
 }
 
 /* Modal overlay */
@@ -557,7 +557,7 @@
 }
 
 .dropdown-modal .search-input:focus {
-  border-color: var(--primary-color, #3b82f6) !important;
+  border-color: #4361ee !important;
 }
 
 .dropdown-modal .search-input::placeholder {
@@ -647,12 +647,12 @@
 
 /* Estados de focus para acessibilidade */
 .dropdown-item:focus {
-  outline: 2px solid var(--primary-color, #3b82f6);
+  outline: 2px solid #4361ee;
   outline-offset: -2px;
 }
 
 .dropdown-btn:focus {
-  outline: 2px solid var(--primary-color, #3b82f6);
+  outline: 2px solid #4361ee;
   outline-offset: 2px;
 }
 
@@ -693,14 +693,14 @@
 
 .dropdown-add-button:hover {
   background-color: #f5f5f5;
-  border-color: #2196f3;
-  color: #2196f3;
+  border-color: #4361ee;
+  color: #4361ee;
 }
 
 .dropdown-add-button:focus {
   outline: none;
-  border-color: #2196f3;
-  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+  border-color: #4361ee;
+  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
 }
 
 .dropdown-add-button svg {

@@ -124,7 +124,7 @@ const GenericTable = ({
                     );
                   }
                   if (column.render) {
-                    return <td key={column.key}>{column.render(item[column.key])}</td>;
+                    return <td key={column.key}>{column.render(item[column.key], item)}</td>;
                   }
                   return <td key={column.key}>{item[column.key]}</td>;
                 })}

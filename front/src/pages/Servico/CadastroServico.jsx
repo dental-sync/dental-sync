@@ -4,14 +4,15 @@ import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './CadastroServico.css';
+import Dropdown from '../../components/Dropdown/Dropdown';
 import ModalCadastroCategoriaServico from '../../components/ModalCadastroCategoriaServico';
 import ModalSelecionarMateriais from '../../components/ModalSelecionarMateriais';
 
 const CadastroServico = () => {
   const navigate = useNavigate();
   const [categorias, setCategorias] = useState([]);
+  const [materiais, setMateriais] = useState([]);
   const [showModalCategoria, setShowModalCategoria] = useState(false);
-  const [showModalMateriais, setShowModalMateriais] = useState(false);
   const [materiaisSelecionados, setMateriaisSelecionados] = useState([]);
   const [formData, setFormData] = useState({
     nome: '',
@@ -26,17 +27,21 @@ const CadastroServico = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchCategorias = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/categoria-servico');
-        setCategorias(response.data);
+        const [categoriasResponse, materiaisResponse] = await Promise.all([
+          api.get('/categoria-servico'),
+          api.get('/material')
+        ]);
+        setCategorias(categoriasResponse.data);
+        setMateriais(materiaisResponse.data);
       } catch (error) {
-        console.error('Erro ao buscar categorias:', error);
-        toast.error('Erro ao carregar categorias');
+        console.error('Erro ao buscar dados:', error);
+        toast.error('Erro ao carregar dados');
       }
     };
 
-    fetchCategorias();
+    fetchData();
   }, []);
 
   const handleChange = (e) => {
@@ -67,23 +72,25 @@ const CadastroServico = () => {
     toast.success('Categoria cadastrada com sucesso!');
   };
 
-  const handleMateriaisConfirm = (materiais) => {
-    setMateriaisSelecionados(prev => {
-      return materiais.map(m => {
-        const antigo = prev.find(pm => pm.id === m.id);
-        return {
-          ...m,
-          quantidadeEstoque: m.quantidade ?? m.quantidadeEstoque ?? 0,
-          quantidadeUso: antigo ? antigo.quantidadeUso : 1,
-          valorUnitario: m.valorUnitario || 0
-        };
-      });
-    });
+  const handleCategoriaChange = (selectedCategoria) => {
     setFormData(prev => ({
       ...prev,
-      materiais: materiais.map(m => ({ material: { id: m.id }, quantidade: 1 }))
+      categoriaServico: { id: selectedCategoria?.id || '' }
     }));
-    setShowModalMateriais(false);
+  };
+
+  const handleMateriaisChange = (selectedMateriais) => {
+    const materiaisArray = Array.isArray(selectedMateriais) ? selectedMateriais : [];
+    setMateriaisSelecionados(materiaisArray.map(m => ({
+      ...m,
+      quantidadeEstoque: m.quantidade ?? m.quantidadeEstoque ?? 0,
+      quantidadeUso: 1,
+      valorUnitario: m.valorUnitario || 0
+    })));
+    setFormData(prev => ({
+      ...prev,
+      materiais: materiaisArray.map(m => ({ material: { id: m.id }, quantidade: 1 }))
+    }));
   };
 
   const handleRemoverMaterial = (id) => {
@@ -179,12 +186,7 @@ const CadastroServico = () => {
         onClose={() => setShowModalCategoria(false)}
         onSuccess={handleCategoriaSuccess}
       />
-      <ModalSelecionarMateriais
-        isOpen={showModalMateriais}
-        onClose={() => setShowModalMateriais(false)}
-        onConfirm={handleMateriaisConfirm}
-        materiaisSelecionados={materiaisSelecionados.map(m => m.id)}
-      />
+
       <div className="cadastro-servico-container">
         <div className="page-header">
           <button className="back-button" onClick={handleCancel}>
@@ -219,33 +221,19 @@ const CadastroServico = () => {
 
                 <div className="form-group">
                   <label htmlFor="categoriaServico">Categoria</label>
-                  <div className="categoria-select">
-                    <select
-                      id="categoriaServico"
-                      name="categoriaServico"
-                      value={formData.categoriaServico.id}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Selecione a categoria</option>
-                      {categorias.map((categoria) => (
-                        <option key={categoria.id} value={categoria.id}>
-                          {categoria.nome}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      className="nova-categoria-button"
-                      onClick={() => setShowModalCategoria(true)}
-                      title="Adicionar nova categoria"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                      </svg>
-                    </button>
-                  </div>
+                  <Dropdown
+                    items={categorias}
+                    value={categorias.find(c => c.id === formData.categoriaServico.id) || null}
+                    onChange={handleCategoriaChange}
+                    placeholder="Selecione a categoria"
+                    displayProperty="nome"
+                    valueProperty="id"
+                    searchable={false}
+                    showCheckbox={false}
+                    showAddButton={true}
+                    addButtonTitle="Adicionar nova categoria"
+                    onAddClick={() => setShowModalCategoria(true)}
+                  />
                 </div>
 
                 <div className="form-group">
@@ -297,19 +285,23 @@ const CadastroServico = () => {
             </div>
             <div className="card-content">
               <div className="form-group">
-                <div className="material-select">
-                  <button
-                    type="button"
-                    className="select-materiais-button"
-                    onClick={() => setShowModalMateriais(true)}
-                  >
-                    Selecionar materiais
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search">
-                      <circle cx="11" cy="11" r="8"></circle>
-                      <path d="m21 21-4.3-4.3"></path>
-                    </svg>
-                  </button>
-                </div>
+                <label htmlFor="materiais">Materiais</label>
+                <Dropdown
+                  items={materiais}
+                  value={materiaisSelecionados}
+                  onChange={handleMateriaisChange}
+                  placeholder="Selecionar materiais"
+                  searchPlaceholder="Buscar materiais..."
+                  displayProperty="nome"
+                  valueProperty="id"
+                  searchBy="nome"
+                  searchable={true}
+                  allowMultiple={true}
+                  showCheckbox={true}
+                  showItemValue={true}
+                  valueDisplayProperty="valorUnitario"
+                  valuePrefix="R$ "
+                />
                 <div className="materiais-selecionados-lista">
                   {materiaisSelecionados.length === 0 ? (
                     <div className="empty-state">Nenhum material selecionado</div>

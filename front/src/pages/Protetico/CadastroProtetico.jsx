@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './CadastroProtetico.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import Dropdown from '../../components/Dropdown/Dropdown';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../../axios-config';
@@ -11,7 +12,7 @@ const CadastroProtetico = () => {
     nome: '',
     email: '',
     telefone: '',
-    cargo: '',
+    cargo: null,
     cro: 'CRO-',
     senha: '',
     confirmarSenha: '',
@@ -21,6 +22,12 @@ const CadastroProtetico = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  // Opções de cargo
+  const cargoOptions = [
+    { id: 'Protetico', nome: 'Protético' },
+    { id: 'Admin', nome: 'Administrador' }
+  ];
 
   const validateForm = () => {
     const newErrors = {};
@@ -163,6 +170,13 @@ const CadastroProtetico = () => {
         [name]: ''
       });
     }
+  };
+
+  const handleCargoChange = (selectedCargo) => {
+    setFormData({
+      ...formData,
+      cargo: selectedCargo?.id || ''
+    });
   };
 
   const handleBlur = (e) => {
@@ -344,17 +358,16 @@ const CadastroProtetico = () => {
           
           <div className="form-group">
             <label htmlFor="cargo" className="required">Cargo</label>
-            <select
-              id="cargo"
-              name="cargo"
-              value={formData.cargo}
-              onChange={handleChange}
-              className={errors.cargo ? 'input-error' : ''}
-            >
-              <option value="">Selecione um cargo</option>
-              <option value="Protetico">Protético</option>
-              <option value="Admin">Administrador</option>
-            </select>
+            <Dropdown
+              items={cargoOptions}
+              value={cargoOptions.find(c => c.id === formData.cargo) || null}
+              onChange={handleCargoChange}
+              placeholder="Selecione um cargo"
+              displayProperty="nome"
+              valueProperty="id"
+              searchable={false}
+              showCheckbox={false}
+            />
             {errors.cargo && <span className="error-text">{errors.cargo}</span>}
           </div>
           

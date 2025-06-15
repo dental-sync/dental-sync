@@ -1,16 +1,90 @@
-.editar-pedido-page {
-  padding: 20px;
+.pedido-page {
   background-color: #f8f9fa;
   min-height: 100vh;
+  padding-top: 20px;
 }
 
-.page-header {
-  margin-bottom: 24px;
+.editar-pedido-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-.page-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #212529;
+.editar-pedido-page .back-navigation {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 16px;
+}
+
+.editar-pedido-page .back-navigation .page-title {
   margin: 0;
+  flex: 1;
+}
+
+.editar-pedido-page .back-navigation .btn-microfone {
+  margin-left: auto;
+}
+
+.editar-pedido-page .back-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.editar-pedido-page .back-button:hover {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+.editar-pedido-page .page-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.editar-pedido-page .btn-microfone {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background: white;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.editar-pedido-page .btn-microfone:hover {
+  background: #e9ecef;
+  color: #4361ee;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .editar-pedido-page .btn-microfone {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .editar-pedido-page .back-navigation .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .editar-pedido-page {
+    padding: 0 15px;
+  }
 } 

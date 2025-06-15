@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import api from '../../axios-config';
 import Dropdown from '../Dropdown/Dropdown';
+import DatePicker from '../DatePicker/DatePicker';
 import { toast } from 'react-toastify';
 import './PedidoForm.css';
 
@@ -139,43 +140,26 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
-    // Validação especial para data de entrega
-    if (name === 'dataEntrega') {
-      if (value) {
-        const today = new Date();
-        const inputDate = new Date(value);
-        const currentYear = today.getFullYear();
-        
-        // Validar se a data é válida
-        if (isNaN(inputDate.getTime())) {
-          toast.error('Data inválida. Use o formato DD/MM/AAAA.', {
-            position: "top-right",
-            autoClose: 3000,
-          });
-          setError('Data inválida.');
-          return;
-        }
-        
-        // Validar se o ano está dentro de um range razoável (não permitir anos como 111111)
-        if (inputDate.getFullYear() > currentYear + 50 || inputDate.getFullYear() < currentYear - 5) {
-          toast.error('Ano inválido. Insira um ano entre ' + (currentYear - 5) + ' e ' + (currentYear + 50) + '.', {
-            position: "top-right",
-            autoClose: 4000,
-          });
-          setError('Por favor, insira uma data válida.');
-          return;
-        }
-        
-        // Validar se a data não é anterior a hoje
-        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        if (inputDate < todayStart) {
-          toast.error('A data de entrega não pode ser anterior a hoje.', {
-            position: "top-right",
-            autoClose: 4000,
-          });
-          setError('A data de entrega não pode ser anterior a hoje.');
-          return;
-        }
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  const handleDataEntregaChange = (value) => {
+    // Validação da data
+    if (value) {
+      const inputDate = new Date(value);
+      const currentYear = new Date().getFullYear();
+      
+      // Validar se o ano está dentro de um range razoável
+      if (inputDate.getFullYear() > currentYear + 50 || inputDate.getFullYear() < currentYear - 50) {
+        toast.error('Ano inválido. Insira um ano entre ' + (currentYear - 50) + ' e ' + (currentYear + 50) + '.', {
+          position: "top-right",
+          autoClose: 4000,
+        });
+        setError('Por favor, insira uma data válida.');
+        return;
       }
       
       setError(null); // Limpar erro se data válida
@@ -183,7 +167,7 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
     
     setFormData({
       ...formData,
-      [name]: value
+      dataEntrega: value
     });
   };
 
@@ -424,24 +408,14 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
 
               <div className="form-group">
                 <label htmlFor="dataEntrega">Data Entrega</label>
-                <input
-                  type="date"
+                <DatePicker
                   id="dataEntrega"
-                  name="dataEntrega"
                   value={formData.dataEntrega}
-                  onChange={handleInputChange}
+                  onChange={handleDataEntregaChange}
+                  placeholder="DD/MM/AAAA"
+                  maxDate={new Date(new Date().getFullYear() + 10, 11, 31).toISOString().split('T')[0]}
                   required
-                  className="form-input date-input"
-                  lang="pt-BR"
-                  placeholder="dd/mm/aaaa"
-                  min={new Date().toISOString().split('T')[0]}
-                  max={new Date(new Date().getFullYear() + 10, 11, 31).toISOString().split('T')[0]}
-                  onClick={(e) => {
-                    // Abrir calendário ao clicar no campo
-                    if (e.target.showPicker) {
-                      e.target.showPicker();
-                    }
-                  }}
+                  className="form-input"
                 />
               </div>
 
@@ -561,15 +535,11 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
                   value={formData.status}
                   onChange={handleInputChange}
                   className="form-select status-select"
-                  disabled={!pedidoId} // Só permite alterar status se estiver editando
+                  disabled={pedidoId} // Só permite alterar status se estiver editando
                 >
                   <option value="PENDENTE">Pendente</option>
                   <option value="EM_ANDAMENTO">Em Andamento</option>
-                  <option value="AGUARDANDO_APROVACAO">Aguardando Aprovação</option>
-                  <option value="APROVADO">Aprovado</option>
-                  <option value="EM_PRODUCAO">Em Produção</option>
-                  <option value="FINALIZADO">Finalizado</option>
-                  <option value="ENTREGUE">Entregue</option>
+                  <option value="FINALIZADO">Concluído</option>
                   <option value="CANCELADO">Cancelado</option>
                 </select>
               </div>

@@ -277,7 +277,7 @@ const CadastroMaterial = () => {
           <Dropdown
             items={categorias}
             value={material.categoriaMaterial}
-            onChange={handleCategoriaChange}
+              onChange={handleCategoriaChange}
             placeholder="Selecione uma categoria"
             displayProperty="nome"
             valueProperty="id"
@@ -286,7 +286,7 @@ const CadastroMaterial = () => {
             showAddButton={true}
             addButtonTitle="Adicionar nova categoria"
             onAddClick={() => setShowModalCategoria(true)}
-            className={errors.categoriaMaterial ? 'input-error' : ''}
+              className={errors.categoriaMaterial ? 'input-error' : ''}
           />
           {errors.categoriaMaterial && <span className="error-text">{errors.categoriaMaterial}</span>}
         </div>

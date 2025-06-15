@@ -110,7 +110,12 @@ const EditarServico = () => {
   const handleMateriaisChange = (selectedMateriais) => {
     setMateriaisSelecionados(selectedMateriais.map(material => ({
       ...material,
-      quantidadeUso: material.quantidadeUso || 1
+      quantidadeUso: material.quantidadeUso || 1,
+      id: material.id,
+      nome: material.nome,
+      valorUnitario: material.valorUnitario || 0,
+      unidadeMedida: material.unidadeMedida || '',
+      quantidadeEstoque: material.quantidade || material.quantidadeEstoque || 0
     })));
   };
 
@@ -130,11 +135,13 @@ const EditarServico = () => {
     }
     
     const quantidade = Math.max(1, Math.floor(Number(value)));
+    if (!isNaN(quantidade)) {
     setMateriaisSelecionados(prev => prev.map(m =>
       m.id === id
         ? { ...m, quantidadeUso: quantidade }
         : m
     ));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -147,17 +154,27 @@ const EditarServico = () => {
 
     setLoading(true);
     try {
+      // Filtrar e validar materiais antes de enviar
+      const materiaisValidos = materiaisSelecionados
+        .filter(m => m.id && m.quantidadeUso && m.quantidadeUso > 0)
+        .map(m => ({
+          material: { id: parseInt(m.id) },
+          quantidade: parseInt(m.quantidadeUso) || 1
+        }));
+
       const servicoData = {
-        id: parseInt(id), // Adicionar o ID para que seja UPDATE e não INSERT
+        id: parseInt(id),
         nome: servico.nome,
         descricao: servico.descricao,
-        preco: calcularValorTotal(), // Enviar o total geral
+        preco: parseFloat(servico.valor.replace(',', '.')) || 0,
         tempoPrevisto: parseInt(servico.tempoPrevisto, 10) * 60,
         categoriaServico: { id: parseInt(servico.categoriaServico.id) },
         status: servico.status,
         isActive: servico.isActive,
-        materiais: materiaisSelecionados.map(m => ({ material: { id: m.id }, quantidade: m.quantidadeUso }))
+        materiais: materiaisValidos
       };
+
+      console.log('Dados sendo enviados:', servicoData); // Para debug
 
       await api.put(`/servico/${id}`, servicoData);
       toast.success('Serviço atualizado com sucesso!');
@@ -172,22 +189,6 @@ const EditarServico = () => {
 
   const handleCancel = () => {
     navigate('/servico');
-  };
-
-  // Calcular valor total dos materiais selecionados
-  const calcularValorMateriais = () => {
-    return materiaisSelecionados.reduce((total, material) => {
-      const preco = material.valorUnitario || 0;
-      const quantidade = material.quantidadeUso || 1;
-      return total + (preco * quantidade);
-    }, 0);
-  };
-
-  // Calcular valor total do serviço (preço + materiais)
-  const calcularValorTotal = () => {
-    const precoServico = parseFloat(servico.valor.replace(',', '.')) || 0;
-    const valorMateriais = calcularValorMateriais();
-    return precoServico + valorMateriais;
   };
 
   return (
@@ -369,11 +370,23 @@ const EditarServico = () => {
                 </div>
                 <div className="total-item">
                   <span className="total-label">Valor dos Materiais:</span>
-                  <span className="total-valor">R$ {calcularValorMateriais().toFixed(2).replace('.', ',')}</span>
+                  <span className="total-valor">R$ {materiaisSelecionados.reduce((total, material) => {
+                    const preco = material.valorUnitario || 0;
+                    const quantidade = material.quantidadeUso || 1;
+                    return total + (preco * quantidade);
+                  }, 0).toFixed(2).replace('.', ',')}</span>
                 </div>
                 <div className="total-item total-final">
                   <span className="total-label">Total Geral:</span>
-                  <span className="total-valor">R$ {calcularValorTotal().toFixed(2).replace('.', ',')}</span>
+                  <span className="total-valor">R$ {(() => {
+                    const precoServico = parseFloat(servico.valor.replace(',', '.')) || 0;
+                    const valorMateriais = materiaisSelecionados.reduce((total, material) => {
+                      const preco = material.valorUnitario || 0;
+                      const quantidade = material.quantidadeUso || 1;
+                      return total + (preco * quantidade);
+                    }, 0);
+                    return (precoServico + valorMateriais).toFixed(2).replace('.', ',');
+                  })()}</span>
                 </div>
               </div>
             </div>

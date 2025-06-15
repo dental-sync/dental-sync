@@ -5,7 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './CadastroMaterial.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
-import ModalCadastroCategoriaMaterial from '../../components/ModalCadastroCategoriaMaterial';
+import ModalCadastroCategoriaMaterial from '../../components/Modals/ModalCadastroCategoriaMaterial';
 import Dropdown from '../../components/Dropdown/Dropdown';
 
 const CadastroMaterial = () => {

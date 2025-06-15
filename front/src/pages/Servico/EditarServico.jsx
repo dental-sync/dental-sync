@@ -5,6 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './CadastroServico.css';
 import Dropdown from '../../components/Dropdown/Dropdown';
+import ModalCadastroCategoriaServico from '../../components/Modals/ModalCadastroCategoriaServico';
 
 const EditarServico = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const EditarServico = () => {
   const [categorias, setCategorias] = useState([]);
   const [materiais, setMateriais] = useState([]);
   const [errors, setErrors] = useState({});
+  const [showModalCategoria, setShowModalCategoria] = useState(false);
   const [servico, setServico] = useState({
     nome: '',
     descricao: '',
@@ -107,6 +109,16 @@ const EditarServico = () => {
     }));
   };
 
+  const handleCategoriaSuccess = (novaCategoria) => {
+    setCategorias(prev => [...prev, novaCategoria]);
+    setServico(prev => ({
+      ...prev,
+      categoriaServico: { id: novaCategoria.id }
+    }));
+    setShowModalCategoria(false);
+    toast.success('Categoria cadastrada com sucesso!');
+  };
+
   const handleMateriaisChange = (selectedMateriais) => {
     setMateriaisSelecionados(selectedMateriais.map(material => ({
       ...material,
@@ -195,6 +207,12 @@ const EditarServico = () => {
   return (
     <div className="cadastro-servico-page">
       <ToastContainer />
+      <ModalCadastroCategoriaServico
+        isOpen={showModalCategoria}
+        onClose={() => setShowModalCategoria(false)}
+        onSuccess={handleCategoriaSuccess}
+      />
+      
       <div className="cadastro-servico-container">
         <h1>Editar Serviço</h1>
         
@@ -255,6 +273,9 @@ const EditarServico = () => {
                 valueProperty="id"
                 searchable={false}
                 showCheckbox={false}
+                showAddButton={true}
+                addButtonTitle="Adicionar nova categoria"
+                onAddClick={() => setShowModalCategoria(true)}
               />
             </div>
           </div>

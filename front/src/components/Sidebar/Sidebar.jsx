@@ -39,7 +39,7 @@ const Sidebar = () => {
     else if (path.includes('clinica')) setActiveItem('clinicas');
   }, [location.pathname, setActiveItem]);
 
-  // Menu items base
+  // Menu items base (para usuários não-admin)
   const baseMenuItems = [
     { id: 'kanban', text: 'Kanban', icon: <KanbanIcon />, to: '/kanban' },
     { id: 'pedidos', text: 'Pedidos', icon: <PedidosIcon />, to: '/pedidos' },
@@ -48,7 +48,6 @@ const Sidebar = () => {
     { id: 'clinicas', text: 'Clínicas', icon: <ClinicaIcon />, to: '/clinica' },
     { id: 'servicos', text: 'Serviços', icon: <ServicosIcon />, to: '/servico' },
     { id: 'materiais', text: 'Materiais', icon: <MaterialIcon />, to: '/material' },
-    { id: 'relatorios', text: 'Relatórios', icon: <RelatoriosIcon />, to: '/relatorios' },
     { id: 'configuracoes', text: 'Configurações', icon: <ConfiguracaoIcon />, to: '/configuracao' },
   ];
 

@@ -54,7 +54,7 @@ const LoginPage = () => {
           console.log(`Sessão configurada para: ${response.data.sessionDuration}`);
         }
         
-      navigate('/protetico');
+      navigate('/kanban');
       } else {
         toast.error(response.data.message || 'Erro no login');
       }

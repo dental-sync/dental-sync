@@ -2,6 +2,9 @@ import React from 'react';
 import GenericTable from '../GenericTable/GenericTable';
 import MaterialActionMenu from './MaterialActionMenu';
 
+// Função utilitária para formatar o ID
+const formatMaterialId = (id) => `M${String(id).padStart(4, '0')}`;
+
 const columns = [
   { key: 'id', label: 'ID', sortable: true },
   { key: 'nome', label: 'Nome', sortable: true, render: (nome) => (
@@ -37,9 +40,12 @@ const columns = [
       </span>
     );
   } },
-  { key: 'quantidade', label: 'Quantidade Total', sortable: true },
+  { key: 'quantidade', label: 'Quantidade Total', sortable: true, render: (quantidade) => {
+    const num = Number(quantidade);
+    return !isNaN(num) ? num.toLocaleString('pt-BR') : '-';
+  } },
   { key: 'unidadeMedida', label: 'Unidade', sortable: false },
-  { key: 'valorUnitario', label: 'Preço Médio', sortable: false, render: (valor) => {
+  { key: 'valorUnitario', label: 'Preço Unitário', sortable: true, render: (valor) => {
     console.log('valorUnitario recebido:', valor);
     const num = Number(valor);
     console.log('valorUnitario convertido para número:', num);
@@ -54,11 +60,12 @@ const columns = [
         switch (status) {
           case 'EM_ESTOQUE':
             return {
-              backgroundColor: '#e8f5e9',
-              color: '#2e7d32',
-              padding: '4px 8px',
-              borderRadius: '4px',
+              backgroundColor: '#28a745',
+              color: 'white',
+              padding: '3px 10px',
+              borderRadius: '20px',
               fontWeight: '500',
+              fontSize: '12px',
               display: 'inline-block',
               maxWidth: '300px',
               whiteSpace: 'nowrap',
@@ -68,11 +75,12 @@ const columns = [
             };
           case 'BAIXO_ESTOQUE':
             return {
-              backgroundColor: '#fff3e0',
-              color: '#e65100',
-              padding: '4px 8px',
-              borderRadius: '4px',
+              backgroundColor: '#ffa500',
+              color: 'white',
+              padding: '3px 10px',
+              borderRadius: '20px',
               fontWeight: '500',
+              fontSize: '12px',
               display: 'inline-block',
               maxWidth: '300px',
               whiteSpace: 'nowrap',
@@ -82,11 +90,12 @@ const columns = [
             };
           case 'SEM_ESTOQUE':
             return {
-              backgroundColor: '#ffebee',
-              color: '#c62828',
-              padding: '4px 8px',
-              borderRadius: '4px',
+              backgroundColor: '#dc3545',
+              color: 'white',
+              padding: '3px 10px',
+              borderRadius: '20px',
               fontWeight: '500',
+              fontSize: '12px',
               display: 'inline-block',
               maxWidth: '300px',
               whiteSpace: 'nowrap',
@@ -121,7 +130,7 @@ const columns = [
   { key: 'actions', label: 'Ações' }
 ];
 
-const MaterialTable = ({ materiais, onDelete, onStatusChange, lastElementRef, sortConfig, onSort }) => {
+const MaterialTable = ({ materiais, onDelete, onStatusChange, lastElementRef, sortConfig, onSort, hasFiltersApplied }) => {
   const handleStatusChange = (materialId, newStatus) => {
     // Converte o status para booleano antes de enviar para o backend
     const statusBoolean = newStatus === 'ATIVO';
@@ -137,9 +146,9 @@ const MaterialTable = ({ materiais, onDelete, onStatusChange, lastElementRef, so
       onStatusChange={handleStatusChange}
       sortConfig={sortConfig}
       onSort={onSort}
-      isEmpty={materiais.length === 0}
+      isEmpty={materiais.length === 0 && !hasFiltersApplied}
       columns={columns}
-      formatId={(id) => id.toString()}
+      formatId={formatMaterialId}
       apiEndpoint="/material"
       emptyMessage="Nenhum material cadastrado"
       ActionMenuComponent={MaterialActionMenu}

@@ -2,22 +2,27 @@ import React, { useState, useEffect } from 'react';
 import './ModalCadastroCategoriaMaterial.css';
 import api from '../axios-config';
 
-const ModalCadastroCategoriaMaterial = ({ isOpen, onClose, onSuccess }) => {
+const ModalCadastroCategoriaMaterial = ({ isOpen, onClose, onSuccess, categoriaToEdit = null }) => {
   const [formData, setFormData] = useState({
     nome: '',
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // Limpa os campos quando o modal é fechado
+  // Preenche os campos quando é para editar uma categoria
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen && categoriaToEdit) {
+      setFormData({
+        nome: categoriaToEdit.nome || '',
+      });
+      setErrors({});
+    } else if (!isOpen) {
       setFormData({
         nome: '',
       });
       setErrors({});
     }
-  }, [isOpen]);
+  }, [isOpen, categoriaToEdit]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,14 +52,21 @@ const ModalCadastroCategoriaMaterial = ({ isOpen, onClose, onSuccess }) => {
     
     setLoading(true);
     try {
-      const response = await api.post('/categoria-material', formData);
+      let response;
+      if (categoriaToEdit) {
+        // Editar categoria existente
+        response = await api.put(`/categoria-material/${categoriaToEdit.id}`, formData);
+      } else {
+        // Criar nova categoria
+        response = await api.post('/categoria-material', formData);
+      }
 
       const categoriaData = response.data;
-      onSuccess(categoriaData);
+      onSuccess(categoriaData, categoriaToEdit ? 'edit' : 'create');
       onClose();
     } catch (error) {
-      console.error('Erro ao cadastrar categoria:', error);
-      setErrors({ submit: 'Erro ao salvar categoria. Tente novamente.' });
+      console.error(`Erro ao ${categoriaToEdit ? 'editar' : 'cadastrar'} categoria:`, error);
+      setErrors({ submit: `Erro ao ${categoriaToEdit ? 'editar' : 'salvar'} categoria. Tente novamente.` });
     } finally {
       setLoading(false);
     }
@@ -66,7 +78,7 @@ const ModalCadastroCategoriaMaterial = ({ isOpen, onClose, onSuccess }) => {
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h2>Cadastrar Nova Categoria</h2>
+          <h2>{categoriaToEdit ? 'Editar Categoria' : 'Cadastrar Nova Categoria'}</h2>
           <button className="close-button" onClick={onClose}>&times;</button>
         </div>
         
@@ -99,7 +111,7 @@ const ModalCadastroCategoriaMaterial = ({ isOpen, onClose, onSuccess }) => {
               Cancelar
             </button>
             <button type="submit" className="btn-salvar" disabled={loading}>
-              {loading ? 'Salvando...' : 'Salvar'}
+              {loading ? 'Salvando...' : (categoriaToEdit ? 'Salvar Alterações' : 'Salvar')}
             </button>
           </div>
         </form>

@@ -6,7 +6,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import './CadastroServico.css';
 import Dropdown from '../../components/Dropdown/Dropdown';
 import ModalCadastroCategoriaServico from '../../components/ModalCadastroCategoriaServico';
-import ModalSelecionarMateriais from '../../components/ModalSelecionarMateriais';
 
 const CadastroServico = () => {
   const navigate = useNavigate();

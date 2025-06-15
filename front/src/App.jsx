@@ -29,7 +29,6 @@ import Configuracao from './pages/Configuracao'
 import Relatorios from './pages/Relatorios'
 import ForgotPasswordPage from './pages/Login/ForgotPassword'
 import ResetPasswordPage from './pages/Login/ResetPassword'
-import PlanosPage from './pages/Planos'
 import PedidoPage from './pages/Pedido/PedidoPage'
 import CadastroPedido from './pages/Pedido/CadastroPedido'
 import EditarPedido from './pages/Pedido/EditarPedido'
@@ -87,7 +86,6 @@ function App() {
               <Route path="/registre-se" element={<PublicRoute><RegisterPage /></PublicRoute>} />
               <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
               <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
-              <Route path="/planos" element={<PlanosPage />} />
               
               {/* Rotas protegidas apenas para admins */}
               <Route path="/protetico" element={<AdminRoute><ProtectedLayout><ProteticoPage /></ProtectedLayout></AdminRoute>} />

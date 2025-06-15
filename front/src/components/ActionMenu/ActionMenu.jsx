@@ -6,7 +6,7 @@ import api from '../../axios-config';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
-const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, proteticoStatus, itemStatus, alwaysAllowDelete = false , url}) => {
+const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, proteticoStatus, itemStatus, alwaysAllowDelete = false, url, hideOptions = [] }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const dropdownRef = useRef(null);
@@ -76,8 +76,8 @@ const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, pr
       await api.delete(`/${url}/${id}`);
       onDeleted(id);
     } catch (error) {
-      console.error('Erro ao excluir protético:', error);
-      toast.error('Erro ao excluir protético. Tente novamente.');
+      console.error('Erro ao excluir item:', error);
+      toast.error('Erro ao excluir item. Tente novamente.');
     }
     setShowDeleteModal(false);
   };
@@ -96,9 +96,9 @@ const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, pr
         }}
       >
         <ul>
-          <li onClick={handleVerHistorico}>Histórico</li>
-          <li onClick={handleEditar}>Editar</li>
-          {(!isActive || alwaysAllowDelete) && <li onClick={handleExcluir} className="delete-option">Excluir</li>}
+          {!hideOptions.includes('historico') && <li onClick={handleVerHistorico}>Histórico</li>}
+          {!hideOptions.includes('editar') && <li onClick={handleEditar}>Editar</li>}
+          {!hideOptions.includes('excluir') && (!isActive || alwaysAllowDelete) && <li onClick={handleExcluir} className="delete-option">Excluir</li>}
         </ul>
       </div>
     );
@@ -132,7 +132,7 @@ const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, pr
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleConfirmDelete}
         title="Confirmar Exclusão"
-        message="Tem certeza que deseja excluir permanentemente este protético? Esta ação não poderá ser desfeita."
+        message="Tem certeza que deseja excluir permanentemente este item? Esta ação não poderá ser desfeita."
       />
     </>
   );

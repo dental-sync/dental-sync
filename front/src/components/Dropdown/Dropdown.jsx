@@ -97,17 +97,19 @@ const Dropdown = ({
   // Fechar dropdown ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (isOpen && dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         handleClose();
       }
     };
     
     if (isOpen && !asModal) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
     }
     
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [isOpen, asModal]);
   
@@ -119,6 +121,16 @@ const Dropdown = ({
     return searchValue.includes(searchTerm.toLowerCase());
   });
   
+  const handleToggle = () => {
+    if (disabled) return;
+    if (isOpen) {
+      handleClose();
+    } else {
+      setIsOpen(true);
+      onOpen();
+    }
+  };
+
   const handleOpen = () => {
     if (disabled) return;
     setIsOpen(true);
@@ -350,7 +362,7 @@ const Dropdown = ({
           type="button"
           className={`dropdown-trigger ${variant} ${size} ${buttonClassName} ${disabled ? 'disabled' : ''} ${(allowMultiple ? selectedItems.length > 0 : singleValue) ? 'has-value' : ''}`}
           style={buttonStyle}
-          onClick={handleOpen}
+          onClick={handleToggle}
           disabled={disabled}
         >
           <span className="dropdown-trigger-text">{getDisplayText()}</span>
@@ -393,7 +405,7 @@ const Dropdown = ({
           type="button"
           className={`dropdown-trigger ${buttonClassName} ${disabled ? 'disabled' : ''} ${isOpen ? 'open' : ''} ${(allowMultiple ? selectedItems.length > 0 : singleValue) ? 'has-value' : ''}`}
           style={buttonStyle}
-          onClick={handleOpen}
+          onClick={handleToggle}
           disabled={disabled}
         >
           <span className="dropdown-trigger-text">{getDisplayText()}</span>

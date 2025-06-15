@@ -175,7 +175,7 @@ public class PedidoService extends BaseService<Pedido, Long> {
             dto.setDataEntrega(pedido.getDataEntrega());
             // Soma dos valores dos serviços
             BigDecimal valorTotal = pedido.getServicos().stream()
-                .map(Servico::getPreco)
+                .map(servico -> servico.getValorTotal() != null ? servico.getValorTotal() : servico.getPreco())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
             dto.setValorTotal(valorTotal);
             historico.add(dto);
@@ -198,7 +198,7 @@ public class PedidoService extends BaseService<Pedido, Long> {
             dto.setNomeDentista(pedido.getDentista().getNome());
             dto.setDataEntrega(pedido.getDataEntrega());
             BigDecimal valorTotal = pedido.getServicos().stream()
-                .map(Servico::getPreco)
+                .map(servico -> servico.getValorTotal() != null ? servico.getValorTotal() : servico.getPreco())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
             dto.setValorTotal(valorTotal);
             historico.add(dto);
@@ -221,7 +221,7 @@ public class PedidoService extends BaseService<Pedido, Long> {
             dto.setNomePaciente(pedido.getCliente().getNome());
             dto.setDataEntrega(pedido.getDataEntrega());
             BigDecimal valorTotal = pedido.getServicos().stream()
-                .map(Servico::getPreco)
+                .map(servico -> servico.getValorTotal() != null ? servico.getValorTotal() : servico.getPreco())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
             dto.setValorTotal(valorTotal);
             historico.add(dto);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './ModalCadastroCategoriaMaterial.css';
-import api from '../axios-config';
+import api from '../../axios-config';
 
 const ModalCadastroCategoriaMaterial = ({ isOpen, onClose, onSuccess, categoriaToEdit = null }) => {
   const [formData, setFormData] = useState({

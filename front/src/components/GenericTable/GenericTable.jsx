@@ -19,7 +19,9 @@ const GenericTable = ({
   emptyMessage,
   ActionMenuComponent,
   useCustomStatusRender = false,
-  url
+  url,
+  hideOptions = [],
+  alwaysAllowDelete = false
 }) => {
   const navigate = useNavigate();
 
@@ -120,6 +122,8 @@ const GenericTable = ({
                           materialId={item.id}
                           isActive={item[statusField]}
                           url={url}
+                          hideOptions={hideOptions}
+                          alwaysAllowDelete={alwaysAllowDelete}
                         />
                       </td>
                     );

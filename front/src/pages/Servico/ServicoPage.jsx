@@ -10,6 +10,7 @@ import api from '../../axios-config';
 import { toast } from 'react-toastify';
 import ServicoTable from '../../components/ServicoTable/ServicoTable';
 
+
 // Função utilitária para formatar o ID
 const formatServicoId = (id) => `S${String(id).padStart(4, '0')}`;
 
@@ -47,7 +48,8 @@ const ServicoPage = () => {
           nome: servico.nome,
           descricao: servico.descricao || '-',
           valor: servico.preco,
-          valorTotal: servico.valorTotal, // Campo que será exibido na tabela
+          valorTotal: servico.valorTotal,
+          
           tempoPrevisto: servico.tempoPrevisto || '-',
           categoriaServico: servico.categoriaServico,
           isActive: servico.isActive ? 'ATIVO' : 'INATIVO'

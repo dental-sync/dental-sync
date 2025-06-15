@@ -365,7 +365,10 @@ const ServicoPage = () => {
           </div>
           
           <ExportDropdown 
-            data={sortedServicos}
+            data={sortedServicos.map(servico => ({
+              ...servico,
+              categoriaServico: servico.categoriaServico?.nome || '-'
+            }))}
             headers={['ID', 'Nome', 'Categoria', 'Valor Total', 'Tempo Previsto', 'Descrição']}
             fields={['id', 'nome', 'categoriaServico', 'valorTotal', 'tempoPrevisto', 'descricao']}
             filename="servicos"

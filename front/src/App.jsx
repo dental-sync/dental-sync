@@ -37,8 +37,8 @@ import Kanban from './pages/Kanban/Kanban'
 import './App.css'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { SidebarProvider } from './contexts/SidebarContext'
-import ProtectedRoute from './components/ProtectedRoute'
-import AdminRoute from './components/AdminRoute'
+import ProtectedRoute from './components/ProtectedRoutes/ProtectedRoute'
+import AdminRoute from './components/ProtectedRoutes/AdminRoute'
 import HistoricoDentista from './pages/Dentista/HistoricoDentista'
 
 
@@ -69,7 +69,7 @@ const PublicRoute = ({ children }) => {
     );
   }
   
-  return isAuthenticated ? <Navigate to="/paciente" replace /> : children;
+  return isAuthenticated ? <Navigate to="/kanban" replace /> : children;
 };
 
 function App() {

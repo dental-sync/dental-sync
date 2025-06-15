@@ -1,9 +1,9 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, isAdmin, loading } = useAuth();
 
   // Mostrar loading enquanto verifica autenticação
   if (loading) {
@@ -24,8 +24,13 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Se estiver autenticado, renderizar o conteúdo
+  // Se não for admin, redirecionar para uma página permitida
+  if (!isAdmin) {
+    return <Navigate to="/paciente" replace />;
+  }
+
+  // Se for admin, renderizar o conteúdo
   return children;
 };
 
-export default ProtectedRoute; 
+export default AdminRoute; 

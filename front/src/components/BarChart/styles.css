@@ -35,6 +35,7 @@
 .bar {
   width: 100%;
   max-width: 30px;
+  min-height: 20px;
   background-color: #3b82f6;
   border-radius: 4px 4px 0 0;
   transition: height 0.5s;
@@ -42,6 +43,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
 .bar:hover {
@@ -54,12 +56,18 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: #475569;
-  opacity: 0;
+  opacity: 1;
   transition: opacity 0.3s;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
 }
 
 .bar:hover .bar-value {
   opacity: 1;
+  background-color: #3b82f6;
+  color: white;
 }
 
 .bar-label {
@@ -67,4 +75,27 @@
   font-size: 0.75rem;
   color: #64748b;
   text-align: center;
+}
+
+/* Mensagem para quando não há dados */
+.no-data-message {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem;
+  font-size: 0.875rem;
+}
+
+.no-data-message p {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.no-data-message small {
+  opacity: 0.7;
+}
+
+/* Debug - garantir que as barras sejam visíveis */
+.bar-chart .bar[style*="height"] {
+  background-color: #3b82f6 !important;
+  min-height: 30px !important;
 } 

@@ -1,7 +1,7 @@
 import React from 'react';
 import './styles.css';
 
-const StatCard = ({ title, value, description, trend }) => {
+const StatCard = ({ title, value, description, trend, descriptionOriginal }) => {
   // Determina as classes para a descrição com base na tendência (up, down, neutral)
   const getTrendClass = () => {
     switch(trend) {
@@ -14,6 +14,9 @@ const StatCard = ({ title, value, description, trend }) => {
     }
   };
 
+  // Verifica se a descrição foi truncada para mostrar tooltip
+  const temDescricaoTruncada = descriptionOriginal && descriptionOriginal !== description;
+
   return (
     <div className="stat-card">
       <div className="stat-content">
@@ -21,7 +24,10 @@ const StatCard = ({ title, value, description, trend }) => {
         <span className="stat-value">{value}</span>
       </div>
       {description && (
-        <p className={`stat-description ${getTrendClass()}`}>
+        <p 
+          className={`stat-description ${getTrendClass()}`}
+          title={temDescricaoTruncada ? descriptionOriginal : undefined}
+        >
           {description}
         </p>
       )}

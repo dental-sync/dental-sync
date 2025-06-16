@@ -56,4 +56,24 @@
   margin-left: 0.5rem;
   min-width: 32px;
   text-align: right;
+}
+
+/* Proteção para labels longos */
+.horizontal-bar-label .label-text {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.horizontal-bar-label .label-text[title] {
+  cursor: help;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .horizontal-bar-label .label-text {
+    max-width: 120px;
+  }
 } 

@@ -117,4 +117,75 @@
   background-color: #ffffff;
   color: #64748b;
   border-color: #e2e8f0;
+}
+
+/* Estilos globais para proteção de layout */
+.relatorios-page * {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Tooltips específicos apenas para textos truncados - SOMENTE na página de relatórios */
+.relatorios-page .texto-truncado[title]:hover::after,
+.relatorios-page .stat-description[title]:hover::after,
+.relatorios-page .label-text[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  background: #1e293b;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateX(-50%);
+  margin-top: 0.5rem;
+}
+
+/* Desabilitar especificamente o tooltip do "Pedidos Recentes" */
+.relatorios-page .chart-container .chart-title:hover::after,
+.relatorios-page .chart-container .chart-title:hover::before,
+.relatorios-page .chart-container:hover::after,
+.relatorios-page .chart-container:hover::before {
+  display: none !important;
+  content: none !important;
+}
+
+.relatorios-page .chart-container,
+.relatorios-page .chart-container .chart-title {
+  position: relative;
+}
+
+/* Override de qualquer tooltip nativo do browser */
+.relatorios-page .chart-container * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.relatorios-page .chart-container *:hover {
+  position: relative;
+}
+
+.relatorios-page .chart-container *[title]:hover {
+  overflow: visible;
+}
+
+.relatorios-page .chart-container *[title]:hover::after {
+  opacity: 0 !important;
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Proteção adicional para containers de gráficos */
+.chart-container {
+  overflow: hidden;
+}
+
+.chart-container * {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 } 

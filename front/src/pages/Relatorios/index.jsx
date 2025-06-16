@@ -15,6 +15,13 @@ const calcularCrescimento = (atual, anterior) => {
   return `${crescimento > 0 ? '+' : ''}${crescimento.toFixed(1)}% em relação ao mês anterior`;
 };
 
+// Função para truncar texto e preservar layout
+const truncarTexto = (texto, maxCaracteres = 30) => {
+  if (!texto) return '';
+  if (texto.length <= maxCaracteres) return texto;
+  return texto.substring(0, maxCaracteres - 3) + '...';
+};
+
 const calcularTaxaConclusao = (concluidos, total) => {
   if (!total || total === 0) return '0% de taxa de conclusão';
   const taxa = (concluidos / total) * 100;
@@ -35,35 +42,62 @@ const calcularCrescimentoDentistas = (atual, anterior) => {
 const processarDadosBackend = (dados) => {
   if (!dados) return null;
 
+  // Aplicar máscara nos pedidos recentes para proteger layout
+  const pedidosRecentesMascarados = (dados.pedidosRecentes || []).map(pedido => ({
+    ...pedido,
+    dentista: truncarTexto(pedido.dentista, 30),
+    paciente: truncarTexto(pedido.paciente, 30),
+    tipo: truncarTexto(pedido.tipo, 35),
+    // Guardar originais para tooltip
+    dentistaOriginal: pedido.dentista,
+    pacienteOriginal: pedido.paciente,
+    tipoOriginal: pedido.tipo
+  }));
+
+  // Aplicar máscara nos dados de gráficos se necessário
+  const pedidosPorTipoMascarados = (dados.pedidosPorTipo || []).map(item => ({
+    ...item,
+    nome: truncarTexto(item.nome, 25),
+    nomeOriginal: item.nome
+  }));
+
   //Garante que todos os campos necessários existam
   const dadosProcessados = {
     totalPedidos: dados.totalPedidos || 0,
     pedidosConcluidos: dados.pedidosConcluidos || 0,
     dentistasAtivos: dados.dentistasAtivos || 0,
     pedidosPorMes: dados.pedidosPorMes || [],
-    pedidosPorTipo: dados.pedidosPorTipo || [],
+    pedidosPorTipo: pedidosPorTipoMascarados,
     statusPedidos: dados.statusPedidos || [],
-    pedidosRecentes: dados.pedidosRecentes || [],
+    pedidosRecentes: pedidosRecentesMascarados,
     dadosAnteriores: dados.dadosAnteriores || {
       totalPedidos: 0,
       dentistasAtivos: 0
     }
   };
 
+  // Calcular descrições e aplicar máscara se necessário
+  const crescimentoPedidos = calcularCrescimento(
+    dadosProcessados.totalPedidos,
+    dadosProcessados.dadosAnteriores.totalPedidos
+  );
+  const taxaConclusao = calcularTaxaConclusao(
+    dadosProcessados.pedidosConcluidos,
+    dadosProcessados.totalPedidos
+  );
+  const crescimentoDentistas = calcularCrescimentoDentistas(
+    dadosProcessados.dentistasAtivos,
+    dadosProcessados.dadosAnteriores.dentistasAtivos
+  );
+
   return {
     ...dadosProcessados,
-    crescimentoPedidos: calcularCrescimento(
-      dadosProcessados.totalPedidos,
-      dadosProcessados.dadosAnteriores.totalPedidos
-    ),
-    taxaConclusao: calcularTaxaConclusao(
-      dadosProcessados.pedidosConcluidos,
-      dadosProcessados.totalPedidos
-    ),
-    crescimentoDentistas: calcularCrescimentoDentistas(
-      dadosProcessados.dentistasAtivos,
-      dadosProcessados.dadosAnteriores.dentistasAtivos
-    )
+    crescimentoPedidos: truncarTexto(crescimentoPedidos, 45),
+    crescimentoPedidosOriginal: crescimentoPedidos,
+    taxaConclusao: truncarTexto(taxaConclusao, 45),
+    taxaConclusaoOriginal: taxaConclusao,
+    crescimentoDentistas: truncarTexto(crescimentoDentistas, 45),
+    crescimentoDentistasOriginal: crescimentoDentistas
   };
 };
 
@@ -209,18 +243,21 @@ const Relatorios = () => {
           title="Total de Pedidos"
           value={dadosRelatorio.totalPedidos}
           description={dadosRelatorio.crescimentoPedidos}
+          descriptionOriginal={dadosRelatorio.crescimentoPedidosOriginal}
           trend={dadosRelatorio.totalPedidos > (dadosRelatorio.dadosAnteriores?.totalPedidos || 0) ? "up" : "down"}
         />
         <StatCard 
           title="Pedidos Concluídos"
           value={dadosRelatorio.pedidosConcluidos}
           description={dadosRelatorio.taxaConclusao}
+          descriptionOriginal={dadosRelatorio.taxaConclusaoOriginal}
           trend="neutral"
         />
         <StatCard 
           title="Dentistas Ativos"
           value={dadosRelatorio.dentistasAtivos}
           description={dadosRelatorio.crescimentoDentistas}
+          descriptionOriginal={dadosRelatorio.crescimentoDentistasOriginal}
           trend={dadosRelatorio.dentistasAtivos > (dadosRelatorio.dadosAnteriores?.dentistasAtivos || 0) ? "up" : "down"}
         />
       </div>

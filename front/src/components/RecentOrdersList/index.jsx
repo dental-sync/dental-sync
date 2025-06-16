@@ -22,6 +22,20 @@ const RecentOrdersList = ({ pedidos }) => {
     }
   };
 
+  // Componente para texto com tooltip
+  const TextoComTooltip = ({ texto, textoOriginal, className = "" }) => {
+    const temTextoTruncado = textoOriginal && textoOriginal !== texto;
+    
+    return (
+      <span 
+        className={`texto-truncado ${className}`}
+        title={temTextoTruncado ? textoOriginal : undefined}
+      >
+        {texto}
+      </span>
+    );
+  };
+
   return (
     <div className="recent-orders-list">
       {pedidos.map((pedido, index) => (
@@ -33,15 +47,28 @@ const RecentOrdersList = ({ pedidos }) => {
                 {pedido.status}
               </span>
             </div>
-            <div className="order-type">{pedido.tipo}</div>
+            <div className="order-type">
+              <TextoComTooltip 
+                texto={pedido.tipo} 
+                textoOriginal={pedido.tipoOriginal} 
+              />
+            </div>
             <div className="order-details">
               <div className="detail-item">
                 <span className="detail-label">Dentista:</span>
-                <span className="detail-value">{pedido.dentista}</span>
+                <TextoComTooltip 
+                  texto={pedido.dentista} 
+                  textoOriginal={pedido.dentistaOriginal}
+                  className="detail-value"
+                />
               </div>
               <div className="detail-item">
                 <span className="detail-label">Paciente:</span>
-                <span className="detail-value">{pedido.paciente}</span>
+                <TextoComTooltip 
+                  texto={pedido.paciente} 
+                  textoOriginal={pedido.pacienteOriginal}
+                  className="detail-value"
+                />
               </div>
             </div>
           </div>

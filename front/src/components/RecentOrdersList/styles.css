@@ -111,4 +111,42 @@
 .view-all-link:hover {
   color: #1d4ed8;
   text-decoration: underline;
+}
+
+/* Estilos para texto truncado com tooltip */
+.texto-truncado {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.texto-truncado[title] {
+  cursor: help;
+}
+
+.order-type .texto-truncado {
+  max-width: 250px;
+}
+
+.detail-value.texto-truncado {
+  max-width: 180px;
+}
+
+/* Melhorar tooltip nativo */
+.texto-truncado[title]:hover {
+  position: relative;
+}
+
+/* Responsividade para textos */
+@media (max-width: 768px) {
+  .order-type .texto-truncado {
+    max-width: 200px;
+  }
+  
+  .detail-value.texto-truncado {
+    max-width: 150px;
+  }
 } 

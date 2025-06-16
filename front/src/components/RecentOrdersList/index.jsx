@@ -4,9 +4,12 @@ import './styles.css';
 const RecentOrdersList = ({ pedidos }) => {
   // Função para determinar a classe e texto do status
   const getStatusClass = (status) => {
-    switch (status.toLowerCase()) {
+    const statusLower = status.toLowerCase();
+    switch (statusLower) {
+      case 'concluido':
       case 'concluído':
         return 'status-concluido';
+      case 'em_andamento':
       case 'em andamento':
         return 'status-andamento';
       case 'pendente':
@@ -14,6 +17,7 @@ const RecentOrdersList = ({ pedidos }) => {
       case 'cancelado':
         return 'status-cancelado';
       default:
+        console.log('Status não mapeado:', status);
         return 'status-outros';
     }
   };

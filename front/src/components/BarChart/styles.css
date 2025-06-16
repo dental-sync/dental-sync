@@ -34,20 +34,22 @@
 
 .bar {
   width: 100%;
-  max-width: 30px;
+  max-width: 32px;
   min-height: 20px;
-  background-color: #3b82f6;
-  border-radius: 4px 4px 0 0;
-  transition: height 0.5s;
+  background: linear-gradient(to top, #2563eb, #3b82f6);
+  border-radius: 6px 6px 0 0;
+  transition: all 0.3s ease;
   position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
 }
 
 .bar:hover {
-  background-color: #2563eb;
+  background: linear-gradient(to top, #1d4ed8, #2563eb);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .bar-value {
@@ -56,18 +58,25 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: #475569;
-  opacity: 1;
-  transition: opacity 0.3s;
-  background-color: rgba(255, 255, 255, 0.9);
-  padding: 2px 4px;
-  border-radius: 4px;
+  opacity: 0 !important;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 4px 8px;
+  border-radius: 6px;
   border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .bar:hover .bar-value {
-  opacity: 1;
-  background-color: #3b82f6;
+  opacity: 1 !important;
+  visibility: visible;
+  background-color: #1e293b;
   color: white;
+  border-color: #1e293b;
+  pointer-events: auto;
 }
 
 .bar-label {
@@ -94,8 +103,19 @@
   opacity: 0.7;
 }
 
-/* Debug - garantir que as barras sejam visíveis */
+/* Garantir que as barras sejam visíveis */
 .bar-chart .bar[style*="height"] {
-  background-color: #3b82f6 !important;
-  min-height: 30px !important;
+  background-color: #3b82f6;
+  min-height: 25px;
+}
+
+/* Forçar ocultação dos valores */
+.bar-chart .bar .bar-value {
+  display: none;
+}
+
+.bar-chart .bar:hover .bar-value {
+  display: block;
+  opacity: 1 !important;
+  visibility: visible;
 } 

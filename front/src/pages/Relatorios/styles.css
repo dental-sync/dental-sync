@@ -92,4 +92,29 @@
   box-shadow: none !important;
   border: 1px solid #e2e8f0;
   background: #fff;
+}
+
+/* Animação de loading para o botão PDF */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.btn-icon:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-icon:disabled:hover {
+  background-color: #ffffff;
+  color: #64748b;
+  border-color: #e2e8f0;
 } 

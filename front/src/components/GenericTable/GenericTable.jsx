@@ -5,6 +5,13 @@ import  api  from '../../axios-config';
 import { toast } from 'react-toastify';
 import StatusBadge from '../StatusBadge/StatusBadge';
 
+// Função utilitária para limitar o texto
+const limitText = (text, maxLength = 30) => {
+  if (!text) return '-';
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + '...';
+};
+
 const GenericTable = ({ 
   data, 
   onItemDeleted, 
@@ -131,7 +138,16 @@ const GenericTable = ({
                   if (column.render) {
                     return <td key={column.key}>{column.render(item[column.key], item)}</td>;
                   }
-                  return <td key={column.key} data-column={column.key}>{item[column.key]}</td>;
+                  return (
+                    <td 
+                      key={column.key} 
+                      data-column={column.key}
+                      title={item[column.key] || '-'}
+                      className="truncated-cell"
+                    >
+                      {limitText(item[column.key])}
+                    </td>
+                  );
                 })}
               </tr>
             ))

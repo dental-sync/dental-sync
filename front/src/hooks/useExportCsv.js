@@ -8,6 +8,18 @@ import autoTable from 'jspdf-autotable';
  */
 const useExportCsv = () => {
   /**
+   * Limita o texto a um número máximo de caracteres
+   * @param {string} text - Texto a ser limitado
+   * @param {number} maxLength - Tamanho máximo do texto
+   * @returns {string} Texto limitado
+   */
+  const limitText = (text, maxLength = 20) => {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
+  /**
    * Gera um conteúdo CSV a partir de um array de objetos
    * @param {Array} data - Array de objetos a serem exportados
    * @param {Array} headers - Array com os cabeçalhos das colunas
@@ -100,6 +112,10 @@ const useExportCsv = () => {
           // Formatar ID se a função fornecida e o campo for 'id'
           if (field === 'id' && formatIdFn) {
             value = formatIdFn(value);
+          }
+          // Limitar texto para campos específicos apenas no PDF
+          if (['nome', 'email', 'telefone', 'cro', 'descricao'].includes(field)) {
+            value = limitText(String(value));
           }
           return value;
         });

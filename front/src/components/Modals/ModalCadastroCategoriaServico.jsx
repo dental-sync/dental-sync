@@ -2,12 +2,29 @@ import React, { useState, useRef, useEffect } from 'react';
 import './ModalCadastroCategoriaServico.css';
 import api from '../../axios-config';
 
-const ModalCadastroCategoriaServico = ({ isOpen, onClose, onSuccess }) => {
-  const [nome, setNome] = useState('');
+const ModalCadastroCategoriaServico = ({ isOpen, onClose, onSuccess, categoriaToEdit = null }) => {
+  const [formData, setFormData] = useState({
+    nome: '',
+  });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const inputRef = useRef(null);
   const modalRef = useRef(null);
+
+  // Preenche os campos quando é para editar uma categoria
+  useEffect(() => {
+    if (isOpen && categoriaToEdit) {
+      setFormData({
+        nome: categoriaToEdit.nome || '',
+      });
+      setErrors({});
+    } else if (!isOpen) {
+      setFormData({
+        nome: '',
+      });
+      setErrors({});
+    }
+  }, [isOpen, categoriaToEdit]);
 
   useEffect(() => {
     if (isOpen) {
@@ -55,57 +72,84 @@ const ModalCadastroCategoriaServico = ({ isOpen, onClose, onSuccess }) => {
     return () => modal.removeEventListener('keydown', handleTab);
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.nome.trim()) {
+      newErrors.nome = 'Nome da categoria é obrigatório';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!nome.trim()) {
-      setError('Nome da categoria é obrigatório');
+    if (!validateForm()) {
       return;
     }
-
+    
     setLoading(true);
-    setError('');
-
     try {
-      const response = await api.post('/categoria-servico', { nome });
-      onSuccess(response.data);
-      setNome('');
+      let response;
+      if (categoriaToEdit) {
+        // Editar categoria existente
+        response = await api.put(`/categoria-servico/${categoriaToEdit.id}`, formData);
+      } else {
+        // Criar nova categoria
+        response = await api.post('/categoria-servico', formData);
+      }
+
+      const categoriaData = response.data;
+      onSuccess(categoriaData, categoriaToEdit ? 'edit' : 'create');
       onClose();
     } catch (error) {
-      console.error('Erro ao criar categoria:', error);
-      setError('Erro ao criar categoria. Tente novamente.');
+      console.error(`Erro ao ${categoriaToEdit ? 'editar' : 'cadastrar'} categoria:`, error);
+      setErrors({ submit: `Erro ao ${categoriaToEdit ? 'editar' : 'salvar'} categoria. Tente novamente.` });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleClose = () => {
-    setNome('');
-    setError(null);
-    onClose();
-  };
+  if (!isOpen) return null;
 
   return (
     <div className="modal-categoria-servico-overlay">
       <div className="modal-categoria-servico" ref={modalRef}>
-        <h2>Nova Categoria de Serviço</h2>
+        <h2>{categoriaToEdit ? 'Editar Categoria' : 'Nova Categoria de Serviço'}</h2>
+        {errors.submit && (
+          <div className="modal-categoria-servico-erro">
+            {errors.submit}
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
-          <label htmlFor="nome-categoria-servico">Nome da categoria</label>
+          <label htmlFor="nome-categoria-servico" className="required">Nome da categoria</label>
           <input
             id="nome-categoria-servico"
             type="text"
-            value={nome}
-            onChange={e => setNome(e.target.value)}
+            name="nome"
+            value={formData.nome}
+            onChange={handleChange}
             placeholder="Digite o nome da categoria"
             autoFocus
             ref={inputRef}
+            className={errors.nome ? 'input-error' : ''}
           />
-          {error && <div className="modal-categoria-servico-erro">{error}</div>}
+          {errors.nome && <div className="modal-categoria-servico-erro">{errors.nome}</div>}
           <div className="modal-categoria-servico-actions">
-            <button type="button" onClick={handleClose} className="btn-cancelar">Cancelar</button>
-            <button type="submit" className="btn-salvar" disabled={loading}>{loading ? 'Salvando...' : 'Salvar'}</button>
+            <button type="button" onClick={onClose} className="btn-cancelar">Cancelar</button>
+            <button type="submit" className="btn-salvar" disabled={loading}>
+              {loading ? 'Salvando...' : (categoriaToEdit ? 'Salvar Alterações' : 'Salvar')}
+            </button>
           </div>
         </form>
       </div>

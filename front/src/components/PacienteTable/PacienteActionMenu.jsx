@@ -99,18 +99,16 @@ const PacienteActionMenu = ({ pacienteId, itemId, pacienteStatus, itemStatus, on
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Tem certeza que deseja excluir este paciente?')) {
-      try {
-        const response = await api.delete(`/paciente/excluir/${id}`);
-        
-        if (response.status === 204) {
-          onDeleted(id);
-          toast.success('Paciente excluído com sucesso!');
-        }
-      } catch (error) {
-        console.error('Erro ao excluir:', error);
-        toast.error('Erro ao excluir paciente');
+    try {
+      const response = await api.delete(`/paciente/excluir/${id}`);
+      
+      if (response.status === 204) {
+        onDeleted(id);
+        toast.success('Paciente excluído com sucesso!');
       }
+    } catch (error) {
+      console.error('Erro ao excluir:', error);
+      toast.error('Erro ao excluir paciente');
     }
   };
 

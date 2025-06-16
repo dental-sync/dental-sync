@@ -6,32 +6,35 @@ import 'react-toastify/dist/ReactToastify.css';
 import './CadastroServico.css';
 import Dropdown from '../../components/Dropdown/Dropdown';
 import ModalCadastroCategoriaServico from '../../components/Modals/ModalCadastroCategoriaServico';
+import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import DeleteConfirmationModal from '../../components/DeleteConfirmationModal/DeleteConfirmationModal';
 
 const EditarServico = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [loading, setLoading] = useState(false);
   const [categorias, setCategorias] = useState([]);
   const [materiais, setMateriais] = useState([]);
-  const [errors, setErrors] = useState({});
   const [showModalCategoria, setShowModalCategoria] = useState(false);
-  const [servico, setServico] = useState({
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [categoriaToEdit, setCategoriaToEdit] = useState(null);
+  const [categoriaToDelete, setCategoriaToDelete] = useState(null);
+  const [materiaisSelecionados, setMateriaisSelecionados] = useState([]);
+  const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
     valor: '',
     tempoPrevisto: '',
-    categoriaServico: {
-      id: ''
-    },
+    categoriaServico: { id: '' },
+    materiais: [],
     status: 'ATIVO',
     isActive: true
   });
-  const [materiaisSelecionados, setMateriaisSelecionados] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    const loadData = async () => {
+    const fetchData = async () => {
       try {
-        setLoading(true);
         const [categoriasResponse, materiaisResponse] = await Promise.all([
           api.get('/categoria-servico'),
           api.get('/material')
@@ -43,7 +46,7 @@ const EditarServico = () => {
           const servicoResponse = await api.get(`/servico/${id}`);
           const servicoData = servicoResponse.data;
           
-          setServico({
+          setFormData({
             nome: servicoData.nome || '',
             descricao: servicoData.descricao || '',
             valor: servicoData.preco != null
@@ -57,7 +60,6 @@ const EditarServico = () => {
             isActive: servicoData.isActive
           });
           
-          // Carregar materiais utilizados (via ServicoMaterial)
           setMateriaisSelecionados(
             (servicoData.materiais || []).map(sm => ({
               id: sm.material.id,
@@ -72,71 +74,142 @@ const EditarServico = () => {
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
         toast.error('Erro ao carregar dados');
-      } finally {
-        setLoading(false);
       }
     };
 
-    loadData();
+    fetchData();
   }, [id]);
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.nome) newErrors.nome = 'Nome do serviço é obrigatório';
+    if (!formData.categoriaServico.id) newErrors.categoriaServico = 'Categoria é obrigatória';
+    if (!formData.valor) newErrors.valor = 'Preço é obrigatório';
+    if (!formData.tempoPrevisto) newErrors.tempoPrevisto = 'Tempo previsto é obrigatório';
+    if (materiaisSelecionados.length === 0) newErrors.materiais = 'Selecione pelo menos um material';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+    
     if (name === 'categoriaServico') {
-      setServico(prev => ({
+      setFormData(prev => ({
         ...prev,
         categoriaServico: {
           id: value
         }
       }));
-    } else if (name === 'valor') {
-      const valorFormatado = value.replace(/[^0-9,]/g, '');
-      setServico(prev => ({ ...prev, valor: valorFormatado }));
     } else {
-      setServico(prev => ({
+      setFormData(prev => ({
         ...prev,
         [name]: value
       }));
     }
   };
 
-  const handleCategoriaChange = (selectedCategoria) => {
-    setServico(prev => ({
-      ...prev,
-      categoriaServico: {
-        id: selectedCategoria ? selectedCategoria.id : ''
+  const handleCategoriaSuccess = (categoriaData, action) => {
+    if (action === 'edit') {
+      setCategorias(prev => prev.map(cat => 
+        cat.id === categoriaData.id ? categoriaData : cat
+      ));
+      if (formData.categoriaServico && formData.categoriaServico.id === categoriaData.id) {
+        setFormData(prev => ({
+          ...prev,
+          categoriaServico: { id: categoriaData.id }
+        }));
       }
-    }));
+      toast.success('Categoria editada com sucesso!');
+    } else {
+      setCategorias(prev => [...prev, categoriaData]);
+      setFormData(prev => ({
+        ...prev,
+        categoriaServico: { id: categoriaData.id }
+      }));
+      toast.success('Categoria cadastrada com sucesso!');
+    }
+    setShowModalCategoria(false);
+    setCategoriaToEdit(null);
   };
 
-  const handleCategoriaSuccess = (novaCategoria) => {
-    setCategorias(prev => [...prev, novaCategoria]);
-    setServico(prev => ({
+  const handleEditCategoria = (categoria) => {
+    setCategoriaToEdit(categoria);
+    setShowModalCategoria(true);
+  };
+
+  const handleDeleteCategoria = (categoria) => {
+    setCategoriaToDelete(categoria);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteCategoria = async () => {
+    try {
+      await api.delete(`/categoria-servico/${categoriaToDelete.id}`);
+      setCategorias(prev => prev.filter(cat => cat.id !== categoriaToDelete.id));
+      if (formData.categoriaServico && formData.categoriaServico.id === categoriaToDelete.id) {
+        setFormData(prev => ({
+          ...prev,
+          categoriaServico: { id: '' }
+        }));
+      }
+      toast.success('Categoria excluída com sucesso!');
+    } catch (error) {
+      console.error('Erro ao excluir categoria:', error);
+      toast.error('Não é possível excluir esta categoria pois há serviços vinculados a ela.');
+    } finally {
+      setShowDeleteModal(false);
+      setCategoriaToDelete(null);
+    }
+  };
+
+  const cancelDeleteCategoria = () => {
+    setShowDeleteModal(false);
+    setCategoriaToDelete(null);
+  };
+
+  const handleCategoriaChange = (selectedCategoria) => {
+    setFormData(prev => ({
       ...prev,
-      categoriaServico: { id: novaCategoria.id }
+      categoriaServico: { id: selectedCategoria?.id || '' }
     }));
-    setShowModalCategoria(false);
-    toast.success('Categoria cadastrada com sucesso!');
+    if (errors.categoriaServico) {
+      setErrors(prev => ({ ...prev, categoriaServico: '' }));
+    }
   };
 
   const handleMateriaisChange = (selectedMateriais) => {
-    setMateriaisSelecionados(selectedMateriais.map(material => ({
-      ...material,
-      quantidadeUso: material.quantidadeUso || 1,
-      id: material.id,
-      nome: material.nome,
-      valorUnitario: material.valorUnitario || 0,
-      unidadeMedida: material.unidadeMedida || '',
-      quantidadeEstoque: material.quantidade || material.quantidadeEstoque || 0
+    const materiaisArray = Array.isArray(selectedMateriais) ? selectedMateriais : [];
+    setMateriaisSelecionados(materiaisArray.map(m => ({
+      ...m,
+      id: m.id,
+      nome: m.nome,
+      valorUnitario: m.valorUnitario || 0,
+      unidadeMedida: m.unidadeMedida || '',
+      quantidadeEstoque: m.quantidade ?? m.quantidadeEstoque ?? 0,
+      quantidadeUso: 1
     })));
+    setFormData(prev => ({
+      ...prev,
+      materiais: materiaisArray.map(m => ({ material: { id: m.id }, quantidade: 1 }))
+    }));
+    if (errors.materiais) {
+      setErrors(prev => ({ ...prev, materiais: '' }));
+    }
   };
 
   const handleRemoverMaterial = (id) => {
     setMateriaisSelecionados(prev => prev.filter(mat => mat.id !== id));
+    setFormData(prev => ({
+      ...prev,
+      materiais: prev.materiais.filter(sm => sm.material.id !== id)
+    }));
   };
 
   const handleQuantidadeChange = (id, value) => {
-    // Permitir valor vazio temporariamente para edição
     if (value === '') {
       setMateriaisSelecionados(prev => prev.map(m =>
         m.id === id
@@ -146,7 +219,6 @@ const EditarServico = () => {
       return;
     }
     
-    // Permite qualquer quantidade positiva, sem limite de estoque
     const quantidade = Math.max(1, Math.floor(Number(value)));
     if (!isNaN(quantidade)) {
       setMateriaisSelecionados(prev => prev.map(m =>
@@ -154,20 +226,24 @@ const EditarServico = () => {
           ? { ...m, quantidadeUso: quantidade }
           : m
       ));
+      setFormData(prev => ({
+        ...prev,
+        materiais: prev.materiais.map(sm =>
+          (sm.material.id === id) ? { ...sm, quantidade } : sm
+        )
+      }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!servico.nome || !servico.valor || !servico.categoriaServico.id || !servico.tempoPrevisto) {
-      toast.error('Por favor, preencha todos os campos obrigatórios.');
+    if (!validateForm()) {
+      setLoading(false);
       return;
     }
-
     setLoading(true);
+
     try {
-      // Filtrar e validar materiais antes de enviar
       const materiaisValidos = materiaisSelecionados
         .filter(m => m.id && m.quantidadeUso && m.quantidadeUso > 0)
         .map(m => ({
@@ -177,24 +253,23 @@ const EditarServico = () => {
 
       const servicoData = {
         id: parseInt(id),
-        nome: servico.nome,
-        descricao: servico.descricao,
-        preco: parseFloat(servico.valor.replace(',', '.')) || 0,
-        tempoPrevisto: parseInt(servico.tempoPrevisto, 10) * 60,
-        categoriaServico: { id: parseInt(servico.categoriaServico.id) },
-        status: servico.status,
-        isActive: servico.isActive,
+        nome: formData.nome,
+        descricao: formData.descricao,
+        preco: parseFloat(formData.valor.replace(',', '.')) || 0,
+        categoriaServico: { id: parseInt(formData.categoriaServico.id) },
+        tempoPrevisto: parseFloat(formData.tempoPrevisto) * 60,
+        status: formData.status,
+        isActive: formData.isActive,
         materiais: materiaisValidos
       };
-
-      console.log('Dados sendo enviados:', servicoData); // Para debug
 
       await api.put(`/servico/${id}`, servicoData);
       toast.success('Serviço atualizado com sucesso!');
       navigate('/servico');
     } catch (error) {
       console.error('Erro ao atualizar serviço:', error);
-      toast.error('Erro ao atualizar serviço. Por favor, tente novamente.');
+      const errorMessage = error.response?.data?.message || 'Erro ao atualizar serviço';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -209,98 +284,132 @@ const EditarServico = () => {
       <ToastContainer />
       <ModalCadastroCategoriaServico
         isOpen={showModalCategoria}
-        onClose={() => setShowModalCategoria(false)}
+        onClose={() => {
+          setShowModalCategoria(false);
+          setCategoriaToEdit(null);
+        }}
         onSuccess={handleCategoriaSuccess}
+        categoriaToEdit={categoriaToEdit}
       />
-      
+
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={cancelDeleteCategoria}
+        onConfirm={confirmDeleteCategoria}
+        title="Excluir Categoria"
+        message={`Tem certeza que deseja excluir a categoria "${categoriaToDelete?.nome}"? Esta ação não pode ser desfeita.`}
+      />
+
+      <div className="page-top">
+        <div className="notification-container">
+          <NotificationBell count={2} />
+        </div>
+      </div>
+
+      <div className="back-navigation">
+        <button className="back-button" onClick={handleCancel}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <h1 className="page-title">Editar Serviço</h1>
+      </div>
+
       <div className="cadastro-servico-container">
-        <h1>Editar Serviço</h1>
-        
         <form onSubmit={handleSubmit} className="cadastro-servico-form">
-          <div className="form-group">
-            <label htmlFor="nome">
-              Nome <span className="required">*</span>
-            </label>
-            <input
-              type="text"
-              id="nome"
-              name="nome"
-              value={servico.nome}
-              onChange={handleChange}
-              placeholder="Digite o nome do serviço"
-              required
-            />
-          </div>
+          {/* Primeiro Container */}
+          <div className="form-card">
+            <div className="card-content">
+              <div className="form-grid">
+                <div className="form-group">
+                  <label htmlFor="nome" className="required">Nome do Serviço</label>
+                  <input
+                    type="text"
+                    id="nome"
+                    name="nome"
+                    value={formData.nome}
+                    onChange={handleChange}
+                    placeholder="Nome do serviço"
+                    className={errors.nome ? 'input-error' : ''}
+                  />
+                  {errors.nome && <span className="error-text">{errors.nome}</span>}
+                </div>
 
-          <div className="form-group">
-            <label htmlFor="descricao">Descrição</label>
-            <textarea
-              id="descricao"
-              name="descricao"
-              value={servico.descricao}
-              onChange={handleChange}
-              placeholder="Digite a descrição do serviço"
-              rows="4"
-            />
-          </div>
+                <div className="form-group">
+                  <label htmlFor="categoriaServico" className="required">Categoria</label>
+                  <Dropdown
+                    items={categorias}
+                    value={categorias.find(c => c.id === formData.categoriaServico.id) || null}
+                    onChange={handleCategoriaChange}
+                    placeholder="Selecione a categoria"
+                    displayProperty="nome"
+                    valueProperty="id"
+                    searchable={false}
+                    showCheckbox={false}
+                    showAddButton={true}
+                    addButtonTitle="Adicionar nova categoria"
+                    onAddClick={() => setShowModalCategoria(true)}
+                    showActionButtons={true}
+                    onEditClick={handleEditCategoria}
+                    onDeleteClick={handleDeleteCategoria}
+                    className={errors.categoriaServico ? 'input-error' : ''}
+                  />
+                  {errors.categoriaServico && <span className="error-text">{errors.categoriaServico}</span>}
+                </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="valor">
-                Valor <span className="required">*</span>
-              </label>
-              <input
-                type="text"
-                id="valor"
-                name="valor"
-                value={servico.valor}
-                onChange={handleChange}
-                placeholder="0,00"
-                required
-              />
+                <div className="form-group">
+                  <label htmlFor="valor" className="required">Preço (R$)</label>
+                  <input
+                    type="text"
+                    id="valor"
+                    name="valor"
+                    value={formData.valor}
+                    onChange={handleChange}
+                    placeholder="0,00"
+                    className={errors.valor ? 'input-error' : ''}
+                  />
+                  {errors.valor && <span className="error-text">{errors.valor}</span>}
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="tempoPrevisto" className="required">Tempo Previsto (horas)</label>
+                  <input
+                    type="number"
+                    id="tempoPrevisto"
+                    name="tempoPrevisto"
+                    value={formData.tempoPrevisto}
+                    onChange={handleChange}
+                    placeholder="Horas"
+                    min="1"
+                    className={errors.tempoPrevisto ? 'input-error' : ''}
+                  />
+                  {errors.tempoPrevisto && <span className="error-text">{errors.tempoPrevisto}</span>}
+                </div>
+
+                <div className="form-group full-width">
+                  <label htmlFor="descricao">Descrição</label>
+                  <textarea
+                    id="descricao"
+                    name="descricao"
+                    value={formData.descricao}
+                    onChange={handleChange}
+                    placeholder="Descreva o serviço detalhadamente"
+                    rows="4"
+                  />
+                </div>
+              </div>
             </div>
-
-            <div className="form-group">
-              <label htmlFor="categoriaServico">
-                Categoria <span className="required">*</span>
-              </label>
-              <Dropdown
-                items={categorias}
-                value={categorias.find(c => c.id === servico.categoriaServico.id) || null}
-                onChange={handleCategoriaChange}
-                placeholder="Selecione a categoria"
-                displayProperty="nome"
-                valueProperty="id"
-                searchable={false}
-                showCheckbox={false}
-                showAddButton={true}
-                addButtonTitle="Adicionar nova categoria"
-                onAddClick={() => setShowModalCategoria(true)}
-              />
-            </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="tempoPrevisto">Tempo Previsto (horas)</label>
-            <input
-              type="number"
-              id="tempoPrevisto"
-              name="tempoPrevisto"
-              value={servico.tempoPrevisto}
-              onChange={handleChange}
-              placeholder="Horas"
-              min="1"
-              required
-            />
-          </div>
-
+          {/* Segundo Container */}
           <div className="form-card">
             <div className="card-header">
               <h2>Materiais Necessários</h2>
             </div>
             <div className="card-content">
               <div className="form-group">
-                <label htmlFor="materiais">Materiais</label>
+                <label htmlFor="materiais" className="required">Materiais</label>
                 <Dropdown
                   items={materiais}
                   value={materiaisSelecionados}
@@ -316,7 +425,9 @@ const EditarServico = () => {
                   showItemValue={true}
                   valueDisplayProperty="valorUnitario"
                   valuePrefix="R$ "
+                  className={errors.materiais ? 'input-error' : ''}
                 />
+                {errors.materiais && <span className="error-text">{errors.materiais}</span>}
                 <div className="materiais-selecionados-lista">
                   {materiaisSelecionados.length === 0 ? (
                     <div className="empty-state">Nenhum material selecionado</div>
@@ -341,7 +452,6 @@ const EditarServico = () => {
                                 value={m.quantidadeUso}
                                 onChange={e => {
                                   const val = e.target.value;
-                                  // Permitir campo vazio temporariamente para edição
                                   if (val === '') {
                                     handleQuantidadeChange(m.id, '');
                                     return;
@@ -353,7 +463,6 @@ const EditarServico = () => {
                                   }
                                 }}
                                 onBlur={e => {
-                                  // Ao sair do campo, garantir valor mínimo
                                   const val = parseInt(e.target.value, 10);
                                   if (isNaN(val) || val < 1) {
                                     handleQuantidadeChange(m.id, 1);
@@ -386,7 +495,7 @@ const EditarServico = () => {
               <div className="total-servico">
                 <div className="total-item">
                   <span className="total-label">Preço do Serviço:</span>
-                  <span className="total-valor">R$ {servico.valor || '0,00'}</span>
+                  <span className="total-valor">R$ {formData.valor || '0,00'}</span>
                 </div>
                 <div className="total-item">
                   <span className="total-label">Valor dos Materiais:</span>
@@ -399,7 +508,7 @@ const EditarServico = () => {
                 <div className="total-item total-final">
                   <span className="total-label">Total Geral:</span>
                   <span className="total-valor">R$ {(() => {
-                    const precoServico = parseFloat(servico.valor.replace(',', '.')) || 0;
+                    const precoServico = parseFloat(formData.valor.replace(',', '.')) || 0;
                     const valorMateriais = materiaisSelecionados.reduce((total, material) => {
                       const preco = material.valorUnitario || 0;
                       const quantidade = material.quantidadeUso || 1;
@@ -413,10 +522,10 @@ const EditarServico = () => {
           </div>
 
           <div className="form-actions">
-            <button type="button" className="cancel-button" onClick={handleCancel} disabled={loading}>
+            <button type="button" onClick={handleCancel} className="btn-cancelar">
               Cancelar
             </button>
-            <button type="submit" className="submit-button" disabled={loading}>
+            <button type="submit" className="btn-cadastrar" disabled={loading}>
               {loading ? 'Salvando...' : 'Salvar'}
             </button>
           </div>

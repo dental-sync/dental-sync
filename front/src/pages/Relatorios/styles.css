@@ -157,26 +157,42 @@
   position: relative;
 }
 
-/* Override de qualquer tooltip nativo do browser */
-.relatorios-page .chart-container * {
+/* Override de qualquer tooltip nativo do browser - EXCETO barras de gráfico */
+.relatorios-page .chart-container *:not(.bar) {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
 }
 
-.relatorios-page .chart-container *:hover {
-  position: relative;
-}
-
-.relatorios-page .chart-container *[title]:hover {
-  overflow: visible;
-}
-
-.relatorios-page .chart-container *[title]:hover::after {
+.relatorios-page .chart-container *[title]:not(.bar):hover::after {
   opacity: 0 !important;
   display: none !important;
   visibility: hidden !important;
+}
+
+/* Permitir tooltips nativos nas barras do gráfico */
+.relatorios-page .chart-container .bar[title] {
+  -webkit-user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+  user-select: auto;
+}
+
+/* Garantir que os valores do gráfico sejam SEMPRE visíveis */
+.relatorios-page .bar-chart .bar .bar-value {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  background-color: #1e293b !important;
+  color: white !important;
+  border: 1px solid #1e293b !important;
+  z-index: 1000 !important;
+}
+
+/* Melhorar o tooltip nativo das barras */
+.relatorios-page .bar-chart .bar[title]:hover {
+  position: relative;
 }
 
 /* Proteção adicional para containers de gráficos */

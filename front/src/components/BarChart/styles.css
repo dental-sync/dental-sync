@@ -3,7 +3,7 @@
   height: 100%;
   display: flex;
   align-items: flex-end;
-  padding: 0 0.5rem;
+  padding: 30px 0.5rem 0 0.5rem;
   min-height: 320px;
 }
 
@@ -25,7 +25,7 @@
 
 .bar-container {
   width: 100%;
-  height: 90%;
+  height: 85%;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -54,13 +54,12 @@
 
 .bar-value {
   position: absolute;
-  top: -20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #475569;
-  opacity: 0 !important;
-  visibility: hidden;
-  transition: all 0.3s ease;
+  top: -25px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  opacity: 1;
+  visibility: visible;
   background-color: rgba(255, 255, 255, 0.95);
   padding: 4px 8px;
   border-radius: 6px;
@@ -68,15 +67,14 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   white-space: nowrap;
   pointer-events: none;
+  transition: all 0.3s ease;
 }
 
 .bar:hover .bar-value {
-  opacity: 1 !important;
-  visibility: visible;
   background-color: #1e293b;
   color: white;
   border-color: #1e293b;
-  pointer-events: auto;
+  transform: scale(1.05);
 }
 
 .bar-label {
@@ -116,6 +114,6 @@
 
 .bar-chart .bar:hover .bar-value {
   display: block;
-  opacity: 1 !important;
+  opacity: 1;
   visibility: visible;
 } 

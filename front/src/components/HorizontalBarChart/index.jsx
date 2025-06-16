@@ -43,7 +43,12 @@ const HorizontalBarChart = ({ data, colorScale = 'default' }) => {
                   className="color-indicator" 
                   style={{ backgroundColor: barColor }}
                 ></div>
-                <span>{label}</span>
+                <span 
+                  className="label-text"
+                  title={item.nomeOriginal && item.nomeOriginal !== label ? item.nomeOriginal : undefined}
+                >
+                  {label}
+                </span>
               </div>
               <span className="horizontal-bar-value">{Number(value).toFixed(2)}%</span>
             </div>

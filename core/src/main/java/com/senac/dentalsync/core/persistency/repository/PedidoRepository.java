@@ -33,12 +33,12 @@ public interface PedidoRepository extends BaseRepository<Pedido, Long> {
     Long countByStatus(Pedido.Status status);
     Long countByCreatedAtBefore(LocalDateTime data);
 
-    @Query(value = "SELECT MONTH(created_at) as mes, COUNT(*) as total " +
+    @Query(value = "SELECT EXTRACT(MONTH FROM created_at) as mes, COUNT(*) as total " +
            "FROM pedidos " +
-           "WHERE created_at >= :dataInicio " +
-           "GROUP BY MONTH(created_at) " +
-           "ORDER BY MONTH(created_at)", nativeQuery = true)
-    List<Object[]> findPedidosPorMes(@Param("dataInicio") LocalDateTime dataInicio);
+           "WHERE created_at >= :dataReferencia " +
+           "GROUP BY EXTRACT(MONTH FROM created_at) " +
+           "ORDER BY EXTRACT(MONTH FROM created_at)", nativeQuery = true)
+    List<Object[]> findPedidosPorMes(@Param("dataReferencia") LocalDateTime dataReferencia);
 
     @Query("SELECT new com.senac.dentalsync.core.dto.PedidosPorTipoDTO(" +
            "s.nome, " +

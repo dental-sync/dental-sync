@@ -4,9 +4,12 @@ import './styles.css';
 const RecentOrdersList = ({ pedidos }) => {
   // Função para determinar a classe e texto do status
   const getStatusClass = (status) => {
-    switch (status.toLowerCase()) {
+    const statusLower = status.toLowerCase();
+    switch (statusLower) {
+      case 'concluido':
       case 'concluído':
         return 'status-concluido';
+      case 'em_andamento':
       case 'em andamento':
         return 'status-andamento';
       case 'pendente':
@@ -14,8 +17,23 @@ const RecentOrdersList = ({ pedidos }) => {
       case 'cancelado':
         return 'status-cancelado';
       default:
+        console.log('Status não mapeado:', status);
         return 'status-outros';
     }
+  };
+
+  // Componente para texto com tooltip
+  const TextoComTooltip = ({ texto, textoOriginal, className = "" }) => {
+    const temTextoTruncado = textoOriginal && textoOriginal !== texto;
+    
+    return (
+      <span 
+        className={`texto-truncado ${className}`}
+        title={temTextoTruncado ? textoOriginal : undefined}
+      >
+        {texto}
+      </span>
+    );
   };
 
   return (
@@ -29,15 +47,28 @@ const RecentOrdersList = ({ pedidos }) => {
                 {pedido.status}
               </span>
             </div>
-            <div className="order-type">{pedido.tipo}</div>
+            <div className="order-type">
+              <TextoComTooltip 
+                texto={pedido.tipo} 
+                textoOriginal={pedido.tipoOriginal} 
+              />
+            </div>
             <div className="order-details">
               <div className="detail-item">
                 <span className="detail-label">Dentista:</span>
-                <span className="detail-value">{pedido.dentista}</span>
+                <TextoComTooltip 
+                  texto={pedido.dentista} 
+                  textoOriginal={pedido.dentistaOriginal}
+                  className="detail-value"
+                />
               </div>
               <div className="detail-item">
                 <span className="detail-label">Paciente:</span>
-                <span className="detail-value">{pedido.paciente}</span>
+                <TextoComTooltip 
+                  texto={pedido.paciente} 
+                  textoOriginal={pedido.pacienteOriginal}
+                  className="detail-value"
+                />
               </div>
             </div>
           </div>

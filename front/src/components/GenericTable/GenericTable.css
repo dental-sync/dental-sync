@@ -126,11 +126,20 @@
   padding-right: 30px;
 }
 
+/* Estilo para células truncadas */
+.truncated-cell {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Ajustando a responsividade */
 @media (max-width: 768px) {
   .generic-table th,
   .generic-table td {
     padding: 8px 12px;
+    font-size: 14px;
   }
   
   .action-buttons {
@@ -139,5 +148,9 @@
   
   .action-button {
     padding: 4px;
+  }
+
+  .truncated-cell {
+    max-width: 150px;
   }
 } 

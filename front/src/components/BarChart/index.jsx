@@ -69,8 +69,8 @@ const BarChart = ({ data }) => {
       {
         label: 'Quantidade de Pedidos',
         data: data.map(item => item.total),
-        backgroundColor: 'rgba(75, 192, 192, 0.7)',
-        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: '#4D9DE0',
+        borderColor: '#4D9DE0',
         borderWidth: 1,
         borderRadius: 4,
         maxBarThickness: 50, // Controla a largura máxima das barras

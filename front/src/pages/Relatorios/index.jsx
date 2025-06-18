@@ -54,12 +54,18 @@ const processarDadosBackend = (dados) => {
     tipoOriginal: pedido.tipo
   }));
 
-  // Aplicar máscara nos dados de gráficos se necessário
-  const pedidosPorTipoMascarados = (dados.pedidosPorTipo || []).map(item => ({
-    ...item,
-    nome: truncarTexto(item.nome, 25),
-    nomeOriginal: item.nome
-  }));
+  // Aplicar máscara nos dados de gráficos e ordenar por percentual
+  const pedidosPorTipoMascarados = (dados.pedidosPorTipo || [])
+    .map(item => ({
+      ...item,
+      nome: truncarTexto(item.nome, 25),
+      nomeOriginal: item.nome
+    }))
+    .sort((a, b) => b.percentual - a.percentual); // Ordena do maior para o menor
+
+  // Ordenar status dos pedidos por percentual
+  const statusPedidosOrdenados = (dados.statusPedidos || [])
+    .sort((a, b) => b.percentual - a.percentual);
 
   //Garante que todos os campos necessários existam
   const dadosProcessados = {
@@ -68,7 +74,7 @@ const processarDadosBackend = (dados) => {
     dentistasAtivos: dados.dentistasAtivos || 0,
     pedidosPorMes: dados.pedidosPorMes || [],
     pedidosPorTipo: pedidosPorTipoMascarados,
-    statusPedidos: dados.statusPedidos || [],
+    statusPedidos: statusPedidosOrdenados,
     pedidosRecentes: pedidosRecentesMascarados,
     dadosAnteriores: dados.dadosAnteriores || {
       totalPedidos: 0,
@@ -107,8 +113,22 @@ const Relatorios = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [geratingPDF, setGeratingPDF] = useState(false);
+  const [atualizarDados, setAtualizarDados] = useState(0);
   const relatorioRef = useRef();
   
+  // Função para forçar atualização dos dados
+  const forcarAtualizacao = () => {
+    setAtualizarDados(prev => prev + 1);
+  };
+
+  // Expor a função de atualização para outros componentes
+  React.useEffect(() => {
+    window.atualizarRelatorios = forcarAtualizacao;
+    return () => {
+      delete window.atualizarRelatorios;
+    };
+  }, []);
+
   useEffect(() => {
     const carregarDados = async () => {
       try {
@@ -134,7 +154,7 @@ const Relatorios = () => {
     };
 
     carregarDados();
-  }, [periodo]);
+  }, [periodo, atualizarDados]); // Adicionado atualizarDados como dependência
 
   // Função para gerar PDF
   const gerarPDF = async () => {

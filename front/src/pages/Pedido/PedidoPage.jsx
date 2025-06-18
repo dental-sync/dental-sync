@@ -187,6 +187,10 @@ const PedidoPage = () => {
       toast.success('Pedido excluído com sucesso!');
       // Atualizar lista após exclusão
       setPedidos(prev => prev.filter(p => p.id !== id));
+      // Atualizar relatórios
+      if (window.atualizarRelatorios) {
+        window.atualizarRelatorios();
+      }
     } catch (error) {
       console.error('Erro ao excluir pedido:', error);
       toast.error('Erro ao excluir pedido. Por favor, tente novamente.');

@@ -96,7 +96,7 @@ const useExportCsv = () => {
    * @param {Function} formatIdFn - Função opcional para formatar o ID
    * @returns {jsPDF} Documento PDF gerado
    */
-  const generatePdfContent = (data, headers, fields, title = 'Lista de Protéticos', formatIdFn) => {
+  const generatePdfContent = (data, headers, fields, title = 'Relatório', formatIdFn) => {
     if (!data || data.length === 0) {
       return null;
     }

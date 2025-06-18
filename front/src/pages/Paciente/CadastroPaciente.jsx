@@ -3,6 +3,7 @@ import './CadastroPaciente.css';
 import { useNavigate } from 'react-router-dom';
 import api from '../../axios-config';
 import { toast } from 'react-toastify';
+import DatePicker from '../../components/DatePicker/DatePicker';
 
 const CadastroPaciente = () => {
   const navigate = useNavigate();
@@ -47,7 +48,6 @@ const CadastroPaciente = () => {
       // Remove todos os números do valor digitado
       const lettersOnlyValue = value.replace(/\d/g, '');
       
-     
       const limitedValue = lettersOnlyValue.slice(0, MAX_CHARS);
       
       setFormData({
@@ -62,13 +62,11 @@ const CadastroPaciente = () => {
           [name]: `Limite máximo de ${MAX_CHARS} caracteres excedido`
         });
       } else if (errors[name] === `Limite máximo de ${MAX_CHARS} caracteres excedido`) {
-       
         const updatedErrors = {...errors};
         delete updatedErrors[name];
         setErrors(updatedErrors);
       }
     } else if (name === "email") {
-     
       // Remove espaços e normaliza o email
       const sanitizedValue = value.trim().toLowerCase();
       const limitedValue = sanitizedValue.slice(0, MAX_CHARS);
@@ -78,7 +76,6 @@ const CadastroPaciente = () => {
         [name]: limitedValue
       });
       
-   
       if (value.length > MAX_CHARS) {
         setErrors({
           ...errors,
@@ -90,25 +87,6 @@ const CadastroPaciente = () => {
         delete updatedErrors[name];
         setErrors(updatedErrors);
       }
-    } else if (name === "dataNascimento") {
-      // Permitir apenas datas com ano de até 4 dígitos
-      let partes = value.split('-');
-      if (partes.length === 3) {
-        if (partes[0].length > 4) {
-          partes[0] = partes[0].slice(0, 4);
-          // Corrige o valor para o formato yyyy-MM-dd
-          const valorCorrigido = partes.join('-');
-          setFormData({
-            ...formData,
-            [name]: valorCorrigido
-          });
-          return;
-        }
-      }
-      setFormData({
-        ...formData,
-        [name]: value
-      });
     } else {
       setFormData({
         ...formData,
@@ -121,6 +99,20 @@ const CadastroPaciente = () => {
       setErrors({
         ...errors,
         [name]: ''
+      });
+    }
+  };
+
+  const handleDateChange = (value) => {
+    setFormData({
+      ...formData,
+      dataNascimento: value
+    });
+    
+    if (errors.dataNascimento) {
+      setErrors({
+        ...errors,
+        dataNascimento: ''
       });
     }
   };
@@ -280,15 +272,13 @@ const CadastroPaciente = () => {
           
           <div className="form-group">
             <label htmlFor="dataNascimento" className="required">Data de Nascimento</label>
-            <input
-              type="date"
+            <DatePicker
               id="dataNascimento"
-              name="dataNascimento"
               value={formData.dataNascimento}
-              onChange={handleChange}
+              onChange={handleDateChange}
+              maxDate={new Date().toISOString().split('T')[0]}
+              required
               className={errors.dataNascimento ? 'input-error' : ''}
-              placeholder="dd/mm/aaaa"
-              noValidate
             />
             {errors.dataNascimento && <span className="error-text">{errors.dataNascimento}</span>}
           </div>

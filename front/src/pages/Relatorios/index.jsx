@@ -141,6 +141,12 @@ const Relatorios = () => {
     try {
       setGeratingPDF(true);
       
+      // Esconde o botão antes de capturar
+      const btnExportar = document.querySelector('.btn-icon');
+      if (btnExportar) {
+        btnExportar.style.display = 'none';
+      }
+      
       // Importar as bibliotecas dinamicamente
       const html2canvas = (await import('html2canvas')).default;
       const jsPDF = (await import('jspdf')).default;
@@ -185,6 +191,11 @@ const Relatorios = () => {
       console.error('Erro ao gerar PDF:', error);
       alert('Erro ao gerar o relatório em PDF. Tente novamente.');
     } finally {
+      // Mostra o botão novamente após finalizar
+      const btnExportar = document.querySelector('.btn-icon');
+      if (btnExportar) {
+        btnExportar.style.display = 'flex';
+      }
       setGeratingPDF(false);
     }
   };

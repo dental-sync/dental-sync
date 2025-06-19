@@ -13,7 +13,9 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -47,9 +49,11 @@ public class Pedido extends BaseEntity {
         inverseJoinColumns = @JoinColumn(name = "servico_id")
     )
     @NotNull(message = "O pedido deve ter pelo menos um serviço")
+    @Size(min = 1, message = "O pedido deve ter pelo menos um serviço")
     private List<Servico> servicos;
 
     @NotNull(message = "A data de entrega é obrigatória")
+    @Future(message = "A data de entrega deve ser uma data futura")
     @Column(name = "data_entrega")
     private LocalDate dataEntrega;
 

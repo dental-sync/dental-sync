@@ -345,8 +345,8 @@ public class PacienteTest {
     @Test
     void deveRetornarMultiplasViolacoesQuandoTodosOsCamposInvalidos() {
         // Arrange
-        paciente.setNome("");
-        paciente.setEmail("email.invalido");
+        paciente.setNome("A a"); // Nome muito curto
+        paciente.setEmail("email.invalido@");
         paciente.setTelefone("1234");
         paciente.setDataNascimento(LocalDate.now().plusDays(1));
 
@@ -354,9 +354,9 @@ public class PacienteTest {
         Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
 
         // Assert
-        assertEquals(4, violations.size(), "Deveria ter 4 violações de validação");
+        assertEquals(5, violations.size(), "Deveria ter 5 violações de validação");
         assertTrue(violations.stream()
-            .anyMatch(v -> v.getMessage().equals("O nome é obrigatório")));
+            .anyMatch(v -> v.getMessage().equals("Por favor, informe nome e sobrenome válido")));
         assertTrue(violations.stream()
             .anyMatch(v -> v.getMessage().equals("Email inválido")));
         assertTrue(violations.stream()
@@ -368,14 +368,14 @@ public class PacienteTest {
     @Test
     void deveRetornarErroQuandoNomeEEmailInvalidos() {
         // Arrange
-        paciente.setNome("A"); // Nome muito curto
-        paciente.setEmail("email@"); // Email inválido
+        paciente.setNome("A A"); // Nome muito curto
+        paciente.setEmail("email@"); // Email inválido (viola @Email e o padrão .com)
 
         // Act
         Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
 
         // Assert
-        assertEquals(2, violations.size(), "Deveria ter 2 violações de validação");
+        assertEquals(3, violations.size(), "Deveria ter 3 violações de validação: 1 para nome e 2 para email");
         assertTrue(violations.stream()
             .anyMatch(v -> v.getMessage().equals("Por favor, informe nome e sobrenome válido")));
         assertTrue(violations.stream()
@@ -392,7 +392,7 @@ public class PacienteTest {
         Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
 
         // Assert
-        assertEquals(2, violations.size(), "Deveria ter 2 violações de validação");
+        assertEquals(3, violations.size(), "Deveria ter 3 violações de validação");
         assertTrue(violations.stream()
             .anyMatch(v -> v.getMessage().equals("O nome não pode ultrapassar 255 caracteres")));
         assertTrue(violations.stream()

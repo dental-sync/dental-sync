@@ -2,6 +2,7 @@ package com.senac.dentalsync.core.model;
 
 import com.senac.dentalsync.core.persistency.model.CategoriaServico;
 import com.senac.dentalsync.core.persistency.model.Usuario;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,42 +28,134 @@ class CategoriaServicoTest {
 
     @Test
     void deveCriarCategoriaValida() {
+        // Arrange
         categoria.setNome("Categoria Teste");
-        var violations = validator.validate(categoria);
-        assertTrue(violations.isEmpty());
+
+        // Act
+        Set<ConstraintViolation<CategoriaServico>> violations = validator.validate(categoria);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
     @Test
-    void deveValidarTamanhoMaximoNome() {
-        // Nome > 40 caracteres
-        categoria.setNome("a".repeat(41));
-        var violations = validator.validate(categoria);
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("nome da categoria deve ter no máximo 40 caracteres")));
+    void deveAceitarNomeComTamanhoMaximo() {
+        // Arrange - 40 caracteres exatos
+        categoria.setNome("a".repeat(40));
 
-        // Nome válido
-        categoria.setNome("Categoria Teste");
-        violations = validator.validate(categoria);
-        assertTrue(violations.isEmpty());
+        // Act
+        Set<ConstraintViolation<CategoriaServico>> violations = validator.validate(categoria);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+    @Test
+    void deveAceitarNomeComTamanhoMinimo() {
+        // Arrange - 1 caractere
+        categoria.setNome("A");
+
+        // Act
+        Set<ConstraintViolation<CategoriaServico>> violations = validator.validate(categoria);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+    @Test
+    void deveAceitarNomeComEspacos() {
+        // Arrange
+        categoria.setNome("Categoria com espaços");
+
+        // Act
+        Set<ConstraintViolation<CategoriaServico>> violations = validator.validate(categoria);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+    @Test
+    void deveAceitarNomeComCaracteresEspeciais() {
+        // Arrange
+        categoria.setNome("Categoria-Teste_123");
+
+        // Act
+        Set<ConstraintViolation<CategoriaServico>> violations = validator.validate(categoria);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+    @Test
+    void deveRetornarErroQuandoNomeMuitoLongo() {
+        // Arrange - 41 caracteres
+        categoria.setNome("a".repeat(41));
+
+        // Act
+        Set<ConstraintViolation<CategoriaServico>> violations = validator.validate(categoria);
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
+        assertEquals(1, violations.size());
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getMessage().equals("O nome da categoria deve ter no máximo 40 caracteres")));
+    }
+
+    @Test
+    void deveRetornarErroQuandoNomeMuitoLongoComMuitosCaracteres() {
+        // Arrange - 100 caracteres
+        categoria.setNome("a".repeat(100));
+
+        // Act
+        Set<ConstraintViolation<CategoriaServico>> violations = validator.validate(categoria);
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
+        assertEquals(1, violations.size());
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getMessage().equals("O nome da categoria deve ter no máximo 40 caracteres")));
     }
 
     @Test
     void deveAceitarNomeNulo() {
-        var violations = validator.validate(categoria);
+        // Arrange
+        categoria.setNome(null);
+
+        // Act
+        Set<ConstraintViolation<CategoriaServico>> violations = validator.validate(categoria);
+
+        // Assert
         assertTrue(violations.isEmpty(), "O nome pode ser nulo pois não tem @NotNull ou @NotBlank");
     }
 
     @Test
+    void deveAceitarNomeVazio() {
+        // Arrange
+        categoria.setNome("");
+
+        // Act
+        Set<ConstraintViolation<CategoriaServico>> violations = validator.validate(categoria);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "O nome pode ser vazio pois não tem @NotBlank");
+    }
+
+    @Test
     void deveValidarGettersESetters() {
+        // Arrange
         String nome = "Categoria Teste";
+
+        // Act
         categoria.setNome(nome);
+
+        // Assert
         assertEquals(nome, categoria.getNome());
     }
 
     @Test
     void deveAceitarCamposBaseEntityNulos() {
+        // Arrange
         categoria.setNome("Categoria Teste");
-        
         categoria.setId(null);
         categoria.setCreatedAt(null);
         categoria.setUpdatedAt(null);
@@ -69,12 +163,16 @@ class CategoriaServicoTest {
         categoria.setCreatedBy(null);
         categoria.setUpdatedBy(null);
 
-        var violations = validator.validate(categoria);
-        assertTrue(violations.isEmpty());
+        // Act
+        Set<ConstraintViolation<CategoriaServico>> violations = validator.validate(categoria);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
     @Test
     void deveAceitarCamposBaseEntityPreenchidos() {
+        // Arrange
         categoria.setNome("Categoria Teste");
         
         Usuario usuario = new Usuario();
@@ -88,12 +186,16 @@ class CategoriaServicoTest {
         categoria.setCreatedBy(usuario);
         categoria.setUpdatedBy(usuario);
 
-        var violations = validator.validate(categoria);
-        assertTrue(violations.isEmpty());
+        // Act
+        Set<ConstraintViolation<CategoriaServico>> violations = validator.validate(categoria);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
     @Test
     void deveValidarEqualsEHashCode() {
+        // Arrange
         CategoriaServico categoria1 = new CategoriaServico();
         categoria1.setNome("Categoria 1");
 
@@ -103,12 +205,25 @@ class CategoriaServicoTest {
         CategoriaServico categoria3 = new CategoriaServico();
         categoria3.setNome("Categoria 2");
 
-        // Teste equals - Como usa @Data do Lombok, compara todos os campos
+        // Act & Assert - Como usa @Data do Lombok, compara todos os campos
         assertEquals(categoria1, categoria2);
         assertNotEquals(categoria1, categoria3);
 
         // Teste hashCode
         assertEquals(categoria1.hashCode(), categoria2.hashCode());
         assertNotEquals(categoria1.hashCode(), categoria3.hashCode());
+    }
+
+    @Test
+    void deveValidarToString() {
+        // Arrange
+        categoria.setNome("Categoria Teste");
+
+        // Act
+        String toString = categoria.toString();
+
+        // Assert
+        assertTrue(toString.contains("nome=Categoria Teste"));
+        assertTrue(toString.contains("CategoriaServico"));
     }
 } 

@@ -249,4 +249,126 @@ public class ClinicaServiceTest {
         verify(clinicaRepository, times(1)).save(any(Clinica.class));
         verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
+
+    @Test
+    void devePermitirAtualizarClinicaMesmaComCnpjIgual() {
+        // given - Simula atualização da mesma clínica
+        clinicaTeste.setId(1L);
+        String novoNome = "Clínica Dental Santos Editada";
+        clinicaTeste.setNome(novoNome);
+        
+        // Retorna a mesma clínica para validação (simula que é o mesmo registro)
+        when(clinicaRepository.findByCnpj(clinicaTeste.getCnpj())).thenReturn(Optional.of(clinicaTeste));
+        when(clinicaRepository.save(any(Clinica.class))).thenReturn(clinicaTeste);
+
+        // when
+        Clinica clinicaAtualizada = clinicaService.save(clinicaTeste);
+
+        // then
+        assertThat(clinicaAtualizada).isNotNull();
+        assertThat(clinicaAtualizada.getNome()).isEqualTo(novoNome);
+        verify(clinicaRepository, times(1)).save(any(Clinica.class));
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoOcorrerErroNoSave() {
+        // given
+        Clinica novaClinica = new Clinica();
+        novaClinica.setNome("Clínica Dental Santos");
+        novaClinica.setCnpj("11.222.333/0001-81"); // CNPJ válido
+
+        when(clinicaRepository.findByCnpj(novaClinica.getCnpj())).thenReturn(Optional.empty());
+        
+        // Simula erro no super.save()
+        when(clinicaRepository.save(any(Clinica.class))).thenThrow(new RuntimeException("Erro no banco"));
+
+        // when/then
+        assertThrows(ResponseStatusException.class, () -> {
+            clinicaService.save(novaClinica);
+        });
+    }
+
+    @Test
+    void deveRetornarVazioQuandoNaoEncontrarPorNome() {
+        // given
+        when(clinicaRepository.findByNome("Clínica Inexistente")).thenReturn(Optional.empty());
+
+        // when
+        Optional<Clinica> clinicaEncontrada = clinicaService.findByNome("Clínica Inexistente");
+
+        // then
+        assertThat(clinicaEncontrada).isEmpty();
+        verify(clinicaRepository, times(1)).findByNome("Clínica Inexistente");
+    }
+
+    @Test
+    void deveRetornarVazioQuandoNaoEncontrarPorCnpj() {
+        // given
+        when(clinicaRepository.findByCnpj("99.999.999/0001-99")).thenReturn(Optional.empty());
+
+        // when
+        Optional<Clinica> clinicaEncontrada = clinicaService.findByCnpj("99.999.999/0001-99");
+
+        // then
+        assertThat(clinicaEncontrada).isEmpty();
+        verify(clinicaRepository, times(1)).findByCnpj("99.999.999/0001-99");
+    }
+
+    @Test
+    void deveBuscarClinicasComNomeVazio() {
+        // given
+        when(clinicaRepository.findByNomeContaining("")).thenReturn(Arrays.asList());
+
+        // when
+        List<Clinica> clinicas = clinicaService.findByNomeContaining("");
+
+        // then
+        assertThat(clinicas).isEmpty();
+        verify(clinicaRepository, times(1)).findByNomeContaining("");
+    }
+
+    @Test
+    void deveRetornarListaVaziaQuandoClinicaNaoTemDentistas() {
+        // given
+        when(dentistaRepository.findByClinicas_Id(999L)).thenReturn(Arrays.asList());
+
+        // when
+        List<Dentista> dentistas = clinicaService.findDentistasByClinicaId(999L);
+
+        // then
+        assertThat(dentistas).isEmpty();
+        verify(dentistaRepository, times(1)).findByClinicas_Id(999L);
+    }
+
+    @Test
+    void deveDeletarClinicaSemDentistasVinculados() {
+        // given
+        when(dentistaRepository.findByClinicas_Id(1L)).thenReturn(Arrays.asList());
+
+        // when
+        clinicaService.delete(1L);
+
+        // then
+        verify(dentistaRepository, times(1)).findByClinicas_Id(1L);
+        verify(dentistaRepository, never()).save(any(Dentista.class));
+        verify(clinicaRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void deveValidarCnpjComFormatacaoDiferente() {
+        // given
+        Clinica novaClinica = new Clinica();
+        novaClinica.setNome("Clínica Dental Santos");
+        novaClinica.setCnpj("11222333000181"); // CNPJ sem formatação
+
+        when(clinicaRepository.findByCnpj(novaClinica.getCnpj())).thenReturn(Optional.empty());
+        when(clinicaRepository.save(any(Clinica.class))).thenReturn(clinicaTeste);
+
+        // when
+        Clinica clinicaSalva = clinicaService.save(novaClinica);
+
+        // then
+        assertThat(clinicaSalva).isNotNull();
+        verify(clinicaRepository, times(1)).save(any(Clinica.class));
+    }
 } 

@@ -25,14 +25,7 @@ class LaboratorioTest {
         validator = factory.getValidator();
         laboratorio = new Laboratorio();
         endereco = new EnderecoLaboratorio();
-        
-        // Configurando endereço válido
-        endereco.setCep("12345-678");
-        endereco.setLogradouro("Rua Teste");
-        endereco.setNumero("123");
-        endereco.setBairro("Bairro Teste");
-        endereco.setCidade("Cidade Teste");
-        endereco.setEstado("SP");
+        configurarEnderecoValido();
     }
 
     @Test
@@ -43,104 +36,79 @@ class LaboratorioTest {
     }
 
     @Test
-    void deveAceitarCamposBaseEntityNulos() {
-        laboratorio.setId(null);
-        laboratorio.setCreatedAt(null);
-        laboratorio.setUpdatedAt(null);
-        laboratorio.setIsActive(null);
-        laboratorio.setCreatedBy(null);
-        laboratorio.setUpdatedBy(null);
-
+    void deveRetornarErrosQuandoCamposObrigatoriosAusentes() {
         var violations = validator.validate(laboratorio);
-        assertTrue(violations.isEmpty());
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("nome do laboratório é obrigatório")));
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("CNPJ é obrigatório")));
     }
 
     @Test
-    void deveAceitarCamposBaseEntityPreenchidos() {
-        Usuario usuario = new Usuario();
-        usuario.setId(1L);
-        usuario.setName("Admin");
+    void deveValidarTamanhoMaximoNomeLaboratorio() {
+        configurarLaboratorioValido();
         
-        laboratorio.setId(1L);
-        laboratorio.setCreatedAt(LocalDateTime.now());
-        laboratorio.setUpdatedAt(LocalDateTime.now());
-        laboratorio.setIsActive(true);
-        laboratorio.setCreatedBy(usuario);
-        laboratorio.setUpdatedBy(usuario);
-
+        // Nome > 100 caracteres
+        laboratorio.setNomeLaboratorio("a".repeat(101));
         var violations = validator.validate(laboratorio);
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("nome do laboratório deve ter no máximo 100 caracteres")));
+
+        // Nome válido
+        laboratorio.setNomeLaboratorio("Laboratório Teste");
+        violations = validator.validate(laboratorio);
         assertTrue(violations.isEmpty());
     }
 
     @Test
-    void deveAceitarCnpjValido() {
-        String[] cnpjsValidos = {
-            "12.345.678/0001-90",
-            "11.222.333/0001-44",
-            "00.000.000/0001-91"
-        };
-
-        for (String cnpj : cnpjsValidos) {
-            laboratorio.setCnpj(cnpj);
-            var violations = validator.validate(laboratorio);
-            assertTrue(violations.isEmpty(), "CNPJ " + cnpj + " deveria ser válido");
-        }
-    }
-
-    @Test
-    void deveAceitarEmailValido() {
-        String[] emailsValidos = {
-            "lab@teste.com",
-            "laboratorio@empresa.com.br",
-            "contato.lab@dominio.com"
-        };
-
-        for (String email : emailsValidos) {
-            laboratorio.setEmailLaboratorio(email);
-            var violations = validator.validate(laboratorio);
-            assertTrue(violations.isEmpty(), "Email " + email + " deveria ser válido");
-        }
-    }
-
-    @Test
-    void deveAceitarTelefoneValido() {
-        String[] telefonesValidos = {
-            "(11) 99999-9999",
-            "(11) 1234-5678",
-            "(21) 98765-4321"
-        };
-
-        for (String telefone : telefonesValidos) {
-            laboratorio.setTelefoneLaboratorio(telefone);
-            var violations = validator.validate(laboratorio);
-            assertTrue(violations.isEmpty(), "Telefone " + telefone + " deveria ser válido");
-        }
-    }
-
-    @Test
-    void deveAceitarTodosCamposNulos() {
+    void deveValidarFormatoEmail() {
+        configurarLaboratorioValido();
+        
+        // Email inválido sem @
+        laboratorio.setEmailLaboratorio("email.invalido");
         var violations = validator.validate(laboratorio);
-        assertTrue(violations.isEmpty(), "Todos os campos devem aceitar valores nulos");
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Email inválido")));
+
+        // Email inválido sem domínio
+        laboratorio.setEmailLaboratorio("email@");
+        violations = validator.validate(laboratorio);
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Email inválido")));
+
+        // Email inválido com espaços
+        laboratorio.setEmailLaboratorio("email teste@dominio.com");
+        violations = validator.validate(laboratorio);
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Email inválido")));
+
+        // Email válido
+        laboratorio.setEmailLaboratorio("email@valido.com");
+        violations = validator.validate(laboratorio);
+        assertTrue(violations.isEmpty());
     }
 
     @Test
-    void deveValidarTamanhoMaximoCampos() {
-        String textoLongo = "a".repeat(256); // Maior que o tamanho máximo padrão do VARCHAR
-
-        laboratorio.setNomeLaboratorio(textoLongo);
-        laboratorio.setEmailLaboratorio(textoLongo);
-        laboratorio.setTelefoneLaboratorio(textoLongo);
-
+    void deveValidarTamanhoMaximoEmail() {
+        configurarLaboratorioValido();
+        
+        // Email > 255 caracteres
+        String emailLongo = "a".repeat(64) + "@teste ".repeat(190) + ".com";
+        laboratorio.setEmailLaboratorio(emailLongo);
         var violations = validator.validate(laboratorio);
-        assertTrue(violations.isEmpty(), "Campos devem aceitar textos longos pois não há restrição de tamanho");
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("não pode ultrapassar 255 caracteres")));
+
+        // Email com tamanho válido
+        laboratorio.setEmailLaboratorio("email@valido.com");
+        violations = validator.validate(laboratorio);
+        assertTrue(violations.isEmpty());
     }
 
     @Test
     void deveValidarGettersESetters() {
-        String nome = "Lab Teste";
-        String cnpj = "12.345.678/0001-90";
+        String nome = "Laboratório Teste";
+        String cnpj = "12345678901234";
         String email = "lab@teste.com";
-        String telefone = "(11) 99999-9999";
+        String telefone = "11999999999";
 
         laboratorio.setNomeLaboratorio(nome);
         laboratorio.setCnpj(cnpj);
@@ -156,17 +124,66 @@ class LaboratorioTest {
     }
 
     @Test
-    void deveValidarRelacionamentoComEndereco() {
-        laboratorio.setEndereco(endereco);
+    void deveValidarRelacionamentoEndereco() {
+        configurarLaboratorioValido();
+        
         assertNotNull(laboratorio.getEndereco());
         assertEquals(endereco, laboratorio.getEndereco());
+        
+        // Testando set/get
+        EnderecoLaboratorio novoEndereco = new EnderecoLaboratorio();
+        laboratorio.setEndereco(novoEndereco);
+        assertEquals(novoEndereco, laboratorio.getEndereco());
+    }
+
+    @Test
+    void deveAceitarCamposBaseEntityNulos() {
+        configurarLaboratorioValido();
+        
+        laboratorio.setId(null);
+        laboratorio.setCreatedAt(null);
+        laboratorio.setUpdatedAt(null);
+        laboratorio.setIsActive(null);
+        laboratorio.setCreatedBy(null);
+        laboratorio.setUpdatedBy(null);
+
+        var violations = validator.validate(laboratorio);
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    void deveAceitarCamposBaseEntityPreenchidos() {
+        configurarLaboratorioValido();
+        
+        Usuario usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setName("Admin");
+        
+        laboratorio.setId(1L);
+        laboratorio.setCreatedAt(LocalDateTime.now());
+        laboratorio.setUpdatedAt(LocalDateTime.now());
+        laboratorio.setIsActive(true);
+        laboratorio.setCreatedBy(usuario);
+        laboratorio.setUpdatedBy(usuario);
+
+        var violations = validator.validate(laboratorio);
+        assertTrue(violations.isEmpty());
+    }
+
+    private void configurarEnderecoValido() {
+        endereco.setCep("12345678");
+        endereco.setLogradouro("Rua Teste");
+        endereco.setNumero("123");
+        endereco.setBairro("Centro");
+        endereco.setCidade("São Paulo");
+        endereco.setEstado("SP");
     }
 
     private void configurarLaboratorioValido() {
-        laboratorio.setNomeLaboratorio("Lab Teste");
-        laboratorio.setCnpj("12.345.678/0001-90");
+        laboratorio.setNomeLaboratorio("Laboratório Teste");
+        laboratorio.setCnpj("12345678901234");
         laboratorio.setEmailLaboratorio("lab@teste.com");
-        laboratorio.setTelefoneLaboratorio("(11) 99999-9999");
+        laboratorio.setTelefoneLaboratorio("11999999999");
         laboratorio.setEndereco(endereco);
     }
 } 

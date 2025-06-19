@@ -49,7 +49,6 @@ public class Pedido extends BaseEntity {
         inverseJoinColumns = @JoinColumn(name = "servico_id")
     )
     @NotNull(message = "O pedido deve ter pelo menos um serviço")
-    @Size(min = 1, message = "O pedido deve ter pelo menos um serviço")
     private List<Servico> servicos;
 
     @NotNull(message = "A data de entrega é obrigatória")

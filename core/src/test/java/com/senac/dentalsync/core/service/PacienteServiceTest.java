@@ -277,4 +277,108 @@ public class PacienteServiceTest {
             pacienteService.deletePaciente(999L);
         });
     }
+
+    @Test
+    void devePermitirAtualizarPacienteMesmoComEmailIgual() {
+        // given - Simula atualização do mesmo paciente
+        pacienteTeste.setId(1L);
+        String novoNome = "João da Silva Santos Editado";
+        pacienteTeste.setNome(novoNome);
+        
+        when(pacienteRepository.save(any(Paciente.class))).thenReturn(pacienteTeste);
+
+        // when
+        Paciente pacienteAtualizado = pacienteService.save(pacienteTeste);
+
+        // then
+        assertThat(pacienteAtualizado).isNotNull();
+        assertThat(pacienteAtualizado.getNome()).isEqualTo(novoNome);
+        verify(pacienteRepository, times(1)).save(any(Paciente.class));
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoOcorrerErroNoSave() {
+        // given
+        Paciente novoPaciente = new Paciente();
+        novoPaciente.setNome("João da Silva Santos");
+        novoPaciente.setEmail("joao@email.com");
+        novoPaciente.setTelefone("(11) 99999-9999");
+        novoPaciente.setDataNascimento(LocalDate.of(1990, 1, 1));
+
+        when(pacienteRepository.findByEmail(novoPaciente.getEmail())).thenReturn(Optional.empty());
+        when(pacienteRepository.findByTelefone(novoPaciente.getTelefone())).thenReturn(Optional.empty());
+        
+        // Simula erro no super.save()
+        when(pacienteRepository.save(any(Paciente.class))).thenThrow(new RuntimeException("Erro no banco"));
+
+        // when/then
+        assertThrows(ResponseStatusException.class, () -> {
+            pacienteService.save(novoPaciente);
+        });
+    }
+
+    @Test
+    void deveRetornarVazioQuandoNaoEncontrarPorEmail() {
+        // given
+        when(pacienteRepository.findByEmail("inexistente@email.com")).thenReturn(Optional.empty());
+
+        // when
+        Optional<Paciente> pacienteEncontrado = pacienteService.findByEmail("inexistente@email.com");
+
+        // then
+        assertThat(pacienteEncontrado).isEmpty();
+        verify(pacienteRepository, times(1)).findByEmail("inexistente@email.com");
+    }
+
+    @Test
+    void deveRetornarVazioQuandoNaoEncontrarPorNome() {
+        // given
+        when(pacienteRepository.findByNome("Nome Inexistente")).thenReturn(Optional.empty());
+
+        // when
+        Optional<Paciente> pacienteEncontrado = pacienteService.findByNome("Nome Inexistente");
+
+        // then
+        assertThat(pacienteEncontrado).isEmpty();
+        verify(pacienteRepository, times(1)).findByNome("Nome Inexistente");
+    }
+
+    @Test
+    void deveRetornarVazioQuandoNaoEncontrarPorTelefone() {
+        // given
+        when(pacienteRepository.findByTelefone("(11) 00000-0000")).thenReturn(Optional.empty());
+
+        // when
+        Optional<Paciente> pacienteEncontrado = pacienteService.findByTelefone("(11) 00000-0000");
+
+        // then
+        assertThat(pacienteEncontrado).isEmpty();
+        verify(pacienteRepository, times(1)).findByTelefone("(11) 00000-0000");
+    }
+
+    @Test
+    void deveDeletarPacienteComIsActiveNull() {
+        // given
+        pacienteTeste.setIsActive(null); // Simula campo null
+        when(pacienteRepository.findById(1L)).thenReturn(Optional.of(pacienteTeste));
+
+        // when
+        pacienteService.deletePaciente(1L);
+
+        // then
+        verify(pacienteRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void deveRetornarVazioQuandoNaoEncontrarPorId() {
+        // given
+        when(pacienteRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // when
+        Optional<Paciente> pacienteEncontrado = pacienteService.findById(999L);
+
+        // then
+        assertThat(pacienteEncontrado).isEmpty();
+        verify(pacienteRepository, times(1)).findById(999L);
+    }
 }

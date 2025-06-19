@@ -300,4 +300,100 @@ public class DentistaServiceTest {
         verify(dentistaRepository, times(1)).save(any(Dentista.class));
         verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
+
+    @Test
+    void devePermitirAtualizarDentistaMesmoComEmailIgual() {
+        // given - Simula atualização do mesmo dentista
+        dentistaTeste.setId(1L);
+        String novoNome = "Dr. João Silva Santos Editado";
+        dentistaTeste.setNome(novoNome);
+        
+        // Retorna o mesmo dentista para todas as validações (simula que é o mesmo registro)
+        when(dentistaRepository.findByEmail(dentistaTeste.getEmail())).thenReturn(Optional.of(dentistaTeste));
+        when(dentistaRepository.findByTelefone(dentistaTeste.getTelefone())).thenReturn(Optional.of(dentistaTeste));
+        when(dentistaRepository.findByCro(dentistaTeste.getCro())).thenReturn(Optional.of(dentistaTeste));
+        when(dentistaRepository.save(any(Dentista.class))).thenReturn(dentistaTeste);
+
+        // when
+        Dentista dentistaAtualizado = dentistaService.save(dentistaTeste);
+
+        // then
+        assertThat(dentistaAtualizado).isNotNull();
+        assertThat(dentistaAtualizado.getNome()).isEqualTo(novoNome);
+        verify(dentistaRepository, times(1)).save(any(Dentista.class));
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoOcorrerErroNoSave() {
+        // given
+        Dentista novoDentista = new Dentista();
+        novoDentista.setNome("Dr. João Silva Santos");
+        novoDentista.setEmail("dentista@email.com");
+        novoDentista.setTelefone("(11) 99999-9999");
+        novoDentista.setCro("CRO-SP 12345");
+
+        when(dentistaRepository.findByEmail(novoDentista.getEmail())).thenReturn(Optional.empty());
+        when(dentistaRepository.findByTelefone(novoDentista.getTelefone())).thenReturn(Optional.empty());
+        when(dentistaRepository.findByCro(novoDentista.getCro())).thenReturn(Optional.empty());
+        
+        // Simula erro no super.save()
+        when(dentistaRepository.save(any(Dentista.class))).thenThrow(new RuntimeException("Erro no banco"));
+
+        // when/then
+        assertThrows(ResponseStatusException.class, () -> {
+            dentistaService.save(novoDentista);
+        });
+    }
+
+    @Test
+    void deveBuscarDentistasComCroVazio() {
+        // given
+        when(dentistaRepository.findByCroContaining("")).thenReturn(Arrays.asList());
+
+        // when
+        List<Dentista> dentistas = dentistaService.findByCroContaining("");
+
+        // then
+        assertThat(dentistas).isEmpty();
+        verify(dentistaRepository, times(1)).findByCroContaining("");
+    }
+
+    @Test
+    void deveRetornarVazioQuandoNaoEncontrarPorEmail() {
+        // given
+        when(dentistaRepository.findByEmail("inexistente@email.com")).thenReturn(Optional.empty());
+
+        // when
+        Optional<Dentista> dentistaEncontrado = dentistaService.findByEmail("inexistente@email.com");
+
+        // then
+        assertThat(dentistaEncontrado).isEmpty();
+        verify(dentistaRepository, times(1)).findByEmail("inexistente@email.com");
+    }
+
+    @Test
+    void deveRetornarVazioQuandoNaoEncontrarPorCro() {
+        // given
+        when(dentistaRepository.findByCro("CRO-SP 99999")).thenReturn(Optional.empty());
+
+        // when
+        Optional<Dentista> dentistaEncontrado = dentistaService.findByCro("CRO-SP 99999");
+
+        // then
+        assertThat(dentistaEncontrado).isEmpty();
+        verify(dentistaRepository, times(1)).findByCro("CRO-SP 99999");
+    }
+
+    @Test
+    void deveRetornarVazioQuandoNaoEncontrarPorTelefone() {
+        // given
+        when(dentistaRepository.findByTelefone("(11) 00000-0000")).thenReturn(Optional.empty());
+
+        // when
+        Optional<Dentista> dentistaEncontrado = dentistaService.findByTelefone("(11) 00000-0000");
+
+        // then
+        assertThat(dentistaEncontrado).isEmpty();
+        verify(dentistaRepository, times(1)).findByTelefone("(11) 00000-0000");
+    }
 } 

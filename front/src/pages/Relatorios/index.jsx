@@ -161,7 +161,7 @@ const Relatorios = () => {
     try {
       setGeratingPDF(true);
       
-      // Esconde o botão antes de capturar
+      //Esconde o botão antes de capturar
       const btnExportar = document.querySelector('.btn-icon');
       if (btnExportar) {
         btnExportar.style.display = 'none';

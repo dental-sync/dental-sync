@@ -33,6 +33,7 @@ public class ServicoTest {
         
         categoria = new CategoriaServico();
         categoria.setId(1L);
+        categoria.setNome("Categoria Teste");
         
         // Configuração padrão de um serviço válido para os testes
         servico = new Servico();
@@ -49,133 +50,343 @@ public class ServicoTest {
 
     @Test
     void deveCriarServicoValido() {
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
+
+        // Assert
         assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
     @Test
     void deveAceitarNomeValido() {
+        // Arrange
         servico.setNome("Serviço de Teste Completo");
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+    @Test
+    void deveAceitarNomeComEspacos() {
+        // Arrange
+        servico.setNome("Serviço com espaços especiais");
+
+        // Act
+        Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+    @Test
+    void deveAceitarNomeVazio() {
+        // Arrange
+        servico.setNome("");
+
+        // Act
+        Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "O nome pode ser vazio pois não tem validação @NotBlank");
     }
 
     @Test
     void deveAceitarNomeNulo() {
+        // Arrange
         servico.setNome(null);
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "O nome pode ser nulo pois não tem validação @NotNull");
     }
 
     @Test
     void deveAceitarCategoriaNula() {
+        // Arrange
         servico.setCategoriaServico(null);
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "A categoria pode ser nula");
     }
 
     @Test
     void deveAceitarCategoriaValida() {
+        // Arrange
         CategoriaServico novaCategoria = new CategoriaServico();
         novaCategoria.setId(2L);
+        novaCategoria.setNome("Nova Categoria");
         servico.setCategoriaServico(novaCategoria);
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
     @Test
-    void deveAceitarPrecoValido() {
+    void deveAceitarPrecoPositivo() {
+        // Arrange
         servico.setPreco(new BigDecimal("199.99"));
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+    @Test
+    void deveAceitarPrecoZero() {
+        // Arrange
+        servico.setPreco(BigDecimal.ZERO);
+
+        // Act
+        Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Preço zero deveria ser aceito");
+    }
+
+    @Test
+    void deveAceitarPrecoNegativo() {
+        // Arrange
+        servico.setPreco(new BigDecimal("-50.00"));
+
+        // Act
+        Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Preço negativo deveria ser aceito");
     }
 
     @Test
     void deveAceitarPrecoNulo() {
+        // Arrange
         servico.setPreco(null);
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Preço pode ser nulo");
     }
 
     @Test
-    void deveAceitarValorMateriaisValido() {
+    void deveAceitarValorMateriaisPositivo() {
+        // Arrange
         servico.setValorMateriais(new BigDecimal("75.50"));
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+    @Test
+    void deveAceitarValorMateriaisZero() {
+        // Arrange
+        servico.setValorMateriais(BigDecimal.ZERO);
+
+        // Act
+        Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Valor de materiais zero deveria ser aceito");
     }
 
     @Test
     void deveAceitarValorMateriaisNulo() {
+        // Arrange
         servico.setValorMateriais(null);
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Valor de materiais pode ser nulo");
     }
 
     @Test
-    void deveAceitarValorTotalValido() {
+    void deveAceitarValorTotalPositivo() {
+        // Arrange
         servico.setValorTotal(new BigDecimal("275.49"));
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+    @Test
+    void deveAceitarValorTotalZero() {
+        // Arrange
+        servico.setValorTotal(BigDecimal.ZERO);
+
+        // Act
+        Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Valor total zero deveria ser aceito");
     }
 
     @Test
     void deveAceitarValorTotalNulo() {
+        // Arrange
         servico.setValorTotal(null);
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Valor total pode ser nulo");
     }
 
     @Test
-    void deveAceitarTempoPrevistoValido() {
+    void deveAceitarTempoPrevistoPositivo() {
+        // Arrange
         servico.setTempoPrevisto(new BigDecimal("3.5"));
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+    @Test
+    void deveAceitarTempoPrevistoZero() {
+        // Arrange
+        servico.setTempoPrevisto(BigDecimal.ZERO);
+
+        // Act
+        Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Tempo previsto zero deveria ser aceito");
     }
 
     @Test
     void deveAceitarTempoPrevistoNulo() {
+        // Arrange
         servico.setTempoPrevisto(null);
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Tempo previsto pode ser nulo");
     }
 
     @Test
     void deveAceitarDescricaoValida() {
+        // Arrange
         servico.setDescricao("Nova descrição do serviço");
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+    @Test
+    void deveAceitarDescricaoVazia() {
+        // Arrange
+        servico.setDescricao("");
+
+        // Act
+        Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Descrição vazia deveria ser aceita");
+    }
+
+    @Test
+    void deveAceitarDescricaoComEspacos() {
+        // Arrange
+        servico.setDescricao("Descrição com espaços e caracteres especiais @#$");
+
+        // Act
+        Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
     @Test
     void deveAceitarDescricaoNula() {
+        // Arrange
         servico.setDescricao(null);
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Descrição pode ser nula");
     }
 
     @Test
     void deveAceitarPedidosNulo() {
+        // Arrange
         servico.setPedidos(null);
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Lista de pedidos pode ser nula");
+    }
+
+    @Test
+    void deveAceitarPedidosVazio() {
+        // Arrange
+        servico.setPedidos(new ArrayList<>());
+
+        // Act
+        Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Lista de pedidos pode ser vazia");
     }
 
     @Test
     void deveAceitarMateriaisNulo() {
+        // Arrange
         servico.setMateriais(null);
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Lista de materiais pode ser nula");
     }
 
     @Test
     void deveAceitarMateriaisVazio() {
+        // Arrange
         servico.setMateriais(new ArrayList<>());
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Lista de materiais pode ser vazia");
     }
 
     @Test
     void deveAceitarCamposBaseEntityNulos() {
+        // Arrange
         servico.setId(null);
         servico.setCreatedAt(null);
         servico.setUpdatedAt(null);
@@ -183,12 +394,16 @@ public class ServicoTest {
         servico.setCreatedBy(null);
         servico.setUpdatedBy(null);
 
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
     @Test
     void deveAceitarCamposBaseEntityPreenchidos() {
+        // Arrange
         Usuario usuario = new Usuario();
         usuario.setId(1L);
         usuario.setName("Admin");
@@ -200,14 +415,94 @@ public class ServicoTest {
         servico.setCreatedBy(usuario);
         servico.setUpdatedBy(usuario);
 
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-        assertTrue(violations.isEmpty());
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
     @Test
     void deveAceitarTodosCamposNulos() {
+        // Arrange
         Servico servicoVazio = new Servico();
+
+        // Act
         Set<ConstraintViolation<Servico>> violations = validator.validate(servicoVazio);
+
+        // Assert
         assertTrue(violations.isEmpty(), "Serviço deve aceitar todos os campos nulos");
+    }
+
+    @Test
+    void deveValidarGettersESetters() {
+        // Arrange
+        String nome = "Serviço Teste";
+        String descricao = "Descrição teste";
+        BigDecimal preco = new BigDecimal("100.00");
+        BigDecimal valorMateriais = new BigDecimal("50.00");
+        BigDecimal valorTotal = new BigDecimal("150.00");
+        BigDecimal tempoPrevisto = new BigDecimal("2.5");
+
+        // Act
+        servico.setNome(nome);
+        servico.setDescricao(descricao);
+        servico.setPreco(preco);
+        servico.setValorMateriais(valorMateriais);
+        servico.setValorTotal(valorTotal);
+        servico.setTempoPrevisto(tempoPrevisto);
+        servico.setCategoriaServico(categoria);
+
+        // Assert
+        assertEquals(nome, servico.getNome());
+        assertEquals(descricao, servico.getDescricao());
+        assertEquals(preco, servico.getPreco());
+        assertEquals(valorMateriais, servico.getValorMateriais());
+        assertEquals(valorTotal, servico.getValorTotal());
+        assertEquals(tempoPrevisto, servico.getTempoPrevisto());
+        assertEquals(categoria, servico.getCategoriaServico());
+    }
+
+    @Test
+    void deveValidarToString() {
+        // Act
+        String toString = servico.toString();
+
+        // Assert
+        assertTrue(toString.contains("Servico"));
+        assertTrue(toString.contains("nome=Serviço Teste"));
+    }
+
+    @Test
+    void deveValidarEqualsEHashCode() {
+        // Arrange
+        CategoriaServico categoria = new CategoriaServico();
+        categoria.setNome("Categoria Teste");
+
+        Servico servico1 = new Servico();
+        servico1.setNome("Serviço Teste");
+        servico1.setCategoriaServico(categoria);
+        servico1.setPreco(new BigDecimal("100.00"));
+        servico1.setValorMateriais(new BigDecimal("50.00"));
+        servico1.setValorTotal(new BigDecimal("150.00"));
+        servico1.setTempoPrevisto(new BigDecimal("2.0"));
+        servico1.setDescricao("Descrição do serviço teste");
+        servico1.setPedidos(new ArrayList<>());
+        servico1.setMateriais(new ArrayList<>());
+
+        Servico servico2 = new Servico();
+        servico2.setNome("Serviço Teste");
+        servico2.setCategoriaServico(categoria);
+        servico2.setPreco(new BigDecimal("100.00"));
+        servico2.setValorMateriais(new BigDecimal("50.00"));
+        servico2.setValorTotal(new BigDecimal("150.00"));
+        servico2.setTempoPrevisto(new BigDecimal("2.0"));
+        servico2.setDescricao("Descrição do serviço teste");
+        servico2.setPedidos(new ArrayList<>());
+        servico2.setMateriais(new ArrayList<>());
+
+        // Act & Assert
+        assertEquals(servico1, servico2, "Serviços com os mesmos dados deveriam ser iguais");
+        assertEquals(servico1.hashCode(), servico2.hashCode(), "HashCodes deveriam ser iguais");
     }
 } 

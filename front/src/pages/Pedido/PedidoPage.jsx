@@ -243,8 +243,7 @@ const PedidoPage = () => {
           const prioridadeMap = {
             'BAIXA': 1,
             'MEDIA': 2,
-            'ALTA': 3,
-            'URGENTE': 4
+            'ALTA': 3
           };
           const valueA = prioridadeMap[a.prioridade] || 0;
           const valueB = prioridadeMap[b.prioridade] || 0;
@@ -377,7 +376,6 @@ const PedidoPage = () => {
                     <option value="BAIXA">Baixa</option>
                     <option value="MEDIA">Média</option>
                     <option value="ALTA">Alta</option>
-                    <option value="URGENTE">Urgente</option>
                   </select>
                 </div>
                 

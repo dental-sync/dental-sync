@@ -71,7 +71,7 @@ public class Pedido extends BaseEntity {
     private String observacao;
 
     public enum Prioridade {
-        BAIXA, MEDIA, ALTA, URGENTE
+        BAIXA, MEDIA, ALTA
     }
 
     public enum Status {

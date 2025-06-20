@@ -1,7 +1,17 @@
-# Arquivos de credenciais (por segurança)
-credentials/*.json
-credentials/*.yml
-credentials/*.yaml
+# Arquivos de ambiente (contém dados sensíveis)
+.env
+
+# Dados persistentes do n8n
+
+credentials/
+.n8n/
+
+# Logs
+*.log
+
+# Arquivos temporários
+*.tmp
+*.temp
 
 # Logs do Docker
 *.log

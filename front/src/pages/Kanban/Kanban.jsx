@@ -17,8 +17,7 @@ const statusLabels = {
 const prioridadeColors = {
   BAIXA: '#28a745',
   MEDIA: '#ffc107',
-  ALTA: '#dc3545',
-  URGENTE: '#b71c1c',
+  ALTA: '#dc3545'
 };
 
 function Kanban() {
@@ -232,8 +231,12 @@ function Kanban() {
             <div className="danger" onClick={() => handleDeletePedido(pedido.id)}>Excluir</div>
           </div>
         )}
-        <div className="kanban-card-title">{servico} - {pedido.cliente?.nome}</div>
-        <div className="kanban-card-desc">{pedido.observacao || 'Sem descrição.'}</div>
+        <div className="kanban-card-title">
+          {servico.length > 15 ? servico.slice(0, 15) + '...' : servico} - {pedido.cliente?.nome?.length > 15 ? pedido.cliente.nome.slice(0, 15) + '...' : pedido.cliente?.nome}
+        </div>
+        <div className="kanban-card-desc">
+          {(pedido.observacao || 'Sem descrição.').length > 60 ? (pedido.observacao || 'Sem descrição.').slice(0, 60) + '...' : (pedido.observacao || 'Sem descrição.')}
+        </div>
         <div className="kanban-card-footer">
           <span className="kanban-card-date">Entrega: {pedido.dataEntrega ? new Date(pedido.dataEntrega).toLocaleDateString('pt-BR') : '-'}</span>
           <span className="kanban-card-prioridade" style={{ background: prioridadeColors[pedido.prioridade] || '#ccc' }}>
@@ -302,11 +305,10 @@ function Kanban() {
                       onChange={handleFiltroChange}
                       className="filter-select"
                     >
-                      <option value="todos">Todas</option>
-                      <option value="BAIXA">Baixa</option>
-                      <option value="MEDIA">Média</option>
-                      <option value="ALTA">Alta</option>
-                      <option value="URGENTE">Urgente</option>
+                                          <option value="todos">Todas</option>
+                    <option value="BAIXA">Baixa</option>
+                    <option value="MEDIA">Média</option>
+                    <option value="ALTA">Alta</option>
                     </select>
                   </div>
                   <div className="filter-actions">

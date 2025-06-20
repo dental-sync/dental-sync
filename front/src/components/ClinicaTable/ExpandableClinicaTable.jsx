@@ -10,6 +10,13 @@ const formatClinicaId = (id) => `C${String(id).padStart(4, '0')}`;
 // Função utilitária para formatar o ID do dentista
 const formatDentistaId = (id) => `D${String(id).padStart(4, '0')}`;
 
+// Função utilitária para limitar o texto
+const limitText = (text, maxLength = 30) => {
+  if (!text) return '-';
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + '...';
+};
+
 const ExpandableClinicaTable = ({ 
   clinicas, 
   onClinicaDeleted, 
@@ -148,8 +155,12 @@ const ExpandableClinicaTable = ({
                     <span className="clinica-id">{formatClinicaId(clinica.id)}</span>
                   </div>
                 </td>
-                <td data-column="nome">{clinica.nome}</td>
-                <td data-column="cnpj">{clinica.cnpj}</td>
+                <td data-column="nome" title={clinica.nome} className="truncated-cell">
+                  {limitText(clinica.nome)}
+                </td>
+                <td data-column="cnpj" title={clinica.cnpj} className="truncated-cell">
+                  {limitText(clinica.cnpj)}
+                </td>
                 <td data-column="actions">
                   <ActionMenuClinica 
                     itemId={clinica.id} 
@@ -187,11 +198,11 @@ const ExpandableClinicaTable = ({
                                       <span className="dentista-id-badge">{formatDentistaId(dentista.id)}</span>
                                     </td>
                                     <td className="dentista-nome-cell" title={dentista.nome}>
-                                      {dentista.nome}
+                                      {limitText(dentista.nome)}
                                     </td>
                                     <td className="dentista-cro-cell">{dentista.cro}</td>
                                     <td className="dentista-email-cell" title={dentista.email}>
-                                      {dentista.email}
+                                      {limitText(dentista.email)}
                                     </td>
                                     <td className="dentista-telefone-cell">{dentista.telefone}</td>
                                   </tr>

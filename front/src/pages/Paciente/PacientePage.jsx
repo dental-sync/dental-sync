@@ -253,11 +253,15 @@ const PacientePage = () => {
       
       
       if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        const idFormatado = `P${String(paciente.id).padStart(4, '0')}`;
+        
         return (
-          paciente.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          paciente.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          paciente.telefone?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (paciente.id?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase())
+          paciente.nome?.toLowerCase().includes(searchLower) ||
+          paciente.email?.toLowerCase().includes(searchLower) ||
+          paciente.telefone?.toLowerCase().includes(searchLower) ||
+          (paciente.id?.toString() || '').toLowerCase().includes(searchLower) ||
+          idFormatado.toLowerCase().includes(searchLower)
         );
       }
       
@@ -400,13 +404,15 @@ const PacientePage = () => {
             isOpen={isExportOpen}
             toggleExport={toggleExport}
             onCloseDropdown={handleCloseExport}
+            title="Lista de Pacientes"
+            formatIdFn={(id) => `P${String(id).padStart(4, '0')}`}
           />
         </div>
       </div>
       
       <div className="search-container">
         <SearchBar 
-          placeholder="Buscar por nome, email, telefone..."
+          placeholder="Buscar por ID (P0001), nome, email, telefone..."
           onSearch={handleSearch} 
         />
         <ActionButton

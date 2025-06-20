@@ -150,15 +150,13 @@ const MaterialPage = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Tem certeza que deseja excluir este material?')) {
-      try {
-        await api.delete(`/material/${id}`);
-        toast.success('Material excluído com sucesso!');
-        refreshMateriais();
-      } catch (error) {
-        console.error('Erro ao excluir material:', error);
-        toast.error('Erro ao excluir material');
-      }
+    try {
+      await api.delete(`/material/${id}`);
+      toast.success('Material excluído com sucesso!');
+      refreshMateriais();
+    } catch (error) {
+      console.error('Erro ao excluir material:', error);
+      toast.error('Erro ao excluir material');
     }
   };
 

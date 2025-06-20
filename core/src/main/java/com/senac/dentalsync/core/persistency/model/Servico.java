@@ -46,7 +46,7 @@ public class Servico extends BaseEntity {
     private BigDecimal tempoPrevisto;
     private String descricao;
     
-    @OneToMany(mappedBy = "servico")
+    @OneToMany(mappedBy = "servico", cascade = jakarta.persistence.CascadeType.REMOVE)
     @JsonManagedReference
     private List<ServicoMaterial> materiais;
 }

@@ -5,7 +5,14 @@ import './styles.css';
 const getBarColor = (colorScale, index, label) => {
   // Escala de cores para barras azuis
   if (colorScale === 'blue') {
-    const blueShades = ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe', '#eff6ff'];
+    const blueShades = [
+      '#1e40af', // Azul mais escuro
+      '#2563eb',
+      '#3b82f6',
+      '#60a5fa',
+      '#93c5fd',
+      '#bfdbfe'
+    ];
     return blueShades[index % blueShades.length];
   }
   
@@ -28,9 +35,12 @@ const HorizontalBarChart = ({ data, colorScale = 'default' }) => {
   const labelKey = data[0]?.tipo ? 'tipo' : data[0]?.status ? 'status' : 'label';
   const valueKey = data[0]?.percentual ? 'percentual' : 'valor';
   
+  // Ordenar os dados do maior para o menor
+  const sortedData = [...data].sort((a, b) => b[valueKey] - a[valueKey]);
+  
   return (
     <div className="horizontal-bar-chart">
-      {data.map((item, index) => {
+      {sortedData.map((item, index) => {
         const label = item[labelKey];
         const value = item[valueKey];
         const barColor = getBarColor(colorScale, index, label);
@@ -43,7 +53,12 @@ const HorizontalBarChart = ({ data, colorScale = 'default' }) => {
                   className="color-indicator" 
                   style={{ backgroundColor: barColor }}
                 ></div>
-                <span>{label}</span>
+                <span 
+                  className="label-text"
+                  title={item.nomeOriginal && item.nomeOriginal !== label ? item.nomeOriginal : undefined}
+                >
+                  {label}
+                </span>
               </div>
               <span className="horizontal-bar-value">{Number(value).toFixed(2)}%</span>
             </div>

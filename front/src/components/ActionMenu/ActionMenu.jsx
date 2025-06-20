@@ -6,7 +6,7 @@ import api from '../../axios-config';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
-const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, proteticoStatus, itemStatus, alwaysAllowDelete = false, url, hideOptions = [] }) => {
+const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, proteticoStatus, itemStatus, alwaysAllowDelete = false, url, hideOptions = [], deleteMessage }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const dropdownRef = useRef(null);
@@ -132,7 +132,7 @@ const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, pr
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleConfirmDelete}
         title="Confirmar Exclusão"
-        message="Tem certeza que deseja excluir permanentemente este item? Esta ação não poderá ser desfeita."
+        message={deleteMessage}
       />
     </>
   );

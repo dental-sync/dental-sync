@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import api from '../../axios-config';
@@ -7,7 +7,7 @@ import DatePicker from '../DatePicker/DatePicker';
 import { toast } from 'react-toastify';
 import './PedidoForm.css';
 
-const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
+const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(false);
@@ -36,6 +36,177 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
   // Estado para controlar quais dentes estão selecionados no odontograma
   const [dentesSelecionados, setDentesSelecionados] = useState([]);
   const [servicosSelecionados, setServicosSelecionados] = useState([]);
+
+  // Método para preencher os dados via STT
+  const preencherDadosSTT = React.useCallback((dadosProcessados) => {
+    try {
+      console.log('Dados recebidos do STT:', dadosProcessados);
+      
+      let dados;
+      
+      // Diferentes formatos de resposta possíveis
+      if (dadosProcessados.output) {
+        dados = JSON.parse(dadosProcessados.output);
+      } else if (dadosProcessados.rawResponse) {
+        const rawData = JSON.parse(dadosProcessados.rawResponse);
+        if (Array.isArray(rawData) && rawData.length > 0 && rawData[0].output) {
+          dados = JSON.parse(rawData[0].output);
+        } else {
+          throw new Error('Formato de resposta não reconhecido');
+        }
+      } else if (typeof dadosProcessados === 'string') {
+        dados = JSON.parse(dadosProcessados);
+      } else {
+        dados = dadosProcessados;
+      }
+      
+      console.log('Dados processados:', dados);
+      const novoFormData = {};
+      let camposPreenchidos = [];
+      let camposNaoEncontrados = [];
+      
+      // Procurar cliente pelo ID
+      if (dados.cliente_id && clientes.length > 0) {
+        const clienteEncontrado = clientes.find(c => c.id === dados.cliente_id);
+        if (clienteEncontrado) {
+          novoFormData.cliente = clienteEncontrado;
+          camposPreenchidos.push('Cliente');
+        } else {
+          camposNaoEncontrados.push('Cliente (ID não encontrado)');
+        }
+      }
+      
+      // Procurar dentista pelo ID  
+      if (dados.dentista_id && dentistas.length > 0) {
+        const dentistaEncontrado = dentistas.find(d => d.id === dados.dentista_id);
+        if (dentistaEncontrado) {
+          novoFormData.dentista = dentistaEncontrado;
+          camposPreenchidos.push('Dentista');
+        } else {
+          camposNaoEncontrados.push('Dentista (ID não encontrado)');
+        }
+      }
+      
+      // Procurar protético pelo ID
+      if (dados.protetico_id && proteticos.length > 0) {
+        const proteticoEncontrado = proteticos.find(p => p.id === dados.protetico_id);
+        if (proteticoEncontrado) {
+          novoFormData.protetico = proteticoEncontrado;
+          camposPreenchidos.push('Protético');
+        } else {
+          camposNaoEncontrados.push('Protético (ID não encontrado)');
+        }
+      }
+      
+      // Procurar e selecionar serviços
+      let servicosEncontrados = [];
+      if (dados.servicos && Array.isArray(dados.servicos) && servicos.length > 0) {
+        dados.servicos.forEach(servicoData => {
+          const servicoEncontrado = servicos.find(s => s.id === servicoData.id);
+          if (servicoEncontrado) {
+            servicosEncontrados.push({
+              ...servicoEncontrado,
+              quantidade: servicoData.quantidade || 1
+            });
+          }
+        });
+        
+        if (servicosEncontrados.length > 0) {
+          novoFormData.servicos = servicosEncontrados;
+          camposPreenchidos.push(`${servicosEncontrados.length} Serviço(s)`);
+        }
+      }
+      
+      // Definir dentes selecionados
+      if (dados.dentes && Array.isArray(dados.dentes) && dados.dentes.length > 0) {
+        novoFormData.odontograma = dados.dentes;
+        camposPreenchidos.push(`${dados.dentes.length} Dente(s)`);
+      }
+      
+      // Definir prioridade
+      if (dados.prioridade) {
+        const prioridadeMap = {
+          'baixa': 'BAIXA',
+          'media': 'MEDIA', 
+          'alta': 'ALTA'
+        };
+        novoFormData.prioridade = prioridadeMap[dados.prioridade.toLowerCase()] || 'MEDIA';
+        camposPreenchidos.push('Prioridade');
+      }
+      
+      // Definir data
+      if (dados.data) {
+        const dataFormatada = formatDateForBrazilian(dados.data);
+        if (dataFormatada) {
+          novoFormData.dataEntrega = dataFormatada;
+          camposPreenchidos.push('Data de Entrega');
+        }
+      }
+      
+      // Atualizar o estado uma única vez
+      setFormData(prev => ({ ...prev, ...novoFormData }));
+      
+      // Atualizar arrays específicos
+      if (dados.dentes && Array.isArray(dados.dentes)) {
+        setDentesSelecionados(dados.dentes);
+      }
+      
+      if (servicosEncontrados.length > 0) {
+        setServicosSelecionados(servicosEncontrados);
+      }
+      
+      // Feedback ao usuário sobre o que foi preenchido
+      if (camposPreenchidos.length > 0) {
+        toast.success(`Preenchido: ${camposPreenchidos.join(', ')}`);
+        
+        if (camposNaoEncontrados.length > 0) {
+          toast.warning(`Não identificado: ${camposNaoEncontrados.join(', ')}`);
+        }
+        
+        // Instruções sobre campos não preenchidos
+        const camposNaoPreenchidos = [];
+        if (!novoFormData.cliente) camposNaoPreenchidos.push('Cliente');
+        if (!novoFormData.dentista) camposNaoPreenchidos.push('Dentista');
+        if (!novoFormData.protetico) camposNaoPreenchidos.push('Protético');
+        if (!servicosEncontrados.length) camposNaoPreenchidos.push('Serviços');
+        
+        if (camposNaoPreenchidos.length > 0) {
+          toast.info(`Complete manualmente: ${camposNaoPreenchidos.join(', ')}`);
+        }
+      } else {
+        toast.warning('A IA não conseguiu identificar dados específicos. Complete o formulário manualmente.');
+      }
+      
+    } catch (error) {
+      console.error('Erro ao processar dados STT:', error);
+      toast.error('Erro ao processar os dados do reconhecimento de voz.');
+    }
+  }, [clientes, dentistas, proteticos, servicos]);
+
+  // Função para formatar data brasileira para input
+  const formatDateForBrazilian = (dateString) => {
+    try {
+      // Se já está no formato YYYY-MM-DD, retorna como está
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+      
+      // Se está no formato DD/MM/YYYY
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+        const [day, month, year] = dateString.split('/');
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      }
+      
+      return '';
+    } catch {
+      return '';
+    }
+  };
+
+  // Expor métodos via ref
+  useImperativeHandle(ref, () => ({
+    preencherDadosSTT
+  }), [preencherDadosSTT]);
   
   // Função para formatar data para input (YYYY-MM-DD)
   const formatDateForInput = (dateString) => {
@@ -507,7 +678,6 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
                   <option value="BAIXA">Baixa</option>
                   <option value="MEDIA">Média</option>
                   <option value="ALTA">Alta</option>
-                  <option value="URGENTE">Urgente</option>
                 </select>
               </div>
             </div>
@@ -657,6 +827,8 @@ const PedidoForm = ({ pedidoId = null, onSubmitSuccess }) => {
       </form>
     </div>
   );
-};
+});
+
+PedidoForm.displayName = 'PedidoForm';
 
 export default PedidoForm; 

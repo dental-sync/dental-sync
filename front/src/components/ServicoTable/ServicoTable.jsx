@@ -34,7 +34,7 @@ const columns = [
   { key: 'nome', label: 'Nome', sortable: true },
   { key: 'categoriaServico', label: 'Categoria', sortable: true },
   { key: 'valorTotal', label: 'Valor', sortable: true },
-  { key: 'tempoPrevisto', label: 'Tempo Previsto', sortable: false },
+  { key: 'tempoPrevisto', label: 'Tempo Previsto', sortable: true },
   { key: 'descricao', label: 'Descrição', sortable: false },
   { key: 'actions', label: 'Ações' }
 ];
@@ -55,8 +55,15 @@ const ServicoTable = ({ servicos, onServicoDeleted, onStatusChange, sortConfig, 
       formatId={formatServicoId}
       apiEndpoint="/servico"
       emptyMessage="Nenhum serviço cadastrado"
-      ActionMenuComponent={ActionMenu}
+      ActionMenuComponent={(props) => (
+        <ActionMenu
+          {...props}
+          deleteMessage="Tem certeza que deseja excluir este serviço? Esta ação não pode ser desfeita."
+        />
+      )}
       url="servico"
+      hideOptions={['historico']}
+      alwaysAllowDelete={true}
     />
   );
 }

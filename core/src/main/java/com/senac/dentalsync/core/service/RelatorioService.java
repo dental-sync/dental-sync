@@ -20,16 +20,28 @@ public class RelatorioService {
     @Transactional(readOnly = true)
     public RelatorioDTO obterDadosDashboard() {
         LocalDateTime dataAtual = LocalDateTime.now();
-        LocalDateTime mesAnterior = dataAtual.minusMonths(1);
+        LocalDateTime inicioMesAtual = dataAtual.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime inicioMesAnterior = inicioMesAtual.minusMonths(1);
 
         // Obtém dados atuais
         Long totalPedidos = pedidoRepository.count();
         Long pedidosConcluidos = pedidoRepository.countByStatus(Pedido.Status.CONCLUIDO);
         Long dentistasAtivos = dentistaRepository.countByIsActiveTrue();
 
-        // Obtém dados do mês anterior
-        Long totalPedidosAnterior = pedidoRepository.countByCreatedAtBefore(mesAnterior);
-        Long dentistasAtivosAnterior = dentistaRepository.countByIsActiveTrueAndCreatedAtBefore(mesAnterior);
+        // Obtém dados do mês anterior (final do mês anterior)
+        Long totalPedidosAnterior = pedidoRepository.countByCreatedAtBefore(inicioMesAtual);
+        Long dentistasAtivosAnterior = dentistaRepository.countByIsActiveTrueAndCreatedAtBefore(inicioMesAtual);
+        
+        // Conta dentistas criados ESTE MÊS especificamente
+        Long dentistasNovosMes = dentistaRepository.countByIsActiveTrueAndCreatedAtBetween(inicioMesAtual, dataAtual);
+        
+        System.out.println("=== DEBUG RELATÓRIO DENTISTAS ===");
+        System.out.println("Data atual: " + dataAtual);
+        System.out.println("Início mês atual: " + inicioMesAtual);
+        System.out.println("Dentistas ativos total: " + dentistasAtivos);
+        System.out.println("Dentistas ativos anterior: " + dentistasAtivosAnterior);
+        System.out.println("Dentistas novos este mês: " + dentistasNovosMes);
+        System.out.println("===============================");
 
         // Monta o DTO
         RelatorioDTO relatorio = new RelatorioDTO();
@@ -44,7 +56,19 @@ public class RelatorioService {
         relatorio.setDadosAnteriores(dadosAnteriores);
         
         // Dados dos gráficos
-        List<Object[]> pedidosPorMesRaw = pedidoRepository.findPedidosPorMes(dataAtual);
+        System.out.println("=== DEBUG PEDIDOS POR MÊS ===");
+        System.out.println("Data para consulta: " + dataAtual);
+        System.out.println("Total de pedidos: " + totalPedidos);
+        
+        // Buscar dados dos últimos 6 meses
+        LocalDateTime inicioConsulta = dataAtual.minusMonths(6);
+        List<Object[]> pedidosPorMesRaw = pedidoRepository.findPedidosPorMes(inicioConsulta);
+        System.out.println("Resultados raw da query pedidos por mês: " + pedidosPorMesRaw.size() + " registros");
+        
+        for (Object[] row : pedidosPorMesRaw) {
+            System.out.println("Mês: " + row[0] + ", Total: " + row[1]);
+        }
+        
         List<PedidosPorMesDTO> pedidosPorMes = pedidosPorMesRaw.stream()
             .map(row -> new PedidosPorMesDTO(
                 ((Number) row[0]).intValue(),

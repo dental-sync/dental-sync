@@ -61,6 +61,15 @@
   margin-top: 0.5rem;
   padding-top: 0.5rem;
   border-top: 1px dashed #e2e8f0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  display: block;
+}
+
+.stat-description[title] {
+  cursor: help;
 }
 
 .trend-up {

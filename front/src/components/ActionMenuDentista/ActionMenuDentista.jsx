@@ -6,7 +6,7 @@ import api from '../../axios-config';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
-const ActionMenuDentista = ({ dentistaId, itemId, onDentistaDeleted, onItemDeleted, isActive, itemStatus }) => {
+const ActionMenuDentista = ({ dentistaId, itemId, onDentistaDeleted, onItemDeleted, onDelete, itemStatus }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const dropdownRef = useRef(null);
@@ -16,8 +16,8 @@ const ActionMenuDentista = ({ dentistaId, itemId, onDentistaDeleted, onItemDelet
   
   // Usar o dentistaId ou o itemId (dependendo de qual foi passado)
   const id = dentistaId || itemId;
-  const statusActive = isActive || (itemStatus === 'ATIVO');
-  const onDeleted = onDentistaDeleted || onItemDeleted;
+  const statusActive = itemStatus === 'ATIVO';
+  const onDeleted = onDentistaDeleted || onItemDeleted || onDelete;
 
   const updateDropdownPosition = () => {
     if (buttonRef.current) {
@@ -71,15 +71,13 @@ const ActionMenuDentista = ({ dentistaId, itemId, onDentistaDeleted, onItemDelet
   };
 
   const handleConfirmDelete = async () => {
-    if (window.confirm('Tem certeza que deseja excluir este dentista?')) {
-      try {
-        await api.delete(`/dentistas/${id}`);
-        toast.success('Dentista excluído com sucesso!');
-        onDeleted(id);
-      } catch (error) {
-        console.error('Erro ao excluir dentista:', error);
-        toast.error('Erro ao excluir dentista');
-      }
+    try {
+      await api.delete(`/dentistas/${id}`);
+      toast.success('Dentista excluído com sucesso!');
+      onDeleted(id);
+    } catch (error) {
+      console.error('Erro ao excluir dentista:', error);
+      toast.error('Erro ao excluir dentista');
     }
     setShowDeleteModal(false);
   };
@@ -100,7 +98,7 @@ const ActionMenuDentista = ({ dentistaId, itemId, onDentistaDeleted, onItemDelet
         <ul>
           <li onClick={handleVerHistorico}>Histórico</li>
           <li onClick={handleEditar}>Editar</li>
-          {!statusActive && <li onClick={handleExcluir} className="delete-option">Excluir</li>}
+          {itemStatus === 'INATIVO' && <li onClick={handleExcluir} className="delete-option">Excluir</li>}
         </ul>
       </div>
     );

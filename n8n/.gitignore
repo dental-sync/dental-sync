@@ -1,0 +1,28 @@
+# Arquivos de ambiente (contém dados sensíveis)
+.env
+
+# Dados persistentes do n8n
+
+credentials/
+.n8n/
+
+# Logs
+*.log
+
+# Arquivos temporários
+*.tmp
+*.temp
+
+# Logs do Docker
+*.log
+
+# Arquivos temporários
+.DS_Store
+Thumbs.db
+
+# Backups com dados sensíveis
+backups/
+
+# Variáveis de ambiente locais
+.env.local
+.env.production 

@@ -1,0 +1,255 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-3-7-sonnet-20250219",
+          "mode": "list",
+          "cachedResultName": "Claude Sonnet 3.7"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        340,
+        140
+      ],
+      "id": "b6b0c445-d97d-486e-94a0-0e62da882ec9",
+      "name": "Anthropic Chat Model2",
+      "credentials": {
+        "anthropicApi": {
+          "id": "JWxhaUWoUu4m768y",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    'cliente' as tipo,\n    id,\n    nome\nFROM paciente \nWHERE is_active = 1\n\nUNION ALL\n\nSELECT \n    'dentista' as tipo,\n    id,\n    nome  \nFROM dentista\nWHERE is_active = 1\n\nUNION ALL\n\nSELECT \n    'protetico' as tipo,\n    id,\n    nome\nFROM protetico\nWHERE is_active = 1\n\nUNION ALL\n\nSELECT \n    'servico' as tipo,\n    id,\n    nome\nFROM servicos\nWHERE is_active = 1\n\nORDER BY tipo, nome;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.4,
+      "position": [
+        -580,
+        -80
+      ],
+      "id": "ad23c8af-385e-49ab-b637-ff14d086fd78",
+      "name": "MySQL",
+      "alwaysOutputData": false,
+      "credentials": {
+        "mySql": {
+          "id": "4jMQlb3qor12npee",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"SISTEMA DE EXTRAÇÃO DE IDs PARA PEDIDOS ODONTOLÓGICOS - VALIDAÇÃO EXTREMA ANTI-INVENÇÃO\n\n⚠️ ATENÇÃO: VOCÊ ESTÁ RETORNANDO DADOS INCORRETOS! SIGA ESTAS INSTRUÇÕES RIGOROSAMENTE! ⚠️\n\n⚠️ REGRA CRÍTICA: RETORNE APENAS JSON PURO - NENHUM TEXTO ADICIONAL ⚠️\n\n⚠️ PROBLEMA IDENTIFICADO: VOCÊ ESTÁ RETORNANDO SERVIÇOS NÃO MENCIONADOS NA MENSAGEM ⚠️\n\nPROCESSO OBRIGATÓRIO DE VERIFICAÇÃO EM 9 ETAPAS:\n\nETAPA 1: LEIA A MENSAGEM DO USUÁRIO PALAVRA POR PALAVRA\n- Identifique APENAS palavras-chave que estão fisicamente escritas\n- Não interprete contexto\n- Não assuma nada\n\nETAPA 2: IDENTIFIQUE TIPOS APENAS COM PALAVRAS-CHAVE PRESENTES:\n• CLIENTE: \"cliente é\", \"paciente\", \"para o\", \"para a\", \"Sr.\", \"Sra.\"\n• DENTISTA: \"dentista\", \"doutor\", \"dr\", \"dra\", \"cirurgião\", \"pedido por\", \"solicitado por\", \"encomendado por\"\n• PROTETICO: \"protético\", \"técnico\", \"laboratorista\", \"feito por\", \"executado por\", \"realizado por\", \"responsável por\"  \n• SERVICO: \"serviço\", \"procedimento\", \"fazer\", \"produzir\", \"executar\", \"realizar\", \"colocar\", \"confeccionar\"\n• DENTES: números específicos (11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 33, 34, 35, 36, 37, 38, 41, 42, 43, 44, 45, 46, 47, 48), \"dente\", \"elemento\", \"no dente\", \"nos dentes\"\n• PRIORIDADE: \"alta\", \"média\", \"baixa\" - APENAS ESSAS TRÊS OPÇÕES EXISTEM NO SISTEMA\n• QUANTIDADE: números específicos como \"2 peças\", \"3 unidades\", \"1 coroa\", \"duas\", \"três\", \"uma\", \"um\"\n• DATA: datas específicas como \"hoje\", \"amanhã\", \"15/01\", \"janeiro\", \"dia 20\", formato DD/MM/YYYY, DD/MM, DD-MM-YYYY\n\nETAPA 3: EXTRAIA APENAS NOMES EXPLÍCITOS\n- Extraia APENAS nomes que aparecem IMEDIATAMENTE após ou antes das palavras-chave\n- Se não há nome específico após a palavra-chave, NÃO extraia nada\n\nETAPA 4: PARA CADA SERVIÇO - VERIFICAÇÃO TRIPLA OBRIGATÓRIA:\n🔍 PERGUNTA 1: O nome do serviço está LITERALMENTE escrito na mensagem?\n   - Se NÃO → array vazio\n   - Se SIM → continue para pergunta 2\n\n🔍 PERGUNTA 2: O nome escrito na mensagem tem correspondência EXATA no banco?\n   - Normalize: minúsculas, sem acentos, sem caracteres especiais\n   - Compare com nomes do banco normalizados da mesma forma\n   - Se NÃO há correspondência exata → array vazio\n   - Se SIM → continue para pergunta 3\n\n🔍 PERGUNTA 3: O ID encontrado existe FISICAMENTE no banco fornecido?\n   - Procure literalmente pelo ID nos dados\n   - Verifique se tem tipo=\"servico\"\n   - Se NÃO → array vazio\n   - Se SIM → pode incluir no array\n\nETAPA 4.1: PARA DENTES - VERIFICAÇÃO OBRIGATÓRIA:\n🦷 PERGUNTA 1: Há números específicos de dentes mencionados na mensagem?\n   - Procure por números de 11-18, 21-28, 31-38, 41-48\n   - Procure por palavras como \"dente 18\", \"elemento 17\", \"no dente 21\"\n   - Se NÃO há números específicos → array vazio\n   - Se SIM → adicione apenas os números explicitamente mencionados\n\n🦷 PERGUNTA 2: O dente mencionado existe no padrão odontológico?\n   - Verifique se está entre: 11,12,13,14,15,16,17,18,21,22,23,24,25,26,27,28,31,32,33,34,35,36,37,38,41,42,43,44,45,46,47,48\n   - Se NÃO → array vazio\n   - Se SIM → pode incluir\n\nETAPA 4.2: PARA PRIORIDADE - VERIFICAÇÃO OBRIGATÓRIA:\n🎯 PERGUNTA 1: Há menção explícita de prioridade na mensagem?\n   - Procure APENAS por: \"alta\", \"média\", \"baixa\"\n   - Se NÃO há menção de uma dessas três palavras exatas → null\n   - Se SIM → retornar exatamente: \"alta\", \"media\", \"baixa\"\n\n🎯 MAPEAMENTO DE PRIORIDADE (APENAS ESSAS TRÊS OPÇÕES):\n   - \"alta\" → \"alta\"\n   - \"média\" → \"media\"  \n   - \"baixa\" → \"baixa\"\n   - Qualquer outra palavra ou nenhuma menção → null\n\nETAPA 4.3: PARA QUANTIDADE - VERIFICAÇÃO OBRIGATÓRIA:\n📊 PERGUNTA 1: Há menção de quantidade específica para cada serviço?\n   - Procure por números + serviços: \"2 coroas\", \"3 reparos\", \"uma placa\"\n   - Procure por palavras: \"um\", \"uma\", \"dois\", \"duas\", \"três\", \"quatro\", etc.\n   - Se NÃO há quantidade específica → quantidade: 1 (padrão)\n   - Se SIM → extrair número exato mencionado\n\n📊 MAPEAMENTO DE QUANTIDADE:\n   - \"um\", \"uma\" → 1\n   - \"dois\", \"duas\" → 2\n   - \"três\" → 3\n   - Números escritos (1, 2, 3, etc.) → usar o número\n   - Nenhuma menção → 1 (padrão)\n\nETAPA 4.4: PARA DATA - VERIFICAÇÃO OBRIGATÓRIA:\n📅 PERGUNTA 1: Há menção de data específica na mensagem?\n   - Procure por: \"hoje\", \"amanhã\", \"15/01\", \"dia 20\", \"janeiro\", \"fevereiro\", etc.\n   - Procure por formatos: DD/MM/YYYY, DD/MM, DD-MM-YYYY\n   - Se NÃO há data específica → null\n   - Se SIM → converter para formato brasileiro DD/MM/YYYY\n\n📅 MAPEAMENTO DE DATA:\n   - \"hoje\" → data atual em formato DD/MM/YYYY\n   - \"amanhã\" → data atual + 1 dia em formato DD/MM/YYYY\n   - \"DD/MM\" → assumir ano atual e completar DD/MM/YYYY\n   - \"DD/MM/YYYY\" → manter formato brasileiro\n   - \"DD-MM-YYYY\" → converter para DD/MM/YYYY\n   - Nomes de meses → usar com dia se especificado em formato DD/MM/YYYY\n   - Nenhuma menção → null\n\nETAPA 5: AUTOVALIDAÇÃO OBRIGATÓRIA\nAntes de retornar, responda internamente estas perguntas:\n\nPARA CLIENTE_ID:\n- A palavra \"cliente\", \"paciente\", \"Sr.\" ou \"Sra.\" aparece na mensagem? SE NÃO → null\n- Há um nome específico mencionado após essas palavras? SE NÃO → null\n- Esse nome existe no banco como tipo \"cliente\"? SE NÃO → null\n\nPARA DENTISTA_ID:\n- A palavra \"dentista\", \"doutor\", \"dr\", \"dra\" ou similar aparece na mensagem? SE NÃO → null\n- Há um nome específico mencionado? SE NÃO → null\n- Esse nome existe no banco como tipo \"dentista\"? SE NÃO → null\n\nPARA PROTETICO_ID:\n- A palavra \"protético\", \"técnico\" ou similar aparece na mensagem? SE NÃO → null\n- Há um nome específico mencionado? SE NÃO → null\n- Esse nome existe no banco como tipo \"protetico\"? SE NÃO → null\n\nPARA SERVICOS:\n- Há nomes específicos de serviços mencionados na mensagem? SE NÃO → []\n- Cada nome mencionado existe exatamente no banco? SE NÃO → []\n- Não estou assumindo serviços baseado em contexto geral? SE ESTOU → []\n- Para cada serviço, há quantidade específica mencionada? SE NÃO → quantidade: 1\n\nPARA DENTES:\n- Há números específicos de dentes mencionados? SE NÃO → []\n- Cada número está no padrão odontológico válido? SE NÃO → []\n- Não estou assumindo dentes baseado em contexto? SE ESTOU → []\n\nPARA PRIORIDADE:\n- A palavra \"alta\", \"média\" ou \"baixa\" aparece EXATAMENTE na mensagem? SE NÃO → null\n- Não estou interpretando outras palavras como prioridade? SE ESTOU → null\n\nPARA DATA:\n- Há data específica mencionada na mensagem? SE NÃO → null\n- A data está em formato reconhecível? SE NÃO → null\n- Não estou assumindo data não mencionada? SE ESTOU → null\n\nETAPA 6: CASOS DE RETORNO OBRIGATÓRIO NULL/VAZIO:\n• \"fazer um procedimento\" SEM especificar qual → servicos: []\n• \"atendimento\" SEM especificar tipo → servicos: []\n• \"tratamento\" SEM especificar qual → servicos: []\n• \"consulta\" SEM especificar tipo → servicos: []\n• Qualquer menção genérica SEM nome específico → servicos: []\n• \"nos dentes\" SEM números específicos → dentes: []\n• \"alguns dentes\" SEM números específicos → dentes: []\n• Qualquer palavra que NÃO seja \"alta\", \"média\" ou \"baixa\" → prioridade: null\n• Nenhuma data específica mencionada → data: null\n\nETAPA 7: VALIDAÇÃO FINAL EXTREMA\n🚨 CHECKPOINT OBRIGATÓRIO ANTES DE RETORNAR:\n□ Reli a mensagem palavra por palavra?\n□ Cada item retornado está LITERALMENTE na mensagem?\n□ Não estou inferindo nada que não foi escrito?\n□ Cada ID existe fisicamente no banco?\n□ O array de serviços contém APENAS serviços explicitamente mencionados?\n□ O array de dentes contém APENAS números explicitamente mencionados?\n□ A prioridade é EXATAMENTE \"alta\", \"media\" ou \"baixa\" ou null?\n□ As quantidades correspondem ao que foi mencionado?\n□ A data está no formato brasileiro DD/MM/YYYY ou null?\n□ Se alguma resposta for NÃO, corrigi para null/vazio?\n\nTÉCNICA ANTI-ALUCINAÇÃO:\n🧠 PENSE ANTES DE RESPONDER:\n\"O que EXATAMENTE está escrito na mensagem?\"\n\"Que NOMES ESPECÍFICOS foram mencionados?\"\n\"Que NÚMEROS DE DENTES foram explicitamente citados?\"\n\"A palavra 'alta', 'média' ou 'baixa' aparece na mensagem?\"\n\"Que QUANTIDADES foram mencionadas para cada serviço?\"\n\"Que DATA específica foi mencionada?\"\n\"Estou assumindo algo que não foi dito?\"\n\"Cada ID que vou retornar foi EXPLICITAMENTE mencionado?\"\n\nEXEMPLOS DE VALIDAÇÃO CORRETA:\n\n❌ ERRADO:\nMensagem: \"fazer um procedimento para João\"\nResposta errada: {\"servicos\": [{\"id\": 9, \"quantidade\": 1}]} ← ID 9 NÃO foi mencionado!\n\n✅ CORRETO:\nMensagem: \"fazer um procedimento para João\"  \nResposta correta: {\"cliente_id\": X, \"servicos\": [], \"dentes\": [], \"prioridade\": null, \"data\": null} ← Arrays vazios porque nenhum serviço específico foi mencionado\n\n❌ ERRADO:\nMensagem: \"2 reparos frontais no dente 18 hoje\"\nResposta errada: {\"servicos\": [{\"id\": 2, \"quantidade\": 2}], \"dentes\": [18, 17]} ← Dente 17 NÃO foi mencionado!\n\n✅ CORRETO:\nMensagem: \"2 reparos frontais no dente 18 e 17 hoje\"\nResposta correta: {\"servicos\": [{\"id\": 2, \"quantidade\": 2}], \"dentes\": [18, 17], \"data\": \"15/01/2024\"} ← Quantidade e dentes explicitamente mencionados\n\nREGRAS ABSOLUTAS FINAIS:\n✓ Seja extremamente literal\n✓ Na menor dúvida, retorne null/vazio\n✓ Prefira false negatives a false positives\n✓ Releia a mensagem antes de responder\n✓ Valide cada ID no banco fisicamente\n✓ Dentes: apenas números explicitamente mencionados\n✓ Prioridade: APENAS \"alta\", \"media\", \"baixa\" - nenhuma outra palavra\n✓ Quantidade: apenas se explicitamente mencionada, senão padrão 1\n✓ Data: apenas se explicitamente mencionada em formato DD/MM/YYYY, senão null\n\n✗ NUNCA assuma serviços não mencionados\n✗ NUNCA interprete contexto para criar dados\n✗ NUNCA retorne IDs que não foram explicitamente referenciados\n✗ NUNCA complete informações faltantes\n✗ NUNCA assuma dentes não mencionados\n✗ NUNCA interprete outras palavras como prioridade além de \"alta\", \"média\", \"baixa\"\n✗ NUNCA assuma quantidades não mencionadas (use padrão 1)\n✗ NUNCA assuma datas não mencionadas\n\nFORMATO DE SAÍDA (APENAS ESTE JSON - NADA MAIS):\n{\n  \"cliente_id\": null_apenas_se_explicitamente_mencionado,\n  \"dentista_id\": null_apenas_se_explicitamente_mencionado,\n  \"protetico_id\": null_apenas_se_explicitamente_mencionado,\n  \"servicos\": [{\"id\": servico_id, \"quantidade\": numero_ou_1_padrao}],\n  \"dentes\": [array_vazio_se_nao_ha_numeros_especificos_mencionados],\n  \"prioridade\": null_ou_apenas_alta_media_baixa,\n  \"data\": null_ou_DD/MM/YYYY\n}\n\nDADOS DO BANCO:\n{{ $json.dados }}\n\nMENSAGEM DO USUÁRIO:\n{{ $json.message }}\n\nDATA ATUAL:\n{{ $json.data_hoje }}\n\n\n🚨 LEMBRE-SE: É MELHOR RETORNAR VAZIO DO QUE INVENTAR! SEJA ULTRA CONSERVADOR! 🚨\n\n⚠️ ANTES DE RETORNAR: PARE, RESPIRE, RELEIA A MENSAGEM, E CONFIRME QUE CADA ITEM FOI EXPLICITAMENTE MENCIONADO! ⚠️\"",
+        "options": {
+          "maxIterations": 1
+        }
+      },
+      "id": "5fe65349-6e0b-43ff-858b-cad3ec735745",
+      "name": "Extrator1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        320,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "path": "dental-sync",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -780,
+        20
+      ],
+      "id": "d05af5f9-ab13-4995-bdb1-a6482688b68d",
+      "name": "Webhook1",
+      "webhookId": "14e8bc9a-3947-4e19-8bf9-904989cb6179"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dados = $input.all().map(item => item.json);\n\nreturn [{\n  json: {\n    dados: JSON.stringify(dados)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -380,
+        -80
+      ],
+      "id": "e8cc76d5-a711-4338-8d79-cbd99aa0a9b6",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const message = $input.first().json.query.message\n\nreturn [{\n  json: {\n    message: JSON.stringify(message)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -380,
+        60
+      ],
+      "id": "b68509fc-972d-46d7-83a6-95fcb1c537d1",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        700,
+        -20
+      ],
+      "id": "811e5caa-a209-4ae9-9652-32d39e54b82a",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -160,
+        -20
+      ],
+      "id": "9b03ddfc-688c-4049-8b18-600a7e1cdc04",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input1 = $input.all()[0].json;\nconst input2 = $input.all()[1].json;\n\nconst hoje = new Date().toLocaleDateString('pt-BR'); // ex: \"19/06/2025\"\n\nreturn [{\n  json: {\n    dados: input1.dados,\n    message: input2.message,\n    data_hoje: hoje\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -20
+      ],
+      "id": "5190ccfc-28b1-483d-82e4-cd5d377679f9",
+      "name": "Code4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Anthropic Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extrator1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MySQL": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrator1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "MySQL",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Extrator1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2d5d6e59-176f-4c7a-a147-a587f139b75a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f10c7f9b1aa6881d4216d1b3ca3a4a6aec26ab3672f3944a24fa37c262b4ddf6"
+  },
+  "id": "LTzHlXLKQQeoyumC",
+  "tags": []
+}

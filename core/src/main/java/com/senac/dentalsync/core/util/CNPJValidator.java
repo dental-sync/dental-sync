@@ -6,6 +6,11 @@ public class CNPJValidator {
     private static final int[] PESOS_DIGITO_2 = {6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2};
     
     public static boolean isValid(String cnpj) {
+        // Verifica se o CNPJ é null
+        if (cnpj == null) {
+            return false;
+        }
+        
         // Remove caracteres não numéricos
         cnpj = cnpj.replaceAll("\\D", "");
         

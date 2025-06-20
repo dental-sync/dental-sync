@@ -187,6 +187,10 @@ const PedidoPage = () => {
       toast.success('Pedido excluído com sucesso!');
       // Atualizar lista após exclusão
       setPedidos(prev => prev.filter(p => p.id !== id));
+      // Atualizar relatórios
+      if (window.atualizarRelatorios) {
+        window.atualizarRelatorios();
+      }
     } catch (error) {
       console.error('Erro ao excluir pedido:', error);
       toast.error('Erro ao excluir pedido. Por favor, tente novamente.');
@@ -239,8 +243,7 @@ const PedidoPage = () => {
           const prioridadeMap = {
             'BAIXA': 1,
             'MEDIA': 2,
-            'ALTA': 3,
-            'URGENTE': 4
+            'ALTA': 3
           };
           const valueA = prioridadeMap[a.prioridade] || 0;
           const valueB = prioridadeMap[b.prioridade] || 0;
@@ -373,7 +376,6 @@ const PedidoPage = () => {
                     <option value="BAIXA">Baixa</option>
                     <option value="MEDIA">Média</option>
                     <option value="ALTA">Alta</option>
-                    <option value="URGENTE">Urgente</option>
                   </select>
                 </div>
                 

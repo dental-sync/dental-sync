@@ -65,15 +65,13 @@ const ActionMenuClinica = ({ clinicaId, itemId, onClinicaDeleted, onItemDeleted 
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Tem certeza que deseja excluir esta clínica?')) {
-      try {
-        await api.delete(`/clinicas/${id}`);
-        toast.success('Clínica excluída com sucesso!');
-        onDeleted(id);
-      } catch (error) {
-        console.error('Erro ao excluir clínica:', error);
-        toast.error('Erro ao excluir clínica');
-      }
+    try {
+      await api.delete(`/clinicas/${id}`);
+      toast.success('Clínica excluída com sucesso!');
+      onDeleted(id);
+    } catch (error) {
+      console.error('Erro ao excluir clínica:', error);
+      toast.error('Erro ao excluir clínica');
     }
     setIsOpen(false);
   };

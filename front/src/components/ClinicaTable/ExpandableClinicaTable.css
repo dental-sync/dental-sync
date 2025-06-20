@@ -294,6 +294,14 @@
   padding: 0;
 }
 
+/* Estilos para células com texto truncado */
+.truncated-cell {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
   .expandable-clinica-table th,
@@ -329,5 +337,9 @@
   .dentista-id-badge {
     font-size: 14px;
     padding: 0;
+  }
+
+  .truncated-cell {
+    max-width: 150px;
   }
 } 

@@ -17,12 +17,13 @@ const formatServicoId = (id) => `S${String(id).padStart(4, '0')}`;
 const ServicoPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [servicos, setServicos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [filtros, setFiltros] = useState({
-    isActive: 'todos'
+    categoria: 'todas'
   });
   const [refreshData, setRefreshData] = useState(0);
   const [toastMessage, setToastMessage] = useState(null);
@@ -63,7 +64,17 @@ const ServicoPage = () => {
       }
     };
 
+    const fetchCategorias = async () => {
+      try {
+        const response = await api.get('/categoria-servico');
+        setCategorias(response.data);
+      } catch (error) {
+        console.error('Erro ao buscar categorias:', error);
+      }
+    };
+
     fetchServicos();
+    fetchCategorias();
   }, [refreshData]);
 
   useEffect(() => {
@@ -180,17 +191,17 @@ const ServicoPage = () => {
 
   const servicosFiltrados = servicos
     .filter(servico => {
-      if (filtros.isActive !== 'todos' && servico.isActive !== filtros.isActive) {
+      if (filtros.categoria !== 'todas' && String(servico.categoriaServico?.id) !== String(filtros.categoria)) {
         return false;
       }
       
       if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
         return (
-          servico.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          servico.descricao?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          servico.categoriaServico?.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (servico.valorTotal?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (servico.id?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase())
+          formatServicoId(servico.id).toLowerCase().includes(searchLower) ||
+          servico.nome?.toLowerCase().includes(searchLower) ||
+          servico.descricao?.toLowerCase().includes(searchLower) ||
+          servico.categoriaServico?.nome?.toLowerCase().includes(searchLower)
         );
       }
       
@@ -215,7 +226,7 @@ const ServicoPage = () => {
 
   const handleLimparFiltros = () => {
     setFiltros({
-      isActive: 'todos'
+      categoria: 'todas'
     });
   };
 
@@ -257,6 +268,15 @@ const ServicoPage = () => {
           return sortConfig.direction === 'ascending'
             ? a.id - b.id
             : b.id - a.id;
+        }
+        
+        // Para ordenação de Tempo Previsto (números)
+        if (sortConfig.key === 'tempoPrevisto') {
+          const aValue = parseInt(a.tempoPrevisto) || 0;
+          const bValue = parseInt(b.tempoPrevisto) || 0;
+          return sortConfig.direction === 'ascending'
+            ? aValue - bValue
+            : bValue - aValue;
         }
         
         // Para ordenação de status (ATIVO/INATIVO)
@@ -310,24 +330,25 @@ const ServicoPage = () => {
               label="Filtrar" 
               icon="filter"
               onClick={toggleFiltro} 
-              active={isFilterOpen || filtros.isActive !== 'todos'}
+              active={isFilterOpen || filtros.categoria !== 'todas'}
             />
             
             {isFilterOpen && (
               <div className="filter-dropdown">
                 <h3>Filtros</h3>
                 <div className="filter-group">
-                  <label htmlFor="isActive">Status</label>
+                  <label htmlFor="categoria">Categoria</label>
                   <select
-                    id="isActive"
-                    name="isActive"
-                    value={filtros.isActive}
+                    id="categoria"
+                    name="categoria"
+                    value={filtros.categoria}
                     onChange={handleFiltroChange}
                     className="filter-select"
                   >
-                    <option value="todos">Todos</option>
-                    <option value="ATIVO">Ativo</option>
-                    <option value="INATIVO">Inativo</option>
+                    <option value="todas">Todas</option>
+                    {categorias.map(categoria => (
+                      <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="filter-actions">
@@ -344,7 +365,10 @@ const ServicoPage = () => {
           </div>
           
           <ExportDropdown 
-            data={sortedServicos}
+            data={sortedServicos.map(servico => ({
+              ...servico,
+              categoriaServico: servico.categoriaServico?.nome || '-'
+            }))}
             headers={['ID', 'Nome', 'Categoria', 'Valor Total', 'Tempo Previsto', 'Descrição']}
             fields={['id', 'nome', 'categoriaServico', 'valorTotal', 'tempoPrevisto', 'descricao']}
             filename="servicos"
@@ -359,7 +383,7 @@ const ServicoPage = () => {
       
       <div className="search-container">
         <SearchBar
-          placeholder="Buscar por ID, nome, descrição, categoria, valor..."
+          placeholder="Buscar por ID, nome, categoria ou descrição..."
           onSearch={handleSearch}
         />
         <ActionButton
@@ -375,7 +399,7 @@ const ServicoPage = () => {
             Nenhum serviço encontrado para a busca "{searchQuery}".
           </div>
         )}
-        {!searchQuery && servicosFiltrados.length === 0 && filtros.isActive !== 'todos' ? (
+        {!searchQuery && servicosFiltrados.length === 0 && filtros.categoria !== 'todas' ? (
           <div className="filter-info">
             Nenhum serviço encontrado com os filtros aplicados.
           </div>
@@ -387,7 +411,7 @@ const ServicoPage = () => {
           onStatusChange={handleStatusChange}
           sortConfig={sortConfig}
           onSort={handleSort}
-          isEmpty={!searchQuery && servicosFiltrados.length === 0 && filtros.isActive === 'todos'}
+          isEmpty={!searchQuery && servicosFiltrados.length === 0 && filtros.categoria === 'todas'}
         />
       </div>
     </div>

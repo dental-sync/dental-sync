@@ -19,4 +19,5 @@ public interface DentistaRepository extends BaseRepository<Dentista, Long> {
     //relatorio
     Long countByIsActiveTrue();
     Long countByIsActiveTrueAndCreatedAtBefore(LocalDateTime data);
+    Long countByIsActiveTrueAndCreatedAtBetween(LocalDateTime dataInicio, LocalDateTime dataFim);
 } 

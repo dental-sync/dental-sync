@@ -29,7 +29,12 @@ const ProteticoTable = ({ proteticos, onProteticoDeleted, onStatusChange, sortCo
       formatId={formatProteticoId}
       apiEndpoint="/proteticos"
       emptyMessage="Nenhum protético cadastrado"
-      ActionMenuComponent={ActionMenu}
+      ActionMenuComponent={(props) => (
+        <ActionMenu
+          {...props}
+          deleteMessage="Tem certeza que deseja excluir este protético? Esta ação não pode ser desfeita."
+        />
+      )}
       url="proteticos"
     />
   );

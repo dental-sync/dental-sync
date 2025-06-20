@@ -36,6 +36,12 @@
   margin-bottom: 4px;
 }
 
+.modal-categoria-servico label.required::after {
+  content: '*';
+  color: #d90429;
+  margin-left: 4px;
+}
+
 .modal-categoria-servico input {
   width: 100%;
   padding: 8px 12px;
@@ -43,12 +49,26 @@
   border-radius: 6px;
   font-size: 15px;
   margin-bottom: 8px;
+  transition: border-color 0.2s;
+}
+
+.modal-categoria-servico input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.modal-categoria-servico input.input-error {
+  border-color: #d90429;
 }
 
 .modal-categoria-servico-erro {
   color: #d90429;
   font-size: 13px;
   margin-bottom: 8px;
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  padding: 8px 12px;
+  border-radius: 4px;
 }
 
 .modal-categoria-servico-actions {
@@ -82,6 +102,10 @@
   font-size: 14px;
   cursor: pointer;
   transition: background 0.2s;
+}
+
+.btn-salvar:hover {
+  background: #2563eb;
 }
 
 .btn-salvar:disabled {

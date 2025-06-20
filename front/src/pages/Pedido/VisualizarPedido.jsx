@@ -38,12 +38,11 @@ const VisualizarPedido = () => {
   
   // Função para converter enum de prioridade para texto em português
   const formatarPrioridade = (prioridade) => {
-    const prioridadeMap = {
-      'BAIXA': 'Baixa',
-      'MEDIA': 'Média',
-      'ALTA': 'Alta',
-      'URGENTE': 'Urgente'
-    };
+      const prioridadeMap = {
+    'BAIXA': 'Baixa',
+    'MEDIA': 'Média',
+    'ALTA': 'Alta'
+  };
     return prioridadeMap[prioridade] || prioridade;
   };
   
@@ -52,8 +51,7 @@ const VisualizarPedido = () => {
     const colorMap = {
       'BAIXA': '#28a745',
       'MEDIA': '#17a2b8',
-      'ALTA': '#ffc107',
-      'URGENTE': '#dc3545'
+      'ALTA': '#ffc107'
     };
     return colorMap[prioridade] || '#6c757d';
   };

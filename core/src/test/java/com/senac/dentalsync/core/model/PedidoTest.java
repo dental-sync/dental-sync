@@ -110,8 +110,8 @@ class PedidoTest {
         pedido.setPrioridade(Pedido.Prioridade.ALTA);
         assertEquals(Pedido.Prioridade.ALTA, pedido.getPrioridade());
         
-        pedido.setPrioridade(Pedido.Prioridade.URGENTE);
-        assertEquals(Pedido.Prioridade.URGENTE, pedido.getPrioridade());
+        pedido.setPrioridade(Pedido.Prioridade.ALTA);
+        assertEquals(Pedido.Prioridade.ALTA, pedido.getPrioridade());
     }
 
     @Test

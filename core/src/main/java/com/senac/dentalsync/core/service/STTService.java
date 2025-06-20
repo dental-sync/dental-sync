@@ -233,39 +233,4 @@ public class STTService {
                (prioridade != null && !prioridade.trim().isEmpty()) ||
                (data != null && !data.trim().isEmpty());
     }
-
-    public Map<String, Object> createMockResponse() {
-        return Map.of(
-            "output", """
-            {
-              "cliente_id": 3,
-              "dentista_id": 3,
-              "protetico_id": 3,
-              "servicos": [{"id": 1, "quantidade": 2}],
-              "dentes": [15, 32],
-              "prioridade": "media",
-              "data": "20/06/2025"
-            }
-            """
-        );
-    }
-    
-    /**
-     * Cria uma resposta mockada com todos os campos null para testar validação
-     */
-    public Map<String, Object> createEmptyMockResponse() {
-        return Map.of(
-            "output", """
-            {
-              "cliente_id": null,
-              "dentista_id": null,
-              "protetico_id": null,
-              "servicos": [],
-              "dentes": [],
-              "prioridade": null,
-              "data": null
-            }
-            """
-        );
-    }
 } 

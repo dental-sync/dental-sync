@@ -18,7 +18,6 @@ import org.springframework.security.core.Authentication;
 
 import com.senac.dentalsync.core.persistency.model.Laboratorio;
 import com.senac.dentalsync.core.persistency.model.Protetico;
-import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.ProteticoRepository;
 
@@ -27,9 +26,6 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
 
     @Autowired
     private ProteticoRepository proteticoRepository;
-    
-    @Autowired
-    private UsuarioService usuarioService;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -40,8 +36,8 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
     }
 
     @Override
-    protected Usuario getUsuarioLogado() {
-        return usuarioService.getUsuarioLogado();
+    protected Protetico getUsuarioLogado() {
+        return null;
     }
     
     @Override

@@ -63,6 +63,13 @@ public class ProteticoServiceTest {
         proteticoLogado.setId(1L);
         proteticoLogado.setNome("Admin");
 
+        // Configura o laboratório de teste
+        laboratorioTeste = new Laboratorio();
+        laboratorioTeste.setId(1L);
+        laboratorioTeste.setNomeLaboratorio("Laboratório Teste");
+        laboratorioTeste.setCnpj("11.222.333/0001-81");
+        laboratorioTeste.setEmailLaboratorio("lab@teste.com");
+
         // Configura o protético de teste
         proteticoTeste = new Protetico();
         proteticoTeste.setId(1L);
@@ -70,15 +77,9 @@ public class ProteticoServiceTest {
         proteticoTeste.setEmail("protetico@email.com");
         proteticoTeste.setTelefone("(11) 99999-9999");
         proteticoTeste.setCro("CRO-SP-12345");
-        proteticoTeste.setSenha("senha123");
+        proteticoTeste.setSenha("$2a$10$hashedPassword"); // Senha já criptografada
         proteticoTeste.setIsActive(true);
-
-        // Configura o laboratório de teste
-        laboratorioTeste = new Laboratorio();
-        laboratorioTeste.setId(1L);
-        laboratorioTeste.setNomeLaboratorio("Laboratório Teste");
-        laboratorioTeste.setCnpj("11.222.333/0001-81");
-        laboratorioTeste.setEmailLaboratorio("lab@teste.com");
+        proteticoTeste.setLaboratorio(laboratorioTeste); // Adicionar laboratório
 
         // Configura mocks para ApplicationContext e PasswordEncoder
         lenient().when(applicationContext.getBean(PasswordEncoder.class)).thenReturn(passwordEncoder);
@@ -413,10 +414,15 @@ public class ProteticoServiceTest {
         proteticoExistente.setCro("CRO-SP-12345");
         proteticoExistente.setTelefone("(11) 99999-9999");
 
+        // Criar protético existente para busca por ID (com mesma senha criptografada)
+        Protetico proteticoExistenteDB = new Protetico();
+        proteticoExistenteDB.setId(1L);
+        proteticoExistenteDB.setSenha("$2a$10$hashedPassword");
+
         when(proteticoRepository.findByEmail(proteticoExistente.getEmail())).thenReturn(Optional.of(proteticoExistente));
         when(proteticoRepository.findFirstByCro(proteticoExistente.getCro())).thenReturn(Optional.of(proteticoExistente));
         when(proteticoRepository.findFirstByTelefone(proteticoExistente.getTelefone())).thenReturn(Optional.of(proteticoExistente));
-        when(proteticoRepository.findById(1L)).thenReturn(Optional.of(proteticoTeste));
+        when(proteticoRepository.findById(1L)).thenReturn(Optional.of(proteticoExistenteDB));
         when(proteticoRepository.save(any(Protetico.class))).thenReturn(proteticoExistente);
 
         // when
@@ -425,7 +431,7 @@ public class ProteticoServiceTest {
         // then
         assertThat(proteticoSalvo).isNotNull();
         verify(proteticoRepository, times(1)).save(any(Protetico.class));
-        // Verifica que a senha não foi re-criptografada
+        // A senha não deve ser re-criptografada pois já está criptografada e é igual
         verify(passwordEncoder, never()).encode(anyString());
     }
 

@@ -6,6 +6,7 @@ import com.senac.dentalsync.core.dto.HistoricoProteticoDTO;
 import com.senac.dentalsync.core.persistency.model.*;
 import com.senac.dentalsync.core.persistency.repository.MaterialRepository;
 import com.senac.dentalsync.core.persistency.repository.PedidoRepository;
+import com.senac.dentalsync.core.persistency.repository.PedidoServicoRepository;
 import com.senac.dentalsync.core.persistency.repository.ServicoMaterialRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,9 @@ public class PedidoServiceTest {
 
     @Mock
     private PedidoRepository pedidoRepository;
+    
+    @Mock
+    private PedidoServicoRepository pedidoServicoRepository;
 
     @Mock
     private MaterialService materialService;
@@ -85,6 +89,8 @@ public class PedidoServiceTest {
         servicoTeste = new Servico();
         servicoTeste.setId(1L);
         servicoTeste.setNome("Restauração");
+        servicoTeste.setPreco(new BigDecimal("150.00"));
+        servicoTeste.setValorTotal(new BigDecimal("277.50"));
 
         // Configura o serviço material de teste
         servicoMaterialTeste = new ServicoMaterial();
@@ -100,6 +106,10 @@ public class PedidoServiceTest {
         pedidoTeste.setDataEntrega(LocalDate.now().plusDays(7));
         pedidoTeste.setStatus(Pedido.Status.PENDENTE);
         pedidoTeste.setIsActive(true);
+        pedidoTeste.setServicos(Arrays.asList(servicoTeste));
+        
+        // Configurar mock padrão para pedidoServicoRepository usando lenient
+        lenient().when(pedidoServicoRepository.findByPedidoId(any())).thenReturn(Arrays.asList());
     }
 
     @Test
@@ -184,9 +194,14 @@ public class PedidoServiceTest {
         Material materialInsuficiente = new Material();
         materialInsuficiente.setId(1L);
         materialInsuficiente.setNome("Resina Composta");
-        materialInsuficiente.setQuantidade(new BigDecimal("2.00")); // Menor que necessário (5.00)
+        materialInsuficiente.setQuantidade(new BigDecimal("1.00")); // Menor que necessário (2.00)
 
-        when(servicoMaterialRepository.findByServicoId(1L)).thenReturn(Arrays.asList(servicoMaterialTeste));
+        // Configurar serviço material com quantidade maior que o estoque disponível
+        ServicoMaterial servicoMaterialInsuficiente = new ServicoMaterial();
+        servicoMaterialInsuficiente.setMaterial(materialInsuficiente);
+        servicoMaterialInsuficiente.setQuantidade(new BigDecimal("5.00")); // Maior que disponível
+
+        when(servicoMaterialRepository.findByServicoId(1L)).thenReturn(Arrays.asList(servicoMaterialInsuficiente));
         when(materialService.getRepository()).thenReturn(materialRepository);
         when(materialRepository.findById(1L)).thenReturn(Optional.of(materialInsuficiente));
 

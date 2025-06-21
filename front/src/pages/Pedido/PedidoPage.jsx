@@ -427,21 +427,47 @@ const PedidoPage = () => {
           </div>
           
           <ExportDropdown 
-            data={pedidosFiltrados.map(pedido => ({
-              id: formatPedidoId(pedido.id),
-              cliente: pedido.paciente?.nome || 'N/A',
-              dentista: pedido.dentista?.nome || 'N/A',
-              protetico: pedido.protetico?.nome || 'N/A',
-              servico: pedido.servicos?.nome || 'N/A',
-              dataEntrega: formatarData(pedido.dataEntrega),
-              prioridade: pedido.prioridade
-            }))}
-            headers={['ID', 'Cliente', 'Dentista', 'Protético', 'Serviço', 'Data Entrega', 'Prioridade']}
-            fields={['id', 'cliente', 'dentista', 'protetico', 'servico', 'dataEntrega', 'prioridade']}
+            data={pedidosFiltrados.map(pedido => {
+              // Formatar serviços corretamente para exportação
+              let servicosFormatados = 'N/A';
+              if (pedido.servicos && Array.isArray(pedido.servicos) && pedido.servicos.length > 0) {
+                // Criar lista de serviços únicos com quantidades
+                const servicosUnicos = [];
+                const servicosVistos = new Set();
+                
+                pedido.servicos.forEach(servico => {
+                  if (!servicosVistos.has(servico.id)) {
+                    servicosVistos.add(servico.id);
+                    servicosUnicos.push(servico);
+                  }
+                });
+                
+                // Formatar com quantidades - usar " | " em vez de vírgula para evitar conflito com separador CSV
+                const servicosComQuantidade = servicosUnicos.map(servico => {
+                  const quantidade = pedido.quantidadesServicos?.find(qs => qs.servico.id === servico.id)?.quantidade || 1;
+                  return quantidade > 1 ? `${servico.nome} x${quantidade}` : servico.nome;
+                });
+                
+                servicosFormatados = servicosComQuantidade.join(' | ');
+              }
+              
+              return {
+                id: formatPedidoId(pedido.id),
+                cliente: pedido.paciente?.nome || 'N/A',
+                dentista: pedido.dentista?.nome || 'N/A',
+                protetico: pedido.protetico?.nome || 'N/A',
+                servicos: servicosFormatados,
+                dataEntrega: formatarData(pedido.dataEntrega),
+                prioridade: pedido.prioridade
+              };
+            })}
+            headers={['ID', 'Cliente', 'Dentista', 'Protético', 'Serviços', 'Data Entrega', 'Prioridade']}
+            fields={['id', 'cliente', 'dentista', 'protetico', 'servicos', 'dataEntrega', 'prioridade']}
             filename="pedidos"
             isOpen={isExportOpen}
             toggleExport={toggleExport}
             onCloseDropdown={handleCloseExport}
+            title="Lista de Pedidos"
           />
         </div>
       </div>

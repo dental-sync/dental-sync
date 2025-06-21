@@ -390,7 +390,6 @@ const ProteticoPage = () => {
             isOpen={isExportOpen}
             toggleExport={toggleExport}
             onCloseDropdown={handleCloseExport}
-            title="Lista de Protéticos"
             formatIdFn={formatProteticoId}
           />
         </div>

@@ -43,8 +43,13 @@ const useExportCsv = () => {
         if (field === 'id' && formatIdFn) {
           value = formatIdFn(value);
         }
-        // Remover aspas duplas para evitar problemas
-        return String(value).replace(/"/g, '');
+        // Escapar aspas duplas, substituir vírgulas por ponto e vírgula, e remover quebras de linha
+        let stringValue = String(value)
+          .replace(/"/g, '')
+          .replace(/,/g, ';')
+          .replace(/\r?\n/g, ' ')
+          .trim();
+        return stringValue;
       }).join(';');
     });
 
@@ -77,8 +82,12 @@ const useExportCsv = () => {
         if (field === 'id' && formatIdFn) {
           value = formatIdFn(value);
         }
-        // Substituir aspas para evitar problemas
-        const stringValue = String(value).replace(/"/g, '');
+        // Escapar aspas duplas, substituir vírgulas por ponto e vírgula, e remover quebras de linha
+        const stringValue = String(value)
+          .replace(/"/g, '')
+          .replace(/,/g, ';')
+          .replace(/\r?\n/g, ' ')
+          .trim();
         return stringValue;
       }).join(';');
     });
@@ -113,26 +122,81 @@ const useExportCsv = () => {
           if (field === 'id' && formatIdFn) {
             value = formatIdFn(value);
           }
-          // Limitar texto para campos específicos apenas no PDF
-          if (['nome', 'email', 'telefone', 'cro', 'descricao'].includes(field)) {
-            value = limitText(String(value));
+          
+          // Aplicar limitação de texto para todos os campos no PDF
+          let maxLength = 20; // Limite padrão
+          
+          // Definir limites específicos por tipo de campo
+          switch (field) {
+            case 'id':
+              maxLength = 10; // IDs são mais curtos
+              break;
+            case 'nome':
+            case 'cliente':
+            case 'dentista': 
+            case 'protetico':
+              maxLength = 25; // Nomes de pessoas
+              break;
+            case 'email':
+              maxLength = 30; // Emails podem ser um pouco maiores
+              break;
+            case 'telefone':
+            case 'cro':
+              maxLength = 15; // Telefones e CROs são números
+              break;
+            case 'servicos':
+              maxLength = 40; // Serviços podem ter nomes mais longos
+              break;
+            case 'observacao':
+            case 'descricao':
+              maxLength = 35; // Observações e descrições
+              break;
+            case 'endereco':
+              maxLength = 30; // Endereços
+              break;
+            case 'dataEntrega':
+            case 'data':
+              maxLength = 12; // Datas
+              break;
+            case 'prioridade':
+            case 'status':
+            case 'cargo':
+            case 'isActive':
+              maxLength = 15; // Status e configurações
+              break;
+            default:
+              maxLength = 20; // Padrão para outros campos
+              break;
           }
-          return value;
+          
+          return limitText(String(value), maxLength);
         });
       });
       
-      // Adicionar título ao documento
-      doc.text(title, 14, 15);
-      
-      // Usar o autoTable como função importada diretamente
-      autoTable(doc, {
-        head: [headers],
-        body: tableData,
-        startY: 20,
-        styles: { fontSize: 10, cellPadding: 3 },
-        headStyles: { fillColor: [66, 139, 202], textColor: 255 },
-        alternateRowStyles: { fillColor: [245, 245, 245] }
-      });
+      // Adicionar título ao documento se fornecido
+      if (title && title.trim() !== '' && title !== 'Relatório') {
+        doc.text(title, 14, 15);
+        
+        // Usar o autoTable como função importada diretamente
+        autoTable(doc, {
+          head: [headers],
+          body: tableData,
+          startY: 25,
+          styles: { fontSize: 10, cellPadding: 3 },
+          headStyles: { fillColor: [66, 139, 202], textColor: 255 },
+          alternateRowStyles: { fillColor: [245, 245, 245] }
+        });
+      } else {
+        // Sem título personalizado, começar direto na tabela
+        autoTable(doc, {
+          head: [headers],
+          body: tableData,
+          startY: 15,
+          styles: { fontSize: 10, cellPadding: 3 },
+          headStyles: { fillColor: [66, 139, 202], textColor: 255 },
+          alternateRowStyles: { fillColor: [245, 245, 245] }
+        });
+      }
       
       return doc;
     } catch (error) {
@@ -159,27 +223,26 @@ const useExportCsv = () => {
         case 'pdf':
           // Para PDF, o content é um objeto jsPDF
           if (content) {
-            content.save(`${filename}.pdf`);
+            content.save(`${fullFilename}.pdf`);
             toast.success(`Arquivo PDF exportado com sucesso!`);
           } else {
             toast.error('Não foi possível gerar o arquivo PDF.');
           }
           return; // Retorna pois o jsPDF já faz o download
         case 'excel':
-          // Usar ponto e vírgula como separador para Excel
+          // Para Excel, o content é uma string
           blob = new Blob([BOM + content], { type: 'application/vnd.ms-excel;charset=utf-8' });
           fullFilename += '.xls';
           break;
         case 'csv':
         default:
-          // Usar ponto e vírgula como separador para CSV
+          // Para CSV, o content é uma string
           blob = new Blob([BOM + content], { type: 'text/csv;charset=utf-8' });
           fullFilename += '.csv';
           break;
       }
 
       const url = URL.createObjectURL(blob);
-      
       const link = document.createElement('a');
       link.setAttribute('href', url);
       link.setAttribute('download', fullFilename);
@@ -243,8 +306,12 @@ const useExportCsv = () => {
   };
 
   return {
+    generateCsvContent,
+    generateExcelContent,
+    generatePdfContent,
+    downloadFile,
     exportData
   };
 };
 
-export default useExportCsv; 
+export default useExportCsv;

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,6 +52,7 @@ public class PedidoComQuantidadeController {
     private PedidoServicoRepository pedidoServicoRepository;
 
     @PostMapping
+    @Transactional
     public ResponseEntity<Pedido> criarPedidoComQuantidade(@RequestBody PedidoDTO pedidoDTO) {
         try {
             // Criar o pedido principal
@@ -101,10 +103,7 @@ public class PedidoComQuantidadeController {
                 Servico servico = servicoService.findById(servicoDTO.getId())
                     .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
                 
-                PedidoServico pedidoServico = new PedidoServico();
-                pedidoServico.setPedido(pedido);
-                pedidoServico.setServico(servico);
-                pedidoServico.setQuantidade(new BigDecimal(servicoDTO.getQuantidade()));
+                PedidoServico pedidoServico = new PedidoServico(pedido, servico, new BigDecimal(servicoDTO.getQuantidade()));
                 
                 pedidoServicoRepository.save(pedidoServico);
             }
@@ -117,6 +116,7 @@ public class PedidoComQuantidadeController {
     }
     
     @PutMapping("/{id}")
+    @Transactional
     public ResponseEntity<Pedido> atualizarPedidoComQuantidade(@PathVariable Long id, @RequestBody PedidoDTO pedidoDTO) {
         try {
             Pedido pedido = pedidoService.findById(id)
@@ -167,10 +167,7 @@ public class PedidoComQuantidadeController {
                 Servico servico = servicoService.findById(servicoDTO.getId())
                     .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
                 
-                PedidoServico pedidoServico = new PedidoServico();
-                pedidoServico.setPedido(pedido);
-                pedidoServico.setServico(servico);
-                pedidoServico.setQuantidade(new BigDecimal(servicoDTO.getQuantidade()));
+                PedidoServico pedidoServico = new PedidoServico(pedido, servico, new BigDecimal(servicoDTO.getQuantidade()));
                 
                 pedidoServicoRepository.save(pedidoServico);
             }

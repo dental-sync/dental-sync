@@ -18,32 +18,26 @@ const columns = [
   { key: 'servicos', label: 'Serviços', render: (servicos, item) => {
     if (!servicos || servicos.length === 0) return 'N/A';
     
-    // Agrupar serviços únicos com suas quantidades
-    const servicosAgrupados = new Map();
+    // Filtrar serviços únicos (remover duplicatas se existirem) - igual ao PedidoForm
+    const servicosUnicos = [];
+    const servicosVistos = new Set();
     
     servicos.forEach(servico => {
-      const quantidade = item.quantidadesServicos?.find(qs => qs.servico.id === servico.id)?.quantidade || 1;
-      
-      if (servicosAgrupados.has(servico.id)) {
-        // Se já existe, somar a quantidade (não deveria acontecer, mas por precaução)
-        const existente = servicosAgrupados.get(servico.id);
-        existente.quantidade += quantidade;
-      } else {
-        // Adicionar novo serviço
-        servicosAgrupados.set(servico.id, {
-          nome: servico.nome,
-          quantidade: quantidade
-        });
+      if (!servicosVistos.has(servico.id)) {
+        servicosVistos.add(servico.id);
+        servicosUnicos.push(servico);
       }
     });
     
-    // Converter para array e formatar com limitação de texto
-    const servicosFormatados = Array.from(servicosAgrupados.values()).map(servico => {
+    // Formatar serviços únicos com suas quantidades corretas da API
+    const servicosFormatados = servicosUnicos.map(servico => {
+      // Buscar quantidade correta da API (sem somar, apenas usar o valor)
+      const quantidade = item.quantidadesServicos?.find(qs => qs.servico.id === servico.id)?.quantidade || 1;
       const nomeServico = limitText(servico.nome, 30);
-      return servico.quantidade > 1 ? `${nomeServico} x ${servico.quantidade}` : nomeServico;
+      return quantidade > 1 ? `${nomeServico} x ${quantidade}` : nomeServico;
     });
     
-    // Se há apenas um serviço, mostrar diretamente
+    // Se há apenas um serviço, mostrar diretamente sem tooltip
     if (servicosFormatados.length === 1) {
       return servicosFormatados[0];
     }

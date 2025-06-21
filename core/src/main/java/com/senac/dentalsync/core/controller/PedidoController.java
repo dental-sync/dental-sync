@@ -93,4 +93,14 @@ public class PedidoController extends BaseController<Pedido, Long> {
     }
     
     // Manter os métodos originais herdados do BaseController para compatibilidade
+    
+    @GetMapping("/{id}/quantidades-servicos")
+    public ResponseEntity<List<com.senac.dentalsync.core.persistency.model.PedidoServico>> getQuantidadesServicos(@PathVariable Long id) {
+        try {
+            List<com.senac.dentalsync.core.persistency.model.PedidoServico> quantidades = pedidoService.getQuantidadesServicos(id);
+            return ResponseEntity.ok(quantidades);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 } 

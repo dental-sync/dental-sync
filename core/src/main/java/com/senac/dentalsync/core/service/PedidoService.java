@@ -105,6 +105,19 @@ public class PedidoService extends BaseService<Pedido, Long> {
         for (Servico servico : pedido.getServicos()) {
             System.out.println("Processando serviço: " + servico.getNome() + " (ID: " + servico.getId() + ")");
             
+            // Buscar a quantidade deste serviço na tabela pedido_servico
+            List<PedidoServico> pedidosServicos = pedidoServicoRepository.findByPedidoId(pedido.getId());
+            BigDecimal quantidadeServico = BigDecimal.ONE; // padrão 1
+            
+            for (PedidoServico ps : pedidosServicos) {
+                if (ps.getServico().getId().equals(servico.getId())) {
+                    quantidadeServico = ps.getQuantidade();
+                    break;
+                }
+            }
+            
+            System.out.println("Quantidade do serviço no pedido: " + quantidadeServico);
+            
             // Busca explicitamente os materiais do serviço no banco para evitar problemas de lazy loading
             List<ServicoMaterial> materiais = servicoMaterialRepository.findByServicoId(servico.getId());
             
@@ -117,10 +130,13 @@ public class PedidoService extends BaseService<Pedido, Long> {
             
             for (ServicoMaterial servicoMaterial : materiais) {
                 Material material = servicoMaterial.getMaterial();
-                BigDecimal quantidadeNecessaria = servicoMaterial.getQuantidade();
+                BigDecimal quantidadePorServico = servicoMaterial.getQuantidade();
+                // Multiplicar pela quantidade de vezes que o serviço foi solicitado
+                BigDecimal quantidadeNecessaria = quantidadePorServico.multiply(quantidadeServico);
                 
                 System.out.println("Processando material: " + material.getNome() + " (ID: " + material.getId() + ")");
-                System.out.println("Quantidade necessária: " + quantidadeNecessaria);
+                System.out.println("Quantidade por serviço: " + quantidadePorServico);
+                System.out.println("Quantidade total necessária: " + quantidadeNecessaria);
                 
                 if (quantidadeNecessaria != null && quantidadeNecessaria.compareTo(BigDecimal.ZERO) > 0) {
                     // Busca o material atualizado do banco
@@ -247,5 +263,7 @@ public class PedidoService extends BaseService<Pedido, Long> {
         return historico;
     }
     
-    // TODO: Implementar captura de quantidades dos serviços
+    public List<PedidoServico> getQuantidadesServicos(Long pedidoId) {
+        return pedidoServicoRepository.findByPedidoId(pedidoId);
+    }
 } 

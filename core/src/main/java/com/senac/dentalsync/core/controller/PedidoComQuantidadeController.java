@@ -81,13 +81,13 @@ public class PedidoComQuantidadeController {
             pedido.setOdontograma(pedidoDTO.getOdontograma());
             pedido.setObservacao(pedidoDTO.getObservacao());
             
-            // Preparar lista de serviços para o relacionamento ManyToMany existente
+            // Preparar lista de serviços únicos para o relacionamento ManyToMany existente
             List<Servico> servicos = new ArrayList<>();
             for (PedidoDTO.ServicoComQuantidadeDTO servicoDTO : pedidoDTO.getServicos()) {
                 Servico servico = servicoService.findById(servicoDTO.getId())
                     .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
-                // Adicionar o serviço quantas vezes for necessário (solução simples)
-                for (int i = 0; i < servicoDTO.getQuantidade(); i++) {
+                // Adicionar apenas uma vez cada serviço único
+                if (!servicos.contains(servico)) {
                     servicos.add(servico);
                 }
             }
@@ -147,12 +147,13 @@ public class PedidoComQuantidadeController {
             pedido.setOdontograma(pedidoDTO.getOdontograma());
             pedido.setObservacao(pedidoDTO.getObservacao());
             
-            // Atualizar serviços (adicionar serviços quantas vezes for necessário)
+            // Atualizar serviços únicos
             List<Servico> servicos = new ArrayList<>();
             for (PedidoDTO.ServicoComQuantidadeDTO servicoDTO : pedidoDTO.getServicos()) {
                 Servico servico = servicoService.findById(servicoDTO.getId())
                     .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
-                for (int i = 0; i < servicoDTO.getQuantidade(); i++) {
+                // Adicionar apenas uma vez cada serviço único
+                if (!servicos.contains(servico)) {
                     servicos.add(servico);
                 }
             }

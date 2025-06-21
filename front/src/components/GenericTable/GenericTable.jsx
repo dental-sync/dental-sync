@@ -4,13 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import  api  from '../../axios-config';
 import { toast } from 'react-toastify';
 import StatusBadge from '../StatusBadge/StatusBadge';
-
-// Função utilitária para limitar o texto
-const limitText = (text, maxLength = 30) => {
-  if (!text) return '-';
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + '...';
-};
+import { limitText } from '../../utils/textUtils';
 
 const GenericTable = ({ 
   data, 

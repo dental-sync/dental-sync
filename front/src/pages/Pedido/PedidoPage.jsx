@@ -6,7 +6,7 @@ import NotificationBell from '../../components/NotificationBell/NotificationBell
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import PedidoTable from '../../components/PedidoTable/PedidoTable';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+// axios removido - usando api do axios-config
 import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -60,19 +60,45 @@ const PedidoPage = () => {
       setLoading(true);
       try {
         const response = await api.get('/pedidos');
-        const pedidosFormatados = response.data.map(pedido => ({
+        
+        // Buscar quantidades para cada pedido em paralelo
+        const pedidosComQuantidades = await Promise.all(
+          response.data.map(async (pedido) => {
+            try {
+              const quantidadesResponse = await api.get(`/pedidos/${pedido.id}/quantidades-servicos`);
+              console.log(`Quantidades para pedido ${pedido.id}:`, quantidadesResponse.data);
+              return {
+                ...pedido,
+                quantidadesServicos: quantidadesResponse.data
+              };
+            } catch (err) {
+              console.warn(`Erro ao buscar quantidades para pedido ${pedido.id}:`, err);
+              return {
+                ...pedido,
+                quantidadesServicos: []
+              };
+            }
+          })
+        );
+        
+        const pedidosFormatados = pedidosComQuantidades.map(pedido => ({
           id: pedido.id,
           paciente: pedido.cliente,
           dentista: pedido.dentista,
           protetico: pedido.protetico,
           servicos: pedido.servicos,
+          quantidadesServicos: pedido.quantidadesServicos,
           dataEntrega: pedido.dataEntrega,
           createdAt: pedido.createdAt || pedido.created_at,
           prioridade: pedido.prioridade,
           odontograma: pedido.odontograma,
           observacao: pedido.observacao,
           status: pedido.status,
-          valorTotal: Array.isArray(pedido.servicos) ? pedido.servicos.reduce((acc, s) => acc + (s.valorTotal || s.preco || 0), 0) : 0
+          valorTotal: Array.isArray(pedido.servicos) ? pedido.servicos.reduce((acc, s) => {
+            // Calcular valor considerando as quantidades
+            const quantidade = pedido.quantidadesServicos?.find(qs => qs.servico.id === s.id)?.quantidade || 1;
+            return acc + ((s.valorTotal || s.preco || 0) * quantidade);
+          }, 0) : 0
         }));
         console.log('[LOG] pedidosFormatados:', pedidosFormatados);
         setPedidos(pedidosFormatados);

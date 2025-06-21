@@ -81,18 +81,19 @@ class PedidoTest {
 
     @Test
     void deveAceitarCamposBaseEntityPreenchidos() {
-        Usuario usuario = new Usuario();
-        usuario.setId(1L);
-        usuario.setName("Admin");
+        configurarPedidoValido();
+        
+        Protetico protetico = new Protetico();
+        protetico.setId(1L);
+        protetico.setNome("Admin");
         
         pedido.setId(1L);
         pedido.setCreatedAt(LocalDateTime.now());
         pedido.setUpdatedAt(LocalDateTime.now());
         pedido.setIsActive(true);
-        pedido.setCreatedBy(usuario);
-        pedido.setUpdatedBy(usuario);
+        pedido.setCreatedBy(protetico);
+        pedido.setUpdatedBy(protetico);
 
-        configurarPedidoValido(); // Necessário para evitar violações dos campos obrigatórios
         var violations = validator.validate(pedido);
         assertTrue(violations.isEmpty());
     }

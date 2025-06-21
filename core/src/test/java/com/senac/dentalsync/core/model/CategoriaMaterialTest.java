@@ -1,7 +1,7 @@
 package com.senac.dentalsync.core.model;
 
 import com.senac.dentalsync.core.persistency.model.CategoriaMaterial;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -172,25 +172,19 @@ class CategoriaMaterialTest {
 
     @Test
     void deveAceitarCamposBaseEntityPreenchidos() {
-        // Arrange
-        categoria.setNome("Categoria Teste");
-        
-        Usuario usuario = new Usuario();
-        usuario.setId(1L);
-        usuario.setName("Admin");
+        Protetico protetico = new Protetico();
+        protetico.setId(1L);
+        protetico.setNome("Admin");
         
         categoria.setId(1L);
         categoria.setCreatedAt(LocalDateTime.now());
         categoria.setUpdatedAt(LocalDateTime.now());
         categoria.setIsActive(true);
-        categoria.setCreatedBy(usuario);
-        categoria.setUpdatedBy(usuario);
-
-        // Act
+        categoria.setCreatedBy(protetico);
+        categoria.setUpdatedBy(protetico);
+        
         Set<ConstraintViolation<CategoriaMaterial>> violations = validator.validate(categoria);
-
-        // Assert
-        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+        assertTrue(violations.isEmpty(), "Campos do BaseEntity preenchidos deveriam ser aceitos");
     }
 
     @Test

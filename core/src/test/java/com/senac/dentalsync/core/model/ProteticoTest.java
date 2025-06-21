@@ -13,9 +13,8 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.model.Laboratorio;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 
 public class ProteticoTest {
 
@@ -446,16 +445,16 @@ public class ProteticoTest {
     @Test
     void deveAceitarCamposBaseEntityPreenchidos() {
         // Arrange
-        Usuario usuario = new Usuario();
-        usuario.setId(1L);
-        usuario.setName("Admin");
+        Protetico proteticoAdmin = new Protetico();
+        proteticoAdmin.setId(1L);
+        proteticoAdmin.setNome("Admin");
         
         protetico.setId(1L);
         protetico.setCreatedAt(LocalDateTime.now());
         protetico.setUpdatedAt(LocalDateTime.now());
         protetico.setIsActive(true);
-        protetico.setCreatedBy(usuario);
-        protetico.setUpdatedBy(usuario);
+        protetico.setCreatedBy(proteticoAdmin);
+        protetico.setUpdatedBy(proteticoAdmin);
 
         // Act
         Set<ConstraintViolation<Protetico>> violations = validator.validate(protetico);

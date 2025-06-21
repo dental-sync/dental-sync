@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import com.senac.dentalsync.core.persistency.model.Servico;
 import com.senac.dentalsync.core.persistency.model.CategoriaServico;
 import com.senac.dentalsync.core.persistency.model.ServicoMaterial;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 
 public class ServicoTest {
 
@@ -403,23 +403,19 @@ public class ServicoTest {
 
     @Test
     void deveAceitarCamposBaseEntityPreenchidos() {
-        // Arrange
-        Usuario usuario = new Usuario();
-        usuario.setId(1L);
-        usuario.setName("Admin");
+        Protetico protetico = new Protetico();
+        protetico.setId(1L);
+        protetico.setNome("Admin");
         
         servico.setId(1L);
         servico.setCreatedAt(LocalDateTime.now());
         servico.setUpdatedAt(LocalDateTime.now());
         servico.setIsActive(true);
-        servico.setCreatedBy(usuario);
-        servico.setUpdatedBy(usuario);
-
-        // Act
+        servico.setCreatedBy(protetico);
+        servico.setUpdatedBy(protetico);
+        
         Set<ConstraintViolation<Servico>> violations = validator.validate(servico);
-
-        // Assert
-        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+        assertTrue(violations.isEmpty(), "Campos do BaseEntity preenchidos deveriam ser aceitos");
     }
 
     @Test

@@ -2,7 +2,7 @@ package com.senac.dentalsync.core.service;
 
 import com.senac.dentalsync.core.persistency.model.Clinica;
 import com.senac.dentalsync.core.persistency.model.Dentista;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.ClinicaRepository;
 import com.senac.dentalsync.core.persistency.repository.DentistaRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,31 +35,18 @@ public class ClinicaServiceTest {
     @Mock
     private DentistaRepository dentistaRepository;
 
-    @Mock
-    private UsuarioService usuarioService;
-
     @InjectMocks
     private ClinicaService clinicaService;
 
     private Clinica clinicaTeste;
-    private Usuario usuarioLogado;
 
     @BeforeEach
     void setUp() {
-        // Configura o usuário logado
-        usuarioLogado = new Usuario();
-        usuarioLogado.setId(1L);
-        usuarioLogado.setName("Usuario Teste");
-        usuarioLogado.setEmail("usuario@teste.com");
-        
-        // Configura o mock do usuarioService para sempre retornar o usuário logado
-        lenient().when(usuarioService.getUsuarioLogado()).thenReturn(usuarioLogado);
-
         // Configura a clínica de teste
         clinicaTeste = new Clinica();
         clinicaTeste.setId(1L);
         clinicaTeste.setNome("Clínica Dental Santos");
-        clinicaTeste.setCnpj("11.222.333/0001-81"); // CNPJ válido
+        clinicaTeste.setCnpj("11.222.333/0001-81");
         clinicaTeste.setIsActive(true);
     }
 
@@ -80,7 +67,6 @@ public class ClinicaServiceTest {
         assertThat(clinicaSalva).isNotNull();
         assertThat(clinicaSalva.getId()).isEqualTo(clinicaTeste.getId());
         verify(clinicaRepository, times(1)).save(any(Clinica.class));
-        verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
 
     @Test
@@ -247,7 +233,6 @@ public class ClinicaServiceTest {
         // then
         assertThat(clinicaAtualizada.getNome()).isEqualTo(novoNome);
         verify(clinicaRepository, times(1)).save(any(Clinica.class));
-        verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
 
     @Test

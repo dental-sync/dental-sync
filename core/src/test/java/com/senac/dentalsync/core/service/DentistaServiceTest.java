@@ -1,7 +1,7 @@
 package com.senac.dentalsync.core.service;
 
 import com.senac.dentalsync.core.persistency.model.Dentista;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.DentistaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,26 +29,13 @@ public class DentistaServiceTest {
     @Mock
     private DentistaRepository dentistaRepository;
 
-    @Mock
-    private UsuarioService usuarioService;
-
     @InjectMocks
     private DentistaService dentistaService;
 
     private Dentista dentistaTeste;
-    private Usuario usuarioLogado;
 
     @BeforeEach
     void setUp() {
-        // Configura o usuário logado
-        usuarioLogado = new Usuario();
-        usuarioLogado.setId(1L);
-        usuarioLogado.setName("Usuario Teste");
-        usuarioLogado.setEmail("usuario@teste.com");
-        
-        // Configura o mock do usuarioService para sempre retornar o usuário logado
-        lenient().when(usuarioService.getUsuarioLogado()).thenReturn(usuarioLogado);
-
         // Configura o dentista de teste
         dentistaTeste = new Dentista();
         dentistaTeste.setId(1L);
@@ -80,7 +67,6 @@ public class DentistaServiceTest {
         assertThat(dentistaSalvo).isNotNull();
         assertThat(dentistaSalvo.getId()).isEqualTo(dentistaTeste.getId());
         verify(dentistaRepository, times(1)).save(any(Dentista.class));
-        verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
 
     @Test
@@ -298,7 +284,6 @@ public class DentistaServiceTest {
         // then
         assertThat(dentistaAtualizado.getNome()).isEqualTo(novoNome);
         verify(dentistaRepository, times(1)).save(any(Dentista.class));
-        verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
 
     @Test

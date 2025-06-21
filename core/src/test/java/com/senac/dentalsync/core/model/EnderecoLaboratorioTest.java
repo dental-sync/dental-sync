@@ -1,7 +1,7 @@
 package com.senac.dentalsync.core.model;
 
 import com.senac.dentalsync.core.persistency.model.EnderecoLaboratorio;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
@@ -62,16 +62,16 @@ class EnderecoLaboratorioTest {
     void deveAceitarCamposBaseEntityPreenchidos() {
         configurarEnderecoValido();
         
-        Usuario usuario = new Usuario();
-        usuario.setId(1L);
-        usuario.setName("Admin");
+        Protetico protetico = new Protetico();
+        protetico.setId(1L);
+        protetico.setNome("Admin");
         
         endereco.setId(1L);
         endereco.setCreatedAt(LocalDateTime.now());
         endereco.setUpdatedAt(LocalDateTime.now());
         endereco.setIsActive(true);
-        endereco.setCreatedBy(usuario);
-        endereco.setUpdatedBy(usuario);
+        endereco.setCreatedBy(protetico);
+        endereco.setUpdatedBy(protetico);
 
         var violations = validator.validate(endereco);
         assertTrue(violations.isEmpty());

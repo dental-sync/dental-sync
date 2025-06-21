@@ -2,7 +2,6 @@ package com.senac.dentalsync.core.service;
 
 import com.senac.dentalsync.core.persistency.model.Laboratorio;
 import com.senac.dentalsync.core.persistency.model.Protetico;
-import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.ProteticoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,9 +38,6 @@ public class ProteticoServiceTest {
     private ProteticoRepository proteticoRepository;
 
     @Mock
-    private UsuarioService usuarioService;
-
-    @Mock
     private ApplicationContext applicationContext;
 
     @Mock
@@ -57,26 +53,15 @@ public class ProteticoServiceTest {
     private ProteticoService proteticoService;
 
     private Protetico proteticoTeste;
+    private Protetico proteticoLogado;
     private Laboratorio laboratorioTeste;
-    private Usuario usuarioLogado;
 
     @BeforeEach
     void setUp() {
-        // Configura o usuário logado
-        usuarioLogado = new Usuario();
-        usuarioLogado.setId(1L);
-        usuarioLogado.setName("Usuario Teste");
-        usuarioLogado.setEmail("usuario@teste.com");
-        
-        // Configura o mock do usuarioService para sempre retornar o usuário logado
-        lenient().when(usuarioService.getUsuarioLogado()).thenReturn(usuarioLogado);
-
-        // Configura o laboratório de teste
-        laboratorioTeste = new Laboratorio();
-        laboratorioTeste.setId(1L);
-        laboratorioTeste.setNomeLaboratorio("Laboratório Teste");
-        laboratorioTeste.setCnpj("11.222.333/0001-81");
-        laboratorioTeste.setEmailLaboratorio("lab@teste.com");
+        // Configura o protético logado
+        proteticoLogado = new Protetico();
+        proteticoLogado.setId(1L);
+        proteticoLogado.setNome("Admin");
 
         // Configura o protético de teste
         proteticoTeste = new Protetico();
@@ -85,10 +70,15 @@ public class ProteticoServiceTest {
         proteticoTeste.setEmail("protetico@email.com");
         proteticoTeste.setTelefone("(11) 99999-9999");
         proteticoTeste.setCro("CRO-SP-12345");
-        proteticoTeste.setSenha("$2a$10$hashedPassword");
-        proteticoTeste.setIsAdmin(false);
-        proteticoTeste.setLaboratorio(laboratorioTeste);
+        proteticoTeste.setSenha("senha123");
         proteticoTeste.setIsActive(true);
+
+        // Configura o laboratório de teste
+        laboratorioTeste = new Laboratorio();
+        laboratorioTeste.setId(1L);
+        laboratorioTeste.setNomeLaboratorio("Laboratório Teste");
+        laboratorioTeste.setCnpj("11.222.333/0001-81");
+        laboratorioTeste.setEmailLaboratorio("lab@teste.com");
 
         // Configura mocks para ApplicationContext e PasswordEncoder
         lenient().when(applicationContext.getBean(PasswordEncoder.class)).thenReturn(passwordEncoder);
@@ -120,7 +110,6 @@ public class ProteticoServiceTest {
         assertThat(proteticoSalvo.getId()).isEqualTo(proteticoTeste.getId());
         verify(proteticoRepository, times(1)).save(any(Protetico.class));
         verify(passwordEncoder, times(1)).encode("senhaPlana");
-        verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
 
     @Test

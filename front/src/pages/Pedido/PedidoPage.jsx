@@ -5,6 +5,7 @@ import ActionButton from '../../components/ActionButton/ActionButton';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import PedidoTable from '../../components/PedidoTable/PedidoTable';
+import Dropdown from '../../components/Dropdown/Dropdown';
 import { useNavigate } from 'react-router-dom';
 // axios removido - usando api do axios-config
 import api from '../../axios-config';
@@ -21,8 +22,7 @@ const PedidoPage = () => {
   const [filtros, setFiltros] = useState({
     dentista: 'todos',
     protetico: 'todos',
-    prioridade: 'todos',
-    dataEntrega: ''
+    status: 'todos'
   });
   const [sortConfig, setSortConfig] = useState({
     key: null,
@@ -139,18 +139,9 @@ const PedidoPage = () => {
         return false;
       }
       
-      // Aplicar filtro de prioridade
-      if (filtros.prioridade !== 'todos' && pedido.prioridade !== filtros.prioridade) {
+      // Aplicar filtro de status
+      if (filtros.status !== 'todos' && pedido.status !== filtros.status) {
         return false;
-      }
-      
-      // Aplicar filtro de data de entrega
-      if (filtros.dataEntrega && pedido.dataEntrega) {
-        const dataFiltro = new Date(filtros.dataEntrega).toISOString().split('T')[0];
-        const dataPedido = new Date(pedido.dataEntrega).toISOString().split('T')[0];
-        if (dataFiltro !== dataPedido) {
-          return false;
-        }
       }
       
       // Aplicar busca textual
@@ -186,8 +177,20 @@ const PedidoPage = () => {
     setIsExportOpen(false);
   };
 
+  // Função helper para mapear status
+  const getStatusObject = (statusValue) => {
+    const statusMap = {
+      'todos': 'Todos',
+      'PENDENTE': 'Pendente',
+      'EM_ANDAMENTO': 'Em Andamento',
+      'CONCLUIDO': 'Concluído'
+    };
+    return { id: statusValue, nome: statusMap[statusValue] || statusValue };
+  };
+
   const handleFiltroChange = (e) => {
     const { name, value } = e.target;
+    // Função mantida por compatibilidade, mas não é mais usada
     setFiltros({
       ...filtros,
       [name]: value
@@ -198,8 +201,7 @@ const PedidoPage = () => {
     setFiltros({
       dentista: 'todos',
       protetico: 'todos',
-      prioridade: 'todos',
-      dataEntrega: ''
+      status: 'todos'
     });
   };
 
@@ -264,15 +266,15 @@ const PedidoPage = () => {
             : dateB - dateA;
         }
 
-        // Para ordenação de prioridade
-        if (sortConfig.key === 'prioridade') {
-          const prioridadeMap = {
-            'BAIXA': 1,
-            'MEDIA': 2,
-            'ALTA': 3
+        // Para ordenação de status
+        if (sortConfig.key === 'status') {
+          const statusMap = {
+            'PENDENTE': 1,
+            'EM_ANDAMENTO': 2,
+            'CONCLUIDO': 3
           };
-          const valueA = prioridadeMap[a.prioridade] || 0;
-          const valueB = prioridadeMap[b.prioridade] || 0;
+          const valueA = statusMap[a.status] || 0;
+          const valueB = statusMap[b.status] || 0;
           return sortConfig.direction === 'ascending'
             ? valueA - valueB
             : valueB - valueA;
@@ -346,7 +348,7 @@ const PedidoPage = () => {
               label="Filtrar" 
               icon="filter"
               onClick={toggleFiltro} 
-              active={isFilterOpen || filtros.dentista !== 'todos' || filtros.protetico !== 'todos' || filtros.prioridade !== 'todos' || filtros.dataEntrega !== ''}
+              active={isFilterOpen || filtros.dentista !== 'todos' || filtros.protetico !== 'todos' || filtros.status !== 'todos'}
             />
             
             {isFilterOpen && (
@@ -355,65 +357,68 @@ const PedidoPage = () => {
                 
                 <div className="filter-group">
                   <label htmlFor="dentista">Dentista</label>
-                  <select 
-                    id="dentista" 
-                    name="dentista" 
-                    value={filtros.dentista} 
-                    onChange={handleFiltroChange}
-                    className="filter-select"
-                  >
-                    <option value="todos">Todos</option>
-                    {dentistas.map(dentista => (
-                      <option key={dentista.id} value={dentista.id}>
-                        {dentista.nome}
-                      </option>
-                    ))}
-                  </select>
+                  <Dropdown 
+                    items={[{ id: 'todos', nome: 'Todos' }, ...dentistas]}
+                    value={filtros.dentista === 'todos' ? { id: 'todos', nome: 'Todos' } : dentistas.find(d => d.id.toString() === filtros.dentista)}
+                    onChange={(selected) => {
+                      const value = selected ? selected.id.toString() : 'todos';
+                      setFiltros({ ...filtros, dentista: value });
+                    }}
+                    placeholder="Selecionar dentista..."
+                    searchPlaceholder="Buscar dentista..."
+                    searchable={true}
+                    allowClear={false}
+                    displayProperty="nome"
+                    valueProperty="id"
+                    variant="outline"
+                    size="small"
+                    buttonClassName="filter-select"
+                  />
                 </div>
                 
                 <div className="filter-group">
                   <label htmlFor="protetico">Protético</label>
-                  <select 
-                    id="protetico" 
-                    name="protetico" 
-                    value={filtros.protetico} 
-                    onChange={handleFiltroChange}
-                    className="filter-select"
-                  >
-                    <option value="todos">Todos</option>
-                    {proteticos.map(protetico => (
-                      <option key={protetico.id} value={protetico.id}>
-                        {protetico.nome}
-                      </option>
-                    ))}
-                  </select>
+                  <Dropdown 
+                    items={[{ id: 'todos', nome: 'Todos' }, ...proteticos]}
+                    value={filtros.protetico === 'todos' ? { id: 'todos', nome: 'Todos' } : proteticos.find(p => p.id.toString() === filtros.protetico)}
+                    onChange={(selected) => {
+                      const value = selected ? selected.id.toString() : 'todos';
+                      setFiltros({ ...filtros, protetico: value });
+                    }}
+                    placeholder="Selecionar protético..."
+                    searchPlaceholder="Buscar protético..."
+                    searchable={true}
+                    allowClear={false}
+                    displayProperty="nome"
+                    valueProperty="id"
+                    variant="outline"
+                    size="small"
+                    buttonClassName="filter-select"
+                  />
                 </div>
                 
                 <div className="filter-group">
-                  <label htmlFor="prioridade">Prioridade</label>
-                  <select 
-                    id="prioridade" 
-                    name="prioridade" 
-                    value={filtros.prioridade} 
-                    onChange={handleFiltroChange}
-                    className="filter-select"
-                  >
-                    <option value="todos">Todas</option>
-                    <option value="BAIXA">Baixa</option>
-                    <option value="MEDIA">Média</option>
-                    <option value="ALTA">Alta</option>
-                  </select>
-                </div>
-                
-                <div className="filter-group">
-                  <label htmlFor="dataEntrega">Data de Entrega</label>
-                  <input 
-                    type="date" 
-                    id="dataEntrega" 
-                    name="dataEntrega" 
-                    value={filtros.dataEntrega} 
-                    onChange={handleFiltroChange}
-                    className="filter-input"
+                  <label htmlFor="status">Status</label>
+                  <Dropdown 
+                    items={[
+                      { id: 'todos', nome: 'Todos' },
+                      { id: 'PENDENTE', nome: 'Pendente' },
+                      { id: 'EM_ANDAMENTO', nome: 'Em Andamento' },
+                      { id: 'CONCLUIDO', nome: 'Concluído' }
+                    ]}
+                    value={getStatusObject(filtros.status)}
+                    onChange={(selected) => {
+                      const value = selected ? selected.id : 'todos';
+                      setFiltros({ ...filtros, status: value });
+                    }}
+                    placeholder="Selecionar status..."
+                    searchable={false}
+                    allowClear={false}
+                    displayProperty="nome"
+                    valueProperty="id"
+                    variant="outline"
+                    size="small"
+                    buttonClassName="filter-select"
                   />
                 </div>
                 
@@ -458,11 +463,11 @@ const PedidoPage = () => {
                 protetico: pedido.protetico?.nome || 'N/A',
                 servicos: servicosFormatados,
                 dataEntrega: formatarData(pedido.dataEntrega),
-                prioridade: pedido.prioridade
+                status: pedido.status
               };
             })}
-            headers={['ID', 'Cliente', 'Dentista', 'Protético', 'Serviços', 'Data Entrega', 'Prioridade']}
-            fields={['id', 'cliente', 'dentista', 'protetico', 'servicos', 'dataEntrega', 'prioridade']}
+            headers={['ID', 'Cliente', 'Dentista', 'Protético', 'Serviços', 'Data Entrega', 'Status']}
+            fields={['id', 'cliente', 'dentista', 'protetico', 'servicos', 'dataEntrega', 'status']}
             filename="pedidos"
             isOpen={isExportOpen}
             toggleExport={toggleExport}

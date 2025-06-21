@@ -36,13 +36,12 @@ const EditarProtetico = () => {
         const protetico = response.data;
         
         setFormData({
-          ...formData,
           nome: protetico.nome,
           cro: protetico.cro,
           telefone: protetico.telefone,
           email: protetico.email,
           cargo: protetico.isAdmin ? 'Admin' : 'Protetico',
-          isActive: protetico.isActive
+          isActive: protetico.isActive !== undefined ? protetico.isActive : true
         });
       } catch (err) {
         console.error('Erro ao carregar dados:', err);
@@ -240,7 +239,8 @@ const EditarProtetico = () => {
         cro: formData.cro,
         email: formData.email,
         telefone: formData.telefone,
-        isAdmin: formData.cargo === 'Admin'
+        isAdmin: formData.cargo === 'Admin',
+        isActive: formData.isActive
       };
       
       await api.put(`/proteticos/${id}`, dataToSend);

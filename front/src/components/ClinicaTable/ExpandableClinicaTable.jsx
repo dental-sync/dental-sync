@@ -3,6 +3,7 @@ import './ExpandableClinicaTable.css';
 import ActionMenuClinica from '../ActionMenuClinica/ActionMenuClinica';
 import api from '../../axios-config';
 import { toast } from 'react-toastify';
+import { formatNome, formatEmail, formatTelefone, formatDocumento } from '../../utils/textUtils';
 
 // Função utilitária para formatar o ID da clínica
 const formatClinicaId = (id) => `C${String(id).padStart(4, '0')}`;
@@ -10,12 +11,7 @@ const formatClinicaId = (id) => `C${String(id).padStart(4, '0')}`;
 // Função utilitária para formatar o ID do dentista
 const formatDentistaId = (id) => `D${String(id).padStart(4, '0')}`;
 
-// Função utilitária para limitar o texto
-const limitText = (text, maxLength = 30) => {
-  if (!text) return '-';
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + '...';
-};
+// Função utilitária removida - usando as funções centralizadas de textUtils
 
 const ExpandableClinicaTable = ({ 
   clinicas, 
@@ -156,10 +152,10 @@ const ExpandableClinicaTable = ({
                   </div>
                 </td>
                 <td data-column="nome" title={clinica.nome} className="truncated-cell">
-                  {limitText(clinica.nome)}
+                  {formatNome(clinica.nome)}
                 </td>
                 <td data-column="cnpj" title={clinica.cnpj} className="truncated-cell">
-                  {limitText(clinica.cnpj)}
+                  {formatDocumento(clinica.cnpj)}
                 </td>
                 <td data-column="actions">
                   <ActionMenuClinica 
@@ -198,13 +194,13 @@ const ExpandableClinicaTable = ({
                                       <span className="dentista-id-badge">{formatDentistaId(dentista.id)}</span>
                                     </td>
                                     <td className="dentista-nome-cell" title={dentista.nome}>
-                                      {limitText(dentista.nome)}
+                                      {formatNome(dentista.nome)}
                                     </td>
                                     <td className="dentista-cro-cell">{dentista.cro}</td>
                                     <td className="dentista-email-cell" title={dentista.email}>
-                                      {limitText(dentista.email)}
+                                      {formatEmail(dentista.email)}
                                     </td>
-                                    <td className="dentista-telefone-cell">{dentista.telefone}</td>
+                                    <td className="dentista-telefone-cell">{formatTelefone(dentista.telefone)}</td>
                                   </tr>
                                 ))}
                               </tbody>

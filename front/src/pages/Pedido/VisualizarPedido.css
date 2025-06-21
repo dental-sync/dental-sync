@@ -154,4 +154,35 @@
   .odontograma-visualizacao {
     grid-template-columns: repeat(4, 1fr);
   }
+}
+
+/* Estilos para lista de serviços */
+.servicos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.servico-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #007bff;
+}
+
+.servico-nome {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.servico-quantidade {
+  margin-left: 8px;
+  font-weight: 600;
+  color: #007bff;
+  background-color: #e3f2fd;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
 } 

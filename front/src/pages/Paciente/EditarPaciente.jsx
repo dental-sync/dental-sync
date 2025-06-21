@@ -42,6 +42,7 @@ const EditarPaciente = () => {
           email: paciente.email || '',
           telefone: paciente.telefone || '',
           dataNascimento: paciente.dataNascimento || '',
+          isActive: paciente.isActive !== undefined ? paciente.isActive : true,
           endereco: {
             cep: paciente.endereco?.cep || '',
             logradouro: paciente.endereco?.logradouro || '',
@@ -241,7 +242,8 @@ const EditarPaciente = () => {
         email: formData.email,
         telefone: formData.telefone,
         dataNascimento: formData.dataNascimento,
-        endereco: formData.endereco
+        endereco: formData.endereco,
+        isActive: formData.isActive
       };
 
       const response = await api.put(`/paciente/${id}`, pacienteData);

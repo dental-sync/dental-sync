@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../axios-config';
 import './VisualizarPedido.css';
 import ActionButton from '../../components/ActionButton/ActionButton';
+import { formatNome, formatObservacao } from '../../utils/textUtils';
 
 const VisualizarPedido = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
   const [pedido, setPedido] = useState(null);
+  const [quantidadesServicos, setQuantidadesServicos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -16,8 +18,17 @@ const VisualizarPedido = () => {
     const fetchPedido = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:8080/pedidos/${id}`);
+        const response = await api.get(`/pedidos/${id}`);
         setPedido(response.data);
+        
+        // Buscar quantidades dos serviços
+        try {
+          const quantidadesResponse = await api.get(`/pedidos/${id}/quantidades-servicos`);
+          setQuantidadesServicos(quantidadesResponse.data);
+        } catch (quantErr) {
+          console.warn('Não foi possível carregar quantidades dos serviços:', quantErr);
+          setQuantidadesServicos([]);
+        }
       } catch (err) {
         console.error('Erro ao carregar pedido:', err);
         setError('Não foi possível carregar os dados do pedido.');
@@ -102,8 +113,23 @@ const VisualizarPedido = () => {
             </div>
             
             <div className="detail-item">
-              <span className="detail-label">Serviço:</span>
-              <span className="detail-value">{pedido?.servico?.nome || 'N/A'}</span>
+              <span className="detail-label">Serviços:</span>
+              <div className="servicos-lista">
+                {pedido?.servicos && pedido.servicos.length > 0 ? (
+                  pedido.servicos.map((servico) => {
+                    // Buscar a quantidade deste serviço
+                    const quantidade = quantidadesServicos.find(qs => qs.servico.id === servico.id)?.quantidade || 1;
+                    return (
+                      <div key={servico.id} className="servico-item">
+                        <span className="servico-nome">{servico.nome}</span>
+                        {quantidade > 1 && <span className="servico-quantidade"> x {quantidade}</span>}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <span className="detail-value">N/A</span>
+                )}
+              </div>
             </div>
             
             <div className="detail-item">

@@ -1,50 +1,21 @@
 import React from 'react';
 import GenericTable from '../GenericTable/GenericTable';
 import MaterialActionMenu from './MaterialActionMenu';
+import { formatNome, formatCategoria, limitText } from '../../utils/textUtils';
 
 // Função utilitária para formatar o ID
 const formatMaterialId = (id) => `M${String(id).padStart(4, '0')}`;
 
 const columns = [
   { key: 'id', label: 'ID', sortable: true },
-  { key: 'nome', label: 'Nome', sortable: true, render: (nome) => (
-    <span
-      title={nome}
-      style={{
-        display: 'inline-block',
-        maxWidth: '300px',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        verticalAlign: 'middle'
-      }}
-    >
-      {nome}
-    </span>
-  ) },
-  { key: 'categoriaMaterial', label: 'Categoria', sortable: true, render: (categoriaMaterial) => {
-    const nome = categoriaMaterial?.nome || '-';
-    return (
-      <span
-        title={nome}
-        style={{
-          display: 'inline-block',
-          maxWidth: '300px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          verticalAlign: 'middle'
-        }}
-      >
-        {nome}
-      </span>
-    );
-  } },
+  { key: 'nome', label: 'Nome', sortable: true, render: (nome) => formatNome(nome, 30) },
+  { key: 'categoriaMaterial', label: 'Categoria', sortable: true, render: (categoriaMaterial) => 
+    formatCategoria(categoriaMaterial?.nome || '-') },
   { key: 'quantidade', label: 'Quantidade Total', sortable: true, render: (quantidade) => {
     const num = Number(quantidade);
     return !isNaN(num) ? num.toLocaleString('pt-BR') : '-';
   } },
-  { key: 'unidadeMedida', label: 'Unidade', sortable: false },
+  { key: 'unidadeMedida', label: 'Unidade', sortable: false, render: (unidade) => limitText(unidade, 15) },
   { key: 'valorUnitario', label: 'Preço Unitário', sortable: true, render: (valor) => {
     console.log('valorUnitario recebido:', valor);
     const num = Number(valor);

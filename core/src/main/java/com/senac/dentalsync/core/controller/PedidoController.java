@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +26,7 @@ import com.senac.dentalsync.core.service.PacienteService;
 import com.senac.dentalsync.core.service.PedidoService;
 import com.senac.dentalsync.core.service.ProteticoService;
 import com.senac.dentalsync.core.dto.AtualizarStatusPedidoDTO;
+import com.senac.dentalsync.core.dto.PedidoDTO;
 
 @RestController
 @RequestMapping("/pedidos")
@@ -87,5 +90,17 @@ public class PedidoController extends BaseController<Pedido, Long> {
                 return ResponseEntity.ok().build();
             })
             .orElse(ResponseEntity.notFound().build());
+    }
+    
+    // Manter os métodos originais herdados do BaseController para compatibilidade
+    
+    @GetMapping("/{id}/quantidades-servicos")
+    public ResponseEntity<List<com.senac.dentalsync.core.persistency.model.PedidoServico>> getQuantidadesServicos(@PathVariable Long id) {
+        try {
+            List<com.senac.dentalsync.core.persistency.model.PedidoServico> quantidades = pedidoService.getQuantidadesServicos(id);
+            return ResponseEntity.ok(quantidades);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 } 

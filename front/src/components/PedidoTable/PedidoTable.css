@@ -94,6 +94,8 @@
   white-space: nowrap;
 }
 
+/* Estilos removidos - usando componente ServicosTooltip */
+
 /* Responsividade */
 @media (max-width: 1200px) {
   .pedido-table {

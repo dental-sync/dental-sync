@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.senac.dentalsync.core.dto.PedidoDTO;
+import com.senac.dentalsync.core.persistency.model.Clinica;
 import com.senac.dentalsync.core.persistency.model.Dentista;
 import com.senac.dentalsync.core.persistency.model.Paciente;
 import com.senac.dentalsync.core.persistency.model.Pedido;
@@ -23,6 +24,7 @@ import com.senac.dentalsync.core.persistency.model.PedidoServico;
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.model.Servico;
 import com.senac.dentalsync.core.persistency.repository.PedidoServicoRepository;
+import com.senac.dentalsync.core.service.ClinicaService;
 import com.senac.dentalsync.core.service.DentistaService;
 import com.senac.dentalsync.core.service.PacienteService;
 import com.senac.dentalsync.core.service.PedidoService;
@@ -41,6 +43,9 @@ public class PedidoComQuantidadeController {
     
     @Autowired
     private DentistaService dentistaService;
+    
+    @Autowired
+    private ClinicaService clinicaService;
     
     @Autowired
     private ProteticoService proteticoService;
@@ -69,6 +74,12 @@ public class PedidoComQuantidadeController {
                 Dentista dentista = dentistaService.findById(pedidoDTO.getDentista().getId())
                     .orElseThrow(() -> new RuntimeException("Dentista não encontrado"));
                 pedido.setDentista(dentista);
+            }
+            
+            if (pedidoDTO.getClinica() != null) {
+                Clinica clinica = clinicaService.findById(pedidoDTO.getClinica().getId())
+                    .orElseThrow(() -> new RuntimeException("Clínica não encontrada"));
+                pedido.setClinica(clinica);
             }
             
             if (pedidoDTO.getProtetico() != null) {
@@ -135,6 +146,12 @@ public class PedidoComQuantidadeController {
                 pedido.setDentista(dentista);
             }
             
+            if (pedidoDTO.getClinica() != null) {
+                Clinica clinica = clinicaService.findById(pedidoDTO.getClinica().getId())
+                    .orElseThrow(() -> new RuntimeException("Clínica não encontrada"));
+                pedido.setClinica(clinica);
+            }
+            
             if (pedidoDTO.getProtetico() != null) {
                 Protetico protetico = proteticoService.findById(pedidoDTO.getProtetico().getId())
                     .orElseThrow(() -> new RuntimeException("Protético não encontrado"));
@@ -152,17 +169,14 @@ public class PedidoComQuantidadeController {
             for (PedidoDTO.ServicoComQuantidadeDTO servicoDTO : pedidoDTO.getServicos()) {
                 Servico servico = servicoService.findById(servicoDTO.getId())
                     .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
-                // Adicionar apenas uma vez cada serviço único
                 if (!servicos.contains(servico)) {
                     servicos.add(servico);
                 }
             }
             pedido.setServicos(servicos);
             
-            // Remover quantidades antigas da tabela auxiliar
+            // Remover quantidades antigas e adicionar novas
             pedidoServicoRepository.deleteByPedidoId(id);
-            
-            // Salvar quantidades atualizadas na tabela auxiliar
             for (PedidoDTO.ServicoComQuantidadeDTO servicoDTO : pedidoDTO.getServicos()) {
                 Servico servico = servicoService.findById(servicoDTO.getId())
                     .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
@@ -172,10 +186,13 @@ public class PedidoComQuantidadeController {
                 pedidoServicoRepository.save(pedidoServico);
             }
             
-            return ResponseEntity.ok(pedidoService.save(pedido));
+            // Salvar pedido atualizado
+            pedido = pedidoService.save(pedido);
+            
+            return ResponseEntity.ok(pedido);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
-} 
+}

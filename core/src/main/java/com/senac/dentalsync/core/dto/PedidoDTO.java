@@ -12,6 +12,7 @@ public class PedidoDTO {
     
     private ClienteDTO cliente;
     private DentistaDTO dentista;
+    private ClinicaDTO clinica;
     private ProteticoDTO protetico;
     private List<ServicoComQuantidadeDTO> servicos;
     private LocalDate dataEntrega;
@@ -27,6 +28,11 @@ public class PedidoDTO {
     
     @Data
     public static class DentistaDTO {
+        private Long id;
+    }
+    
+    @Data
+    public static class ClinicaDTO {
         private Long id;
     }
     

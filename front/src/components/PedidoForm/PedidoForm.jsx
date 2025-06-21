@@ -17,6 +17,8 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
   // Listas de referência
   const [clientes, setClientes] = useState([]);
   const [dentistas, setDentistas] = useState([]);
+  const [clinicas, setClinicas] = useState([]);
+  const [clinicasFiltradasPorDentista, setClinicasFiltradasPorDentista] = useState([]);
   const [proteticos, setProteticos] = useState([]);
   const [servicos, setServicos] = useState([]);
   
@@ -24,6 +26,7 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
   const [formData, setFormData] = useState({
     cliente: null,
     dentista: null,
+    clinica: null,
     protetico: null,
     servicos: [],
     dataEntrega: '',
@@ -254,17 +257,20 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
         const [
           clientesResponse, 
           dentistasResponse, 
+          clinicasResponse,
           proteticosResponse, 
           servicosResponse
         ] = await Promise.all([
           api.get('/paciente'),
           api.get('/dentistas'),
+          api.get('/clinicas'),
           api.get('/proteticos'),
           api.get('/servico')
         ]);
         
         setClientes(clientesResponse.data);
         setDentistas(dentistasResponse.data);
+        setClinicas(clinicasResponse.data);
         setProteticos(proteticosResponse.data);
         setServicos(servicosResponse.data);
       } catch (err) {
@@ -317,6 +323,7 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
           setFormData({
             cliente: pedido.cliente || null,
             dentista: pedido.dentista || null,
+            clinica: pedido.clinica || null,
             protetico: pedido.protetico || null,
             servicos: servicosUnicos,
             dataEntrega,
@@ -327,6 +334,16 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
           });
           
           setDentesSelecionados(pedido.odontograma || []);
+          
+          // Configurar clínicas filtradas se existe dentista
+          if (pedido.dentista) {
+            const clinicasAssociadas = pedido.dentista.clinicas || [];
+            if (clinicasAssociadas.length > 1) {
+              setClinicasFiltradasPorDentista(clinicasAssociadas);
+            } else {
+              setClinicasFiltradasPorDentista([]);
+            }
+          }
           
           // Mapear serviços únicos com quantidade correta da tabela pedido_servico
           console.log('=== DEBUG CARREGAMENTO QUANTIDADES ===');
@@ -448,10 +465,41 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
     });
   };
 
-  const handleDentistaChange = (dentista) => {
+  const handleDentistaChange = async (dentista) => {
+    console.log('Dentista selecionado:', dentista);
+    
+    let clinicaSelecionada = null;
+    let clinicasFiltradas = [];
+    
+    if (dentista) {
+      // Verificar as clínicas associadas ao dentista
+      const clinicasAssociadas = dentista.clinicas || [];
+      console.log('Clínicas associadas ao dentista:', clinicasAssociadas);
+      
+      if (clinicasAssociadas.length === 1) {
+        // Se há apenas uma clínica, selecioná-la automaticamente
+        clinicaSelecionada = clinicasAssociadas[0];
+        console.log('Apenas uma clínica encontrada, selecionando automaticamente:', clinicaSelecionada);
+      } else if (clinicasAssociadas.length > 1) {
+        // Se há várias clínicas, filtrar para mostrar no select
+        clinicasFiltradas = clinicasAssociadas;
+        console.log('Múltiplas clínicas encontradas, mostrando no select:', clinicasFiltradas);
+      }
+    }
+    
+    setClinicasFiltradasPorDentista(clinicasFiltradas);
+    
     setFormData({
       ...formData,
-      dentista
+      dentista,
+      clinica: clinicaSelecionada
+    });
+  };
+
+  const handleClinicaChange = (clinica) => {
+    setFormData({
+      ...formData,
+      clinica
     });
   };
 
@@ -573,6 +621,7 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
       const dadosParaEnviar = {
         cliente: formData.cliente ? { id: formData.cliente.id } : null,
         dentista: formData.dentista ? { id: formData.dentista.id } : null,
+        clinica: formData.clinica ? { id: formData.clinica.id } : null,
         protetico: formData.protetico ? { id: formData.protetico.id } : null,
         servicos: servicosSelecionados.map(servico => ({ 
           id: servico.id,
@@ -735,6 +784,24 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
                   searchable={true}
                 />
               </div>
+
+              {/* Campo de Clínica - aparece apenas quando dentista tem múltiplas clínicas */}
+              {formData.dentista && clinicasFiltradasPorDentista.length > 0 && (
+                <div className="form-group">
+                  <label htmlFor="clinica">Clínica</label>
+                  <Dropdown
+                    items={clinicasFiltradasPorDentista}
+                    value={formData.clinica}
+                    onChange={handleClinicaChange}
+                    placeholder="Selecionar clínica"
+                    searchPlaceholder="Buscar clínica..."
+                    displayProperty="nome"
+                    valueProperty="id"
+                    searchBy="nome"
+                    searchable={true}
+                  />
+                </div>
+              )}
 
               <div className="form-group">
                 <label htmlFor="protetico">Protético</label>

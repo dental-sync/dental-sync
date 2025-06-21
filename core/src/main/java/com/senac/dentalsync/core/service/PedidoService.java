@@ -12,12 +12,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.senac.dentalsync.core.persistency.model.Dentista;
 import com.senac.dentalsync.core.persistency.model.Paciente;
 import com.senac.dentalsync.core.persistency.model.Pedido;
+import com.senac.dentalsync.core.persistency.model.PedidoServico;
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.PedidoRepository;
+import com.senac.dentalsync.core.persistency.repository.PedidoServicoRepository;
 import com.senac.dentalsync.core.persistency.repository.ServicoMaterialRepository;
 import com.senac.dentalsync.core.dto.HistoricoProteticoDTO;
+import com.senac.dentalsync.core.dto.PedidoDTO;
 import com.senac.dentalsync.core.persistency.model.Servico;
 import com.senac.dentalsync.core.persistency.model.ServicoMaterial;
 import com.senac.dentalsync.core.persistency.model.Material;
@@ -31,10 +34,25 @@ public class PedidoService extends BaseService<Pedido, Long> {
     private PedidoRepository pedidoRepository;
     
     @Autowired
+    private PedidoServicoRepository pedidoServicoRepository;
+    
+    @Autowired
     private UsuarioService usuarioService;
     
     @Autowired
     private MaterialService materialService;
+    
+    @Autowired
+    private ServicoService servicoService;
+    
+    @Autowired
+    private PacienteService pacienteService;
+    
+    @Autowired
+    private DentistaService dentistaService;
+    
+    @Autowired
+    private ProteticoService proteticoService;
     
     @Autowired
     private ServicoMaterialRepository servicoMaterialRepository;
@@ -228,4 +246,6 @@ public class PedidoService extends BaseService<Pedido, Long> {
         }
         return historico;
     }
+    
+    // TODO: Implementar captura de quantidades dos serviços
 } 

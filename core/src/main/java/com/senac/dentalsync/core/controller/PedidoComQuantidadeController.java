@@ -1,0 +1,183 @@
+package com.senac.dentalsync.core.controller;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.senac.dentalsync.core.dto.PedidoDTO;
+import com.senac.dentalsync.core.persistency.model.Dentista;
+import com.senac.dentalsync.core.persistency.model.Paciente;
+import com.senac.dentalsync.core.persistency.model.Pedido;
+import com.senac.dentalsync.core.persistency.model.PedidoServico;
+import com.senac.dentalsync.core.persistency.model.Protetico;
+import com.senac.dentalsync.core.persistency.model.Servico;
+import com.senac.dentalsync.core.persistency.repository.PedidoServicoRepository;
+import com.senac.dentalsync.core.service.DentistaService;
+import com.senac.dentalsync.core.service.PacienteService;
+import com.senac.dentalsync.core.service.PedidoService;
+import com.senac.dentalsync.core.service.ProteticoService;
+import com.senac.dentalsync.core.service.ServicoService;
+
+@RestController
+@RequestMapping("/pedidos-com-quantidade")
+public class PedidoComQuantidadeController {
+
+    @Autowired
+    private PedidoService pedidoService;
+    
+    @Autowired
+    private PacienteService pacienteService;
+    
+    @Autowired
+    private DentistaService dentistaService;
+    
+    @Autowired
+    private ProteticoService proteticoService;
+    
+    @Autowired
+    private ServicoService servicoService;
+    
+    @Autowired
+    private PedidoServicoRepository pedidoServicoRepository;
+
+    @PostMapping
+    public ResponseEntity<Pedido> criarPedidoComQuantidade(@RequestBody PedidoDTO pedidoDTO) {
+        try {
+            // Criar o pedido principal
+            Pedido pedido = new Pedido();
+            
+            // Setar os dados básicos
+            if (pedidoDTO.getCliente() != null) {
+                Paciente cliente = pacienteService.findById(pedidoDTO.getCliente().getId())
+                    .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                pedido.setCliente(cliente);
+            }
+            
+            if (pedidoDTO.getDentista() != null) {
+                Dentista dentista = dentistaService.findById(pedidoDTO.getDentista().getId())
+                    .orElseThrow(() -> new RuntimeException("Dentista não encontrado"));
+                pedido.setDentista(dentista);
+            }
+            
+            if (pedidoDTO.getProtetico() != null) {
+                Protetico protetico = proteticoService.findById(pedidoDTO.getProtetico().getId())
+                    .orElseThrow(() -> new RuntimeException("Protético não encontrado"));
+                pedido.setProtetico(protetico);
+            }
+            
+            pedido.setDataEntrega(pedidoDTO.getDataEntrega());
+            pedido.setPrioridade(pedidoDTO.getPrioridade());
+            pedido.setStatus(pedidoDTO.getStatus() != null ? pedidoDTO.getStatus() : Pedido.Status.PENDENTE);
+            pedido.setOdontograma(pedidoDTO.getOdontograma());
+            pedido.setObservacao(pedidoDTO.getObservacao());
+            
+            // Preparar lista de serviços para o relacionamento ManyToMany existente
+            List<Servico> servicos = new ArrayList<>();
+            for (PedidoDTO.ServicoComQuantidadeDTO servicoDTO : pedidoDTO.getServicos()) {
+                Servico servico = servicoService.findById(servicoDTO.getId())
+                    .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+                // Adicionar o serviço quantas vezes for necessário (solução simples)
+                for (int i = 0; i < servicoDTO.getQuantidade(); i++) {
+                    servicos.add(servico);
+                }
+            }
+            pedido.setServicos(servicos);
+            
+            // Salvar o pedido
+            pedido = pedidoService.save(pedido);
+            
+            // Salvar as quantidades originais na tabela pedido_servico (para consultas futuras)
+            for (PedidoDTO.ServicoComQuantidadeDTO servicoDTO : pedidoDTO.getServicos()) {
+                Servico servico = servicoService.findById(servicoDTO.getId())
+                    .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+                
+                PedidoServico pedidoServico = new PedidoServico();
+                pedidoServico.setPedido(pedido);
+                pedidoServico.setServico(servico);
+                pedidoServico.setQuantidade(new BigDecimal(servicoDTO.getQuantidade()));
+                
+                pedidoServicoRepository.save(pedidoServico);
+            }
+            
+            return ResponseEntity.ok(pedido);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<Pedido> atualizarPedidoComQuantidade(@PathVariable Long id, @RequestBody PedidoDTO pedidoDTO) {
+        try {
+            Pedido pedido = pedidoService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+            
+            // Atualizar dados básicos
+            if (pedidoDTO.getCliente() != null) {
+                Paciente cliente = pacienteService.findById(pedidoDTO.getCliente().getId())
+                    .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                pedido.setCliente(cliente);
+            }
+            
+            if (pedidoDTO.getDentista() != null) {
+                Dentista dentista = dentistaService.findById(pedidoDTO.getDentista().getId())
+                    .orElseThrow(() -> new RuntimeException("Dentista não encontrado"));
+                pedido.setDentista(dentista);
+            }
+            
+            if (pedidoDTO.getProtetico() != null) {
+                Protetico protetico = proteticoService.findById(pedidoDTO.getProtetico().getId())
+                    .orElseThrow(() -> new RuntimeException("Protético não encontrado"));
+                pedido.setProtetico(protetico);
+            }
+            
+            pedido.setDataEntrega(pedidoDTO.getDataEntrega());
+            pedido.setPrioridade(pedidoDTO.getPrioridade());
+            pedido.setStatus(pedidoDTO.getStatus());
+            pedido.setOdontograma(pedidoDTO.getOdontograma());
+            pedido.setObservacao(pedidoDTO.getObservacao());
+            
+            // Atualizar serviços (adicionar serviços quantas vezes for necessário)
+            List<Servico> servicos = new ArrayList<>();
+            for (PedidoDTO.ServicoComQuantidadeDTO servicoDTO : pedidoDTO.getServicos()) {
+                Servico servico = servicoService.findById(servicoDTO.getId())
+                    .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+                for (int i = 0; i < servicoDTO.getQuantidade(); i++) {
+                    servicos.add(servico);
+                }
+            }
+            pedido.setServicos(servicos);
+            
+            // Remover quantidades antigas da tabela auxiliar
+            pedidoServicoRepository.deleteByPedidoId(id);
+            
+            // Salvar quantidades atualizadas na tabela auxiliar
+            for (PedidoDTO.ServicoComQuantidadeDTO servicoDTO : pedidoDTO.getServicos()) {
+                Servico servico = servicoService.findById(servicoDTO.getId())
+                    .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+                
+                PedidoServico pedidoServico = new PedidoServico();
+                pedidoServico.setPedido(pedido);
+                pedidoServico.setServico(servico);
+                pedidoServico.setQuantidade(new BigDecimal(servicoDTO.getQuantidade()));
+                
+                pedidoServicoRepository.save(pedidoServico);
+            }
+            
+            return ResponseEntity.ok(pedidoService.save(pedido));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
+} 

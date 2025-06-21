@@ -477,11 +477,11 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
         observacao: formData.observacao
       };
       
-      // Criar ou atualizar pedido
+      // Criar ou atualizar pedido usando o novo endpoint que suporta quantidades
       if (pedidoId) {
-        await api.put(`/pedidos/${pedidoId}`, dadosParaEnviar);
+        await api.put(`/pedidos-com-quantidade/${pedidoId}`, dadosParaEnviar);
       } else {
-        await api.post('/pedidos', dadosParaEnviar);
+        await api.post('/pedidos-com-quantidade', dadosParaEnviar);
       }
       
       // Notificar sucesso e redirecionar

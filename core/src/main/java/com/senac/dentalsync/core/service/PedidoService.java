@@ -14,7 +14,6 @@ import com.senac.dentalsync.core.persistency.model.Paciente;
 import com.senac.dentalsync.core.persistency.model.Pedido;
 import com.senac.dentalsync.core.persistency.model.PedidoServico;
 import com.senac.dentalsync.core.persistency.model.Protetico;
-import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.PedidoRepository;
 import com.senac.dentalsync.core.persistency.repository.PedidoServicoRepository;
@@ -35,9 +34,6 @@ public class PedidoService extends BaseService<Pedido, Long> {
     
     @Autowired
     private PedidoServicoRepository pedidoServicoRepository;
-    
-    @Autowired
-    private UsuarioService usuarioService;
     
     @Autowired
     private MaterialService materialService;
@@ -63,7 +59,7 @@ public class PedidoService extends BaseService<Pedido, Long> {
     }
 
     @Override
-    protected Usuario getUsuarioLogado() {
+    protected Protetico getUsuarioLogado() {
         // Simplificando para um usuário mock
         // Em um ambiente real, isso seria obtido do contexto de segurança
         return null;

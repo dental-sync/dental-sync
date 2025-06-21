@@ -10,7 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.senac.dentalsync.core.persistency.model.Clinica;
 import com.senac.dentalsync.core.persistency.model.Dentista;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.ClinicaRepository;
 import com.senac.dentalsync.core.persistency.repository.DentistaRepository;
@@ -21,9 +21,6 @@ public class ClinicaService extends BaseService<Clinica, Long> {
 
     @Autowired
     private ClinicaRepository clinicaRepository;
-    
-    @Autowired
-    private UsuarioService usuarioService;
 
     @Autowired
     private DentistaRepository dentistaRepository;
@@ -34,8 +31,8 @@ public class ClinicaService extends BaseService<Clinica, Long> {
     }
 
     @Override
-    protected Usuario getUsuarioLogado() {
-        return usuarioService.getUsuarioLogado();
+    protected Protetico getUsuarioLogado() {
+        return null;
     }
     
     @Override

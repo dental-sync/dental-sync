@@ -1,7 +1,7 @@
 package com.senac.dentalsync.core.service;
 
 import com.senac.dentalsync.core.persistency.model.BaseEntity;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +14,7 @@ public abstract class BaseService<T extends BaseEntity, ID> {
 
     protected abstract BaseRepository<T, ID> getRepository();
     
-    protected abstract Usuario getUsuarioLogado();
+    protected abstract Protetico getUsuarioLogado();
 
     public T save(T entity) {
         if (entity.getId() == null) {

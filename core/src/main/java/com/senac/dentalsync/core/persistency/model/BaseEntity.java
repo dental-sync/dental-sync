@@ -34,10 +34,10 @@ public abstract class BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "created_by")
-    private Usuario createdBy;
+    private Protetico createdBy;
 
     @ManyToOne
     @JoinColumn(name = "updated_by")
-    private Usuario updatedBy;
+    private Protetico updatedBy;
 
 }

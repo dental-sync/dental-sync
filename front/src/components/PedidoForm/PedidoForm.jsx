@@ -437,11 +437,25 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
     // Validação da data
     if (value) {
       const inputDate = new Date(value);
-      const currentYear = new Date().getFullYear();
+      const hoje = new Date();
+      const umAnoAtras = new Date();
+      umAnoAtras.setFullYear(hoje.getFullYear() - 1);
       
-      // Validar se o ano está dentro de um range razoável
-      if (inputDate.getFullYear() > currentYear + 50 || inputDate.getFullYear() < currentYear - 50) {
-        toast.error('Ano inválido. Insira um ano entre ' + (currentYear - 50) + ' e ' + (currentYear + 50) + '.', {
+      // Validar se a data não é anterior a 1 ano atrás
+      if (inputDate < umAnoAtras) {
+        const dataLimite = umAnoAtras.toLocaleDateString('pt-BR');
+        toast.error(`A data de entrega não pode ser anterior a ${dataLimite} (1 ano atrás).`, {
+          position: "top-right",
+          autoClose: 4000,
+        });
+        setError('Por favor, insira uma data válida.');
+        return;
+      }
+      
+      // Validar se o ano está dentro de um range razoável (futuro)
+      const currentYear = new Date().getFullYear();
+      if (inputDate.getFullYear() > currentYear + 50) {
+        toast.error('Ano inválido. Insira um ano até ' + (currentYear + 50) + '.', {
           position: "top-right",
           autoClose: 4000,
         });
@@ -653,8 +667,20 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
       if (err.response?.data?.message) {
         const errorMessage = err.response.data.message;
         
-        // Verificar se é erro de estoque insuficiente
-        if (errorMessage.includes('Estoque insuficiente') || errorMessage.includes('estoque')) {
+        // Verificar se é erro de data
+        if (errorMessage.includes('data de entrega não pode ser anterior') || 
+            errorMessage.includes('1 ano atrás') ||
+            errorMessage.includes('data de entrega') ||
+            errorMessage.includes('data')) {
+          toast.error(`${errorMessage}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        } else if (errorMessage.includes('Estoque insuficiente') || errorMessage.includes('estoque')) {
           toast.error(`${errorMessage}`, {
             position: "top-right",
             autoClose: 5000,
@@ -764,6 +790,7 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
                   value={formData.dataEntrega}
                   onChange={handleDataEntregaChange}
                   placeholder="DD/MM/AAAA"
+                  minDate={new Date(new Date().getFullYear() - 1, new Date().getMonth(), new Date().getDate()).toISOString().split('T')[0]}
                   maxDate={new Date(new Date().getFullYear() + 10, 11, 31).toISOString().split('T')[0]}
                   required
                   className="form-input"

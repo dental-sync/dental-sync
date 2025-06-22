@@ -72,6 +72,9 @@ public class PedidoService extends BaseService<Pedido, Long> {
         System.out.println("Pedido ID: " + pedido.getId());
         System.out.println("Status: " + pedido.getStatus());
         
+        // Validar data de entrega
+        validarDataEntrega(pedido.getDataEntrega());
+        
         // Se for um novo pedido, garantir que o status seja PENDENTE
         if (pedido.getId() == null && pedido.getStatus() == null) {
             pedido.setStatus(Pedido.Status.PENDENTE);
@@ -86,6 +89,27 @@ public class PedidoService extends BaseService<Pedido, Long> {
         }
         
         return super.save(pedido);
+    }
+    
+    /**
+     * Valida se a data de entrega está dentro do período permitido (até 1 ano atrás ou data futura)
+     * @param dataEntrega A data de entrega a ser validada
+     * @throws RuntimeException se a data for inválida
+     */
+    private void validarDataEntrega(LocalDate dataEntrega) {
+        if (dataEntrega == null) {
+            throw new RuntimeException("A data de entrega é obrigatória");
+        }
+        
+        LocalDate hoje = LocalDate.now();
+        LocalDate umAnoAtras = hoje.minusYears(1);
+        
+        if (dataEntrega.isBefore(umAnoAtras)) {
+            throw new RuntimeException("A data de entrega não pode ser anterior a " + 
+                umAnoAtras.toString() + " (1 ano atrás)");
+        }
+        
+        System.out.println("Data de entrega validada: " + dataEntrega);
     }
     
     private void descontarEstoqueMateriais(Pedido pedido) {

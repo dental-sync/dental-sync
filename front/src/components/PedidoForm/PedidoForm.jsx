@@ -790,8 +790,24 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
                   value={formData.dataEntrega}
                   onChange={handleDataEntregaChange}
                   placeholder="DD/MM/AAAA"
-                  minDate={new Date(new Date().getFullYear() - 1, new Date().getMonth(), new Date().getDate()).toISOString().split('T')[0]}
-                  maxDate={new Date(new Date().getFullYear() + 10, 11, 31).toISOString().split('T')[0]}
+                  minDate={(() => {
+                    const hoje = new Date();
+                    const umAnoAtras = new Date(hoje.getFullYear() - 1, hoje.getMonth(), hoje.getDate());
+                    const year = umAnoAtras.getFullYear();
+                    const month = (umAnoAtras.getMonth() + 1).toString().padStart(2, '0');
+                    const day = umAnoAtras.getDate().toString().padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                  })()}
+                  maxDate={(() => {
+                    const futuro = new Date();
+                    futuro.setFullYear(futuro.getFullYear() + 10);
+                    futuro.setMonth(11);
+                    futuro.setDate(31);
+                    const year = futuro.getFullYear();
+                    const month = (futuro.getMonth() + 1).toString().padStart(2, '0');
+                    const day = futuro.getDate().toString().padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                  })()}
                   required
                   className="form-input"
                 />

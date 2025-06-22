@@ -2,6 +2,7 @@ package com.senac.dentalsync.core.controller;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ public class PedidoComQuantidadeController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity<Pedido> criarPedidoComQuantidade(@RequestBody PedidoDTO pedidoDTO) {
+    public ResponseEntity<?> criarPedidoComQuantidade(@RequestBody PedidoDTO pedidoDTO) {
         try {
             // Criar o pedido principal
             Pedido pedido = new Pedido();
@@ -109,29 +110,57 @@ public class PedidoComQuantidadeController {
             // Salvar o pedido
             pedido = pedidoService.save(pedido);
             
-            // Salvar as quantidades originais na tabela pedido_servico (para consultas futuras)
+            // Salvar as quantidades originais na tabela pedido_servico
             for (PedidoDTO.ServicoComQuantidadeDTO servicoDTO : pedidoDTO.getServicos()) {
                 Servico servico = servicoService.findById(servicoDTO.getId())
                     .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
                 
-                PedidoServico pedidoServico = new PedidoServico(pedido, servico, new BigDecimal(servicoDTO.getQuantidade()));
+                // Validar quantidade do serviço
+                if (servicoDTO.getQuantidade() == null || servicoDTO.getQuantidade() <= 0) {
+                    throw new RuntimeException("Quantidade do serviço deve ser maior que zero: " + servico.getNome());
+                }
                 
+                PedidoServico pedidoServico = new PedidoServico(pedido, servico, new BigDecimal(servicoDTO.getQuantidade()));
                 pedidoServicoRepository.save(pedidoServico);
             }
             
+            // AGORA descontar o estoque usando as quantidades corretas
+            pedidoService.descontarEstoqueNovoPedido(pedido.getId(), pedidoDTO.getServicos());
+            
             return ResponseEntity.ok(pedido);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            System.err.println("Erro ao criar pedido: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.badRequest().build();
+            
+            // Criar resposta de erro estruturada
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("error", "Erro ao criar pedido");
+            errorResponse.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (Exception e) {
+            System.err.println("Erro inesperado ao criar pedido: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Erro interno do servidor");
+            errorResponse.put("error", "Erro inesperado");
+            errorResponse.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
     
     @PutMapping("/{id}")
     @Transactional
-    public ResponseEntity<Pedido> atualizarPedidoComQuantidade(@PathVariable Long id, @RequestBody PedidoDTO pedidoDTO) {
+    public ResponseEntity<?> atualizarPedidoComQuantidade(@PathVariable Long id, @RequestBody PedidoDTO pedidoDTO) {
         try {
             Pedido pedido = pedidoService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+            
+            // PRIMEIRO ajustar estoque baseado nas diferenças
+            pedidoService.ajustarEstoquePedidoEditado(id, pedidoDTO.getServicos());
             
             // Atualizar dados básicos
             if (pedidoDTO.getCliente() != null) {
@@ -181,8 +210,12 @@ public class PedidoComQuantidadeController {
                 Servico servico = servicoService.findById(servicoDTO.getId())
                     .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
                 
-                PedidoServico pedidoServico = new PedidoServico(pedido, servico, new BigDecimal(servicoDTO.getQuantidade()));
+                // Validar quantidade do serviço
+                if (servicoDTO.getQuantidade() == null || servicoDTO.getQuantidade() <= 0) {
+                    throw new RuntimeException("Quantidade do serviço deve ser maior que zero: " + servico.getNome());
+                }
                 
+                PedidoServico pedidoServico = new PedidoServico(pedido, servico, new BigDecimal(servicoDTO.getQuantidade()));
                 pedidoServicoRepository.save(pedidoServico);
             }
             
@@ -190,9 +223,50 @@ public class PedidoComQuantidadeController {
             pedido = pedidoService.save(pedido);
             
             return ResponseEntity.ok(pedido);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            System.err.println("Erro ao atualizar pedido: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.badRequest().build();
+            
+            // Criar resposta de erro estruturada
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("error", "Erro ao atualizar pedido");
+            errorResponse.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (Exception e) {
+            System.err.println("Erro inesperado ao atualizar pedido: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Erro interno do servidor");
+            errorResponse.put("error", "Erro inesperado");
+            errorResponse.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.status(500).body(errorResponse);
+        }
+    }
+
+    @PostMapping("/limpar-dados-inconsistentes")
+    public ResponseEntity<?> limparDadosInconsistentes() {
+        try {
+            pedidoService.limparDadosInconsistentes();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Dados inconsistentes limpos com sucesso");
+            response.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println("Erro ao limpar dados inconsistentes: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Erro ao limpar dados: " + e.getMessage());
+            errorResponse.put("error", "Erro na limpeza");
+            errorResponse.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 }

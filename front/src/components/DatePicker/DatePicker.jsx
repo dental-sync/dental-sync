@@ -280,7 +280,11 @@ const DatePicker = ({
             <button
               type="button"
               className="calendar-nav-btn"
-              onClick={() => navigateMonth(-1)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigateMonth(-1);
+              }}
             >
               ‹
             </button>
@@ -290,7 +294,11 @@ const DatePicker = ({
             <button
               type="button"
               className="calendar-nav-btn"
-              onClick={() => navigateMonth(1)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigateMonth(1);
+              }}
             >
               ›
             </button>
@@ -318,7 +326,13 @@ const DatePicker = ({
                 } ${
                   dayObj.isDisabled ? 'disabled' : ''
                 }`}
-                onClick={() => !dayObj.isDisabled && handleDateClick(dayObj.date)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!dayObj.isDisabled) {
+                    handleDateClick(dayObj.date);
+                  }
+                }}
                 disabled={dayObj.isDisabled}
               >
                 {dayObj.day}

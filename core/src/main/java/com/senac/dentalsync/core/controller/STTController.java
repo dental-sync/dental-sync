@@ -54,8 +54,8 @@ public class STTController {
             String text = request.get("text");
             System.out.println("Teste STT recebido: " + text);
             
-            Map<String, Object> mockResponse = sttService.createMockResponse();
-            return ResponseEntity.ok(mockResponse);
+            Object response = sttService.processText(text != null ? text : "teste de conexão");
+            return ResponseEntity.ok(response);
             
         } catch (Exception e) {
             System.err.println("Erro no teste STT: " + e.getMessage());
@@ -116,12 +116,10 @@ public class STTController {
                     throw new RuntimeException("TIMEOUT_ERROR");
                 
                 case "NULL_DATA_TEST":
-                    // Testar resposta com dados todos null (deve dar erro)
+                    // Simular erro de dados vazios usando um texto que a IA não consegue processar
                     try {
-                        Map<String, Object> emptyResponse = sttService.createEmptyMockResponse();
-                        // Simular o processamento que faria a validação
-                        String mockText = "texto que retorna dados vazios";
-                        Object result = sttService.processText(mockText); // Isso deveria dar erro
+                        String emptyText = "texto vazio que não contém informações";
+                        Object result = sttService.processText(emptyText);
                         return ResponseEntity.ok(result);
                     } catch (Exception ex) {
                         // Se chegou aqui, a validação funcionou

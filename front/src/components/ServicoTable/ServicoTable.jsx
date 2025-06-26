@@ -1,6 +1,7 @@
 import React from 'react';
 import GenericTable from '../GenericTable/GenericTable';
 import ActionMenu from '../ActionMenu/ActionMenu';
+import { formatNome, formatCategoria, formatDescricao } from '../../utils/textUtils';
 
 // Função utilitária para formatar o ID
 const formatServicoId = (id) => `S${String(id).padStart(4, '0')}`;
@@ -31,11 +32,11 @@ const formatServicoData = (servico) => ({
 
 const columns = [
   { key: 'id', label: 'ID', sortable: true },
-  { key: 'nome', label: 'Nome', sortable: true },
-  { key: 'categoriaServico', label: 'Categoria', sortable: true },
+  { key: 'nome', label: 'Nome', sortable: true, render: (nome) => formatNome(nome, 30) },
+  { key: 'categoriaServico', label: 'Categoria', sortable: true, render: (categoria) => formatCategoria(categoria) },
   { key: 'valorTotal', label: 'Valor', sortable: true },
   { key: 'tempoPrevisto', label: 'Tempo Previsto', sortable: true },
-  { key: 'descricao', label: 'Descrição', sortable: false },
+  { key: 'descricao', label: 'Descrição', sortable: false, render: (descricao) => formatDescricao(descricao) },
   { key: 'actions', label: 'Ações' }
 ];
 

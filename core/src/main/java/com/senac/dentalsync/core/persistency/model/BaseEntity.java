@@ -34,10 +34,20 @@ public abstract class BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "created_by")
-    private Usuario createdBy;
+    private Protetico createdBy;
 
     @ManyToOne
     @JoinColumn(name = "updated_by")
-    private Usuario updatedBy;
+    private Protetico updatedBy;
+
+    // Método setId manual para resolver problema de compilação
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    // Método getId manual para resolver problema de compilação
+    public Long getId() {
+        return this.id;
+    }
 
 }

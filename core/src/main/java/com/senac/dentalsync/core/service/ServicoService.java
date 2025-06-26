@@ -14,7 +14,7 @@ import com.senac.dentalsync.core.persistency.model.Material;
 import com.senac.dentalsync.core.persistency.model.Servico;
 import com.senac.dentalsync.core.persistency.model.ServicoMaterial;
 import com.senac.dentalsync.core.persistency.model.ServicoMaterialId;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.ServicoRepository;
 import com.senac.dentalsync.core.persistency.repository.ServicoMaterialRepository;
@@ -31,9 +31,6 @@ public class ServicoService extends BaseService<Servico, Long> {
     private ServicoRepository servicoRepository;
 
     @Autowired
-    private UsuarioService usuarioService;
-
-    @Autowired
     private MaterialService materialService;
 
     @Autowired
@@ -48,8 +45,8 @@ public class ServicoService extends BaseService<Servico, Long> {
     }
 
     @Override
-    protected Usuario getUsuarioLogado() {
-        return usuarioService.getUsuarioLogado();
+    protected Protetico getUsuarioLogado() {
+        return null;
     }
 
     @Override

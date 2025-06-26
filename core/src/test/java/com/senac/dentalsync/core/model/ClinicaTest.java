@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.senac.dentalsync.core.persistency.model.Clinica;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 
 public class ClinicaTest {
 
@@ -194,18 +194,18 @@ public class ClinicaTest {
 
     @Test
     void deveAceitarCamposBaseEntityPreenchidos() {
-        Usuario usuario = new Usuario();
-        usuario.setId(1L);
-        usuario.setName("Admin");
+        Protetico protetico = new Protetico();
+        protetico.setId(1L);
+        protetico.setNome("Admin");
         
         clinica.setId(1L);
         clinica.setCreatedAt(LocalDateTime.now());
         clinica.setUpdatedAt(LocalDateTime.now());
         clinica.setIsActive(true);
-        clinica.setCreatedBy(usuario);
-        clinica.setUpdatedBy(usuario);
+        clinica.setCreatedBy(protetico);
+        clinica.setUpdatedBy(protetico);
 
-        Set<ConstraintViolation<Clinica>> violations = validator.validate(clinica);
+        var violations = validator.validate(clinica);
         assertTrue(violations.isEmpty());
     }
 

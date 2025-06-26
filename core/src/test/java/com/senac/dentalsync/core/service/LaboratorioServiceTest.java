@@ -2,7 +2,7 @@ package com.senac.dentalsync.core.service;
 
 import com.senac.dentalsync.core.persistency.model.EnderecoLaboratorio;
 import com.senac.dentalsync.core.persistency.model.Laboratorio;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.LaboratorioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
@@ -28,27 +27,14 @@ public class LaboratorioServiceTest {
     @Mock
     private LaboratorioRepository laboratorioRepository;
 
-    @Mock
-    private UsuarioService usuarioService;
-
     @InjectMocks
     private LaboratorioService laboratorioService;
 
     private Laboratorio laboratorioTeste;
     private EnderecoLaboratorio enderecoTeste;
-    private Usuario usuarioLogado;
 
     @BeforeEach
     void setUp() {
-        // Configura o usuário logado
-        usuarioLogado = new Usuario();
-        usuarioLogado.setId(1L);
-        usuarioLogado.setName("Usuario Teste");
-        usuarioLogado.setEmail("usuario@teste.com");
-        
-        // Configura o mock do usuarioService para sempre retornar o usuário logado
-        lenient().when(usuarioService.getUsuarioLogado()).thenReturn(usuarioLogado);
-
         // Configura o endereço de teste
         enderecoTeste = new EnderecoLaboratorio();
         enderecoTeste.setId(1L);
@@ -90,7 +76,6 @@ public class LaboratorioServiceTest {
         assertThat(laboratorioSalvo.getId()).isEqualTo(laboratorioTeste.getId());
         assertThat(laboratorioSalvo.getNomeLaboratorio()).isEqualTo(laboratorioTeste.getNomeLaboratorio());
         verify(laboratorioRepository, times(1)).save(any(Laboratorio.class));
-        verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
 
     @Test
@@ -157,7 +142,6 @@ public class LaboratorioServiceTest {
         // then
         assertThat(laboratorioAtualizado.getNomeLaboratorio()).isEqualTo(novoNome);
         verify(laboratorioRepository, times(1)).save(any(Laboratorio.class));
-        verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
 
     @Test

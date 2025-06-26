@@ -33,9 +33,6 @@ public class ServicoServiceTest {
     private ServicoRepository servicoRepository;
 
     @Mock
-    private UsuarioService usuarioService;
-
-    @Mock
     private MaterialService materialService;
     
     @Mock
@@ -53,19 +50,15 @@ public class ServicoServiceTest {
     private Servico servicoTeste;
     private Material materialTeste;
     private ServicoMaterial servicoMaterialTeste;
-    private Usuario usuarioLogado;
+    private Protetico proteticoLogado;
     private CategoriaServico categoriaTeste;
 
     @BeforeEach
     void setUp() {
-        // Configura o usuário logado
-        usuarioLogado = new Usuario();
-        usuarioLogado.setId(1L);
-        usuarioLogado.setName("Usuario Teste");
-        usuarioLogado.setEmail("usuario@teste.com");
-        
-        // Configura o mock do usuarioService
-        lenient().when(usuarioService.getUsuarioLogado()).thenReturn(usuarioLogado);
+        // Configura o protético logado
+        proteticoLogado = new Protetico();
+        proteticoLogado.setId(1L);
+        proteticoLogado.setNome("Admin");
 
         // Configura categoria teste
         categoriaTeste = new CategoriaServico();
@@ -471,16 +464,6 @@ public class ServicoServiceTest {
 
         // then
         assertThat(repository).isEqualTo(servicoRepository);
-    }
-
-    @Test
-    void deveRetornarUsuarioLogado() {
-        // when
-        Usuario usuario = servicoService.getUsuarioLogado();
-
-        // then
-        assertThat(usuario).isEqualTo(usuarioLogado);
-        verify(usuarioService, times(1)).getUsuarioLogado();
     }
 
     @Test

@@ -2,7 +2,6 @@ package com.senac.dentalsync.core.service;
 
 import com.senac.dentalsync.core.persistency.model.Laboratorio;
 import com.senac.dentalsync.core.persistency.model.Protetico;
-import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.ProteticoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,9 +38,6 @@ public class ProteticoServiceTest {
     private ProteticoRepository proteticoRepository;
 
     @Mock
-    private UsuarioService usuarioService;
-
-    @Mock
     private ApplicationContext applicationContext;
 
     @Mock
@@ -57,19 +53,15 @@ public class ProteticoServiceTest {
     private ProteticoService proteticoService;
 
     private Protetico proteticoTeste;
+    private Protetico proteticoLogado;
     private Laboratorio laboratorioTeste;
-    private Usuario usuarioLogado;
 
     @BeforeEach
     void setUp() {
-        // Configura o usuário logado
-        usuarioLogado = new Usuario();
-        usuarioLogado.setId(1L);
-        usuarioLogado.setName("Usuario Teste");
-        usuarioLogado.setEmail("usuario@teste.com");
-        
-        // Configura o mock do usuarioService para sempre retornar o usuário logado
-        lenient().when(usuarioService.getUsuarioLogado()).thenReturn(usuarioLogado);
+        // Configura o protético logado
+        proteticoLogado = new Protetico();
+        proteticoLogado.setId(1L);
+        proteticoLogado.setNome("Admin");
 
         // Configura o laboratório de teste
         laboratorioTeste = new Laboratorio();
@@ -85,10 +77,9 @@ public class ProteticoServiceTest {
         proteticoTeste.setEmail("protetico@email.com");
         proteticoTeste.setTelefone("(11) 99999-9999");
         proteticoTeste.setCro("CRO-SP-12345");
-        proteticoTeste.setSenha("$2a$10$hashedPassword");
-        proteticoTeste.setIsAdmin(false);
-        proteticoTeste.setLaboratorio(laboratorioTeste);
+        proteticoTeste.setSenha("$2a$10$hashedPassword"); // Senha já criptografada
         proteticoTeste.setIsActive(true);
+        proteticoTeste.setLaboratorio(laboratorioTeste); // Adicionar laboratório
 
         // Configura mocks para ApplicationContext e PasswordEncoder
         lenient().when(applicationContext.getBean(PasswordEncoder.class)).thenReturn(passwordEncoder);
@@ -120,7 +111,6 @@ public class ProteticoServiceTest {
         assertThat(proteticoSalvo.getId()).isEqualTo(proteticoTeste.getId());
         verify(proteticoRepository, times(1)).save(any(Protetico.class));
         verify(passwordEncoder, times(1)).encode("senhaPlana");
-        verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
 
     @Test
@@ -424,10 +414,15 @@ public class ProteticoServiceTest {
         proteticoExistente.setCro("CRO-SP-12345");
         proteticoExistente.setTelefone("(11) 99999-9999");
 
+        // Criar protético existente para busca por ID (com mesma senha criptografada)
+        Protetico proteticoExistenteDB = new Protetico();
+        proteticoExistenteDB.setId(1L);
+        proteticoExistenteDB.setSenha("$2a$10$hashedPassword");
+
         when(proteticoRepository.findByEmail(proteticoExistente.getEmail())).thenReturn(Optional.of(proteticoExistente));
         when(proteticoRepository.findFirstByCro(proteticoExistente.getCro())).thenReturn(Optional.of(proteticoExistente));
         when(proteticoRepository.findFirstByTelefone(proteticoExistente.getTelefone())).thenReturn(Optional.of(proteticoExistente));
-        when(proteticoRepository.findById(1L)).thenReturn(Optional.of(proteticoTeste));
+        when(proteticoRepository.findById(1L)).thenReturn(Optional.of(proteticoExistenteDB));
         when(proteticoRepository.save(any(Protetico.class))).thenReturn(proteticoExistente);
 
         // when
@@ -436,7 +431,7 @@ public class ProteticoServiceTest {
         // then
         assertThat(proteticoSalvo).isNotNull();
         verify(proteticoRepository, times(1)).save(any(Protetico.class));
-        // Verifica que a senha não foi re-criptografada
+        // A senha não deve ser re-criptografada pois já está criptografada e é igual
         verify(passwordEncoder, never()).encode(anyString());
     }
 

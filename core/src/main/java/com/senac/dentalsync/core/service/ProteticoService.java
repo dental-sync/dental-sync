@@ -18,7 +18,6 @@ import org.springframework.security.core.Authentication;
 
 import com.senac.dentalsync.core.persistency.model.Laboratorio;
 import com.senac.dentalsync.core.persistency.model.Protetico;
-import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.ProteticoRepository;
 
@@ -27,9 +26,6 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
 
     @Autowired
     private ProteticoRepository proteticoRepository;
-    
-    @Autowired
-    private UsuarioService usuarioService;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -40,8 +36,8 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
     }
 
     @Override
-    protected Usuario getUsuarioLogado() {
-        return usuarioService.getUsuarioLogado();
+    protected Protetico getUsuarioLogado() {
+        return null;
     }
     
     @Override
@@ -74,19 +70,35 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
             }
         }
         
+        // Para atualizações, se a senha é null, mantenha a senha existente
+        if (protetico.getId() != null && protetico.getSenha() == null) {
+            System.out.println("Senha não fornecida na atualização - mantendo senha existente");
+            Protetico existente = findById(protetico.getId()).orElse(null);
+            if (existente != null) {
+                protetico.setSenha(existente.getSenha());
+                System.out.println("Senha existente mantida");
+            }
+        }
+        
         verificarDuplicidade(protetico);
-        PasswordEncoder passwordEncoder = applicationContext.getBean(PasswordEncoder.class);
         
-        boolean senhaFoiAlterada = isSenhaAlterada(protetico, passwordEncoder);
-        System.out.println("Senha foi alterada: " + senhaFoiAlterada);
-        System.out.println("Senha atual (primeiros 10 chars): " + (protetico.getSenha() != null ? protetico.getSenha().substring(0, Math.min(10, protetico.getSenha().length())) : "null"));
-        
-        if (protetico.getId() == null || senhaFoiAlterada) {
-            System.out.println("Criptografando senha...");
-            protetico.setSenha(passwordEncoder.encode(protetico.getSenha()));
-            System.out.println("Senha criptografada (primeiros 10 chars): " + protetico.getSenha().substring(0, 10));
+        // Só processar senha se ela não for null
+        if (protetico.getSenha() != null) {
+            PasswordEncoder passwordEncoder = applicationContext.getBean(PasswordEncoder.class);
+            
+            boolean senhaFoiAlterada = isSenhaAlterada(protetico, passwordEncoder);
+            System.out.println("Senha foi alterada: " + senhaFoiAlterada);
+            System.out.println("Senha atual (primeiros 10 chars): " + (protetico.getSenha() != null ? protetico.getSenha().substring(0, Math.min(10, protetico.getSenha().length())) : "null"));
+            
+            if (protetico.getId() == null || senhaFoiAlterada) {
+                System.out.println("Criptografando senha...");
+                protetico.setSenha(passwordEncoder.encode(protetico.getSenha()));
+                System.out.println("Senha criptografada (primeiros 10 chars): " + protetico.getSenha().substring(0, 10));
+            } else {
+                System.out.println("Mantendo senha existente");
+            }
         } else {
-            System.out.println("Mantendo senha existente");
+            System.out.println("Senha é null - não processando");
         }
         
         Protetico savedProtetico = super.save(protetico);

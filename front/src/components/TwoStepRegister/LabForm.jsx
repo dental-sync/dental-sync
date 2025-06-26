@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import './TwoStepRegister.css';
 import api from '../../axios-config';
-import axios from 'axios';
+import axios from 'axios'; // Mantido apenas para busca de CEP externa
 
 const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
   const [formData, setFormData] = useState(initialData);

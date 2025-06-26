@@ -2,7 +2,7 @@ package com.senac.dentalsync.core.service;
 
 import com.senac.dentalsync.core.persistency.model.Material;
 import com.senac.dentalsync.core.persistency.model.StatusMaterial;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.MaterialRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,25 +30,13 @@ public class MaterialServiceTest {
     @Mock
     private MaterialRepository materialRepository;
 
-    @Mock
-    private UsuarioService usuarioService;
-
     @InjectMocks
     private MaterialService materialService;
 
     private Material materialTeste;
-    private Usuario usuarioLogado;
 
     @BeforeEach
     void setUp() {
-        // Configura o usuário logado
-        usuarioLogado = new Usuario();
-        usuarioLogado.setId(1L);
-        usuarioLogado.setName("Usuario Teste");
-        usuarioLogado.setEmail("usuario@teste.com");
-        
-        // Configura o mock do usuarioService para sempre retornar o usuário logado
-        lenient().when(usuarioService.getUsuarioLogado()).thenReturn(usuarioLogado);
 
         // Configura o material de teste
         materialTeste = new Material();
@@ -80,7 +68,6 @@ public class MaterialServiceTest {
         assertThat(materialSalvo.getId()).isEqualTo(materialTeste.getId());
         assertThat(materialSalvo.getStatus()).isEqualTo(StatusMaterial.EM_ESTOQUE);
         verify(materialRepository, times(1)).save(any(Material.class));
-        verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
 
     @Test
@@ -243,7 +230,6 @@ public class MaterialServiceTest {
         // then
         assertThat(materialAtualizado.getNome()).isEqualTo(novoNome);
         verify(materialRepository, times(1)).save(any(Material.class));
-        verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
 
     @Test

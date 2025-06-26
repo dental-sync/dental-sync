@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.senac.dentalsync.core.persistency.model.Dentista;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.DentistaRepository;
 
@@ -18,9 +18,6 @@ public class DentistaService extends BaseService<Dentista, Long> {
 
     @Autowired
     private DentistaRepository dentistaRepository;
-    
-    @Autowired
-    private UsuarioService usuarioService;
 
     @Override
     protected BaseRepository<Dentista, Long> getRepository() {
@@ -28,8 +25,8 @@ public class DentistaService extends BaseService<Dentista, Long> {
     }
 
     @Override
-    protected Usuario getUsuarioLogado() {
-        return usuarioService.getUsuarioLogado();
+    protected Protetico getUsuarioLogado() {
+        return null;
     }
     
     public Optional<Dentista> findByEmail(String email) {

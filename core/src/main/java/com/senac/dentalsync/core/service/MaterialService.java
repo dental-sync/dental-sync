@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.senac.dentalsync.core.persistency.model.Material;
 import com.senac.dentalsync.core.persistency.model.StatusMaterial;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.MaterialRepository;  
 import java.math.BigDecimal;
 
@@ -15,17 +15,14 @@ public class MaterialService extends BaseService<Material, Long> {
     @Autowired
     private MaterialRepository materialRepository;
 
-    @Autowired
-    private UsuarioService usuarioService;
-
     @Override
     public MaterialRepository getRepository() {
         return materialRepository;
     }
 
     @Override
-    public Usuario getUsuarioLogado() {
-        return usuarioService.getUsuarioLogado();
+    public Protetico getUsuarioLogado() {
+        return null;
     }
 
     private void atualizarStatusMaterial(Material material) {

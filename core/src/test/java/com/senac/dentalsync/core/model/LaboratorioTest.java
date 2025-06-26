@@ -2,7 +2,7 @@ package com.senac.dentalsync.core.model;
 
 import com.senac.dentalsync.core.persistency.model.EnderecoLaboratorio;
 import com.senac.dentalsync.core.persistency.model.Laboratorio;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
@@ -155,16 +155,16 @@ class LaboratorioTest {
     void deveAceitarCamposBaseEntityPreenchidos() {
         configurarLaboratorioValido();
         
-        Usuario usuario = new Usuario();
-        usuario.setId(1L);
-        usuario.setName("Admin");
+        Protetico protetico = new Protetico();
+        protetico.setId(1L);
+        protetico.setNome("Admin");
         
         laboratorio.setId(1L);
         laboratorio.setCreatedAt(LocalDateTime.now());
         laboratorio.setUpdatedAt(LocalDateTime.now());
         laboratorio.setIsActive(true);
-        laboratorio.setCreatedBy(usuario);
-        laboratorio.setUpdatedBy(usuario);
+        laboratorio.setCreatedBy(protetico);
+        laboratorio.setUpdatedBy(protetico);
 
         var violations = validator.validate(laboratorio);
         assertTrue(violations.isEmpty());

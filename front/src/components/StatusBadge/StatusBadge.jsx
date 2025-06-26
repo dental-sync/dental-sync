@@ -6,14 +6,14 @@ const StatusBadge = ({ status, onClick, tipo, pedidoId }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const badgeRef = useRef(null);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   
   // Se for status de pedido, mostrar badge com dropdown
   if (tipo === 'pedido') {
     // Mapeamento de status do pedido para cor e texto
     const pedidoMap = {
       'PENDENTE': { texto: 'Pendente', cor: '#ffc107' },
-      'EM_ANDAMENTO': { texto: 'Em Andamento', cor: '#007bff' },
+      'EM_ANDAMENTO': { texto: 'Andamento', cor: '#007bff' },
       'CONCLUIDO': { texto: 'Concluído', cor: '#28a745' },
       'CANCELADO': { texto: 'Cancelado', cor: '#dc3545' }
     };
@@ -24,8 +24,7 @@ const StatusBadge = ({ status, onClick, tipo, pedidoId }) => {
         const rect = badgeRef.current.getBoundingClientRect();
         setDropdownPosition({
           top: rect.bottom + window.scrollY,
-          left: rect.left + window.scrollX,
-          width: rect.width
+          left: rect.left + window.scrollX
         });
       }
     };
@@ -56,7 +55,6 @@ const StatusBadge = ({ status, onClick, tipo, pedidoId }) => {
             position: 'fixed',
             top: `${dropdownPosition.top}px`,
             left: `${dropdownPosition.left}px`,
-            width: `${dropdownPosition.width}px`,
           }}
         >
           <button
@@ -71,7 +69,7 @@ const StatusBadge = ({ status, onClick, tipo, pedidoId }) => {
             onClick={() => handleStatusChange('EM_ANDAMENTO')}
           >
             <span className="status-dot" style={{ backgroundColor: '#007bff' }}></span>
-            Em Andamento
+            Andamento
           </button>
           <button
             className={`status-option ${status === 'CONCLUIDO' ? 'active' : ''}`}

@@ -38,6 +38,10 @@ public class Pedido extends BaseEntity {
     private Dentista dentista;
 
     @ManyToOne
+    @JoinColumn(name = "clinica_id")
+    private Clinica clinica;
+
+    @ManyToOne
     @JoinColumn(name = "protetico_id")
     @NotNull(message = "O protético é obrigatório")
     private Protetico protetico;

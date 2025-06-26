@@ -1,7 +1,6 @@
 package com.senac.dentalsync.core.service;
 
 import com.senac.dentalsync.core.persistency.model.CategoriaServico;
-import com.senac.dentalsync.core.persistency.model.Usuario;
 import com.senac.dentalsync.core.persistency.repository.CategoriaServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
@@ -27,26 +25,13 @@ public class CategoriaServicoServiceTest {
     @Mock
     private CategoriaServicoRepository categoriaServicoRepository;
 
-    @Mock
-    private UsuarioService usuarioService;
-
     @InjectMocks
     private CategoriaServicoService categoriaServicoService;
 
     private CategoriaServico categoriaTeste;
-    private Usuario usuarioLogado;
 
     @BeforeEach
     void setUp() {
-        // Configura o usuário logado
-        usuarioLogado = new Usuario();
-        usuarioLogado.setId(1L);
-        usuarioLogado.setName("Usuario Teste");
-        usuarioLogado.setEmail("usuario@teste.com");
-        
-        // Configura o mock do usuarioService para sempre retornar o usuário logado
-        lenient().when(usuarioService.getUsuarioLogado()).thenReturn(usuarioLogado);
-
         // Configura a categoria de teste
         categoriaTeste = new CategoriaServico();
         categoriaTeste.setId(1L);
@@ -69,7 +54,6 @@ public class CategoriaServicoServiceTest {
         assertThat(categoriaSalva).isNotNull();
         assertThat(categoriaSalva.getId()).isEqualTo(categoriaTeste.getId());
         verify(categoriaServicoRepository, times(1)).save(any(CategoriaServico.class));
-        verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
 
     @Test
@@ -118,7 +102,6 @@ public class CategoriaServicoServiceTest {
         // then
         assertThat(categoriaAtualizada.getNome()).isEqualTo(novoNome);
         verify(categoriaServicoRepository, times(1)).save(any(CategoriaServico.class));
-        verify(usuarioService, atLeast(1)).getUsuarioLogado();
     }
 
     @Test

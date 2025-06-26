@@ -128,7 +128,8 @@
   font-size: 12px !important;
   padding: 6px 14px !important;
   border-radius: 6px !important;
-  min-width: 110px !important;
+  min-width: 130px !important;
+  width: 130px !important;
   height: auto !important;
   font-weight: 600 !important;
   line-height: 1.2 !important;
@@ -145,7 +146,8 @@
 /* Dropdown específico para pedidos */
 .status-dropdown-pedido {
   min-width: 130px !important;
-  /* Largura será definida dinamicamente pelo JavaScript para ficar igual ao badge */
+  width: 130px !important;
+  /* Largura padronizada para manter consistência com o badge */
 }
 
 /* Estilo para o período */

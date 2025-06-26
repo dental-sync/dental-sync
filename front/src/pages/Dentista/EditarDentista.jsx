@@ -62,7 +62,7 @@ const EditarDentista = () => {
           email: dentista.email || '',
           clinicaId: '',
           clinicasAssociadas: clinicasAssociadas,
-          isActive: dentista.isActive
+          isActive: dentista.isActive !== undefined ? dentista.isActive : true
         });
       } catch (error) {
         console.error('Erro ao carregar dados:', error);

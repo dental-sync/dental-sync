@@ -6,6 +6,7 @@ import com.senac.dentalsync.core.dto.HistoricoProteticoDTO;
 import com.senac.dentalsync.core.persistency.model.*;
 import com.senac.dentalsync.core.persistency.repository.MaterialRepository;
 import com.senac.dentalsync.core.persistency.repository.PedidoRepository;
+import com.senac.dentalsync.core.persistency.repository.PedidoServicoRepository;
 import com.senac.dentalsync.core.persistency.repository.ServicoMaterialRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
@@ -32,9 +35,9 @@ public class PedidoServiceTest {
 
     @Mock
     private PedidoRepository pedidoRepository;
-
+    
     @Mock
-    private UsuarioService usuarioService;
+    private PedidoServicoRepository pedidoServicoRepository;
 
     @Mock
     private MaterialService materialService;
@@ -55,64 +58,58 @@ public class PedidoServiceTest {
     private Servico servicoTeste;
     private Material materialTeste;
     private ServicoMaterial servicoMaterialTeste;
-    private Usuario usuarioLogado;
 
     @BeforeEach
     void setUp() {
-        // Configura o usuário logado
-        usuarioLogado = new Usuario();
-        usuarioLogado.setId(1L);
-        usuarioLogado.setName("Usuario Teste");
-        usuarioLogado.setEmail("usuario@teste.com");
-        
-        // Configura o mock do usuarioService
-        lenient().when(usuarioService.getUsuarioLogado()).thenReturn(usuarioLogado);
-
-        // Configura cliente teste
+        // Configura o cliente de teste
         clienteTeste = new Paciente();
         clienteTeste.setId(1L);
         clienteTeste.setNome("João Silva");
-
-        // Configura dentista teste
+        clienteTeste.setEmail("joao@email.com");
+        
+        // Configura o dentista de teste
         dentistaTeste = new Dentista();
         dentistaTeste.setId(1L);
         dentistaTeste.setNome("Dr. Maria Santos");
-
-        // Configura protético teste
+        dentistaTeste.setEmail("maria@email.com");
+        
+        // Configura o protético de teste
         proteticoTeste = new Protetico();
         proteticoTeste.setId(1L);
-        proteticoTeste.setNome("Carlos Protético");
+        proteticoTeste.setNome("José Protético");
+        proteticoTeste.setEmail("jose@email.com");
 
-        // Configura material teste
+        // Configura o material de teste
         materialTeste = new Material();
         materialTeste.setId(1L);
-        materialTeste.setNome("Resina Composta");
+        materialTeste.setNome("Resina");
         materialTeste.setQuantidade(new BigDecimal("100.00"));
-        materialTeste.setValorUnitario(new BigDecimal("25.50"));
 
-        // Configura serviço material teste
-        servicoMaterialTeste = new ServicoMaterial();
-        servicoMaterialTeste.setMaterial(materialTeste);
-        servicoMaterialTeste.setQuantidade(new BigDecimal("5.00"));
-
-        // Configura serviço teste
+        // Configura o serviço de teste
         servicoTeste = new Servico();
         servicoTeste.setId(1L);
         servicoTeste.setNome("Restauração");
         servicoTeste.setPreco(new BigDecimal("150.00"));
         servicoTeste.setValorTotal(new BigDecimal("277.50"));
 
-        // Configura pedido teste
+        // Configura o serviço material de teste
+        servicoMaterialTeste = new ServicoMaterial();
+        servicoMaterialTeste.setMaterial(materialTeste);
+        servicoMaterialTeste.setQuantidade(new BigDecimal("2.00"));
+
+        // Configura o pedido de teste
         pedidoTeste = new Pedido();
         pedidoTeste.setId(1L);
         pedidoTeste.setCliente(clienteTeste);
         pedidoTeste.setDentista(dentistaTeste);
         pedidoTeste.setProtetico(proteticoTeste);
-        pedidoTeste.setServicos(Arrays.asList(servicoTeste));
         pedidoTeste.setDataEntrega(LocalDate.now().plusDays(7));
-        pedidoTeste.setPrioridade(Pedido.Prioridade.MEDIA);
         pedidoTeste.setStatus(Pedido.Status.PENDENTE);
-        pedidoTeste.setObservacao("Observação teste");
+        pedidoTeste.setIsActive(true);
+        pedidoTeste.setServicos(Arrays.asList(servicoTeste));
+        
+        // Configurar mock padrão para pedidoServicoRepository usando lenient
+        lenient().when(pedidoServicoRepository.findByPedidoId(any())).thenReturn(Arrays.asList());
     }
 
     @Test
@@ -197,9 +194,14 @@ public class PedidoServiceTest {
         Material materialInsuficiente = new Material();
         materialInsuficiente.setId(1L);
         materialInsuficiente.setNome("Resina Composta");
-        materialInsuficiente.setQuantidade(new BigDecimal("2.00")); // Menor que necessário (5.00)
+        materialInsuficiente.setQuantidade(new BigDecimal("1.00")); // Menor que necessário (2.00)
 
-        when(servicoMaterialRepository.findByServicoId(1L)).thenReturn(Arrays.asList(servicoMaterialTeste));
+        // Configurar serviço material com quantidade maior que o estoque disponível
+        ServicoMaterial servicoMaterialInsuficiente = new ServicoMaterial();
+        servicoMaterialInsuficiente.setMaterial(materialInsuficiente);
+        servicoMaterialInsuficiente.setQuantidade(new BigDecimal("5.00")); // Maior que disponível
+
+        when(servicoMaterialRepository.findByServicoId(1L)).thenReturn(Arrays.asList(servicoMaterialInsuficiente));
         when(materialService.getRepository()).thenReturn(materialRepository);
         when(materialRepository.findById(1L)).thenReturn(Optional.of(materialInsuficiente));
 
@@ -323,7 +325,7 @@ public class PedidoServiceTest {
 
         // then
         assertThat(pedidos).hasSize(1);
-        assertThat(pedidos.get(0).getProtetico().getNome()).isEqualTo("Carlos Protético");
+        assertThat(pedidos.get(0).getProtetico().getNome()).isEqualTo("José Protético");
         verify(pedidoRepository, times(1)).findByProtetico(proteticoTeste);
     }
 
@@ -556,7 +558,7 @@ public class PedidoServiceTest {
         verify(pedidoRepository, times(1)).findAll();
     }
 
-        @Test
+    @Test
     void deveDeletarPedido() {
         // given
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedidoTeste));
@@ -577,14 +579,5 @@ public class PedidoServiceTest {
 
         // then
         assertThat(repository).isEqualTo(pedidoRepository);
-    }
-
-    @Test
-    void deveRetornarUsuarioLogadoNulo() {
-        // when
-        Usuario usuario = pedidoService.getUsuarioLogado();
-
-        // then
-        assertThat(usuario).isNull();
     }
 } 

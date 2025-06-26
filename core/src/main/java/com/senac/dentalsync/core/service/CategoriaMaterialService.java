@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.senac.dentalsync.core.persistency.model.CategoriaMaterial;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.CategoriaMaterialRepository;
 
@@ -20,7 +20,7 @@ public class CategoriaMaterialService extends BaseService<CategoriaMaterial, Lon
     }
 
     @Override
-    protected Usuario getUsuarioLogado() {
+    protected Protetico getUsuarioLogado() {
         return null;
     }
 

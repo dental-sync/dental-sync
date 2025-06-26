@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import GenericTable from '../GenericTable/GenericTable';
 import PacienteActionMenu from './PacienteActionMenu';
+import { formatNome, formatEmail, formatTelefone } from '../../utils/textUtils';
 
 // Função utilitária para formatar o ID do paciente
 const formatPacienteId = (id) => `P${String(id).padStart(4, '0')}`;
 
 const columns = [
   { key: 'id', label: 'ID', sortable: true },
-  { key: 'nome', label: 'Nome', sortable: true },
-  { key: 'telefone', label: 'Telefone' },
-  { key: 'email', label: 'Email' },
+  { key: 'nome', label: 'Nome', sortable: true, render: (nome) => formatNome(nome) },
+  { key: 'telefone', label: 'Telefone', render: (telefone) => formatTelefone(telefone) },
+  { key: 'email', label: 'Email', render: (email) => formatEmail(email) },
   { key: 'dataNascimento', label: 'Data de Nascimento' },
   { 
     key: 'ultimoServico', 

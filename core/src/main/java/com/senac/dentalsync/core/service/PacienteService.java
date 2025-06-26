@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.senac.dentalsync.core.persistency.model.Paciente;
 import com.senac.dentalsync.core.persistency.repository.PacienteRepository;
-import com.senac.dentalsync.core.persistency.model.Usuario;
+import com.senac.dentalsync.core.persistency.model.Protetico;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -15,16 +15,13 @@ public class PacienteService extends BaseService<Paciente, Long> {
     @Autowired
     private PacienteRepository repository;
 
-    @Autowired
-    private UsuarioService usuarioService;
-
     @Override
     protected PacienteRepository getRepository() {
         return repository;
     }
     @Override
-    protected Usuario getUsuarioLogado() {
-        return usuarioService.getUsuarioLogado();
+    protected Protetico getUsuarioLogado() {
+        return null;
     }
     
     public Optional<Paciente> findByEmail(String email) {

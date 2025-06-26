@@ -5,8 +5,9 @@ import ActionButton from '../../components/ActionButton/ActionButton';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import PedidoTable from '../../components/PedidoTable/PedidoTable';
+import Dropdown from '../../components/Dropdown/Dropdown';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+// axios removido - usando api do axios-config
 import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -21,8 +22,7 @@ const PedidoPage = () => {
   const [filtros, setFiltros] = useState({
     dentista: 'todos',
     protetico: 'todos',
-    prioridade: 'todos',
-    dataEntrega: ''
+    status: 'todos'
   });
   const [sortConfig, setSortConfig] = useState({
     key: null,
@@ -60,19 +60,45 @@ const PedidoPage = () => {
       setLoading(true);
       try {
         const response = await api.get('/pedidos');
-        const pedidosFormatados = response.data.map(pedido => ({
+        
+        // Buscar quantidades para cada pedido em paralelo
+        const pedidosComQuantidades = await Promise.all(
+          response.data.map(async (pedido) => {
+            try {
+              const quantidadesResponse = await api.get(`/pedidos/${pedido.id}/quantidades-servicos`);
+              console.log(`Quantidades para pedido ${pedido.id}:`, quantidadesResponse.data);
+              return {
+                ...pedido,
+                quantidadesServicos: quantidadesResponse.data
+              };
+            } catch (err) {
+              console.warn(`Erro ao buscar quantidades para pedido ${pedido.id}:`, err);
+              return {
+                ...pedido,
+                quantidadesServicos: []
+              };
+            }
+          })
+        );
+        
+        const pedidosFormatados = pedidosComQuantidades.map(pedido => ({
           id: pedido.id,
           paciente: pedido.cliente,
           dentista: pedido.dentista,
           protetico: pedido.protetico,
           servicos: pedido.servicos,
+          quantidadesServicos: pedido.quantidadesServicos,
           dataEntrega: pedido.dataEntrega,
           createdAt: pedido.createdAt || pedido.created_at,
           prioridade: pedido.prioridade,
           odontograma: pedido.odontograma,
           observacao: pedido.observacao,
           status: pedido.status,
-          valorTotal: Array.isArray(pedido.servicos) ? pedido.servicos.reduce((acc, s) => acc + (s.valorTotal || s.preco || 0), 0) : 0
+          valorTotal: Array.isArray(pedido.servicos) ? pedido.servicos.reduce((acc, s) => {
+            // Calcular valor considerando as quantidades
+            const quantidade = pedido.quantidadesServicos?.find(qs => qs.servico.id === s.id)?.quantidade || 1;
+            return acc + ((s.valorTotal || s.preco || 0) * quantidade);
+          }, 0) : 0
         }));
         console.log('[LOG] pedidosFormatados:', pedidosFormatados);
         setPedidos(pedidosFormatados);
@@ -113,18 +139,9 @@ const PedidoPage = () => {
         return false;
       }
       
-      // Aplicar filtro de prioridade
-      if (filtros.prioridade !== 'todos' && pedido.prioridade !== filtros.prioridade) {
+      // Aplicar filtro de status
+      if (filtros.status !== 'todos' && pedido.status !== filtros.status) {
         return false;
-      }
-      
-      // Aplicar filtro de data de entrega
-      if (filtros.dataEntrega && pedido.dataEntrega) {
-        const dataFiltro = new Date(filtros.dataEntrega).toISOString().split('T')[0];
-        const dataPedido = new Date(pedido.dataEntrega).toISOString().split('T')[0];
-        if (dataFiltro !== dataPedido) {
-          return false;
-        }
       }
       
       // Aplicar busca textual
@@ -160,8 +177,20 @@ const PedidoPage = () => {
     setIsExportOpen(false);
   };
 
+  // Função helper para mapear status
+  const getStatusObject = (statusValue) => {
+    const statusMap = {
+      'todos': 'Todos',
+      'PENDENTE': 'Pendente',
+      'EM_ANDAMENTO': 'Em Andamento',
+      'CONCLUIDO': 'Concluído'
+    };
+    return { id: statusValue, nome: statusMap[statusValue] || statusValue };
+  };
+
   const handleFiltroChange = (e) => {
     const { name, value } = e.target;
+    // Função mantida por compatibilidade, mas não é mais usada
     setFiltros({
       ...filtros,
       [name]: value
@@ -172,8 +201,7 @@ const PedidoPage = () => {
     setFiltros({
       dentista: 'todos',
       protetico: 'todos',
-      prioridade: 'todos',
-      dataEntrega: ''
+      status: 'todos'
     });
   };
 
@@ -238,15 +266,15 @@ const PedidoPage = () => {
             : dateB - dateA;
         }
 
-        // Para ordenação de prioridade
-        if (sortConfig.key === 'prioridade') {
-          const prioridadeMap = {
-            'BAIXA': 1,
-            'MEDIA': 2,
-            'ALTA': 3
+        // Para ordenação de status
+        if (sortConfig.key === 'status') {
+          const statusMap = {
+            'PENDENTE': 1,
+            'EM_ANDAMENTO': 2,
+            'CONCLUIDO': 3
           };
-          const valueA = prioridadeMap[a.prioridade] || 0;
-          const valueB = prioridadeMap[b.prioridade] || 0;
+          const valueA = statusMap[a.status] || 0;
+          const valueB = statusMap[b.status] || 0;
           return sortConfig.direction === 'ascending'
             ? valueA - valueB
             : valueB - valueA;
@@ -320,7 +348,7 @@ const PedidoPage = () => {
               label="Filtrar" 
               icon="filter"
               onClick={toggleFiltro} 
-              active={isFilterOpen || filtros.dentista !== 'todos' || filtros.protetico !== 'todos' || filtros.prioridade !== 'todos' || filtros.dataEntrega !== ''}
+              active={isFilterOpen || filtros.dentista !== 'todos' || filtros.protetico !== 'todos' || filtros.status !== 'todos'}
             />
             
             {isFilterOpen && (
@@ -329,65 +357,68 @@ const PedidoPage = () => {
                 
                 <div className="filter-group">
                   <label htmlFor="dentista">Dentista</label>
-                  <select 
-                    id="dentista" 
-                    name="dentista" 
-                    value={filtros.dentista} 
-                    onChange={handleFiltroChange}
-                    className="filter-select"
-                  >
-                    <option value="todos">Todos</option>
-                    {dentistas.map(dentista => (
-                      <option key={dentista.id} value={dentista.id}>
-                        {dentista.nome}
-                      </option>
-                    ))}
-                  </select>
+                  <Dropdown 
+                    items={[{ id: 'todos', nome: 'Todos' }, ...dentistas]}
+                    value={filtros.dentista === 'todos' ? { id: 'todos', nome: 'Todos' } : dentistas.find(d => d.id.toString() === filtros.dentista)}
+                    onChange={(selected) => {
+                      const value = selected ? selected.id.toString() : 'todos';
+                      setFiltros({ ...filtros, dentista: value });
+                    }}
+                    placeholder="Selecionar dentista..."
+                    searchPlaceholder="Buscar dentista..."
+                    searchable={true}
+                    allowClear={false}
+                    displayProperty="nome"
+                    valueProperty="id"
+                    variant="outline"
+                    size="small"
+                    buttonClassName="filter-select"
+                  />
                 </div>
                 
                 <div className="filter-group">
                   <label htmlFor="protetico">Protético</label>
-                  <select 
-                    id="protetico" 
-                    name="protetico" 
-                    value={filtros.protetico} 
-                    onChange={handleFiltroChange}
-                    className="filter-select"
-                  >
-                    <option value="todos">Todos</option>
-                    {proteticos.map(protetico => (
-                      <option key={protetico.id} value={protetico.id}>
-                        {protetico.nome}
-                      </option>
-                    ))}
-                  </select>
+                  <Dropdown 
+                    items={[{ id: 'todos', nome: 'Todos' }, ...proteticos]}
+                    value={filtros.protetico === 'todos' ? { id: 'todos', nome: 'Todos' } : proteticos.find(p => p.id.toString() === filtros.protetico)}
+                    onChange={(selected) => {
+                      const value = selected ? selected.id.toString() : 'todos';
+                      setFiltros({ ...filtros, protetico: value });
+                    }}
+                    placeholder="Selecionar protético..."
+                    searchPlaceholder="Buscar protético..."
+                    searchable={true}
+                    allowClear={false}
+                    displayProperty="nome"
+                    valueProperty="id"
+                    variant="outline"
+                    size="small"
+                    buttonClassName="filter-select"
+                  />
                 </div>
                 
                 <div className="filter-group">
-                  <label htmlFor="prioridade">Prioridade</label>
-                  <select 
-                    id="prioridade" 
-                    name="prioridade" 
-                    value={filtros.prioridade} 
-                    onChange={handleFiltroChange}
-                    className="filter-select"
-                  >
-                    <option value="todos">Todas</option>
-                    <option value="BAIXA">Baixa</option>
-                    <option value="MEDIA">Média</option>
-                    <option value="ALTA">Alta</option>
-                  </select>
-                </div>
-                
-                <div className="filter-group">
-                  <label htmlFor="dataEntrega">Data de Entrega</label>
-                  <input 
-                    type="date" 
-                    id="dataEntrega" 
-                    name="dataEntrega" 
-                    value={filtros.dataEntrega} 
-                    onChange={handleFiltroChange}
-                    className="filter-input"
+                  <label htmlFor="status">Status</label>
+                  <Dropdown 
+                    items={[
+                      { id: 'todos', nome: 'Todos' },
+                      { id: 'PENDENTE', nome: 'Pendente' },
+                      { id: 'EM_ANDAMENTO', nome: 'Em Andamento' },
+                      { id: 'CONCLUIDO', nome: 'Concluído' }
+                    ]}
+                    value={getStatusObject(filtros.status)}
+                    onChange={(selected) => {
+                      const value = selected ? selected.id : 'todos';
+                      setFiltros({ ...filtros, status: value });
+                    }}
+                    placeholder="Selecionar status..."
+                    searchable={false}
+                    allowClear={false}
+                    displayProperty="nome"
+                    valueProperty="id"
+                    variant="outline"
+                    size="small"
+                    buttonClassName="filter-select"
                   />
                 </div>
                 
@@ -401,21 +432,47 @@ const PedidoPage = () => {
           </div>
           
           <ExportDropdown 
-            data={pedidosFiltrados.map(pedido => ({
-              id: formatPedidoId(pedido.id),
-              cliente: pedido.paciente?.nome || 'N/A',
-              dentista: pedido.dentista?.nome || 'N/A',
-              protetico: pedido.protetico?.nome || 'N/A',
-              servico: pedido.servicos?.nome || 'N/A',
-              dataEntrega: formatarData(pedido.dataEntrega),
-              prioridade: pedido.prioridade
-            }))}
-            headers={['ID', 'Cliente', 'Dentista', 'Protético', 'Serviço', 'Data Entrega', 'Prioridade']}
-            fields={['id', 'cliente', 'dentista', 'protetico', 'servico', 'dataEntrega', 'prioridade']}
+            data={pedidosFiltrados.map(pedido => {
+              // Formatar serviços corretamente para exportação
+              let servicosFormatados = 'N/A';
+              if (pedido.servicos && Array.isArray(pedido.servicos) && pedido.servicos.length > 0) {
+                // Criar lista de serviços únicos com quantidades
+                const servicosUnicos = [];
+                const servicosVistos = new Set();
+                
+                pedido.servicos.forEach(servico => {
+                  if (!servicosVistos.has(servico.id)) {
+                    servicosVistos.add(servico.id);
+                    servicosUnicos.push(servico);
+                  }
+                });
+                
+                // Formatar com quantidades - usar " | " em vez de vírgula para evitar conflito com separador CSV
+                const servicosComQuantidade = servicosUnicos.map(servico => {
+                  const quantidade = pedido.quantidadesServicos?.find(qs => qs.servico.id === servico.id)?.quantidade || 1;
+                  return quantidade > 1 ? `${servico.nome} x${quantidade}` : servico.nome;
+                });
+                
+                servicosFormatados = servicosComQuantidade.join(' | ');
+              }
+              
+              return {
+                id: formatPedidoId(pedido.id),
+                cliente: pedido.paciente?.nome || 'N/A',
+                dentista: pedido.dentista?.nome || 'N/A',
+                protetico: pedido.protetico?.nome || 'N/A',
+                servicos: servicosFormatados,
+                dataEntrega: formatarData(pedido.dataEntrega),
+                status: pedido.status
+              };
+            })}
+            headers={['ID', 'Cliente', 'Dentista', 'Protético', 'Serviços', 'Data Entrega', 'Status']}
+            fields={['id', 'cliente', 'dentista', 'protetico', 'servicos', 'dataEntrega', 'status']}
             filename="pedidos"
             isOpen={isExportOpen}
             toggleExport={toggleExport}
             onCloseDropdown={handleCloseExport}
+            title="Lista de Pedidos"
           />
         </div>
       </div>

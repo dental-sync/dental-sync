@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+// axios removido - usando api do axios-config
 import api from '../../axios-config';
 import Dropdown from '../Dropdown/Dropdown';
 import DatePicker from '../DatePicker/DatePicker';
@@ -17,6 +17,8 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
   // Listas de referência
   const [clientes, setClientes] = useState([]);
   const [dentistas, setDentistas] = useState([]);
+  const [clinicas, setClinicas] = useState([]);
+  const [clinicasFiltradasPorDentista, setClinicasFiltradasPorDentista] = useState([]);
   const [proteticos, setProteticos] = useState([]);
   const [servicos, setServicos] = useState([]);
   
@@ -24,6 +26,7 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
   const [formData, setFormData] = useState({
     cliente: null,
     dentista: null,
+    clinica: null,
     protetico: null,
     servicos: [],
     dataEntrega: '',
@@ -36,6 +39,15 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
   // Estado para controlar quais dentes estão selecionados no odontograma
   const [dentesSelecionados, setDentesSelecionados] = useState([]);
   const [servicosSelecionados, setServicosSelecionados] = useState([]);
+  
+  // Debug para monitorar mudanças no estado servicosSelecionados
+  useEffect(() => {
+    console.log('=== ESTADO servicosSelecionados MUDOU ===');
+    console.log('Novos serviços selecionados:', servicosSelecionados);
+    servicosSelecionados.forEach(servico => {
+      console.log(`- ${servico.nome}: quantidade = ${servico.quantidade}`);
+    });
+  }, [servicosSelecionados]);
 
   // Método para preencher os dados via STT
   const preencherDadosSTT = React.useCallback((dadosProcessados) => {
@@ -98,21 +110,32 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
         }
       }
       
-      // Procurar e selecionar serviços
+      // Procurar e selecionar serviços (agrupando serviços iguais)
       let servicosEncontrados = [];
+      const servicosAgrupados = new Map();
+      
       if (dados.servicos && Array.isArray(dados.servicos) && servicos.length > 0) {
         dados.servicos.forEach(servicoData => {
           const servicoEncontrado = servicos.find(s => s.id === servicoData.id);
           if (servicoEncontrado) {
-            servicosEncontrados.push({
-              ...servicoEncontrado,
-              quantidade: servicoData.quantidade || 1
-            });
+            if (servicosAgrupados.has(servicoData.id)) {
+              // Se já existe, somar a quantidade
+              const existente = servicosAgrupados.get(servicoData.id);
+              existente.quantidade += (servicoData.quantidade || 1);
+            } else {
+              // Se não existe, adicionar
+              servicosAgrupados.set(servicoData.id, {
+                ...servicoEncontrado,
+                quantidade: servicoData.quantidade || 1
+              });
+            }
           }
         });
         
+        servicosEncontrados = Array.from(servicosAgrupados.values());
+        
         if (servicosEncontrados.length > 0) {
-          novoFormData.servicos = servicosEncontrados;
+          novoFormData.servicos = servicosEncontrados.map(s => ({ ...s })); // Sem quantidade para o formData
           camposPreenchidos.push(`${servicosEncontrados.length} Serviço(s)`);
         }
       }
@@ -234,17 +257,20 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
         const [
           clientesResponse, 
           dentistasResponse, 
+          clinicasResponse,
           proteticosResponse, 
           servicosResponse
         ] = await Promise.all([
           api.get('/paciente'),
           api.get('/dentistas'),
+          api.get('/clinicas'),
           api.get('/proteticos'),
           api.get('/servico')
         ]);
         
         setClientes(clientesResponse.data);
         setDentistas(dentistasResponse.data);
+        setClinicas(clinicasResponse.data);
         setProteticos(proteticosResponse.data);
         setServicos(servicosResponse.data);
       } catch (err) {
@@ -266,17 +292,40 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
       const fetchPedido = async () => {
         try {
           setLoadingData(true);
-          const response = await api.get(`/pedidos/${pedidoId}`);
-          const pedido = response.data;
+          const [pedidoResponse, quantidadesResponse] = await Promise.all([
+            api.get(`/pedidos/${pedidoId}`),
+            api.get(`/pedidos/${pedidoId}/quantidades-servicos`).catch(quantErr => {
+              console.warn('Erro ao buscar quantidades dos serviços:', quantErr);
+              return { data: [] };
+            })
+          ]);
+          
+          const pedido = pedidoResponse.data;
+          const quantidadesServicos = quantidadesResponse.data;
+          
+          console.log('Pedido carregado:', pedido);
+          console.log('Quantidades carregadas:', quantidadesServicos);
           
           // Formatar a data para o formato esperado pelo input date (YYYY-MM-DD)
           const dataEntrega = pedido.dataEntrega ? formatDateForInput(pedido.dataEntrega) : '';
           
+          // Filtrar serviços únicos (remover duplicatas se existirem)
+          const servicosUnicos = [];
+          const servicosVistos = new Set();
+          
+          (pedido.servicos || []).forEach(servico => {
+            if (!servicosVistos.has(servico.id)) {
+              servicosVistos.add(servico.id);
+              servicosUnicos.push(servico);
+            }
+          });
+
           setFormData({
             cliente: pedido.cliente || null,
             dentista: pedido.dentista || null,
+            clinica: pedido.clinica || null,
             protetico: pedido.protetico || null,
-            servicos: pedido.servicos || [],
+            servicos: servicosUnicos,
             dataEntrega,
             prioridade: pedido.prioridade || 'MEDIA',
             status: pedido.status || 'PENDENTE',
@@ -286,12 +335,79 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
           
           setDentesSelecionados(pedido.odontograma || []);
           
-          // Mapear serviços com quantidade para edição
-          const servicosComQuantidade = (pedido.servicos || []).map(servico => ({
-            ...servico,
-            quantidade: servico.quantidade || 1
-          }));
+          // Configurar clínicas filtradas se existe dentista
+          if (pedido.dentista) {
+            const clinicasAssociadas = pedido.dentista.clinicas || [];
+            if (clinicasAssociadas.length > 1) {
+              setClinicasFiltradasPorDentista(clinicasAssociadas);
+            } else {
+              setClinicasFiltradasPorDentista([]);
+            }
+          }
+          
+          // Mapear serviços únicos com quantidade correta da tabela pedido_servico
+          console.log('=== DEBUG CARREGAMENTO QUANTIDADES ===');
+          console.log('Serviços únicos:', servicosUnicos);
+          console.log('Quantidades do backend:', quantidadesServicos);
+          
+          const servicosComQuantidade = servicosUnicos.map(servico => {
+            const quantidadeEncontrada = quantidadesServicos.find(qs => {
+              console.log(`Comparando: servico.id=${servico.id} vs qs.servico.id=${qs.servico?.id}`);
+              return qs.servico && qs.servico.id === servico.id;
+            });
+            
+            // Tratar BigDecimal que vem do backend - pode ser número, string ou null
+            let quantidade = 1;
+            if (quantidadeEncontrada) {
+              const qtdValue = quantidadeEncontrada.quantidade;
+              console.log(`DEBUG qtdValue:`, qtdValue, `tipo:`, typeof qtdValue, `null?:`, qtdValue === null);
+              
+              if (qtdValue === null || qtdValue === undefined) {
+                console.log(`⚠️ QUANTIDADE NULL - Este pode ser um pedido antigo. Usando padrão 1`);
+                // Para pedidos antigos, podemos inferir a quantidade contando serviços duplicados
+                const servicosDuplicados = (pedido.servicos || []).filter(s => s.id === servico.id);
+                quantidade = servicosDuplicados.length > 1 ? servicosDuplicados.length : 1;
+                console.log(`Quantidade inferida pelos serviços duplicados: ${quantidade}`);
+              } else if (typeof qtdValue === 'string') {
+                const parsed = parseInt(parseFloat(qtdValue));
+                console.log(`String parseada: ${qtdValue} -> ${parsed}`);
+                quantidade = Math.max(1, isNaN(parsed) ? 1 : parsed);
+              } else if (typeof qtdValue === 'number') {
+                const floored = Math.floor(qtdValue);
+                console.log(`Number processado: ${qtdValue} -> ${floored}`);
+                quantidade = Math.max(1, floored);
+              } else {
+                console.log(`Tipo não reconhecido:`, typeof qtdValue, qtdValue);
+                // Tentar conversão forçada
+                const forceConverted = Number(qtdValue);
+                if (!isNaN(forceConverted) && forceConverted > 0) {
+                  quantidade = Math.max(1, Math.floor(forceConverted));
+                  console.log(`Conversão forçada: ${qtdValue} -> ${quantidade}`);
+                } else {
+                  console.log(`Conversão falhou, usando padrão 1`);
+                  quantidade = 1;
+                }
+              }
+            } else {
+              console.log(`quantidadeEncontrada é null/undefined`);
+            }
+            console.log(`Serviço ${servico.nome} (ID: ${servico.id}) - Quantidade encontrada:`, quantidadeEncontrada);
+            console.log(`Objeto completo quantidadeEncontrada:`, JSON.stringify(quantidadeEncontrada, null, 2));
+            console.log(`Serviço ${servico.nome} (ID: ${servico.id}) - Quantidade final: ${quantidade}`);
+            
+            return {
+              ...servico,
+              quantidade: quantidade
+            };
+          });
+          
+          console.log('Serviços com quantidade FINAL:', servicosComQuantidade);
           setServicosSelecionados(servicosComQuantidade);
+          
+          // Debug adicional após setar o estado
+          setTimeout(() => {
+            console.log('Estado servicosSelecionados após setServicosSelecionados:', servicosSelecionados);
+          }, 100);
         } catch (err) {
           console.error('Erro ao carregar pedido:', err);
           toast.error('Erro ao carregar dados do pedido. Verifique se o pedido existe.', {
@@ -349,10 +465,41 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
     });
   };
 
-  const handleDentistaChange = (dentista) => {
+  const handleDentistaChange = async (dentista) => {
+    console.log('Dentista selecionado:', dentista);
+    
+    let clinicaSelecionada = null;
+    let clinicasFiltradas = [];
+    
+    if (dentista) {
+      // Verificar as clínicas associadas ao dentista
+      const clinicasAssociadas = dentista.clinicas || [];
+      console.log('Clínicas associadas ao dentista:', clinicasAssociadas);
+      
+      if (clinicasAssociadas.length === 1) {
+        // Se há apenas uma clínica, selecioná-la automaticamente
+        clinicaSelecionada = clinicasAssociadas[0];
+        console.log('Apenas uma clínica encontrada, selecionando automaticamente:', clinicaSelecionada);
+      } else if (clinicasAssociadas.length > 1) {
+        // Se há várias clínicas, filtrar para mostrar no select
+        clinicasFiltradas = clinicasAssociadas;
+        console.log('Múltiplas clínicas encontradas, mostrando no select:', clinicasFiltradas);
+      }
+    }
+    
+    setClinicasFiltradasPorDentista(clinicasFiltradas);
+    
     setFormData({
       ...formData,
-      dentista
+      dentista,
+      clinica: clinicaSelecionada
+    });
+  };
+
+  const handleClinicaChange = (clinica) => {
+    setFormData({
+      ...formData,
+      clinica
     });
   };
 
@@ -387,18 +534,27 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
   };
 
   const handleServicosChange = (servicos) => {
-    // Mapear serviços adicionando quantidade padrão
-    const servicosComQuantidade = servicos.map(servico => {
-      const existente = servicosSelecionados.find(s => s.id === servico.id);
-      return {
-        ...servico,
-        quantidade: existente ? existente.quantidade : 1
-      };
+    // Filtrar serviços únicos e mapear com quantidades preservadas
+    const servicosUnicos = [];
+    const servicosComQuantidade = [];
+    
+    servicos.forEach(servico => {
+      // Verificar se já foi adicionado
+      if (!servicosUnicos.find(s => s.id === servico.id)) {
+        servicosUnicos.push(servico);
+        
+        // Preservar quantidade existente ou definir como 1
+        const existente = servicosSelecionados.find(s => s.id === servico.id);
+        servicosComQuantidade.push({
+          ...servico,
+          quantidade: existente ? existente.quantidade : 1
+        });
+      }
     });
     
     setFormData({
       ...formData,
-      servicos
+      servicos: servicosUnicos
     });
     setServicosSelecionados(servicosComQuantidade);
   };
@@ -465,6 +621,7 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
       const dadosParaEnviar = {
         cliente: formData.cliente ? { id: formData.cliente.id } : null,
         dentista: formData.dentista ? { id: formData.dentista.id } : null,
+        clinica: formData.clinica ? { id: formData.clinica.id } : null,
         protetico: formData.protetico ? { id: formData.protetico.id } : null,
         servicos: servicosSelecionados.map(servico => ({ 
           id: servico.id,
@@ -477,11 +634,11 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
         observacao: formData.observacao
       };
       
-      // Criar ou atualizar pedido
+      // Criar ou atualizar pedido usando o novo endpoint que suporta quantidades
       if (pedidoId) {
-        await api.put(`/pedidos/${pedidoId}`, dadosParaEnviar);
+        await api.put(`/pedidos-com-quantidade/${pedidoId}`, dadosParaEnviar);
       } else {
-        await api.post('/pedidos', dadosParaEnviar);
+        await api.post('/pedidos-com-quantidade', dadosParaEnviar);
       }
       
       // Notificar sucesso e redirecionar
@@ -628,6 +785,24 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
                 />
               </div>
 
+              {/* Campo de Clínica - aparece apenas quando dentista tem múltiplas clínicas */}
+              {formData.dentista && clinicasFiltradasPorDentista.length > 0 && (
+                <div className="form-group">
+                  <label htmlFor="clinica">Clínica</label>
+                  <Dropdown
+                    items={clinicasFiltradasPorDentista}
+                    value={formData.clinica}
+                    onChange={handleClinicaChange}
+                    placeholder="Selecionar clínica"
+                    searchPlaceholder="Buscar clínica..."
+                    displayProperty="nome"
+                    valueProperty="id"
+                    searchBy="nome"
+                    searchable={true}
+                  />
+                </div>
+              )}
+
               <div className="form-group">
                 <label htmlFor="protetico">Protético</label>
                 <Dropdown
@@ -661,6 +836,7 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
                   valueDisplayProperty="valorTotal"
                   valuePrefix="R$ "
                   maxHeight="250px"
+                  preventDuplicates={true}
                 />
               </div>
 
@@ -760,39 +936,51 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
             <h3>Serviços Selecionados</h3>
             <div className="servicos-content">
               {servicosSelecionados.length > 0 ? (
-                servicosSelecionados.map(servico => (
-                  <div key={servico.id} className="servico-item">
-                    <div className="servico-info">
-                      <span className="servico-nome">{servico.nome}</span>
-                      <div className="servico-valores">
-                        <small>Mão de obra: R$ {(servico.preco || 0).toFixed(2).replace('.', ',')}</small>
-                        <small>Materiais: R$ {(servico.valorMateriais || 0).toFixed(2).replace('.', ',')}</small>
-                        <strong>Total: R$ {(servico.valorTotal || servico.preco || 0).toFixed(2).replace('.', ',')}</strong>
+                // Agrupar serviços únicos para exibição
+                servicosSelecionados
+                  .filter((servico, index, array) => 
+                    array.findIndex(s => s.id === servico.id) === index
+                  )
+                  .map(servico => (
+                    <div key={servico.id} className="servico-item">
+                      <div className="servico-info">
+                        <span className="servico-nome">
+                          {servico.nome}
+                          {servico.quantidade > 1 && <span className="quantidade-badge"> x {servico.quantidade}</span>}
+                        </span>
+                        <div className="servico-valores">
+                          <small>Mão de obra: R$ {(servico.preco || 0).toFixed(2).replace('.', ',')}</small>
+                          <small>Materiais: R$ {(servico.valorMateriais || 0).toFixed(2).replace('.', ',')}</small>
+                          <strong>Total Unitário: R$ {(servico.valorTotal || servico.preco || 0).toFixed(2).replace('.', ',')}</strong>
+                          {servico.quantidade > 1 && (
+                            <strong>Total: R$ {((servico.valorTotal || servico.preco || 0) * servico.quantidade).toFixed(2).replace('.', ',')}</strong>
+                          )}
+                        </div>
+                      </div>
+                      <div className="quantidade-controls">
+                        <label>Qtd:</label>
+                        <button
+                          type="button"
+                          className="btn-quantidade"
+                          onClick={() => handleQuantidadeServicoChange(servico.id, (servico.quantidade || 1) - 1)}
+                          disabled={servico.quantidade <= 1}
+                        >-</button>
+                        <input
+                          type="number"
+                          min="1"
+                          value={servico.quantidade || 1}
+                          onChange={(e) => handleQuantidadeServicoChange(servico.id, e.target.value)}
+                          className="quantidade-input"
+                          key={`qty-${servico.id}-${servico.quantidade}`}
+                        />
+                        <button
+                          type="button"
+                          className="btn-quantidade"
+                          onClick={() => handleQuantidadeServicoChange(servico.id, (servico.quantidade || 1) + 1)}
+                        >+</button>
                       </div>
                     </div>
-                    <div className="quantidade-controls">
-                      <label>Qtd:</label>
-                      <button
-                        type="button"
-                        className="btn-quantidade"
-                        onClick={() => handleQuantidadeServicoChange(servico.id, (servico.quantidade || 1) - 1)}
-                        disabled={servico.quantidade <= 1}
-                      >-</button>
-                      <input
-                        type="number"
-                        min="1"
-                        value={servico.quantidade || 1}
-                        onChange={(e) => handleQuantidadeServicoChange(servico.id, e.target.value)}
-                        className="quantidade-input"
-                      />
-                      <button
-                        type="button"
-                        className="btn-quantidade"
-                        onClick={() => handleQuantidadeServicoChange(servico.id, (servico.quantidade || 1) + 1)}
-                      >+</button>
-                    </div>
-                </div>
-                ))
+                  ))
               ) : (
                 <p className="nenhum-servico">Nenhum serviço selecionado</p>
               )}

@@ -13,9 +13,16 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import java.lang.annotation.Target;
+import java.lang.annotation.Retention;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.RetentionPolicy;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -56,7 +63,7 @@ public class Pedido extends BaseEntity {
     private List<Servico> servicos;
 
     @NotNull(message = "A data de entrega é obrigatória")
-    @Future(message = "A data de entrega deve ser uma data futura")
+    @ValidDateRange(message = "A data de entrega deve estar entre 1 ano atrás e futuro")
     @Column(name = "data_entrega")
     private LocalDate dataEntrega;
 
@@ -80,5 +87,30 @@ public class Pedido extends BaseEntity {
 
     public enum Status {
         PENDENTE, EM_ANDAMENTO, CONCLUIDO, CANCELADO
+    }
+}
+
+// Validação customizada para permitir datas de até 1 ano atrás
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = ValidDateRangeValidator.class)
+@interface ValidDateRange {
+    String message() default "A data deve estar entre 1 ano atrás e futuro";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
+}
+
+class ValidDateRangeValidator implements ConstraintValidator<ValidDateRange, LocalDate> {
+    @Override
+    public boolean isValid(LocalDate date, ConstraintValidatorContext context) {
+        if (date == null) {
+            return true; // deixa o @NotNull cuidar da validação de nulo
+        }
+        
+        LocalDate oneYearAgo = LocalDate.now().minusYears(1);
+        LocalDate today = LocalDate.now();
+        
+        // Permite datas de 1 ano atrás até o futuro
+        return !date.isBefore(oneYearAgo);
     }
 } 

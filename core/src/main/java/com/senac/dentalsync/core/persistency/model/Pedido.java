@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,9 +12,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -56,7 +53,6 @@ public class Pedido extends BaseEntity {
     private List<Servico> servicos;
 
     @NotNull(message = "A data de entrega é obrigatória")
-    @Future(message = "A data de entrega deve ser uma data futura")
     @Column(name = "data_entrega")
     private LocalDate dataEntrega;
 

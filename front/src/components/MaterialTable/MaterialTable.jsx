@@ -101,7 +101,7 @@ const columns = [
   { key: 'actions', label: 'Ações' }
 ];
 
-const MaterialTable = ({ materiais, onDelete, onStatusChange, lastElementRef, sortConfig, onSort, hasFiltersApplied }) => {
+const MaterialTable = ({ materiais, onDelete, onStatusChange, sortConfig, onSort, hasFiltersApplied }) => {
   const handleStatusChange = (materialId, newStatus) => {
     // Converte o status para booleano antes de enviar para o backend
     const statusBoolean = newStatus === 'ATIVO';
@@ -124,7 +124,6 @@ const MaterialTable = ({ materiais, onDelete, onStatusChange, lastElementRef, so
       emptyMessage="Nenhum material cadastrado"
       ActionMenuComponent={MaterialActionMenu}
       statusField="status"
-      lastElementRef={lastElementRef}
       useCustomStatusRender={true}
     />
   );

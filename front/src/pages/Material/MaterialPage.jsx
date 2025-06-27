@@ -9,13 +9,14 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import useInfiniteScroll from '../../hooks/useInfiniteScroll';
 
 const MaterialPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [categorias, setCategorias] = useState([]);
+  const [materiais, setMateriais] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filtros, setFiltros] = useState({
     status: 'todos',
     tipo: 'todos'
@@ -31,41 +32,39 @@ const MaterialPage = () => {
   // Função utilitária para formatar o ID
   const formatMaterialId = (id) => `M${String(id).padStart(4, '0')}`;
   
-  // Buscar categorias ao montar o componente
+  // Buscar dados iniciais ao montar o componente
   useEffect(() => {
-    const fetchCategorias = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        const response = await api.get('/categoria-material');
-        setCategorias(response.data);
+        const [categoriasResponse, materiaisResponse] = await Promise.all([
+          api.get('/categoria-material'),
+          api.get('/material')
+        ]);
+        
+        setCategorias(categoriasResponse.data);
+        setMateriais(materiaisResponse.data);
       } catch (error) {
-        console.error('Erro ao buscar categorias:', error);
-        toast.error('Erro ao carregar categorias');
+        console.error('Erro ao buscar dados:', error);
+        toast.error('Erro ao carregar dados');
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchCategorias();
+    fetchData();
   }, []);
   
-  // Função para buscar materiais da API (para o hook useInfiniteScroll)
-  const fetchMateriais = async (pageNum = 0, pageSize = 20) => {
+  // Função para atualizar a lista de materiais
+  const refreshMateriais = async () => {
     try {
-      const response = await api.get(`/material/paginado?page=${pageNum}&size=${pageSize}`);
-      return response.data; // Retorna o objeto de paginação completo
+      const response = await api.get('/material');
+      setMateriais(response.data);
     } catch (error) {
-      console.error('Erro ao buscar materiais:', error);
+      console.error('Erro ao atualizar materiais:', error);
       toast.error('Erro ao carregar materiais');
-      throw error; // Re-lança o erro para o hook tratar
     }
   };
-  
-  // Usar o hook de paginação infinita
-  const {
-    data: materiais,
-    loading,
-    loadingMore,
-    lastElementRef: lastMaterialElementRef,
-    refresh: refreshMateriais
-  } = useInfiniteScroll(fetchMateriais);
 
   // Esconder dropdown de filtro ao clicar fora dele
   useEffect(() => {
@@ -372,13 +371,10 @@ const MaterialPage = () => {
           materiais={sortedMateriais}
           onDelete={handleDelete}
           onStatusChange={handleToggleStatus}
-          lastElementRef={lastMaterialElementRef}
           sortConfig={sortConfig}
           onSort={handleSort}
           hasFiltersApplied={filtros.status !== 'todos' || filtros.tipo !== 'todos' || searchQuery}
         />
-        
-        {loadingMore && <div className="loading-more">Carregando mais materiais...</div>}
       </div>
     </div>
   );

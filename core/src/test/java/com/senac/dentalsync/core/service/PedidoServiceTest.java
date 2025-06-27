@@ -580,4 +580,111 @@ public class PedidoServiceTest {
         // then
         assertThat(repository).isEqualTo(pedidoRepository);
     }
+
+    @Test
+    void devePermitirDataEntregaAtual() {
+        // given
+        Pedido novoPedido = new Pedido();
+        novoPedido.setCliente(clienteTeste);
+        novoPedido.setDentista(dentistaTeste);
+        novoPedido.setProtetico(proteticoTeste);
+        novoPedido.setServicos(Arrays.asList(servicoTeste));
+        novoPedido.setDataEntrega(LocalDate.now()); // Data atual
+        novoPedido.setPrioridade(Pedido.Prioridade.MEDIA);
+
+        when(servicoMaterialRepository.findByServicoId(1L)).thenReturn(Arrays.asList(servicoMaterialTeste));
+        when(materialService.getRepository()).thenReturn(materialRepository);
+        when(materialRepository.findById(1L)).thenReturn(Optional.of(materialTeste));
+        when(materialService.save(any(Material.class))).thenReturn(materialTeste);
+        when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedidoTeste);
+
+        // when & then
+        pedidoService.save(novoPedido); // Não deve lançar exceção
+        verify(pedidoRepository, times(1)).save(any(Pedido.class));
+    }
+
+    @Test
+    void devePermitirDataEntregaUmAnoAtras() {
+        // given
+        Pedido novoPedido = new Pedido();
+        novoPedido.setCliente(clienteTeste);
+        novoPedido.setDentista(dentistaTeste);
+        novoPedido.setProtetico(proteticoTeste);
+        novoPedido.setServicos(Arrays.asList(servicoTeste));
+        novoPedido.setDataEntrega(LocalDate.now().minusYears(1)); // Exatamente 1 ano atrás
+        novoPedido.setPrioridade(Pedido.Prioridade.MEDIA);
+
+        when(servicoMaterialRepository.findByServicoId(1L)).thenReturn(Arrays.asList(servicoMaterialTeste));
+        when(materialService.getRepository()).thenReturn(materialRepository);
+        when(materialRepository.findById(1L)).thenReturn(Optional.of(materialTeste));
+        when(materialService.save(any(Material.class))).thenReturn(materialTeste);
+        when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedidoTeste);
+
+        // when & then
+        pedidoService.save(novoPedido); // Não deve lançar exceção
+        verify(pedidoRepository, times(1)).save(any(Pedido.class));
+    }
+
+    @Test
+    void devePermitirDataEntregaFutura() {
+        // given
+        Pedido novoPedido = new Pedido();
+        novoPedido.setCliente(clienteTeste);
+        novoPedido.setDentista(dentistaTeste);
+        novoPedido.setProtetico(proteticoTeste);
+        novoPedido.setServicos(Arrays.asList(servicoTeste));
+        novoPedido.setDataEntrega(LocalDate.now().plusDays(30)); // Futuro
+        novoPedido.setPrioridade(Pedido.Prioridade.MEDIA);
+
+        when(servicoMaterialRepository.findByServicoId(1L)).thenReturn(Arrays.asList(servicoMaterialTeste));
+        when(materialService.getRepository()).thenReturn(materialRepository);
+        when(materialRepository.findById(1L)).thenReturn(Optional.of(materialTeste));
+        when(materialService.save(any(Material.class))).thenReturn(materialTeste);
+        when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedidoTeste);
+
+        // when & then
+        pedidoService.save(novoPedido); // Não deve lançar exceção
+        verify(pedidoRepository, times(1)).save(any(Pedido.class));
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoDataEntregaMaisDeUmAnoAtras() {
+        // given
+        Pedido novoPedido = new Pedido();
+        novoPedido.setCliente(clienteTeste);
+        novoPedido.setDentista(dentistaTeste);
+        novoPedido.setProtetico(proteticoTeste);
+        novoPedido.setServicos(Arrays.asList(servicoTeste));
+        novoPedido.setDataEntrega(LocalDate.now().minusYears(1).minusDays(1)); // Mais de 1 ano atrás
+        novoPedido.setPrioridade(Pedido.Prioridade.MEDIA);
+
+        // when & then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            pedidoService.save(novoPedido);
+        });
+
+        assertThat(exception.getMessage()).contains("A data de entrega não pode ser anterior a");
+        assertThat(exception.getMessage()).contains("(1 ano atrás)");
+        verify(pedidoRepository, never()).save(any(Pedido.class));
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoDataEntregaNula() {
+        // given
+        Pedido novoPedido = new Pedido();
+        novoPedido.setCliente(clienteTeste);
+        novoPedido.setDentista(dentistaTeste);
+        novoPedido.setProtetico(proteticoTeste);
+        novoPedido.setServicos(Arrays.asList(servicoTeste));
+        novoPedido.setDataEntrega(null); // Data nula
+        novoPedido.setPrioridade(Pedido.Prioridade.MEDIA);
+
+        // when & then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            pedidoService.save(novoPedido);
+        });
+
+        assertThat(exception.getMessage()).isEqualTo("A data de entrega é obrigatória");
+        verify(pedidoRepository, never()).save(any(Pedido.class));
+    }
 } 

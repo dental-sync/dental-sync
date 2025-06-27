@@ -276,7 +276,13 @@ const CadastroPaciente = () => {
               id="dataNascimento"
               value={formData.dataNascimento}
               onChange={handleDateChange}
-              maxDate={new Date().toISOString().split('T')[0]}
+              maxDate={(() => {
+                const hoje = new Date();
+                const year = hoje.getFullYear();
+                const month = (hoje.getMonth() + 1).toString().padStart(2, '0');
+                const day = hoje.getDate().toString().padStart(2, '0');
+                return `${year}-${month}-${day}`;
+              })()}
               required
               className={errors.dataNascimento ? 'input-error' : ''}
             />

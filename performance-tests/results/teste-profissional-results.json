@@ -1,0 +1,410 @@
+{
+  "root_group": {
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": [],
+    "checks": [
+        {
+          "name": "Login realizado com sucesso",
+          "path": "::Login realizado com sucesso",
+          "id": "bd8198b49a4f2309766878258cfabd4a",
+          "passes": 5,
+          "fails": 0
+        },
+        {
+          "id": "30f23b181bc0da2735d58c0b677c0a0c",
+          "passes": 5,
+          "fails": 0,
+          "name": "Sessao estabelecida corretamente",
+          "path": "::Sessao estabelecida corretamente"
+        },
+        {
+          "id": "2231adb6845b527299f43e66f50d2d21",
+          "passes": 5,
+          "fails": 0,
+          "name": "Tempo de resposta do login adequado",
+          "path": "::Tempo de resposta do login adequado"
+        },
+        {
+          "fails": 0,
+          "name": "Consulta de enderecos realizada com sucesso",
+          "path": "::Consulta de enderecos realizada com sucesso",
+          "id": "16be711ae13e58834554f3dcb87b1f29",
+          "passes": 5
+        },
+        {
+          "name": "Dados de enderecos retornados corretamente",
+          "path": "::Dados de enderecos retornados corretamente",
+          "id": "3cd73be7ae3bdf5a47649bdb9a04c3b3",
+          "passes": 5,
+          "fails": 0
+        },
+        {
+          "path": "::Performance da consulta dentro do esperado",
+          "id": "7c05b8d1f33a3dfbd10ec590a8f52fc4",
+          "passes": 5,
+          "fails": 0,
+          "name": "Performance da consulta dentro do esperado"
+        },
+        {
+          "name": "Consulta de clientes realizada com sucesso",
+          "path": "::Consulta de clientes realizada com sucesso",
+          "id": "c7ff9ab412789aa2b04109012129636a",
+          "passes": 0,
+          "fails": 5
+        },
+        {
+          "name": "Sistema respondeu adequadamente",
+          "path": "::Sistema respondeu adequadamente",
+          "id": "16b077b09d3705f7e77338892e632c0d",
+          "passes": 5,
+          "fails": 0
+        },
+        {
+          "name": "Consulta de empresas realizada com sucesso",
+          "path": "::Consulta de empresas realizada com sucesso",
+          "id": "1c238d373b29bae5591161fae45f2ffe",
+          "passes": 5,
+          "fails": 0
+        },
+        {
+          "name": "Tempo de resposta adequado para empresas",
+          "path": "::Tempo de resposta adequado para empresas",
+          "id": "317c592e134028b9d0929338f1f9b91d",
+          "passes": 5,
+          "fails": 0
+        },
+        {
+          "id": "0426324361f67c6526853504c187e1a5",
+          "passes": 5,
+          "fails": 0,
+          "name": "Consulta de pedidos realizada com sucesso",
+          "path": "::Consulta de pedidos realizada com sucesso"
+        },
+        {
+          "name": "Dados de pedidos retornados adequadamente",
+          "path": "::Dados de pedidos retornados adequadamente",
+          "id": "0473d0dfeea2fd4640b53c15ff37b2d2",
+          "passes": 5,
+          "fails": 0
+        },
+        {
+          "path": "::Performance de consulta de pedidos satisfatoria",
+          "id": "84ad459b05424cfe66928cce49f63093",
+          "passes": 5,
+          "fails": 0,
+          "name": "Performance de consulta de pedidos satisfatoria"
+        },
+        {
+          "name": "Consulta de portagens da empresa realizada com sucesso",
+          "path": "::Consulta de portagens da empresa realizada com sucesso",
+          "id": "4641de42c9800bf5ef38f42b71c195ac",
+          "passes": 5,
+          "fails": 0
+        },
+        {
+          "name": "Informacoes de portagens obtidas corretamente",
+          "path": "::Informacoes de portagens obtidas corretamente",
+          "id": "6dbf6f857962ae2dfba8814414634be6",
+          "passes": 5,
+          "fails": 0
+        },
+        {
+          "id": "14f23c17d1b00f9fa6019d28c214e6d4",
+          "passes": 5,
+          "fails": 0,
+          "name": "Tempo de resposta das portagens adequado",
+          "path": "::Tempo de resposta das portagens adequado"
+        },
+        {
+          "name": "Validacao dos dados realizada com sucesso",
+          "path": "::Validacao dos dados realizada com sucesso",
+          "id": "6a5d37a4b0e1e24d08e0e1a30365f4a2",
+          "passes": 0,
+          "fails": 5
+        },
+        {
+          "name": "Sistema de validacao respondeu adequadamente",
+          "path": "::Sistema de validacao respondeu adequadamente",
+          "id": "b4287d45cc6c5e7c0c6ce7caa911cae8",
+          "passes": 5,
+          "fails": 0
+        },
+        {
+          "name": "Consulta de todos os usuarios realizada com sucesso",
+          "path": "::Consulta de todos os usuarios realizada com sucesso",
+          "id": "371e0ca672c84b37349f2866a46bcd47",
+          "passes": 5,
+          "fails": 0
+        },
+        {
+          "name": "Lista de usuarios retornada corretamente",
+          "path": "::Lista de usuarios retornada corretamente",
+          "id": "648656cf7507afba87061457fd8f73a6",
+          "passes": 5,
+          "fails": 0
+        },
+        {
+          "name": "Performance da consulta de usuarios satisfatoria",
+          "path": "::Performance da consulta de usuarios satisfatoria",
+          "id": "8c63ea81922d384eaf9fd55f31cab78e",
+          "passes": 5,
+          "fails": 0
+        }
+      ]
+  },
+  "options": {
+    "summaryTimeUnit": "",
+    "noColor": false,
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)"
+    ]
+  },
+  "state": {
+    "isStdOutTTY": true,
+    "isStdErrTTY": true,
+    "testRunDurationMs": 15945.4272
+  },
+  "metrics": {
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.42671219512195124,
+        "min": 0,
+        "med": 0.3901,
+        "max": 0.9992,
+        "p(90)": 0.9246,
+        "p(95)": 0.9468
+      }
+    },
+    "http_req_failed": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.2682926829268293,
+        "passes": 11,
+        "fails": 30
+      },
+      "thresholds": {
+        "rate<0.50": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_blocked": {
+      "values": {
+        "p(95)": 0,
+        "avg": 0.012878048780487806,
+        "min": 0,
+        "med": 0,
+        "max": 0.528,
+        "p(90)": 0
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "data_sent": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 13385,
+        "rate": 839.4256128804126
+      }
+    },
+    "operation_duration": {
+      "type": "trend",
+      "contains": "default",
+      "values": {
+        "med": 61,
+        "max": 62,
+        "p(90)": 62,
+        "p(95)": 62,
+        "avg": 61.4,
+        "min": 61
+      }
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 3187.7634800000005,
+        "min": 3186.6359,
+        "med": 3187.708,
+        "max": 3189.1488,
+        "p(90)": 3188.80248,
+        "p(95)": 3188.97564
+      }
+    },
+    "consulta_success_rate": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.7142857142857143,
+        "passes": 25,
+        "fails": 10
+      },
+      "thresholds": {
+        "rate>0.60": {
+          "ok": true
+        }
+      }
+    },
+    "total_operations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 40,
+        "rate": 2.5085561834304446
+      }
+    },
+    "iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 5,
+        "rate": 0.3135695229288056
+      }
+    },
+    "data_received": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "rate": 7880.252966819227,
+        "count": 125654
+      }
+    },
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(90)": 0,
+        "p(95)": 0,
+        "avg": 0,
+        "min": 0,
+        "med": 0,
+        "max": 0
+      }
+    },
+    "vus": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "vus_max": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 1,
+        "min": 1,
+        "max": 1
+      }
+    },
+    "http_req_connecting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 0,
+        "p(90)": 0,
+        "p(95)": 0,
+        "avg": 0,
+        "min": 0,
+        "med": 0
+      }
+    },
+    "http_req_waiting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 2.8243,
+        "max": 61.8422,
+        "p(90)": 60.4634,
+        "p(95)": 61.5748,
+        "avg": 9.847441463414636,
+        "min": 1.0147
+      }
+    },
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 41,
+        "rate": 2.5712700880162056
+      }
+    },
+    "http_req_sending": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0,
+        "min": 0,
+        "med": 0,
+        "max": 0,
+        "p(90)": 0,
+        "p(95)": 0
+      }
+    },
+    "checks": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.9047619047619048,
+        "passes": 95,
+        "fails": 10
+      }
+    },
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 62.2715,
+        "p(90)": 60.4634,
+        "p(95)": 61.8604,
+        "avg": 10.274153658536585,
+        "min": 1.5077,
+        "med": 3.3022
+      },
+      "thresholds": {
+        "p(95)<3000": {
+          "ok": true
+        }
+      }
+    },
+    "login_success_rate": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "passes": 5,
+        "fails": 0,
+        "rate": 1
+      },
+      "thresholds": {
+        "rate>0.70": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 2.6713,
+        "med": 3.8583499999999997,
+        "max": 62.2715,
+        "p(90)": 60.95554,
+        "p(95)": 62.023475,
+        "avg": 13.298763333333333
+      }
+    }
+  }
+}

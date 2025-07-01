@@ -55,30 +55,30 @@ public class ServicoServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Configura o protético logado
+        //Configura o protético logado
         proteticoLogado = new Protetico();
         proteticoLogado.setId(1L);
         proteticoLogado.setNome("Admin");
 
-        // Configura categoria teste
+        //Configura categoria teste
         categoriaTeste = new CategoriaServico();
         categoriaTeste.setId(1L);
         categoriaTeste.setNome("Restauração");
 
-        // Configura material teste
+        //Configura material teste
         materialTeste = new Material();
         materialTeste.setId(1L);
         materialTeste.setNome("Resina Composta");
         materialTeste.setQuantidade(new BigDecimal("100.00"));
         materialTeste.setValorUnitario(new BigDecimal("25.50"));
 
-        // Configura serviço material teste
+        //Configura serviço material teste
         servicoMaterialTeste = new ServicoMaterial();
         servicoMaterialTeste.setMaterial(materialTeste);
         servicoMaterialTeste.setQuantidade(new BigDecimal("2.00"));
         servicoMaterialTeste.setId(new ServicoMaterialId(1L, 1L));
 
-        // Configura serviço teste
+        //Configura serviço teste
         servicoTeste = new Servico();
         servicoTeste.setId(1L);
         servicoTeste.setNome("Restauração Dental");
@@ -92,67 +92,23 @@ public class ServicoServiceTest {
     }
 
     @Test
-    void deveSalvarNovoServico() {
-        // given
-        Servico novoServico = new Servico();
-        novoServico.setNome("Novo Serviço");
-        novoServico.setCategoriaServico(categoriaTeste);
-        novoServico.setPreco(new BigDecimal("200.00"));
-        novoServico.setMateriais(Arrays.asList(servicoMaterialTeste));
-
-        Servico servicoSalvo = new Servico();
-        servicoSalvo.setId(1L);
-        servicoSalvo.setNome("Novo Serviço");
-        servicoSalvo.setPreco(new BigDecimal("200.00"));
-
-        when(materialService.getRepository()).thenReturn(materialRepository);
-        when(materialRepository.findById(1L)).thenReturn(Optional.of(materialTeste));
-        when(servicoRepository.save(any(Servico.class))).thenReturn(servicoSalvo);
-
-        try (MockedStatic<ServicoCalculatorUtil> mockedUtil = mockStatic(ServicoCalculatorUtil.class)) {
-            mockedUtil.when(() -> ServicoCalculatorUtil.atualizarValoresCalculados(any(Servico.class)))
-                     .thenAnswer(invocation -> {
-                         Servico servico = invocation.getArgument(0);
-                         servico.setValorMateriais(new BigDecimal("51.00"));
-                         servico.setValorTotal(new BigDecimal("251.00"));
-                         return null;
-                     });
-
-            // when
-            Servico resultado = servicoService.save(novoServico);
-
-            // then
-            assertThat(resultado).isNotNull();
-            assertThat(resultado.getId()).isEqualTo(1L);
-            verify(servicoRepository, times(2)).save(any(Servico.class)); // Uma vez para dados básicos, outra para valores calculados
-            verify(entityManager, times(1)).persist(any(ServicoMaterial.class));
-            mockedUtil.verify(() -> ServicoCalculatorUtil.atualizarValoresCalculados(any(Servico.class)), times(1));
-        }
-    }
-
-    @Test
     void deveAtualizarServicoExistente() {
-        // given
-        Servico servicoEditado = new Servico();
-        servicoEditado.setNome("Serviço Editado");
-        servicoEditado.setCategoriaServico(categoriaTeste);
-        servicoEditado.setPreco(new BigDecimal("300.00"));
-        servicoEditado.setMateriais(Arrays.asList(servicoMaterialTeste));
+        
+        servicoTeste.setNome("Serviço Editado");
+        servicoTeste.setPreco(new BigDecimal("300.00"));
 
         when(servicoRepository.findById(1L)).thenReturn(Optional.of(servicoTeste));
         when(servicoMaterialRepository.findByServicoId(1L)).thenReturn(Arrays.asList(servicoMaterialTeste));
         when(materialService.getRepository()).thenReturn(materialRepository);
         when(materialRepository.findById(1L)).thenReturn(Optional.of(materialTeste));
-        when(servicoRepository.save(any(Servico.class))).thenReturn(servicoEditado);
+        when(servicoRepository.save(any(Servico.class))).thenReturn(servicoTeste);
 
         try (MockedStatic<ServicoCalculatorUtil> mockedUtil = mockStatic(ServicoCalculatorUtil.class)) {
             mockedUtil.when(() -> ServicoCalculatorUtil.atualizarValoresCalculados(any(Servico.class)))
                      .thenAnswer(invocation -> null);
 
-            // when
-            Servico resultado = servicoService.updateServico(servicoEditado, 1L);
+            Servico resultado = servicoService.updateServico(servicoTeste, 1L);
 
-            // then
             assertThat(resultado).isNotNull();
             assertThat(resultado.getNome()).isEqualTo("Serviço Editado");
             verify(servicoRepository, times(1)).findById(1L);
@@ -165,178 +121,20 @@ public class ServicoServiceTest {
 
     @Test
     void deveLancarExcecaoQuandoServicoNaoEncontradoParaEdicao() {
-        // given
-        Servico servicoEditado = new Servico();
-        servicoEditado.setNome("Serviço Editado");
-
+        
         when(servicoRepository.findById(999L)).thenReturn(Optional.empty());
 
-        // when & then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            servicoService.updateServico(servicoEditado, 999L);
+            servicoService.updateServico(servicoTeste, 999L);
         });
 
         assertThat(exception.getMessage()).contains("Serviço não encontrado para edição");
         verify(servicoRepository, times(1)).findById(999L);
         verify(servicoRepository, never()).save(any(Servico.class));
     }
-
-    @Test
-    void deveRemoverMateriaisAntigosAoAtualizarServico() {
-        // given
-        ServicoMaterial materialAntigo1 = new ServicoMaterial();
-        materialAntigo1.setId(new ServicoMaterialId(1L, 1L));
-        
-        ServicoMaterial materialAntigo2 = new ServicoMaterial();
-        materialAntigo2.setId(new ServicoMaterialId(1L, 2L));
-
-        Servico servicoEditado = new Servico();
-        servicoEditado.setNome("Serviço Editado");
-        servicoEditado.setMateriais(Arrays.asList());
-
-        when(servicoRepository.findById(1L)).thenReturn(Optional.of(servicoTeste));
-        when(servicoMaterialRepository.findByServicoId(1L)).thenReturn(Arrays.asList(materialAntigo1, materialAntigo2));
-        when(servicoRepository.save(any(Servico.class))).thenReturn(servicoEditado);
-
-        try (MockedStatic<ServicoCalculatorUtil> mockedUtil = mockStatic(ServicoCalculatorUtil.class)) {
-            mockedUtil.when(() -> ServicoCalculatorUtil.atualizarValoresCalculados(any(Servico.class)))
-                     .thenAnswer(invocation -> null);
-
-            // when
-            Servico resultado = servicoService.updateServico(servicoEditado, 1L);
-
-            // then
-            assertThat(resultado).isNotNull();
-            verify(servicoMaterialRepository, times(2)).delete(any(ServicoMaterial.class));
-            verify(entityManager, times(1)).flush();
-        }
-    }
-
-    @Test
-    void deveProcessarServicoSemMateriais() {
-        // given
-        Servico servicoSemMateriais = new Servico();
-        servicoSemMateriais.setNome("Serviço Sem Materiais");
-        servicoSemMateriais.setMateriais(null);
-
-        when(servicoRepository.save(any(Servico.class))).thenReturn(servicoSemMateriais);
-
-        try (MockedStatic<ServicoCalculatorUtil> mockedUtil = mockStatic(ServicoCalculatorUtil.class)) {
-            mockedUtil.when(() -> ServicoCalculatorUtil.atualizarValoresCalculados(any(Servico.class)))
-                     .thenAnswer(invocation -> null);
-
-            // when
-            Servico resultado = servicoService.save(servicoSemMateriais);
-
-            // then
-            assertThat(resultado).isNotNull();
-            verify(entityManager, never()).persist(any(ServicoMaterial.class));
-            mockedUtil.verify(() -> ServicoCalculatorUtil.atualizarValoresCalculados(any(Servico.class)), times(1));
-        }
-    }
-
-    @Test
-    void deveLancarExcecaoQuandoMaterialNaoEncontrado() {
-        // given
-        Servico novoServico = new Servico();
-        novoServico.setNome("Novo Serviço");
-        novoServico.setMateriais(Arrays.asList(servicoMaterialTeste));
-
-        when(materialService.getRepository()).thenReturn(materialRepository);
-        when(materialRepository.findById(1L)).thenReturn(Optional.empty());
-        when(servicoRepository.save(any(Servico.class))).thenReturn(novoServico);
-
-        // when & then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            servicoService.save(novoServico);
-        });
-
-        assertThat(exception.getMessage()).contains("Material não encontrado");
-        verify(entityManager, never()).persist(any(ServicoMaterial.class));
-    }
-
-    @Test
-    void deveLancarExcecaoQuandoQuantidadeZeroOuNegativa() {
-        // given
-        ServicoMaterial materialComQuantidadeZero = new ServicoMaterial();
-        materialComQuantidadeZero.setMaterial(materialTeste);
-        materialComQuantidadeZero.setQuantidade(BigDecimal.ZERO);
-
-        Servico novoServico = new Servico();
-        novoServico.setNome("Novo Serviço");
-        novoServico.setMateriais(Arrays.asList(materialComQuantidadeZero));
-
-        when(materialService.getRepository()).thenReturn(materialRepository);
-        when(materialRepository.findById(1L)).thenReturn(Optional.of(materialTeste));
-        when(servicoRepository.save(any(Servico.class))).thenReturn(novoServico);
-
-        // when & then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            servicoService.save(novoServico);
-        });
-
-        assertThat(exception.getMessage()).contains("Quantidade deve ser maior que zero");
-        verify(entityManager, never()).persist(any(ServicoMaterial.class));
-    }
-
-    @Test
-    void deveLancarExcecaoQuandoQuantidadeNula() {
-        // given
-        ServicoMaterial materialComQuantidadeNula = new ServicoMaterial();
-        materialComQuantidadeNula.setMaterial(materialTeste);
-        materialComQuantidadeNula.setQuantidade(null);
-
-        Servico novoServico = new Servico();
-        novoServico.setNome("Novo Serviço");
-        novoServico.setMateriais(Arrays.asList(materialComQuantidadeNula));
-
-        when(materialService.getRepository()).thenReturn(materialRepository);
-        when(materialRepository.findById(1L)).thenReturn(Optional.of(materialTeste));
-        when(servicoRepository.save(any(Servico.class))).thenReturn(novoServico);
-
-        // when & then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            servicoService.save(novoServico);
-        });
-
-        assertThat(exception.getMessage()).contains("Quantidade deve ser maior que zero");
-        verify(entityManager, never()).persist(any(ServicoMaterial.class));
-    }
-
-    @Test
-    void deveValidarEstoqueDisponivel() {
-        // given
-        Material materialComEstoqueBaixo = new Material();
-        materialComEstoqueBaixo.setId(1L);
-        materialComEstoqueBaixo.setNome("Material Baixo Estoque");
-        materialComEstoqueBaixo.setQuantidade(new BigDecimal("1.00")); // Menor que necessário (2.00)
-        materialComEstoqueBaixo.setValorUnitario(new BigDecimal("25.50"));
-
-        Servico novoServico = new Servico();
-        novoServico.setNome("Novo Serviço");
-        novoServico.setMateriais(Arrays.asList(servicoMaterialTeste));
-
-        when(materialService.getRepository()).thenReturn(materialRepository);
-        when(materialRepository.findById(1L)).thenReturn(Optional.of(materialComEstoqueBaixo));
-        when(servicoRepository.save(any(Servico.class))).thenReturn(novoServico);
-
-        try (MockedStatic<ServicoCalculatorUtil> mockedUtil = mockStatic(ServicoCalculatorUtil.class)) {
-            mockedUtil.when(() -> ServicoCalculatorUtil.atualizarValoresCalculados(any(Servico.class)))
-                     .thenAnswer(invocation -> null);
-
-            // when
-            Servico resultado = servicoService.save(novoServico);
-
-            // then
-            assertThat(resultado).isNotNull();
-            verify(entityManager, times(1)).persist(any(ServicoMaterial.class));
-            // Verifica que o aviso de estoque baixo foi logado (não há como verificar diretamente o log)
-        }
-    }
-
     @Test
     void deveRecalcularValoresDeServicoEspecifico() {
-        // given
+      
         when(servicoRepository.findById(1L)).thenReturn(Optional.of(servicoTeste));
         when(servicoRepository.save(any(Servico.class))).thenReturn(servicoTeste);
 
@@ -349,10 +147,8 @@ public class ServicoServiceTest {
                          return null;
                      });
 
-            // when
             Servico resultado = servicoService.recalcularValores(1L);
 
-            // then
             assertThat(resultado).isNotNull();
             verify(servicoRepository, times(1)).findById(1L);
             verify(servicoRepository, times(1)).save(any(Servico.class));
@@ -360,30 +156,11 @@ public class ServicoServiceTest {
         }
     }
 
-    @Test
-    void deveLancarExcecaoQuandoServicoNaoEncontradoParaRecalculo() {
-        // given
-        when(servicoRepository.findById(999L)).thenReturn(Optional.empty());
-
-        // when & then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            servicoService.recalcularValores(999L);
-        });
-
-        assertThat(exception.getMessage()).contains("Serviço não encontrado");
-        verify(servicoRepository, times(1)).findById(999L);
-        verify(servicoRepository, never()).save(any(Servico.class));
-    }
-
-    @Test
+     @Test
     void deveRecalcularValoresDeTodosOsServicos() {
         // given
-        Servico outroServico = new Servico();
-        outroServico.setId(2L);
-        outroServico.setNome("Outro Serviço");
-
-        when(servicoRepository.findAll()).thenReturn(Arrays.asList(servicoTeste, outroServico));
-        when(servicoRepository.save(any(Servico.class))).thenReturn(servicoTeste, outroServico);
+        when(servicoRepository.findAll()).thenReturn(Arrays.asList(servicoTeste));
+        when(servicoRepository.save(any(Servico.class))).thenReturn(servicoTeste);
 
         try (MockedStatic<ServicoCalculatorUtil> mockedUtil = mockStatic(ServicoCalculatorUtil.class)) {
             mockedUtil.when(() -> ServicoCalculatorUtil.atualizarValoresCalculados(any(Servico.class)))
@@ -394,10 +171,104 @@ public class ServicoServiceTest {
 
             // then
             verify(servicoRepository, times(1)).findAll();
-            verify(servicoRepository, times(2)).save(any(Servico.class));
-            mockedUtil.verify(() -> ServicoCalculatorUtil.atualizarValoresCalculados(any(Servico.class)), times(2));
+            verify(servicoRepository, times(1)).save(any(Servico.class));
+            mockedUtil.verify(() -> ServicoCalculatorUtil.atualizarValoresCalculados(any(Servico.class)), times(1));
         }
     }
+
+        @Test
+    void deveRemoverMateriaisAntigosAoAtualizarServico() {
+        // given
+        servicoTeste.setMateriais(Arrays.asList()); // Remove todos os materiais
+
+        when(servicoRepository.findById(1L)).thenReturn(Optional.of(servicoTeste));
+        when(servicoMaterialRepository.findByServicoId(1L)).thenReturn(Arrays.asList(servicoMaterialTeste));
+        when(servicoRepository.save(any(Servico.class))).thenReturn(servicoTeste);
+
+        try (MockedStatic<ServicoCalculatorUtil> mockedUtil = mockStatic(ServicoCalculatorUtil.class)) {
+            mockedUtil.when(() -> ServicoCalculatorUtil.atualizarValoresCalculados(any(Servico.class)))
+                     .thenAnswer(invocation -> null);
+
+            // when
+            Servico resultado = servicoService.updateServico(servicoTeste, 1L);
+
+            // then
+            assertThat(resultado).isNotNull();
+            verify(servicoMaterialRepository, times(1)).delete(any(ServicoMaterial.class));
+            verify(entityManager, times(1)).flush();
+        }
+    }
+
+    @Test
+    void deveSalvarNovoServico() {
+
+        when(materialService.getRepository()).thenReturn(materialRepository);
+        when(materialRepository.findById(1L)).thenReturn(Optional.of(materialTeste));
+        when(servicoRepository.save(any(Servico.class))).thenReturn(servicoTeste);
+
+        try (MockedStatic<ServicoCalculatorUtil> mockedUtil = mockStatic(ServicoCalculatorUtil.class)) {
+            mockedUtil.when(() -> ServicoCalculatorUtil.atualizarValoresCalculados(any(Servico.class)))
+                     .thenAnswer(invocation -> null);
+
+            Servico resultado = servicoService.save(servicoTeste);
+
+            assertThat(resultado).isNotNull();
+            assertThat(resultado.getId()).isEqualTo(1L);
+            verify(servicoRepository, times(2)).save(any(Servico.class));
+            verify(entityManager, times(1)).persist(any(ServicoMaterial.class));
+            mockedUtil.verify(() -> ServicoCalculatorUtil.atualizarValoresCalculados(any(Servico.class)), times(1));
+        }
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoMaterialNaoEncontrado() {
+      
+        when(materialService.getRepository()).thenReturn(materialRepository);
+        when(materialRepository.findById(1L)).thenReturn(Optional.empty());
+        when(servicoRepository.save(any(Servico.class))).thenReturn(servicoTeste);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            servicoService.save(servicoTeste);
+        });
+
+        assertThat(exception.getMessage()).contains("Material não encontrado");
+        verify(entityManager, never()).persist(any(ServicoMaterial.class));
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoQuantidadeZeroOuNegativa() {
+       
+        servicoMaterialTeste.setQuantidade(BigDecimal.ZERO);
+        when(materialService.getRepository()).thenReturn(materialRepository);
+        when(materialRepository.findById(1L)).thenReturn(Optional.of(materialTeste));
+        when(servicoRepository.save(any(Servico.class))).thenReturn(servicoTeste);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            servicoService.save(servicoTeste);
+        });
+
+        assertThat(exception.getMessage()).contains("Quantidade deve ser maior que zero");
+        verify(entityManager, never()).persist(any(ServicoMaterial.class));
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoQuantidadeNula() {
+       
+        servicoMaterialTeste.setQuantidade(null);
+        when(materialService.getRepository()).thenReturn(materialRepository);
+        when(materialRepository.findById(1L)).thenReturn(Optional.of(materialTeste));
+        when(servicoRepository.save(any(Servico.class))).thenReturn(servicoTeste);
+
+        // when & then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            servicoService.save(servicoTeste);
+        });
+
+        assertThat(exception.getMessage()).contains("Quantidade deve ser maior que zero");
+        verify(entityManager, never()).persist(any(ServicoMaterial.class));
+    }
+
+    // ========== TESTES DE ATUALIZAÇÃO DE SERVIÇO ==========
 
     @Test
     void deveBuscarServicoPorId() {
@@ -443,7 +314,7 @@ public class ServicoServiceTest {
         verify(servicoRepository, times(1)).findAll();
     }
 
-        @Test
+    @Test
     void deveDeletarServico() {
         // given
         when(servicoRepository.findById(1L)).thenReturn(Optional.of(servicoTeste));

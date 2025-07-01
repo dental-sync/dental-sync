@@ -98,27 +98,6 @@ public class AuthControllerTest {
     }
 
     @Test
-    void deveRealizarLoginComRememberMe() throws Exception {
-        // Given
-        when(proteticoService.findByEmail("joao@protetico.com"))
-            .thenReturn(Optional.of(proteticoTeste));
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-            .thenReturn(authenticationTeste);
-        when(rememberMeService.generateRememberMeToken(eq("joao@protetico.com"), eq(7)))
-            .thenReturn("remember-token-123");
-
-        // When & Then
-        mockMvc.perform(post("/login")
-                .param("username", "joao@protetico.com")
-                .param("password", "password123")
-                .param("rememberMe", "true"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.rememberMe").value(true))
-            .andExpect(jsonPath("$.sessionDuration").value("7 dias"));
-    }
-
-    @Test
     void deveRetornarErroParaUsuarioInexistente() throws Exception {
         // Given
         when(proteticoService.findByEmail("inexistente@email.com"))
@@ -132,6 +111,7 @@ public class AuthControllerTest {
             .andExpect(jsonPath("$.success").value(false))
             .andExpect(jsonPath("$.message").value("Email ou senha inválidos"));
     }
+
 
     @Test
     void deveRetornarErroParaSenhaIncorreta() throws Exception {
@@ -173,6 +153,56 @@ public class AuthControllerTest {
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.requiresTwoFactor").value(true))
             .andExpect(jsonPath("$.message").value("Digite o código do Google Authenticator"));
+    }
+
+    @Test
+    void deveRetornarErroParaSessaoExpirada() throws Exception {
+        // When & Then
+        mockMvc.perform(post("/login/verify-2fa")
+                .param("totpCode", "123456"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.message").value("Sessão expirada. Faça login novamente."));
+    }
+
+    @Test
+    void deveRealizarLoginComRememberMe() throws Exception {
+        // Given
+        when(proteticoService.findByEmail("joao@protetico.com"))
+            .thenReturn(Optional.of(proteticoTeste));
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+            .thenReturn(authenticationTeste);
+        when(rememberMeService.generateRememberMeToken(eq("joao@protetico.com"), eq(7)))
+            .thenReturn("remember-token-123");
+
+        // When & Then
+        mockMvc.perform(post("/login")
+                .param("username", "joao@protetico.com")
+                .param("password", "password123")
+                .param("rememberMe", "true"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.rememberMe").value(true))
+            .andExpect(jsonPath("$.sessionDuration").value("7 dias"));
+    }
+
+    @Test
+    void deveSolicitarRecuperacaoSenhaUsuarioSem2FA() throws Exception {
+        // Given
+        when(proteticoService.findByEmail("joao@protetico.com"))
+            .thenReturn(Optional.of(proteticoTeste));
+        when(emailService.generatePasswordResetToken("joao@protetico.com"))
+            .thenReturn("reset-token-123");
+
+        // When & Then
+        mockMvc.perform(post("/password/forgot")
+                .param("email", "joao@protetico.com"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.requiresTwoFactor").value(false))
+            .andExpect(jsonPath("$.message").value("Link de recuperação enviado para seu email"));
+
+        verify(emailService).sendPasswordResetEmail("joao@protetico.com", "reset-token-123");
     }
 
 
@@ -247,16 +277,6 @@ public class AuthControllerTest {
             .andExpect(jsonPath("$.message").value("Código de verificação inválido"));
     }
 
-    @Test
-    void deveRetornarErroParaSessaoExpirada() throws Exception {
-        // When & Then
-        mockMvc.perform(post("/login/verify-2fa")
-                .param("totpCode", "123456"))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.message").value("Sessão expirada. Faça login novamente."));
-    }
-
     // ========== Testes do endpoint /logout ==========
 
     @Test
@@ -296,25 +316,6 @@ public class AuthControllerTest {
     }
 
     // ========== Testes de recuperação de senha ==========
-
-    @Test
-    void deveSolicitarRecuperacaoSenhaUsuarioSem2FA() throws Exception {
-        // Given
-        when(proteticoService.findByEmail("joao@protetico.com"))
-            .thenReturn(Optional.of(proteticoTeste));
-        when(emailService.generatePasswordResetToken("joao@protetico.com"))
-            .thenReturn("reset-token-123");
-
-        // When & Then
-        mockMvc.perform(post("/password/forgot")
-                .param("email", "joao@protetico.com"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.requiresTwoFactor").value(false))
-            .andExpect(jsonPath("$.message").value("Link de recuperação enviado para seu email"));
-
-        verify(emailService).sendPasswordResetEmail("joao@protetico.com", "reset-token-123");
-    }
 
     @Test
     void deveSolicitarRecuperacaoSenhaUsuarioCom2FA() throws Exception {

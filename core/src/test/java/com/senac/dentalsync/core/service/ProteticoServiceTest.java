@@ -87,7 +87,43 @@ public class ProteticoServiceTest {
         lenient().when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
     }
 
+ 
     @Test
+    void devePermitirAtualizarProteticoMesmoComEmailIgual() {
+        // given - Simula atualização do mesmo protético
+        proteticoTeste.setId(1L);
+        String novoNome = "Dr. João Silva Santos Editado";
+        proteticoTeste.setNome(novoNome);
+        
+        // Retorna o mesmo protético para todas as validações (simula que é o mesmo registro)
+        when(proteticoRepository.findByEmail(proteticoTeste.getEmail())).thenReturn(Optional.of(proteticoTeste));
+        when(proteticoRepository.findFirstByTelefone(proteticoTeste.getTelefone())).thenReturn(Optional.of(proteticoTeste));
+        when(proteticoRepository.findFirstByCro(proteticoTeste.getCro())).thenReturn(Optional.of(proteticoTeste));
+        when(proteticoRepository.findById(1L)).thenReturn(Optional.of(proteticoTeste));
+        when(proteticoRepository.save(any(Protetico.class))).thenReturn(proteticoTeste);
+
+        // when
+        Protetico proteticoAtualizado = proteticoService.save(proteticoTeste);
+
+        // then
+        assertThat(proteticoAtualizado).isNotNull();
+        assertThat(proteticoAtualizado.getNome()).isEqualTo(novoNome);
+        verify(proteticoRepository, times(1)).save(any(Protetico.class));
+    }
+
+
+    @Test
+    void naoDeveAtualizarStatusProteticoInexistente() {
+        // given
+        when(proteticoRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // when/then
+        assertThrows(ResponseStatusException.class, () -> {
+            proteticoService.updateStatus(999L, false);
+        });
+    }
+
+       @Test
     void deveSalvarProteticoNovo() {
         // given
         Protetico novoProtetico = new Protetico();
@@ -279,17 +315,7 @@ public class ProteticoServiceTest {
         verify(proteticoRepository, atLeast(1)).save(any(Protetico.class));
     }
 
-    @Test
-    void naoDeveAtualizarStatusProteticoInexistente() {
-        // given
-        when(proteticoRepository.findById(999L)).thenReturn(Optional.empty());
-
-        // when/then
-        assertThrows(ResponseStatusException.class, () -> {
-            proteticoService.updateStatus(999L, false);
-        });
-    }
-
+   
     @Test
     void deveDeletarProteticoInativo() {
         // given
@@ -380,28 +406,7 @@ public class ProteticoServiceTest {
         verify(proteticoRepository, times(1)).findByEmail("protetico@email.com");
     }
 
-    @Test
-    void devePermitirAtualizarProteticoMesmoComEmailIgual() {
-        // given - Simula atualização do mesmo protético
-        proteticoTeste.setId(1L);
-        String novoNome = "Dr. João Silva Santos Editado";
-        proteticoTeste.setNome(novoNome);
-        
-        // Retorna o mesmo protético para todas as validações (simula que é o mesmo registro)
-        when(proteticoRepository.findByEmail(proteticoTeste.getEmail())).thenReturn(Optional.of(proteticoTeste));
-        when(proteticoRepository.findFirstByTelefone(proteticoTeste.getTelefone())).thenReturn(Optional.of(proteticoTeste));
-        when(proteticoRepository.findFirstByCro(proteticoTeste.getCro())).thenReturn(Optional.of(proteticoTeste));
-        when(proteticoRepository.findById(1L)).thenReturn(Optional.of(proteticoTeste));
-        when(proteticoRepository.save(any(Protetico.class))).thenReturn(proteticoTeste);
-
-        // when
-        Protetico proteticoAtualizado = proteticoService.save(proteticoTeste);
-
-        // then
-        assertThat(proteticoAtualizado).isNotNull();
-        assertThat(proteticoAtualizado.getNome()).isEqualTo(novoNome);
-        verify(proteticoRepository, times(1)).save(any(Protetico.class));
-    }
+   
 
     @Test
     void deveSalvarSemAlterarSenhaQuandoSenhaJaCriptografada() {

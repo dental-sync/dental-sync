@@ -42,7 +42,7 @@ public interface PedidoRepository extends BaseRepository<Pedido, Long> {
 
     @Query("SELECT new com.senac.dentalsync.core.dto.PedidosPorTipoDTO(" +
            "s.nome, " +
-           "COUNT(p) * 100.0 / (SELECT COUNT(p2) FROM Pedido p2)) " +
+           "COUNT(p) * 100.0 / (SELECT COUNT(ps) FROM Pedido p2 JOIN p2.servicos ps)) " +
            "FROM Pedido p JOIN p.servicos s " +
            "GROUP BY s.nome")
     List<PedidosPorTipoDTO> findPedidosPorTipo();

@@ -1,40 +1,81 @@
 services:
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: dental-sync-frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-ssl.conf:/etc/nginx/conf.d/default.conf
+      - ./ssl/certbot/conf:/etc/letsencrypt
+      - ./ssl/certbot/www:/var/www/certbot
+    depends_on:
+      - app
+    networks:
+      - dental-sync-network
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot
+    container_name: dental-sync-certbot
+    volumes:
+      - ./ssl/certbot/conf:/etc/letsencrypt
+      - ./ssl/certbot/www:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email seu-email@exemplo.com --agree-tos --no-eff-email -d seu-dominio.com
+    depends_on:
+      - frontend
+
   app:
     build:
-      context: .
-      dockerfile: core/Dockerfile
+      context: ./core
+      dockerfile: Dockerfile
     container_name: dental-sync-app
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/dentalsync
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/dentalsync?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_SHOW_SQL=true
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.MySQLDialect
+      - FRONTEND_URL=https://dentalsyncbr.com.br
+      - SESSION_COOKIE_SECURE=true
+      - EMAIL_USERNAME=${EMAIL_USERNAME:-}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD:-}
+      - DENTALSYNC_MAIL_FROM=${DENTALSYNC_MAIL_FROM:-noreply@dentalsync.com}
+      - DENTALSYNC_MAIL_FROM_NAME=${DENTALSYNC_MAIL_FROM_NAME:-DentalSync Security}
+      - DENTALSYNC_2FA_TRUSTED_DEVICE_DURATION_MINUTES=${DENTALSYNC_2FA_TRUSTED_DEVICE_DURATION_MINUTES:-10080}
+      - JWT_SECRET=${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      - N8N_WEBHOOK_BASE_URL=${N8N_WEBHOOK_BASE_URL:-http://localhost:8888}
+      - N8N_WEBHOOK_ENDPOINT=${N8N_WEBHOOK_ENDPOINT:-/webhook/dental-sync}
+
     depends_on:
       - db
-    volumes:
-      - ./core:/app
     networks:
       - dental-sync-network
+    restart: unless-stopped
 
   db:
-    image: postgres:16-alpine
+    image: mysql:8.0
     container_name: dental-sync-db
     ports:
-      - "5432:5432"
+      - "3306:3306"
     environment:
-      - POSTGRES_DB=dentalsync
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=dentalsync
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     networks:
       - dental-sync-network
+    restart: unless-stopped
 
 volumes:
-  postgres_data:
+  mysql_data:
 
 networks:
   dental-sync-network:

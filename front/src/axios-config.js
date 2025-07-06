@@ -1,9 +1,8 @@
 import axios from 'axios';
 
 // Definir URL base para as chamadas API
-const baseURL = process.env.NODE_ENV === 'production'
-  ? '/api'
-  : 'http://localhost:8080';
+// No Docker, sempre usar proxy /api (nginx faz o roteamento para o backend)
+const baseURL = '/api';
 
 // Criar instância do axios com configurações customizadas
 const api = axios.create({

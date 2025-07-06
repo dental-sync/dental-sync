@@ -21,7 +21,15 @@ const DatePicker = ({
   // Converte data do formato YYYY-MM-DD para DD/MM/AAAA
   const formatDateForDisplay = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
+    
+    // Se já está no formato correto YYYY-MM-DD, usar parsing manual
+    if (dateString.includes('-') && dateString.length === 10) {
+      const [year, month, day] = dateString.split('-');
+      return `${day}/${month}/${year}`;
+    }
+    
+    // Para outros casos, usar Date mas com cuidado para timezone
+    const date = new Date(dateString + 'T00:00:00'); // Adicionar hora para evitar timezone issues
     if (isNaN(date.getTime())) return '';
     
     const day = date.getDate().toString().padStart(2, '0');
@@ -156,7 +164,15 @@ const DatePicker = ({
   };
 
   const handleDateClick = (date) => {
-    const isoDate = date.toISOString().split('T')[0];
+    // Corrigir problema de fuso horário criando uma data local
+    const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    // Formatar manualmente para evitar problemas de timezone
+    const year = localDate.getFullYear();
+    const month = (localDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = localDate.getDate().toString().padStart(2, '0');
+    const isoDate = `${year}-${month}-${day}`;
+    
     const displayDate = formatDateForDisplay(isoDate);
     
     setInputValue(displayDate);
@@ -176,7 +192,17 @@ const DatePicker = ({
     
     const days = [];
     const today = new Date();
-    const selectedDate = value ? new Date(value) : null;
+    
+    // Criar data selecionada de forma consistente
+    let selectedDate = null;
+    if (value) {
+      if (value.includes('-') && value.length === 10) {
+        const [year, month, day] = value.split('-');
+        selectedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      } else {
+        selectedDate = new Date(value + 'T00:00:00');
+      }
+    }
     
     for (let i = 0; i < 42; i++) {
       const date = new Date(startDate);
@@ -184,7 +210,15 @@ const DatePicker = ({
       
       const isCurrentMonth = date.getMonth() === month;
       const isToday = date.toDateString() === today.toDateString();
-      const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
+      
+      // Comparar datas de forma mais precisa
+      let isSelected = false;
+      if (selectedDate && !isNaN(selectedDate.getTime())) {
+        isSelected = date.getFullYear() === selectedDate.getFullYear() &&
+                    date.getMonth() === selectedDate.getMonth() &&
+                    date.getDate() === selectedDate.getDate();
+      }
+      
       const isDisabled = !isDateInRange(date);
       
       days.push({
@@ -246,7 +280,11 @@ const DatePicker = ({
             <button
               type="button"
               className="calendar-nav-btn"
-              onClick={() => navigateMonth(-1)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigateMonth(-1);
+              }}
             >
               ‹
             </button>
@@ -256,7 +294,11 @@ const DatePicker = ({
             <button
               type="button"
               className="calendar-nav-btn"
-              onClick={() => navigateMonth(1)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigateMonth(1);
+              }}
             >
               ›
             </button>
@@ -284,7 +326,13 @@ const DatePicker = ({
                 } ${
                   dayObj.isDisabled ? 'disabled' : ''
                 }`}
-                onClick={() => !dayObj.isDisabled && handleDateClick(dayObj.date)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!dayObj.isDisabled) {
+                    handleDateClick(dayObj.date);
+                  }
+                }}
                 disabled={dayObj.isDisabled}
               >
                 {dayObj.day}

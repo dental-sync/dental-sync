@@ -47,10 +47,8 @@ public class MaterialTest {
 
     @Test
     void deveCriarMaterialValido() {
-        // Act
+     
         Set<ConstraintViolation<Material>> violations = validator.validate(material);
-
-        // Assert
         assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 

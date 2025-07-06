@@ -16,6 +16,10 @@ const NotificationDropdown = ({
     semEstoque: []
   });
   const [loading, setLoading] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({
+    semEstoque: false,
+    baixoEstoque: false
+  });
 
   useEffect(() => {
     fetchMateriais();
@@ -61,31 +65,20 @@ const NotificationDropdown = ({
     }, 100);
   };
 
-  const totalMateriais = materiais.baixoEstoque.length + materiais.semEstoque.length;
-
-  // Limitar total de materiais mostrados a 5, priorizando sem estoque
-  const getTotalMateriais = () => {
-    const maxItens = 5;
-    let materiaisParaMostrar = {
-      semEstoque: [],
-      baixoEstoque: []
-    };
-    
-    // Primeiro, adicionar materiais sem estoque (prioridade)
-    if (materiais.semEstoque.length > 0) {
-      materiaisParaMostrar.semEstoque = materiais.semEstoque.slice(0, maxItens);
-    }
-    
-    // Depois, adicionar materiais com baixo estoque se ainda tiver espaço
-    const restante = maxItens - materiaisParaMostrar.semEstoque.length;
-    if (restante > 0 && materiais.baixoEstoque.length > 0) {
-      materiaisParaMostrar.baixoEstoque = materiais.baixoEstoque.slice(0, restante);
-    }
-    
-    return materiaisParaMostrar;
+  const handleToggleSection = (section, event) => {
+    event.stopPropagation();
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
   };
 
-  const materiaisParaMostrar = getTotalMateriais();
+  const totalMateriais = materiais.baixoEstoque.length + materiais.semEstoque.length;
+
+  // Função para obter materiais a serem exibidos - sempre todos quando expandido
+  const getMaterialsToShow = (section) => {
+    return materiais[section]; // Mostrar todos quando expandido
+  };
 
   const dropdownContent = (
     <div 
@@ -123,67 +116,107 @@ const NotificationDropdown = ({
           </div>
         ) : (
           <>
-            {materiaisParaMostrar.semEstoque.length > 0 && (
+            {materiais.semEstoque.length > 0 && (
               <div className="notification-section">
-                <div className="notification-section-header">
+                <div 
+                  className="notification-section-header"
+                  onClick={(e) => handleToggleSection('semEstoque', e)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <h4 className="notification-section-title sem-estoque">
+                    <svg 
+                      className={`expand-icon ${expandedSections.semEstoque ? 'expanded' : ''}`}
+                      width="12" 
+                      height="12" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2"
+                    >
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                     Sem Estoque ({materiais.semEstoque.length})
+                    {!expandedSections.semEstoque && (
+                      <span className="more-items-indicator">{materiais.semEstoque.length}</span>
+                    )}
                   </h4>
                 </div>
-                <div className="material-list">
-                  {materiaisParaMostrar.semEstoque.map((material) => (
-                    <div 
-                      key={material.id} 
-                      className="material-item"
-                      onClick={(e) => handleMaterialClick(material.id, e)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <div className="material-info">
-                        <span className="material-name">{material.nome}</span>
-                        <div className="material-details">
-                          <span className="material-quantity">
-                            {material.quantidade} {material.unidadeMedida}
-                          </span>
-                          <span className="material-status sem-estoque">
-                            Sem Estoque
-                          </span>
+                {expandedSections.semEstoque && (
+                  <div className="material-list">
+                    {getMaterialsToShow('semEstoque').map((material) => (
+                      <div 
+                        key={material.id} 
+                        className="material-item"
+                        onClick={(e) => handleMaterialClick(material.id, e)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <div className="material-info">
+                          <span className="material-name">{material.nome}</span>
+                          <div className="material-details">
+                            <span className="material-quantity">
+                              {material.quantidade} {material.unidadeMedida}
+                            </span>
+                            <span className="material-status sem-estoque">
+                              Sem Estoque
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             
-            {materiaisParaMostrar.baixoEstoque.length > 0 && (
+            {materiais.baixoEstoque.length > 0 && (
               <div className="notification-section">
-                <div className="notification-section-header">
+                <div 
+                  className="notification-section-header"
+                  onClick={(e) => handleToggleSection('baixoEstoque', e)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <h4 className="notification-section-title baixo-estoque">
+                    <svg 
+                      className={`expand-icon ${expandedSections.baixoEstoque ? 'expanded' : ''}`}
+                      width="12" 
+                      height="12" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2"
+                    >
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                     Baixo Estoque ({materiais.baixoEstoque.length})
+                    {!expandedSections.baixoEstoque && (
+                      <span className="more-items-indicator">{materiais.baixoEstoque.length}</span>
+                    )}
                   </h4>
                 </div>
-                <div className="material-list">
-                  {materiaisParaMostrar.baixoEstoque.map((material) => (
-                    <div 
-                      key={material.id} 
-                      className="material-item"
-                      onClick={(e) => handleMaterialClick(material.id, e)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <div className="material-info">
-                        <span className="material-name">{material.nome}</span>
-                        <div className="material-details">
-                          <span className="material-quantity">
-                            {material.quantidade} {material.unidadeMedida}
-                          </span>
-                          <span className="material-status baixo-estoque">
-                            Baixo Estoque
-                          </span>
+                {expandedSections.baixoEstoque && (
+                  <div className="material-list">
+                    {getMaterialsToShow('baixoEstoque').map((material) => (
+                      <div 
+                        key={material.id} 
+                        className="material-item"
+                        onClick={(e) => handleMaterialClick(material.id, e)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <div className="material-info">
+                          <span className="material-name">{material.nome}</span>
+                          <div className="material-details">
+                            <span className="material-quantity">
+                              {material.quantidade} {material.unidadeMedida}
+                            </span>
+                            <span className="material-status baixo-estoque">
+                              Baixo Estoque
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </>

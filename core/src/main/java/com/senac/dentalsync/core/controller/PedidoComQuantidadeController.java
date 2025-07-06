@@ -120,9 +120,13 @@ public class PedidoComQuantidadeController {
             }
             
             return ResponseEntity.ok(pedido);
+        } catch (jakarta.validation.ConstraintViolationException e) {
+            System.err.println("Erro de validação: " + e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
+            System.err.println("Erro ao criar pedido com quantidade: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
     }
     
@@ -190,9 +194,13 @@ public class PedidoComQuantidadeController {
             pedido = pedidoService.save(pedido);
             
             return ResponseEntity.ok(pedido);
+        } catch (jakarta.validation.ConstraintViolationException e) {
+            System.err.println("Erro de validação na atualização: " + e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
+            System.err.println("Erro ao atualizar pedido com quantidade: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
     }
 }

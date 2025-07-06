@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # InfluxDB para métricas K6 em tempo real
+  influxdb:
+    image: influxdb:1.8
+    container_name: influxdb-k6
+    environment:
+      - INFLUXDB_DB=k6
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin123
+      - INFLUXDB_USER=k6
+      - INFLUXDB_USER_PASSWORD=k6123
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+    networks:
+      - k6-network
+
+  # Grafana para visualização das métricas K6
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-k6
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana-dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana-datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - influxdb
+    networks:
+      - k6-network
+
+  # Prometheus para coleta adicional de métricas
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus-k6
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - k6-network
+
+networks:
+  k6-network:
+    driver: bridge
+
+volumes:
+  influxdb_data:
+  grafana_data:
+  prometheus_data: 

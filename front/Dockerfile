@@ -1,5 +1,5 @@
-# Etapa 1: Build da aplicação
-FROM node:18-alpine AS builder
+# Stage 1: Build da aplicação React
+FROM node:18-alpine as build
 
 # Definir diretório de trabalho
 WORKDIR /app
@@ -8,25 +8,25 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instalar dependências
-RUN npm ci --only=production --silent
+RUN npm ci
 
 # Copiar código fonte
 COPY . .
 
-# Build da aplicação para produção
+# Construir a aplicação
 RUN npm run build
 
-# Etapa 2: Nginx para servir aplicação
+# Stage 2: Servir com nginx
 FROM nginx:alpine
 
-# Copiar configuração personalizada do nginx
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copiar arquivos build para nginx
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copiar arquivos buildados
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Copiar configuração customizada do nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expor porta 80
 EXPOSE 80
 
-# Comando para iniciar nginx
+# Comando para executar nginx
 CMD ["nginx", "-g", "daemon off;"] 

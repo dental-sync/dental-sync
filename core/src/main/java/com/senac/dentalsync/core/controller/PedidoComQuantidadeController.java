@@ -2,6 +2,7 @@ package com.senac.dentalsync.core.controller;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ public class PedidoComQuantidadeController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity<Pedido> criarPedidoComQuantidade(@RequestBody PedidoDTO pedidoDTO) {
+    public ResponseEntity<?> criarPedidoComQuantidade(@RequestBody PedidoDTO pedidoDTO) {
         try {
             // Criar o pedido principal
             Pedido pedido = new Pedido();
@@ -109,15 +110,22 @@ public class PedidoComQuantidadeController {
             // Salvar o pedido
             pedido = pedidoService.save(pedido);
             
-            // Salvar as quantidades originais na tabela pedido_servico (para consultas futuras)
+            // Salvar as quantidades originais na tabela pedido_servico
             for (PedidoDTO.ServicoComQuantidadeDTO servicoDTO : pedidoDTO.getServicos()) {
                 Servico servico = servicoService.findById(servicoDTO.getId())
                     .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
                 
-                PedidoServico pedidoServico = new PedidoServico(pedido, servico, new BigDecimal(servicoDTO.getQuantidade()));
+                // Validar quantidade do serviço
+                if (servicoDTO.getQuantidade() == null || servicoDTO.getQuantidade() <= 0) {
+                    throw new RuntimeException("Quantidade do serviço deve ser maior que zero: " + servico.getNome());
+                }
                 
+                PedidoServico pedidoServico = new PedidoServico(pedido, servico, new BigDecimal(servicoDTO.getQuantidade()));
                 pedidoServicoRepository.save(pedidoServico);
             }
+            
+            // AGORA descontar o estoque usando as quantidades corretas
+            pedidoService.descontarEstoqueNovoPedido(pedido.getId(), pedidoDTO.getServicos());
             
             return ResponseEntity.ok(pedido);
         } catch (jakarta.validation.ConstraintViolationException e) {
@@ -132,10 +140,13 @@ public class PedidoComQuantidadeController {
     
     @PutMapping("/{id}")
     @Transactional
-    public ResponseEntity<Pedido> atualizarPedidoComQuantidade(@PathVariable Long id, @RequestBody PedidoDTO pedidoDTO) {
+    public ResponseEntity<?> atualizarPedidoComQuantidade(@PathVariable Long id, @RequestBody PedidoDTO pedidoDTO) {
         try {
             Pedido pedido = pedidoService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+            
+            // PRIMEIRO ajustar estoque baseado nas diferenças
+            pedidoService.ajustarEstoquePedidoEditado(id, pedidoDTO.getServicos());
             
             // Atualizar dados básicos
             if (pedidoDTO.getCliente() != null) {
@@ -185,8 +196,12 @@ public class PedidoComQuantidadeController {
                 Servico servico = servicoService.findById(servicoDTO.getId())
                     .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
                 
-                PedidoServico pedidoServico = new PedidoServico(pedido, servico, new BigDecimal(servicoDTO.getQuantidade()));
+                // Validar quantidade do serviço
+                if (servicoDTO.getQuantidade() == null || servicoDTO.getQuantidade() <= 0) {
+                    throw new RuntimeException("Quantidade do serviço deve ser maior que zero: " + servico.getNome());
+                }
                 
+                PedidoServico pedidoServico = new PedidoServico(pedido, servico, new BigDecimal(servicoDTO.getQuantidade()));
                 pedidoServicoRepository.save(pedidoServico);
             }
             

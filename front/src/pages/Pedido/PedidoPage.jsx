@@ -11,7 +11,6 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import useInfiniteScroll from '../../hooks/useInfiniteScroll';
 
 const PedidoPage = () => {
   const [searchQuery, setSearchQuery] = useState('');

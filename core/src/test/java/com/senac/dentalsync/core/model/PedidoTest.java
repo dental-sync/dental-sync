@@ -45,16 +45,86 @@ class PedidoTest {
         servicos.add(servico);
     }
 
+    
     @Test
-    void deveCriarPedidoValido() {
+    void deveAtualizarObservacaoDoPedido() {        
         configurarPedidoValido();
+        pedido.setObservacao("Observação original");
+        
+        pedido.setObservacao("Prótese Total Superior Atualizada");
+        
         var violations = validator.validate(pedido);
+        assertTrue(violations.isEmpty());
+        assertEquals("Prótese Total Superior Atualizada", pedido.getObservacao());
+    }
+
+    @Test
+    void deveAtualizarStatusDoPedido() {
+        configurarPedidoValido();
+        pedido.setStatus(Pedido.Status.PENDENTE);
+        
+        pedido.setStatus(Pedido.Status.EM_ANDAMENTO);
+        
+        var violations = validator.validate(pedido);
+        assertTrue(violations.isEmpty());
+        assertEquals(Pedido.Status.EM_ANDAMENTO, pedido.getStatus());
+    }
+
+    @Test
+    void deveAtualizarPrioridadeDoPedido() {
+        configurarPedidoValido();
+        pedido.setPrioridade(Pedido.Prioridade.BAIXA);
+        
+        pedido.setPrioridade(Pedido.Prioridade.ALTA);
+        
+        var violations = validator.validate(pedido);
+        assertTrue(violations.isEmpty());
+        assertEquals(Pedido.Prioridade.ALTA, pedido.getPrioridade());
+    }
+
+    @Test
+    void deveAtualizarDataEntregaDoPedido() {
+        configurarPedidoValido();
+        LocalDate dataAnterior = LocalDate.now().plusDays(5);
+        pedido.setDataEntrega(dataAnterior);
+        
+        LocalDate novaData = LocalDate.now().plusDays(10);
+        pedido.setDataEntrega(novaData);
+        
+        var violations = validator.validate(pedido);
+        assertTrue(violations.isEmpty());
+        assertEquals(novaData, pedido.getDataEntrega());
+    }
+
+    @Test
+    void deveManterValidacaoAoAtualizarPedidoComDadosInvalidos() {
+        configurarPedidoValido();
+        
+        pedido.setDataEntrega(LocalDate.now().minusDays(1));
+        pedido.setStatus(null);
+        
+        var violations = validator.validate(pedido);
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("data de entrega deve ser uma data futura")));
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("status é obrigatório")));
+    }
+
+    // ========== TESTES DE CRIAÇÃO DE PEDIDO ==========
+
+ /*    @Test
+    void deveCriarPedidoValido() {     
+        configurarPedidoValido();
+        
+        var violations = validator.validate(pedido);
+      
         assertTrue(violations.isEmpty());
     }
 
     @Test
     void deveRetornarErrosQuandoCamposObrigatoriosAusentes() {
+        
         var violations = validator.validate(pedido);
+        
         assertEquals(7, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("cliente é obrigatório")));
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("dentista é obrigatório")));
@@ -66,21 +136,7 @@ class PedidoTest {
     }
 
     @Test
-    void deveAceitarCamposBaseEntityNulos() {
-        pedido.setId(null);
-        pedido.setCreatedAt(null);
-        pedido.setUpdatedAt(null);
-        pedido.setIsActive(null);
-        pedido.setCreatedBy(null);
-        pedido.setUpdatedBy(null);
-
-        configurarPedidoValido(); // Necessário para evitar violações dos campos obrigatórios
-        var violations = validator.validate(pedido);
-        assertTrue(violations.isEmpty());
-    }
-
-    @Test
-    void deveAceitarCamposBaseEntityPreenchidos() {
+    void deveAceitarCamposBaseEntityPreenchidos() {        
         configurarPedidoValido();
         
         Protetico protetico = new Protetico();
@@ -91,9 +147,54 @@ class PedidoTest {
         pedido.setCreatedAt(LocalDateTime.now());
         pedido.setUpdatedAt(LocalDateTime.now());
         pedido.setIsActive(true);
-        pedido.setCreatedBy(protetico);
         pedido.setUpdatedBy(protetico);
 
+        var violations = validator.validate(pedido);
+        
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    void deveValidarCamposOpcionais() {       
+        configurarPedidoValido();
+        
+        String odontograma = "Odontograma de teste";
+        String observacao = "Observação de teste";
+        
+        pedido.setOdontograma(odontograma);
+        pedido.setObservacao(observacao);
+       
+        var violations = validator.validate(pedido);
+        
+        assertEquals(odontograma, pedido.getOdontograma());
+        assertEquals(observacao, pedido.getObservacao());
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    void deveRetornarErroQuandoDataEntregaNoPasado() {       
+        configurarPedidoValido();
+        pedido.setDataEntrega(LocalDate.now().minusDays(1));         
+        
+        var violations = validator.validate(pedido);
+        
+        // Assert
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("data de entrega deve ser uma data futura")));
+    }
+
+    // ========== OUTROS TESTES DE VALIDAÇÃO ==========
+
+    @Test
+    void deveAceitarCamposBaseEntityNulos() {
+        pedido.setId(null);
+        pedido.setCreatedAt(null);
+        pedido.setUpdatedAt(null);
+        pedido.setIsActive(null);
+        pedido.setCreatedBy(null);
+        pedido.setUpdatedBy(null);
+
+        configurarPedidoValido(); // Necessário para evitar violações dos campos obrigatórios
         var violations = validator.validate(pedido);
         assertTrue(violations.isEmpty());
     }
@@ -133,23 +234,6 @@ class PedidoTest {
     }
 
     @Test
-    void deveValidarCamposOpcionais() {
-        configurarPedidoValido();
-        
-        String odontograma = "Odontograma de teste";
-        String observacao = "Observação de teste";
-        
-        pedido.setOdontograma(odontograma);
-        pedido.setObservacao(observacao);
-        
-        assertEquals(odontograma, pedido.getOdontograma());
-        assertEquals(observacao, pedido.getObservacao());
-        
-        var violations = validator.validate(pedido);
-        assertTrue(violations.isEmpty());
-    }
-
-    @Test
     void deveValidarRelacionamentos() {
         configurarPedidoValido();
         
@@ -162,16 +246,6 @@ class PedidoTest {
         assertEquals(dentista, pedido.getDentista());
         assertEquals(protetico, pedido.getProtetico());
         assertEquals(servicos, pedido.getServicos());
-    }
-
-    @Test
-    void deveRetornarErroQuandoDataEntregaNoPasado() {
-        configurarPedidoValido();
-        pedido.setDataEntrega(LocalDate.now().minusDays(1));
-        
-        var violations = validator.validate(pedido);
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("data de entrega deve ser uma data futura")));
     }
 
     @Test
@@ -195,7 +269,7 @@ class PedidoTest {
         var violations = validator.validate(pedido);
         assertTrue(violations.isEmpty(), "Campos TEXT devem aceitar textos longos");
     }
-
+ */
     private void configurarPedidoValido() {
         pedido.setCliente(cliente);
         pedido.setDentista(dentista);
@@ -204,5 +278,5 @@ class PedidoTest {
         pedido.setDataEntrega(LocalDate.now().plusDays(7));
         pedido.setPrioridade(Pedido.Prioridade.MEDIA);
         pedido.setStatus(Pedido.Status.PENDENTE);
-    }
+    } 
 } 

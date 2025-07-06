@@ -37,41 +37,65 @@ public class PacienteTest {
 
     @Test
     void deveCriarPacienteValido() {
-        // Act
+      
         Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
-
-        // Assert
         assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
-    @Test
-    void deveAceitarNomeCompletoValido() {
-        // Arrange
-        paciente.setNome("Maria José da Silva Santos");
-
-        // Act
+     @Test
+    void deveRetornarErroQuandoDataNascimentoNula() {
+       
+        paciente.setDataNascimento(null);
         Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
 
-        // Assert
-        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getMessage().equals("A data de nascimento é obrigatória")));
     }
 
     @Test
-    void deveAceitarNomeCompostoValido() {
-        // Arrange
-        paciente.setNome("Anna Maria Souza");
-
-        // Act
+    void deveRetornarErroQuandoNomeMuitoLongo() {
+        
+        String nomeLongo = "a".repeat(256);
+        paciente.setNome(nomeLongo);
         Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
 
-        // Assert
-        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getMessage().equals("O nome não pode ultrapassar 255 caracteres")));
     }
 
     @Test
     void deveRetornarErroQuandoNomeVazio() {
-        // Arrange
+        
         paciente.setNome("");
+        Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
+        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getMessage().equals("O nome é obrigatório")));
+    }
+
+    @Test
+    void deveAceitarNomeCompletoValido() {
+
+        paciente.setNome("Maria José da Silva Santos");
+        Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+
+    @Test
+    void deveAceitarNomeCompostoValido() {
+    
+        paciente.setNome("Anna Maria Souza");
+        Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+      @Test
+    void deveRetornarErroQuandoEmailMuitoLongo() {
+        // Arrange
+        String emailLongo = "usuario" + "a".repeat(245) + "@dominio.com.br"; // Mais de 255 caracteres
+        paciente.setEmail(emailLongo);
 
         // Act
         Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
@@ -79,8 +103,24 @@ public class PacienteTest {
         // Assert
         assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
         assertTrue(violations.stream()
-            .anyMatch(v -> v.getMessage().equals("O nome é obrigatório")));
+            .anyMatch(v -> v.getMessage().equals("O e-mail não pode ultrapassar 255 caracteres")));
     }
+
+    @Test
+    void deveRetornarErroQuandoEmailTemEspaco() {
+        // Arrange
+        paciente.setEmail("usuario nome@dominio.com.br");
+
+        // Act
+        Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getMessage().equals("Email inválido")));
+    }
+
+
 
     @Test
     void deveRetornarErroQuandoNomeInvalido() {
@@ -96,20 +136,7 @@ public class PacienteTest {
             .anyMatch(v -> v.getMessage().equals("Por favor, informe nome e sobrenome válido")));
     }
 
-    @Test
-    void deveRetornarErroQuandoNomeMuitoLongo() {
-        // Arrange
-        String nomeLongo = "a".repeat(256);
-        paciente.setNome(nomeLongo);
-
-        // Act
-        Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
-
-        // Assert
-        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
-        assertTrue(violations.stream()
-            .anyMatch(v -> v.getMessage().equals("O nome não pode ultrapassar 255 caracteres")));
-    }
+    
 
     @Test
     void deveAceitarEmailValido() {
@@ -147,35 +174,7 @@ public class PacienteTest {
         assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
-    @Test
-    void deveRetornarErroQuandoEmailMuitoLongo() {
-        // Arrange
-        String emailLongo = "usuario" + "a".repeat(245) + "@dominio.com.br"; // Mais de 255 caracteres
-        paciente.setEmail(emailLongo);
-
-        // Act
-        Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
-
-        // Assert
-        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
-        assertTrue(violations.stream()
-            .anyMatch(v -> v.getMessage().equals("O e-mail não pode ultrapassar 255 caracteres")));
-    }
-
-    @Test
-    void deveRetornarErroQuandoEmailTemEspaco() {
-        // Arrange
-        paciente.setEmail("usuario nome@dominio.com.br");
-
-        // Act
-        Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
-
-        // Assert
-        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
-        assertTrue(violations.stream()
-            .anyMatch(v -> v.getMessage().equals("Email inválido")));
-    }
-
+   
     @Test
     void deveAceitarDataNascimentoValida() {
         // Arrange
@@ -200,19 +199,6 @@ public class PacienteTest {
         assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
-    @Test
-    void deveRetornarErroQuandoDataNascimentoNula() {
-        // Arrange
-        paciente.setDataNascimento(null);
-
-        // Act
-        Set<ConstraintViolation<Paciente>> violations = validator.validate(paciente);
-
-        // Assert
-        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
-        assertTrue(violations.stream()
-            .anyMatch(v -> v.getMessage().equals("A data de nascimento é obrigatória")));
-    }
 
     @Test
     void deveRetornarErroQuandoDataNascimentoFutura() {

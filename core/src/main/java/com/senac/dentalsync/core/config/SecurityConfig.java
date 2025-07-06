@@ -1,5 +1,6 @@
 package com.senac.dentalsync.core.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,6 +23,9 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
+    
+    @Value("https://dentalsyncbr.com.br")
+    private String frontendUrl;
 
     public SecurityConfig(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
@@ -35,7 +39,7 @@ public class SecurityConfig {
             .authorizeHttpRequests()
                 .requestMatchers("/login", "/logout", "/auth/check", "/login/verify-2fa", "/login/request-recovery-code", "/login/verify-recovery-code",
                         "/password/forgot", "/password/verify-2fa", "/password/request-email-link", "/password/reset").permitAll() // endpoints de autenticação e recuperação
-                .requestMatchers("/proteticos", "/laboratorios").permitAll() // permitir cadastro
+                .requestMatchers("/proteticos/**", "/laboratorios/**").permitAll() // permitir cadastro e operações
                 .requestMatchers("/security/reset-password-emergency").permitAll() // endpoint temporário de reset
                 .requestMatchers("/security/**").authenticated() // outros endpoints de segurança requerem autenticação
                 .anyRequest().authenticated()
@@ -70,7 +74,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:5173", "http://localhost:8080"));
+        // Configurações mais abrangentes para desenvolvimento e produção
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "http://localhost:*", 
+            "https://localhost:*", 
+            "http://127.0.0.1:*",
+            "https://dentalsyncbr.com.br",
+            "https://www.dentalsyncbr.com.br",
+            frontendUrl
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true); // Importante para cookies

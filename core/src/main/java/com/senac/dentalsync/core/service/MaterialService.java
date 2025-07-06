@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import com.senac.dentalsync.core.persistency.model.Material;
 import com.senac.dentalsync.core.persistency.model.StatusMaterial;
 import com.senac.dentalsync.core.persistency.model.Protetico;
-import com.senac.dentalsync.core.persistency.repository.MaterialRepository;
+import com.senac.dentalsync.core.persistency.repository.MaterialRepository;  
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class MaterialService extends BaseService<Material, Long> {
     public Material save(Material material) {
         return super.save(material);
     }
-
+    
     public void delete(Long id) {
         materialRepository.deleteById(id);
     }

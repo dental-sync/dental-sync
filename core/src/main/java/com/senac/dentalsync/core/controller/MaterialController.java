@@ -35,6 +35,6 @@ public class MaterialController extends BaseController<Material, Long> {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
-    }
+    }    
     
 }

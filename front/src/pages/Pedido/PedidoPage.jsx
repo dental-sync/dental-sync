@@ -335,8 +335,8 @@ const PedidoPage = () => {
         pauseOnHover
         theme="light"
       />
-              <div className="page-top">
-          <div className="notification-container">
+      <div className="page-top">
+        <div className="notification-container">
             <NotificationBell 
               count={notifications.total}
               baixoEstoque={notifications.baixoEstoque}
@@ -344,8 +344,8 @@ const PedidoPage = () => {
               loading={notificationLoading}
               onRefresh={refreshNotifications}
             />
-          </div>
         </div>
+      </div>
       
       <div className="page-header">
         <h1 className="page-title">Pedidos</h1>

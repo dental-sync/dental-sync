@@ -62,8 +62,8 @@ const HistoricoProtetico = () => {
 
   return (
     <div className="historico-protetico-page">
-              <div className="page-top">
-          <div className="notification-container">
+      <div className="page-top">
+        <div className="notification-container">
             <NotificationBell 
               count={notifications.total}
               baixoEstoque={notifications.baixoEstoque}
@@ -71,8 +71,8 @@ const HistoricoProtetico = () => {
               materiaisBaixoEstoque={notifications.materiaisBaixoEstoque}
               materiaisSemEstoque={notifications.materiaisSemEstoque}
             />
-          </div>
         </div>
+      </div>
       
       <div className="back-navigation">
         <button onClick={handleVoltar} className="back-button">

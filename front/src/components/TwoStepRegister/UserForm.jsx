@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import './TwoStepRegister.css';
 import { useNavigate } from 'react-router-dom';
+import { validatePassword, isValidPassword } from '../../utils/passwordValidator';
+import PasswordRequirements from '../PasswordRequirements/PasswordRequirements';
+import PasswordStrengthIndicator from '../PasswordStrengthIndicator/PasswordStrengthIndicator';
 
 const UserForm = ({ initialData, onSubmit }) => {
   const navigate = useNavigate();
@@ -182,12 +185,11 @@ const UserForm = ({ initialData, onSubmit }) => {
       return false;
     }
     
-    // Validar senha
-    if (!formData.senha) {
-      toast.error('A senha é obrigatória');
-      return false;
-    } else if (formData.senha.length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres');
+    // Validar senha com regras complexas
+    const passwordErrors = validatePassword(formData.senha);
+    if (passwordErrors.length > 0) {
+      // Mostrar apenas o primeiro erro para evitar muitos toasts
+      toast.error(passwordErrors[0]);
       return false;
     }
     
@@ -333,6 +335,8 @@ const UserForm = ({ initialData, onSubmit }) => {
             )}
           </button>
         </div>
+        <PasswordStrengthIndicator password={formData.senha} />
+        <PasswordRequirements password={formData.senha} />
       </div>
       
       <div className="form-group">

@@ -42,6 +42,11 @@ import ProtectedRoute from './components/ProtectedRoutes/ProtectedRoute'
 import AdminRoute from './components/ProtectedRoutes/AdminRoute'
 import HistoricoDentista from './pages/Dentista/HistoricoDentista'
 
+// Importar testes de senha em desenvolvimento
+if (import.meta.env.DEV) {
+  import('./utils/passwordValidator.test.js');
+}
+
 
 const ProtectedLayout = ({ children }) => (
   <>

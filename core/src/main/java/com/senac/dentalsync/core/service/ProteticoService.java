@@ -20,6 +20,7 @@ import com.senac.dentalsync.core.persistency.model.Laboratorio;
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.ProteticoRepository;
+import com.senac.dentalsync.core.util.PasswordValidator;
 
 @Service
 public class ProteticoService extends BaseService<Protetico, Long> implements UserDetailsService {
@@ -91,6 +92,16 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
             System.out.println("Senha atual (primeiros 10 chars): " + (protetico.getSenha() != null ? protetico.getSenha().substring(0, Math.min(10, protetico.getSenha().length())) : "null"));
             
             if (protetico.getId() == null || senhaFoiAlterada) {
+                // Verificar se a senha não está criptografada antes de validar
+                boolean senhaJaCriptografada = protetico.getSenha().startsWith("$2a$") || protetico.getSenha().startsWith("$2b$");
+                
+                if (!senhaJaCriptografada) {
+                    // Validar critérios de complexidade da senha apenas se não estiver criptografada
+                    System.out.println("Validando critérios de complexidade da senha...");
+                    PasswordValidator.validatePassword(protetico.getSenha());
+                    System.out.println("Senha atende aos critérios de complexidade");
+                }
+                
                 System.out.println("Criptografando senha...");
                 protetico.setSenha(passwordEncoder.encode(protetico.getSenha()));
                 System.out.println("Senha criptografada (primeiros 10 chars): " + protetico.getSenha().substring(0, 10));

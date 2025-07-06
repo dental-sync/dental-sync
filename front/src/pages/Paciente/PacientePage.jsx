@@ -351,8 +351,8 @@ const PacientePage = () => {
 
   return (
     <div className="paciente-page">
-              <div className="page-top">
-          <div className="notification-container">
+      <div className="page-top">
+        <div className="notification-container">
             <NotificationBell 
               count={notifications.total}
               baixoEstoque={notifications.baixoEstoque}
@@ -360,8 +360,8 @@ const PacientePage = () => {
               loading={notificationLoading}
               onRefresh={refreshNotifications}
             />
-          </div>
         </div>
+      </div>
       
       <div className="page-header">
         <h1 className="page-title">Pacientes</h1>

@@ -293,8 +293,8 @@ const CadastroServico = () => {
         message={`Tem certeza que deseja excluir a categoria "${categoriaToDelete?.nome}"? Esta ação não pode ser desfeita.`}
       />
 
-              <div className="page-top">
-          <div className="notification-container">
+      <div className="page-top">
+        <div className="notification-container">
             <NotificationBell 
             count={notifications.total}
             baixoEstoque={notifications.baixoEstoque}
@@ -302,8 +302,8 @@ const CadastroServico = () => {
             materiaisBaixoEstoque={notifications.materiaisBaixoEstoque}
             materiaisSemEstoque={notifications.materiaisSemEstoque}
           />
-          </div>
         </div>
+      </div>
 
       <div className="back-navigation">
         <button className="back-button" onClick={handleCancel}>

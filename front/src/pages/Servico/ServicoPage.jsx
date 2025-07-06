@@ -312,8 +312,8 @@ const ServicoPage = () => {
 
   return (
     <div className="servico-page">
-              <div className="page-top">
-          <div className="notification-container">
+      <div className="page-top">
+        <div className="notification-container">
             <NotificationBell 
               count={notifications.total}
               baixoEstoque={notifications.baixoEstoque}
@@ -321,8 +321,8 @@ const ServicoPage = () => {
               loading={notificationLoading}
               onRefresh={refreshNotifications}
             />
-          </div>
         </div>
+      </div>
       
       {toastMessage && (
         <div className="toast-message">

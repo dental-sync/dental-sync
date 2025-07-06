@@ -314,8 +314,8 @@ const ProteticoPage = () => {
 
   return (
     <div className="protetico-page">
-              <div className="page-top">
-          <div className="notification-container">
+      <div className="page-top">
+        <div className="notification-container">
             <NotificationBell 
             count={notifications.total}
             baixoEstoque={notifications.baixoEstoque}
@@ -323,8 +323,8 @@ const ProteticoPage = () => {
             materiaisBaixoEstoque={notifications.materiaisBaixoEstoque}
             materiaisSemEstoque={notifications.materiaisSemEstoque}
           />
-          </div>
         </div>
+      </div>
       
       {toastMessage && (
         <div className="toast-message">

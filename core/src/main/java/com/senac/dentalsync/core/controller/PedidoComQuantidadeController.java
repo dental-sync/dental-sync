@@ -128,27 +128,13 @@ public class PedidoComQuantidadeController {
             pedidoService.descontarEstoqueNovoPedido(pedido.getId(), pedidoDTO.getServicos());
             
             return ResponseEntity.ok(pedido);
-        } catch (RuntimeException e) {
-            System.err.println("Erro ao criar pedido: " + e.getMessage());
-            e.printStackTrace();
-            
-            // Criar resposta de erro estruturada
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", e.getMessage());
-            errorResponse.put("error", "Erro ao criar pedido");
-            errorResponse.put("timestamp", System.currentTimeMillis());
-            
-            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (jakarta.validation.ConstraintViolationException e) {
+            System.err.println("Erro de validação: " + e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
-            System.err.println("Erro inesperado ao criar pedido: " + e.getMessage());
+            System.err.println("Erro ao criar pedido com quantidade: " + e.getMessage());
             e.printStackTrace();
-            
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Erro interno do servidor");
-            errorResponse.put("error", "Erro inesperado");
-            errorResponse.put("timestamp", System.currentTimeMillis());
-            
-            return ResponseEntity.status(500).body(errorResponse);
+            return ResponseEntity.badRequest().body(null);
         }
     }
     
@@ -223,50 +209,13 @@ public class PedidoComQuantidadeController {
             pedido = pedidoService.save(pedido);
             
             return ResponseEntity.ok(pedido);
-        } catch (RuntimeException e) {
-            System.err.println("Erro ao atualizar pedido: " + e.getMessage());
-            e.printStackTrace();
-            
-            // Criar resposta de erro estruturada
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", e.getMessage());
-            errorResponse.put("error", "Erro ao atualizar pedido");
-            errorResponse.put("timestamp", System.currentTimeMillis());
-            
-            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (jakarta.validation.ConstraintViolationException e) {
+            System.err.println("Erro de validação na atualização: " + e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
-            System.err.println("Erro inesperado ao atualizar pedido: " + e.getMessage());
+            System.err.println("Erro ao atualizar pedido com quantidade: " + e.getMessage());
             e.printStackTrace();
-            
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Erro interno do servidor");
-            errorResponse.put("error", "Erro inesperado");
-            errorResponse.put("timestamp", System.currentTimeMillis());
-            
-            return ResponseEntity.status(500).body(errorResponse);
-        }
-    }
-
-    @PostMapping("/limpar-dados-inconsistentes")
-    public ResponseEntity<?> limparDadosInconsistentes() {
-        try {
-            pedidoService.limparDadosInconsistentes();
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Dados inconsistentes limpos com sucesso");
-            response.put("timestamp", System.currentTimeMillis());
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            System.err.println("Erro ao limpar dados inconsistentes: " + e.getMessage());
-            e.printStackTrace();
-            
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Erro ao limpar dados: " + e.getMessage());
-            errorResponse.put("error", "Erro na limpeza");
-            errorResponse.put("timestamp", System.currentTimeMillis());
-            
-            return ResponseEntity.status(500).body(errorResponse);
+            return ResponseEntity.badRequest().body(null);
         }
     }
 }

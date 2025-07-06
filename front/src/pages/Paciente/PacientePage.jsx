@@ -4,11 +4,12 @@ import './PacientePage.css'; //estilo(style [css]) específico da página
 import SearchBar from '../../components/SearchBar/SearchBar'; //barra de busca personalizada (SearchBar [componente])
 import ActionButton from '../../components/ActionButton/ActionButton'; //botões com ícones (ActionButton [componente])
 import PacienteTable from '../../components/PacienteTable/PacienteTable'; //tabela de pacientes (PacienteTable [componente])
-import NotificationBell from '../../components/NotificationBell/NotificationBell'; //sininho de notificações (NotificationBell [componente])
+import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown'; //componente de exportação de dados
 import { useNavigate, useLocation } from 'react-router-dom'; //navegação e controle de rota (useNavigate [hook], useLocation [hook])
 import api from '../../axios-config';
 import { toast } from 'react-toastify';
+import useNotifications from '../../hooks/useNotifications';
 
 const PacientePage = () => {
   
@@ -42,6 +43,7 @@ const PacientePage = () => {
 
   
   const location = useLocation();
+  const { notifications, loading: notificationLoading, refreshNotifications } = useNotifications();
   
   // Criando um ref para armazenar mensagens recentes e evitar duplicação de toasts
   const recentMessages = useRef(new Set());
@@ -349,11 +351,17 @@ const PacientePage = () => {
 
   return (
     <div className="paciente-page">
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
+              <div className="page-top">
+          <div className="notification-container">
+            <NotificationBell 
+              count={notifications.total}
+              baixoEstoque={notifications.baixoEstoque}
+              semEstoque={notifications.semEstoque}
+              loading={notificationLoading}
+              onRefresh={refreshNotifications}
+            />
+          </div>
         </div>
-      </div>
       
       <div className="page-header">
         <h1 className="page-title">Pacientes</h1>

@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service;
 import com.senac.dentalsync.core.persistency.model.Material;
 import com.senac.dentalsync.core.persistency.model.StatusMaterial;
 import com.senac.dentalsync.core.persistency.model.Protetico;
-import com.senac.dentalsync.core.persistency.repository.MaterialRepository;  
-import java.math.BigDecimal;
+import com.senac.dentalsync.core.persistency.repository.MaterialRepository;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
 
 @Service
 public class MaterialService extends BaseService<Material, Long> {
@@ -25,34 +27,38 @@ public class MaterialService extends BaseService<Material, Long> {
         return null;
     }
 
-    private void atualizarStatusMaterial(Material material) {
-        if (material.getQuantidade() == null || material.getEstoqueMinimo() == null) {
-            return;
-        }
-
-        if (material.getQuantidade().compareTo(BigDecimal.ZERO) == 0) {
-            material.setStatus(StatusMaterial.SEM_ESTOQUE);
-        } else if (material.getQuantidade().compareTo(material.getEstoqueMinimo()) <= 0) {
-            material.setStatus(StatusMaterial.BAIXO_ESTOQUE);
-        } else {
-            material.setStatus(StatusMaterial.EM_ESTOQUE);
-        }
-    }
-
     @Override
     public Material save(Material material) {
-        atualizarStatusMaterial(material);
         return super.save(material);
     }
 
-    public Material updateStatus(Long id, Boolean status) {
-        Material material = materialRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Material não encontrado"));
-        material.setIsActive(status);
-        return materialRepository.save(material);
-    }
-    
     public void delete(Long id) {
         materialRepository.deleteById(id);
+    }
+
+    public Map<String, Object> getNotificacaoEstoque() {
+        try {
+            Long baixoEstoque = materialRepository.countByStatus(StatusMaterial.BAIXO_ESTOQUE);
+            Long semEstoque = materialRepository.countByStatus(StatusMaterial.SEM_ESTOQUE);
+            Long total = baixoEstoque + semEstoque;
+
+            Map<String, Object> notificacoes = new HashMap<>();
+            notificacoes.put("baixoEstoque", baixoEstoque);
+            notificacoes.put("semEstoque", semEstoque);
+            notificacoes.put("total", total);
+            notificacoes.put("materiaisBaixoEstoque", new ArrayList<>());
+            notificacoes.put("materiaisSemEstoque", new ArrayList<>());
+
+            return notificacoes;
+        } catch (Exception e) {
+            // Retornar dados zerados em caso de erro
+            Map<String, Object> notificacoes = new HashMap<>();
+            notificacoes.put("baixoEstoque", 0L);
+            notificacoes.put("semEstoque", 0L);
+            notificacoes.put("total", 0L);
+            notificacoes.put("materiaisBaixoEstoque", new ArrayList<>());
+            notificacoes.put("materiaisSemEstoque", new ArrayList<>());
+            return notificacoes;
+        }
     }
 }

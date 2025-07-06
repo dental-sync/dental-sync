@@ -8,10 +8,12 @@ import Dropdown from '../../components/Dropdown/Dropdown';
 import ModalCadastroCategoriaServico from '../../components/Modals/ModalCadastroCategoriaServico';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal/DeleteConfirmationModal';
+import useNotifications from '../../hooks/useNotifications';
 
 const EditarServico = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { notifications } = useNotifications();
   const [categorias, setCategorias] = useState([]);
   const [materiais, setMateriais] = useState([]);
   const [showModalCategoria, setShowModalCategoria] = useState(false);
@@ -300,20 +302,20 @@ const EditarServico = () => {
         message={`Tem certeza que deseja excluir a categoria "${categoriaToDelete?.nome}"? Esta ação não pode ser desfeita.`}
       />
 
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
+      <div className="header">
+        <h1>Editar Serviço</h1>
+        <div className="header-actions">
+          <NotificationBell 
+            count={notifications.total}
+            baixoEstoque={notifications.baixoEstoque}
+            semEstoque={notifications.semEstoque}
+            materiaisBaixoEstoque={notifications.materiaisBaixoEstoque}
+            materiaisSemEstoque={notifications.materiaisSemEstoque}
+          />
+          <button className="btn-back" onClick={() => navigate('/servicos')}>
+            Voltar
+          </button>
         </div>
-      </div>
-
-      <div className="back-navigation">
-        <button className="back-button" onClick={handleCancel}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
-        </button>
-        <h1 className="page-title">Editar Serviço</h1>
       </div>
 
       <div className="cadastro-servico-container">

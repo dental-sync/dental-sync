@@ -9,6 +9,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../axios-config';
 import { toast } from 'react-toastify';
 import ServicoTable from '../../components/ServicoTable/ServicoTable';
+import useNotifications from '../../hooks/useNotifications';
 
 
 // Função utilitária para formatar o ID
@@ -35,6 +36,7 @@ const ServicoPage = () => {
   const filterRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { notifications, loading: notificationLoading, refreshNotifications } = useNotifications();
   
   // Criando um ref para armazenar mensagens recentes e evitar duplicação de toasts
   const recentMessages = useRef(new Set());
@@ -310,11 +312,17 @@ const ServicoPage = () => {
 
   return (
     <div className="servico-page">
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
+              <div className="page-top">
+          <div className="notification-container">
+            <NotificationBell 
+              count={notifications.total}
+              baixoEstoque={notifications.baixoEstoque}
+              semEstoque={notifications.semEstoque}
+              loading={notificationLoading}
+              onRefresh={refreshNotifications}
+            />
+          </div>
         </div>
-      </div>
       
       {toastMessage && (
         <div className="toast-message">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './EditarPaciente.css';
-import NotificationBell from '../../components/NotificationBell/NotificationBell';
+
 import api from '../../axios-config';
 import { toast } from 'react-toastify';
 

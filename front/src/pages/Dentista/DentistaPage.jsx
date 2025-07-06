@@ -4,12 +4,14 @@ import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
 import DentistaTable from '../../components/DentistaTable/DentistaTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import useNotifications from '../../hooks/useNotifications';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const DentistaPage = () => {
+  const { notifications } = useNotifications();
   const [searchQuery, setSearchQuery] = useState('');
   const [dentistas, setDentistas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -295,11 +297,17 @@ const DentistaPage = () => {
 
   return (
     <div className="dentista-page">
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
+              <div className="page-top">
+          <div className="notification-container">
+            <NotificationBell 
+            count={notifications.total}
+            baixoEstoque={notifications.baixoEstoque}
+            semEstoque={notifications.semEstoque}
+            materiaisBaixoEstoque={notifications.materiaisBaixoEstoque}
+            materiaisSemEstoque={notifications.materiaisSemEstoque}
+          />
+          </div>
         </div>
-      </div>
       
       {toastMessage && (
         <div className="toast-message">

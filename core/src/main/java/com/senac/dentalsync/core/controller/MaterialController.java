@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,14 +27,14 @@ public class MaterialController extends BaseController<Material, Long> {
         return materialService;
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<Material> updateStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> status) {
+    @GetMapping("/notificacoes/estoque")
+    public ResponseEntity<Map<String, Object>> getNotificacaoEstoque() {
         try {
-            Material material = materialService.updateStatus(id, status.get("isActive"));
-            return ResponseEntity.ok(material);
+            Map<String, Object> notificacoes = materialService.getNotificacaoEstoque();
+            return ResponseEntity.ok(notificacoes);
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.internalServerError().build();
         }
-    }    
+    }
     
 }

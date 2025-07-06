@@ -7,10 +7,12 @@ import './CadastroServico.css';
 import Dropdown from '../../components/Dropdown/Dropdown';
 import ModalCadastroCategoriaServico from '../../components/Modals/ModalCadastroCategoriaServico';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import useNotifications from '../../hooks/useNotifications';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal/DeleteConfirmationModal';
 
 const CadastroServico = () => {
   const navigate = useNavigate();
+  const { notifications } = useNotifications();
   const [categorias, setCategorias] = useState([]);
   const [materiais, setMateriais] = useState([]);
   const [showModalCategoria, setShowModalCategoria] = useState(false);
@@ -291,11 +293,17 @@ const CadastroServico = () => {
         message={`Tem certeza que deseja excluir a categoria "${categoriaToDelete?.nome}"? Esta ação não pode ser desfeita.`}
       />
 
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
+              <div className="page-top">
+          <div className="notification-container">
+            <NotificationBell 
+            count={notifications.total}
+            baixoEstoque={notifications.baixoEstoque}
+            semEstoque={notifications.semEstoque}
+            materiaisBaixoEstoque={notifications.materiaisBaixoEstoque}
+            materiaisSemEstoque={notifications.materiaisSemEstoque}
+          />
+          </div>
         </div>
-      </div>
 
       <div className="back-navigation">
         <button className="back-button" onClick={handleCancel}>

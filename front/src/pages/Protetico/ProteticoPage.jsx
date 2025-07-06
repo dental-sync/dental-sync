@@ -4,12 +4,14 @@ import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
 import ProteticoTable from '../../components/ProteticoTable/ProteticoTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import useNotifications from '../../hooks/useNotifications';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const ProteticoPage = () => {
+  const { notifications } = useNotifications();
   const [searchQuery, setSearchQuery] = useState('');
   const [proteticos, setProteticos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -312,11 +314,17 @@ const ProteticoPage = () => {
 
   return (
     <div className="protetico-page">
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
+              <div className="page-top">
+          <div className="notification-container">
+            <NotificationBell 
+            count={notifications.total}
+            baixoEstoque={notifications.baixoEstoque}
+            semEstoque={notifications.semEstoque}
+            materiaisBaixoEstoque={notifications.materiaisBaixoEstoque}
+            materiaisSemEstoque={notifications.materiaisSemEstoque}
+          />
+          </div>
         </div>
-      </div>
       
       {toastMessage && (
         <div className="toast-message">

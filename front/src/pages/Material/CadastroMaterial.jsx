@@ -4,15 +4,20 @@ import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './CadastroMaterial.css';
-import NotificationBell from '../../components/NotificationBell/NotificationBell';
+
 import ModalCadastroCategoriaMaterial from '../../components/Modals/ModalCadastroCategoriaMaterial';
 import Dropdown from '../../components/Dropdown/Dropdown';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal/DeleteConfirmationModal';
+import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import useNotificationRefresh from '../../hooks/useNotificationRefresh';
+import useNotifications from '../../hooks/useNotifications';
 
 const CadastroMaterial = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
+  const { refreshAfterStockChange } = useNotificationRefresh();
+  const { notifications, loading: notificationLoading, refreshNotifications } = useNotifications();
   const [categorias, setCategorias] = useState([]);
   const [showModalCategoria, setShowModalCategoria] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -207,12 +212,26 @@ const CadastroMaterial = () => {
 
     setLoading(true);
     try {
+      const quantidade = parseFloat(material.quantidade.replace(',', '.'));
+      const estoqueMinimo = parseFloat(material.estoqueMinimo.replace(',', '.'));
+      
+      // Calcular status baseado na quantidade e estoque mínimo
+      let status;
+      if (quantidade === 0) {
+        status = 'SEM_ESTOQUE';
+      } else if (quantidade < estoqueMinimo) {
+        status = 'BAIXO_ESTOQUE';
+      } else {
+        status = 'EM_ESTOQUE';
+      }
+
       const materialData = {
         nome: material.nome,
-        quantidade: parseFloat(material.quantidade.replace(',', '.')),
+        quantidade: quantidade,
         unidadeMedida: material.unidadeMedida,
         valorUnitario: parseFloat(material.valorUnitario.replace(',', '.')),
-        estoqueMinimo: parseFloat(material.estoqueMinimo.replace(',', '.')),
+        estoqueMinimo: estoqueMinimo,
+        status: status,
         categoriaMaterial: { id: material.categoriaMaterial?.id },
         isActive: material.isActive
       };
@@ -230,6 +249,8 @@ const CadastroMaterial = () => {
         toast.success('Material cadastrado com sucesso!');
       }
 
+      // Atualizar notificações após salvar
+      refreshAfterStockChange();
       navigate('/material');
     } catch (error) {
       console.error('Erro ao salvar material:', error);
@@ -328,7 +349,13 @@ const CadastroMaterial = () => {
       />
       <div className="page-top">
         <div className="notification-container">
-          <NotificationBell count={2} />
+          <NotificationBell 
+            count={notifications.total}
+            baixoEstoque={notifications.baixoEstoque}
+            semEstoque={notifications.semEstoque}
+            loading={notificationLoading}
+            onRefresh={refreshNotifications}
+          />
         </div>
       </div>
 

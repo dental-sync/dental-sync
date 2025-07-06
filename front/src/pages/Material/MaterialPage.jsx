@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useNotificationRefresh from '../../hooks/useNotificationRefresh';
+import useNotifications from '../../hooks/useNotifications';
 
 const MaterialPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,6 +30,8 @@ const MaterialPage = () => {
   
   const filterRef = useRef(null);
   const navigate = useNavigate();
+  const { refreshAfterStockChange } = useNotificationRefresh();
+  const { notifications, loading: notificationLoading, refreshNotifications } = useNotifications();
   
   // Função utilitária para formatar o ID
   const formatMaterialId = (id) => `M${String(id).padStart(4, '0')}`;
@@ -153,6 +157,7 @@ const MaterialPage = () => {
       await api.delete(`/material/${id}`);
       toast.success('Material excluído com sucesso!');
       refreshMateriais();
+      refreshAfterStockChange();
     } catch (error) {
       console.error('Erro ao excluir material:', error);
       toast.error('Erro ao excluir material');
@@ -164,6 +169,7 @@ const MaterialPage = () => {
       await api.patch(`/material/${id}`, { isActive: !currentStatus });
       toast.success('Status alterado com sucesso!');
       refreshMateriais();
+      refreshAfterStockChange();
     } catch (error) {
       console.error('Erro ao alterar status:', error);
       toast.error('Erro ao alterar status');
@@ -264,7 +270,13 @@ const MaterialPage = () => {
       />
       <div className="page-top">
         <div className="notification-container">
-          <NotificationBell count={2} />
+          <NotificationBell 
+            count={notifications.total}
+            baixoEstoque={notifications.baixoEstoque}
+            semEstoque={notifications.semEstoque}
+            loading={notificationLoading}
+            onRefresh={refreshNotifications}
+          />
         </div>
       </div>
       

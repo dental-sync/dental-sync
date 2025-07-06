@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './HistoricoProtetico.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import useNotifications from '../../hooks/useNotifications';
 import api from '../../axios-config';
 
 const HistoricoProtetico = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { notifications } = useNotifications();
   const [protetico, setProtetico] = useState(null);
   const [historico, setHistorico] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,11 +62,17 @@ const HistoricoProtetico = () => {
 
   return (
     <div className="historico-protetico-page">
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
+              <div className="page-top">
+          <div className="notification-container">
+            <NotificationBell 
+              count={notifications.total}
+              baixoEstoque={notifications.baixoEstoque}
+              semEstoque={notifications.semEstoque}
+              materiaisBaixoEstoque={notifications.materiaisBaixoEstoque}
+              materiaisSemEstoque={notifications.materiaisSemEstoque}
+            />
+          </div>
         </div>
-      </div>
       
       <div className="back-navigation">
         <button onClick={handleVoltar} className="back-button">

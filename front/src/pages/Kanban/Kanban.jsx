@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import useNotifications from '../../hooks/useNotifications';
 import { useSidebar } from '../../contexts/SidebarContext';
 
 const statusLabels = {
@@ -22,6 +23,7 @@ const prioridadeColors = {
 
 function Kanban() {
   const { setActiveItem } = useSidebar();
+  const { notifications } = useNotifications();
   const [pedidos, setPedidos] = useState([]);
   const [dragged, setDragged] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
@@ -276,11 +278,17 @@ function Kanban() {
   return (
     <div className="kanban-container">
       <div className="kanban-content">
-        <div className="page-top" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
-          <div className="notification-container" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            <NotificationBell count={2} />
+                  <div className="page-top" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
+            <div className="notification-container" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+              <NotificationBell 
+            count={notifications.total}
+            baixoEstoque={notifications.baixoEstoque}
+            semEstoque={notifications.semEstoque}
+            materiaisBaixoEstoque={notifications.materiaisBaixoEstoque}
+            materiaisSemEstoque={notifications.materiaisSemEstoque}
+          />
+            </div>
           </div>
-        </div>
         <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <h1 className="kanban-title" style={{ fontSize: 24, fontWeight: 700, color: '#212529', margin: 0 }}>Kanban</h1>
           <div className="header-actions" style={{ display: 'flex', gap: 10, position: 'relative', alignItems: 'center' }}>

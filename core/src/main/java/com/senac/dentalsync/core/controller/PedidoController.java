@@ -27,6 +27,10 @@ import com.senac.dentalsync.core.service.PedidoService;
 import com.senac.dentalsync.core.service.ProteticoService;
 import com.senac.dentalsync.core.dto.AtualizarStatusPedidoDTO;
 import com.senac.dentalsync.core.dto.PedidoDTO;
+import com.senac.dentalsync.core.service.ServicoService;
+import com.senac.dentalsync.core.persistency.model.Servico;
+import java.util.ArrayList;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/pedidos")
@@ -43,10 +47,45 @@ public class PedidoController extends BaseController<Pedido, Long> {
     
     @Autowired
     private ProteticoService proteticoService;
+    
+    @Autowired
+    private ServicoService servicoService;
 
     @Override
     protected BaseService<Pedido, Long> getService() {
         return pedidoService;
+    }
+    
+    @Override
+    @PostMapping
+    public ResponseEntity<Pedido> save(@RequestBody Pedido entity) {
+        processarServicos(entity);
+        return ResponseEntity.status(HttpStatus.CREATED).body(getService().save(entity));
+    }
+
+    @Override
+    @PutMapping("/{id}")
+    public ResponseEntity<Pedido> update(@PathVariable Long id, @RequestBody Pedido entity) {
+        return getService().findById(id)
+                .map(existingEntity -> {
+                    entity.setId(id);
+                    processarServicos(entity);
+                    return ResponseEntity.ok(getService().save(entity));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+    
+    private void processarServicos(Pedido pedido) {
+        if (pedido.getServicos() != null && !pedido.getServicos().isEmpty()) {
+            List<Servico> servicosCarregados = new ArrayList<>();
+            for (Servico servico : pedido.getServicos()) {
+                if (servico.getId() != null) {
+                    servicoService.findById(servico.getId())
+                        .ifPresent(servicosCarregados::add);
+                }
+            }
+            pedido.setServicos(servicosCarregados);
+        }
     }
     
     @GetMapping("/dentista/{id}")
@@ -90,17 +129,5 @@ public class PedidoController extends BaseController<Pedido, Long> {
                 return ResponseEntity.ok().build();
             })
             .orElse(ResponseEntity.notFound().build());
-    }
-    
-    // Manter os métodos originais herdados do BaseController para compatibilidade
-    
-    @GetMapping("/{id}/quantidades-servicos")
-    public ResponseEntity<List<com.senac.dentalsync.core.persistency.model.PedidoServico>> getQuantidadesServicos(@PathVariable Long id) {
-        try {
-            List<com.senac.dentalsync.core.persistency.model.PedidoServico> quantidades = pedidoService.getQuantidadesServicos(id);
-            return ResponseEntity.ok(quantidades);
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
     }
 } 

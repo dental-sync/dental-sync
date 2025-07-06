@@ -638,8 +638,7 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
         clinica: formData.clinica ? { id: formData.clinica.id } : null,
         protetico: formData.protetico ? { id: formData.protetico.id } : null,
         servicos: servicosSelecionados.map(servico => ({ 
-          id: servico.id,
-          quantidade: servico.quantidade || 1
+          id: servico.id
         })),
         dataEntrega: formData.dataEntrega,
         prioridade: formData.prioridade,
@@ -648,11 +647,11 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
         observacao: formData.observacao
       };
       
-      // Criar ou atualizar pedido usando o novo endpoint que suporta quantidades
+      // Criar ou atualizar pedido usando o endpoint padrão
       if (pedidoId) {
-        await api.put(`/pedidos-com-quantidade/${pedidoId}`, dadosParaEnviar);
+        await api.put(`/pedidos/${pedidoId}`, dadosParaEnviar);
       } else {
-        await api.post('/pedidos-com-quantidade', dadosParaEnviar);
+        await api.post('/pedidos', dadosParaEnviar);
       }
       
       // Notificar sucesso e redirecionar

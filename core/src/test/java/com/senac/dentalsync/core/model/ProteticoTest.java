@@ -26,7 +26,7 @@ public class ProteticoTest {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
         
-        // Configuração padrão de um protético válido para os testes
+        //Configuração padrão de um protético válido para os testes
         protetico = new Protetico();
         protetico.setNome("João Silva");
         protetico.setCro("CRO-SP-12345");
@@ -38,12 +38,71 @@ public class ProteticoTest {
 
     @Test
     void deveCriarProteticoValido() {
+        Set<ConstraintViolation<Protetico>> violations = validator.validate(protetico);
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+   
+    @Test
+    void deveRetornarErroQuandoNomeVazio() {
+        // Arrange
+        protetico.setNome("");
+
         // Act
         Set<ConstraintViolation<Protetico>> violations = validator.validate(protetico);
 
         // Assert
-        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getMessage().equals("O nome é obrigatório")));
     }
+
+    @Test
+    void deveRetornarErroQuandoCroVazio() {
+        // Arrange
+        protetico.setCro("");
+
+        // Act
+        Set<ConstraintViolation<Protetico>> violations = validator.validate(protetico);
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getMessage().equals("O CRO é obrigatório")));
+    }
+
+    @Test
+    void deveRetornarErroQuandoCroNulo() {
+        // Arrange
+        protetico.setCro(null);
+
+        // Act
+        Set<ConstraintViolation<Protetico>> violations = validator.validate(protetico);
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getMessage().equals("O CRO é obrigatório")));
+    }
+
+    @Test
+    void deveRetornarErroQuandoTelefoneVazio() {
+        // Arrange
+        protetico.setTelefone("");
+
+        // Act
+        Set<ConstraintViolation<Protetico>> violations = validator.validate(protetico);
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getMessage().equals("O telefone é obrigatório")));
+    }
+
+
+  
+
+    // ------------------------------------------ // ----------------------------------------//
 
     @Test
     void deveAceitarNomeValido() {
@@ -69,19 +128,7 @@ public class ProteticoTest {
         assertTrue(violations.isEmpty(), "Nome com 255 caracteres deveria ser aceito");
     }
 
-    @Test
-    void deveRetornarErroQuandoNomeVazio() {
-        // Arrange
-        protetico.setNome("");
 
-        // Act
-        Set<ConstraintViolation<Protetico>> violations = validator.validate(protetico);
-
-        // Assert
-        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
-        assertTrue(violations.stream()
-            .anyMatch(v -> v.getMessage().equals("O nome é obrigatório")));
-    }
 
     @Test
     void deveRetornarErroQuandoNomeNulo() {
@@ -133,33 +180,7 @@ public class ProteticoTest {
         assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
-    @Test
-    void deveRetornarErroQuandoCroVazio() {
-        // Arrange
-        protetico.setCro("");
-
-        // Act
-        Set<ConstraintViolation<Protetico>> violations = validator.validate(protetico);
-
-        // Assert
-        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
-        assertTrue(violations.stream()
-            .anyMatch(v -> v.getMessage().equals("O CRO é obrigatório")));
-    }
-
-    @Test
-    void deveRetornarErroQuandoCroNulo() {
-        // Arrange
-        protetico.setCro(null);
-
-        // Act
-        Set<ConstraintViolation<Protetico>> violations = validator.validate(protetico);
-
-        // Assert
-        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
-        assertTrue(violations.stream()
-            .anyMatch(v -> v.getMessage().equals("O CRO é obrigatório")));
-    }
+   
 
     @Test
     void deveRetornarErroQuandoCroInvalido() {
@@ -199,19 +220,6 @@ public class ProteticoTest {
         assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
-    @Test
-    void deveRetornarErroQuandoTelefoneVazio() {
-        // Arrange
-        protetico.setTelefone("");
-
-        // Act
-        Set<ConstraintViolation<Protetico>> violations = validator.validate(protetico);
-
-        // Assert
-        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
-        assertTrue(violations.stream()
-            .anyMatch(v -> v.getMessage().equals("O telefone é obrigatório")));
-    }
 
     @Test
     void deveRetornarErroQuandoTelefoneNulo() {

@@ -5,16 +5,25 @@ import PasswordInput from '../PasswordInput';
 import './styles.css';
 
 const SuccessMessage = () => (
-  <div className="reset-success-container">
-    <div className="reset-success-icon">✅</div>
-    <h2 className="reset-title">Senha Redefinida!</h2>
-    <p className="reset-subtitle">Sua senha foi alterada com sucesso</p>
-    <div className="reset-success-message">
-      Você será redirecionado para a página de login em instantes.
+  <div className="reset-password-form">
+    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+      <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>✅</div>
+      <h2 className="reset-title">Senha Redefinida!</h2>
+      <p className="reset-subtitle">Sua senha foi alterada com sucesso</p>
+      <div style={{ 
+        backgroundColor: '#F0F9FF', 
+        border: '1px solid #BAE6FD', 
+        borderRadius: '0.5rem', 
+        padding: '1rem', 
+        marginTop: '1rem',
+        color: '#0369A1'
+      }}>
+        Você será redirecionado para a página de login em instantes.
+      </div>
     </div>
     <div className="reset-link-container">
       <Link to="/login" className="reset-link">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 2}}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="15 18 9 12 15 6" />
         </svg>
         Ir para o login
@@ -77,19 +86,19 @@ const ResetPasswordForm = ({ onSubmit, loading, success }) => {
       <p className="reset-subtitle">Crie uma nova senha para sua conta</p>
       
       <div className="form-group">
-        <label htmlFor="password" className="required">Nova Senha</label>
+        <label htmlFor="password" className="form-label required">Nova Senha</label>
         <PasswordInput
           id="password"
           name="password"
           value={formData.password}
           onChange={handleChange}
-          placeholder="Crie uma nova senha"
+          placeholder="Digite sua nova senha"
           required
         />
       </div>
       
       <div className="form-group">
-        <label htmlFor="confirmPassword" className="required">Confirmar Nova Senha</label>
+        <label htmlFor="confirmPassword" className="form-label required">Confirmar Nova Senha</label>
         <PasswordInput
           id="confirmPassword"
           name="confirmPassword"
@@ -100,13 +109,13 @@ const ResetPasswordForm = ({ onSubmit, loading, success }) => {
         />
       </div>
       
-      <button type="submit" className="btn-primary" disabled={loading}>
+      <button type="submit" className="reset-btn" disabled={loading}>
         {loading ? 'Redefinindo...' : 'Redefinir senha'}
       </button>
       
       <div className="reset-link-container">
         <Link to="/login" className="reset-link">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 2}}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6" />
           </svg>
           Voltar para o login

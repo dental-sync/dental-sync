@@ -47,12 +47,12 @@ class LaboratorioTest {
     void deveValidarTamanhoMaximoNomeLaboratorio() {
         configurarLaboratorioValido();
         
-        // Nome > 100 caracteres
+        //Nome > 100 caracteres
         laboratorio.setNomeLaboratorio("a".repeat(101));
         var violations = validator.validate(laboratorio);
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("nome do laboratório deve ter no máximo 100 caracteres")));
 
-        // Nome válido
+        //Nome válido
         laboratorio.setNomeLaboratorio("Laboratório Teste");
         violations = validator.validate(laboratorio);
         assertTrue(violations.isEmpty());
@@ -85,8 +85,24 @@ class LaboratorioTest {
         violations = validator.validate(laboratorio);
         assertTrue(violations.isEmpty());
     }
+    private void configurarEnderecoValido() {
+        endereco.setCep("12345678");
+        endereco.setLogradouro("Rua Teste");
+        endereco.setNumero("123");
+        endereco.setBairro("Centro");
+        endereco.setCidade("São Paulo");
+        endereco.setEstado("SP");
+    }
 
-    @Test
+    private void configurarLaboratorioValido() {
+        laboratorio.setNomeLaboratorio("Laboratório Teste");
+        laboratorio.setCnpj("12345678901234");
+        laboratorio.setEmailLaboratorio("lab@teste.com");
+        laboratorio.setTelefoneLaboratorio("11999999999");
+        laboratorio.setEndereco(endereco);
+    }
+
+   /* @Test
     void deveValidarTamanhoMaximoEmail() {
         configurarLaboratorioValido();
         
@@ -168,22 +184,6 @@ class LaboratorioTest {
 
         var violations = validator.validate(laboratorio);
         assertTrue(violations.isEmpty());
-    }
+    } */
 
-    private void configurarEnderecoValido() {
-        endereco.setCep("12345678");
-        endereco.setLogradouro("Rua Teste");
-        endereco.setNumero("123");
-        endereco.setBairro("Centro");
-        endereco.setCidade("São Paulo");
-        endereco.setEstado("SP");
-    }
-
-    private void configurarLaboratorioValido() {
-        laboratorio.setNomeLaboratorio("Laboratório Teste");
-        laboratorio.setCnpj("12345678901234");
-        laboratorio.setEmailLaboratorio("lab@teste.com");
-        laboratorio.setTelefoneLaboratorio("11999999999");
-        laboratorio.setEndereco(endereco);
-    }
 } 

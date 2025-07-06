@@ -1,10 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import Logo from '../../components/Logo';
+import AuthLayout from '../../components/AuthLayout';
 import ResetPasswordForm from '../../components/ResetPasswordForm';
 import api from '../../axios-config';
 import { toast } from 'react-toastify';
-import './ResetPassword.css';
+
+// CSS para animação de loading
+const spinKeyframes = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+// Inserir CSS no head se não existir
+if (!document.querySelector('#spin-animation')) {
+  const style = document.createElement('style');
+  style.id = 'spin-animation';
+  style.textContent = spinKeyframes;
+  document.head.appendChild(style);
+}
 
 const ResetPasswordPage = () => {
   const [loading, setLoading] = useState(false);
@@ -89,55 +104,96 @@ const ResetPasswordPage = () => {
   // Mostrar loading enquanto verifica token
   if (tokenValid === null) {
     return (
-      <div className="reset-page">
-        <header className="reset-header">
-          <Logo size="small" withText={true} />
-        </header>
-        <main className="reset-main">
-          <div className="reset-loading">
-            <p>Verificando token de recuperação...</p>
+      <AuthLayout>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          padding: '2rem',
+          textAlign: 'center'
+        }}>
+          <div style={{ marginBottom: '1rem' }}>
+            <div style={{ 
+              width: '40px', 
+              height: '40px', 
+              border: '3px solid #f3f3f3', 
+              borderTop: '3px solid #2563EB', 
+              borderRadius: '50%', 
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 1rem'
+            }}></div>
           </div>
-        </main>
-      </div>
+          <p style={{ color: '#6B7280', fontSize: '1.1rem' }}>
+            Verificando token de recuperação...
+          </p>
+        </div>
+      </AuthLayout>
     );
   }
 
   // Token inválido
   if (tokenValid === false) {
     return (
-      <div className="reset-page">
-        <header className="reset-header">
-          <Logo size="small" withText={true} />
-        </header>
-        <main className="reset-main">
-          <div className="reset-error">
-            <h2>Token Inválido</h2>
-            <p>O link de recuperação é inválido ou expirou.</p>
-            <button onClick={() => navigate('/forgot-password')} className="reset-btn">
-              Solicitar Nova Recuperação
-            </button>
-          </div>
-        </main>
-      </div>
+      <AuthLayout>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          padding: '2rem',
+          textAlign: 'center',
+          maxWidth: '400px',
+          margin: '0 auto'
+        }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>❌</div>
+          <h2 style={{ 
+            fontSize: '1.5rem', 
+            fontWeight: '600', 
+            color: '#111827', 
+            marginBottom: '0.5rem' 
+          }}>
+            Token Inválido
+          </h2>
+          <p style={{ 
+            color: '#6B7280', 
+            marginBottom: '1.5rem',
+            lineHeight: '1.5'
+          }}>
+            O link de recuperação é inválido ou expirou.
+          </p>
+          <button 
+            onClick={() => navigate('/forgot-password')} 
+            style={{
+              width: '100%',
+              padding: '0.75rem 1rem',
+              backgroundColor: '#2563EB',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.5rem',
+              fontSize: '1rem',
+              fontWeight: '500',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#1D4ED8'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#2563EB'}
+          >
+            Solicitar Nova Recuperação
+          </button>
+        </div>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="reset-page">
-      <header className="reset-header">
-        <Logo size="small" withText={true} />
-      </header>
-      <main className="reset-main">
-        <ResetPasswordForm 
-          onSubmit={handleReset} 
-          loading={loading} 
-          success={success}
-        />
-      </main>
-      <footer className="reset-footer">
-        <p>© {new Date().getFullYear()} DentalSync - Todos os direitos reservados</p>
-      </footer>
-    </div>
+    <AuthLayout>
+      <ResetPasswordForm 
+        onSubmit={handleReset} 
+        loading={loading} 
+        success={success}
+      />
+    </AuthLayout>
   );
 };
 

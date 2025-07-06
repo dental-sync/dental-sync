@@ -39,13 +39,10 @@ public class DentistaTest {
 
     @Test
     void deveCriarDentistaValido() {
-        // Act
         Set<ConstraintViolation<Dentista>> violations = validator.validate(dentista);
-
-        // Assert
         assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
-    }
 
+    }
     @Test
     void deveRetornarErroQuandoNomeVazio() {
         // Arrange
@@ -73,6 +70,74 @@ public class DentistaTest {
         assertTrue(violations.stream()
             .anyMatch(v -> v.getMessage().equals("O nome é obrigatório")));
     }
+    @Test
+    void deveRetornarErroQuandoCroVazio() {
+        // Arrange
+        dentista.setCro("");
+
+        // Act
+        Set<ConstraintViolation<Dentista>> violations = validator.validate(dentista);
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getMessage().equals("O CRO é obrigatório")));
+    }
+
+    @Test
+    void deveRetornarErroQuandoTelefoneVazio() {
+        // Arrange
+        dentista.setTelefone("");
+
+        // Act
+        Set<ConstraintViolation<Dentista>> violations = validator.validate(dentista);
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getMessage().equals("O telefone é obrigatório")));
+    }
+
+    @Test
+    void deveAceitarTelefoneFixoValido() {
+        // Arrange
+        dentista.setTelefone("(11) 3333-3333");
+
+        // Act
+        Set<ConstraintViolation<Dentista>> violations = validator.validate(dentista);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+    @Test
+    void deveAceitarTelefoneCelularValido() {
+        // Arrange
+        dentista.setTelefone("(11) 99999-9999");
+
+        // Act
+        Set<ConstraintViolation<Dentista>> violations = validator.validate(dentista);
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
+    }
+
+    @Test
+    void deveRetornarErroQuandoEmailInvalido() {
+        // Arrange
+        dentista.setEmail("email.invalido");
+
+        // Act
+        Set<ConstraintViolation<Dentista>> violations = validator.validate(dentista);
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getMessage().equals("O email deve terminar com .com")));
+    }
+
+    //------------------------------------------//------------------------------------------//
+
+   
 
     @Test
     void deveRetornarErroQuandoNomeMuitoCurto() {
@@ -126,19 +191,7 @@ public class DentistaTest {
         assertTrue(violations.isEmpty(), "Nome com 255 caracteres deveria ser aceito");
     }
 
-    @Test
-    void deveRetornarErroQuandoCroVazio() {
-        // Arrange
-        dentista.setCro("");
-
-        // Act
-        Set<ConstraintViolation<Dentista>> violations = validator.validate(dentista);
-
-        // Assert
-        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
-        assertTrue(violations.stream()
-            .anyMatch(v -> v.getMessage().equals("O CRO é obrigatório")));
-    }
+   
 
     @Test
     void deveRetornarErroQuandoCroNulo() {
@@ -192,19 +245,7 @@ public class DentistaTest {
         assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
     }
 
-    @Test
-    void deveRetornarErroQuandoTelefoneVazio() {
-        // Arrange
-        dentista.setTelefone("");
-
-        // Act
-        Set<ConstraintViolation<Dentista>> violations = validator.validate(dentista);
-
-        // Assert
-        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
-        assertTrue(violations.stream()
-            .anyMatch(v -> v.getMessage().equals("O telefone é obrigatório")));
-    }
+    
 
     @Test
     void deveRetornarErroQuandoTelefoneNulo() {
@@ -235,30 +276,6 @@ public class DentistaTest {
     }
 
     @Test
-    void deveAceitarTelefoneFixoValido() {
-        // Arrange
-        dentista.setTelefone("(11) 3333-3333");
-
-        // Act
-        Set<ConstraintViolation<Dentista>> violations = validator.validate(dentista);
-
-        // Assert
-        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
-    }
-
-    @Test
-    void deveAceitarTelefoneCelularValido() {
-        // Arrange
-        dentista.setTelefone("(11) 99999-9999");
-
-        // Act
-        Set<ConstraintViolation<Dentista>> violations = validator.validate(dentista);
-
-        // Assert
-        assertTrue(violations.isEmpty(), "Não deveria ter violações de validação");
-    }
-
-    @Test
     void deveRetornarErroQuandoEmailVazio() {
         // Arrange
         dentista.setEmail("");
@@ -286,19 +303,7 @@ public class DentistaTest {
             .anyMatch(v -> v.getMessage().equals("O email é obrigatório")));
     }
 
-    @Test
-    void deveRetornarErroQuandoEmailInvalido() {
-        // Arrange
-        dentista.setEmail("email.invalido");
-
-        // Act
-        Set<ConstraintViolation<Dentista>> violations = validator.validate(dentista);
-
-        // Assert
-        assertFalse(violations.isEmpty(), "Deveria ter violações de validação");
-        assertTrue(violations.stream()
-            .anyMatch(v -> v.getMessage().equals("O email deve terminar com .com")));
-    }
+    
 
     @Test
     void deveRetornarErroQuandoEmailMuitoLongo() {

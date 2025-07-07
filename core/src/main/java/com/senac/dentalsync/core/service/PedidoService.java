@@ -40,10 +40,7 @@ public class PedidoService extends BaseService<Pedido, Long> {
         return pedidoRepository;
     }
 
-    @Override
-    protected Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
 
     @Override
     @Transactional

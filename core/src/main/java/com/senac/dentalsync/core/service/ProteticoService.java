@@ -36,10 +36,7 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
         return proteticoRepository;
     }
 
-    @Override
-    protected Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
     
     @Override
     public Protetico save(Protetico protetico) {
@@ -200,8 +197,15 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
         Protetico protetico = findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Protético não encontrado"));
         
+        System.out.println("🔄 Atualizando status do protético ID: " + id + " de " + protetico.getIsActive() + " para " + isActive);
+        
         protetico.setIsActive(isActive);
-        return save(protetico);
+        
+        // Usar super.save() diretamente para evitar verificação de duplicidade e lógica de senha
+        Protetico savedProtetico = super.save(protetico);
+        
+        System.out.println("✅ Status atualizado com sucesso para: " + savedProtetico.getIsActive());
+        return savedProtetico;
     }
     
  

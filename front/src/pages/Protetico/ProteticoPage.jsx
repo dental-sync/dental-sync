@@ -160,15 +160,21 @@ const ProteticoPage = () => {
 
   const handleStatusChange = async (proteticoId, newStatus) => {
     try {
+      console.log('🔄 Iniciando mudança de status - ID:', proteticoId, 'Status:', newStatus);
+      
+      // Determinar o novo status como boolean
+      const isActive = newStatus === 'ATIVO' || newStatus === true;
+      
+      console.log('📝 Convertendo status para boolean:', isActive);
+      
       // Usar o hook para alternar o status
-      const isActive = newStatus === 'ATIVO';
       await toggleRecordStatus('proteticos', proteticoId, isActive);
       
       // Atualizar o status do protético no estado local
       setProteticos(prevProteticos => 
         prevProteticos.map(protetico => 
           protetico.id === proteticoId 
-            ? { ...protetico, isActive: newStatus } 
+            ? { ...protetico, isActive: isActive ? 'ATIVO' : 'INATIVO' } 
             : protetico
         )
       );
@@ -192,8 +198,10 @@ const ProteticoPage = () => {
         // Se estava mostrando apenas inativos e ativou um, recarregar para removê-lo da vista
         loadProteticos();
       }
+      
+      console.log('✅ Mudança de status concluída com sucesso');
     } catch (error) {
-      console.error('Erro ao alterar status do protético:', error);
+      console.error('❌ Erro ao alterar status do protético:', error);
       toast.error('Erro ao alterar status do protético');
     }
   };

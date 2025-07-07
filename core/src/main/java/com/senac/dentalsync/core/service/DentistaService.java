@@ -24,10 +24,7 @@ public class DentistaService extends BaseService<Dentista, Long> {
         return dentistaRepository;
     }
 
-    @Override
-    protected Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
     
     // Métodos para buscar incluindo inativos (uso interno)
     public Optional<Dentista> findByEmail(String email) {

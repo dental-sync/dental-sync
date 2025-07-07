@@ -30,10 +30,7 @@ public class ClinicaService extends BaseService<Clinica, Long> {
         return clinicaRepository;
     }
 
-    @Override
-    protected Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
     
     @Override
     public Clinica save(Clinica entity) {

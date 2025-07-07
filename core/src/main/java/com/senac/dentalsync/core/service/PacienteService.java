@@ -19,10 +19,7 @@ public class PacienteService extends BaseService<Paciente, Long> {
     protected PacienteRepository getRepository() {
         return repository;
     }
-    @Override
-    protected Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
     
     public Optional<Paciente> findByEmail(String email) {
         return repository.findByEmail(email);

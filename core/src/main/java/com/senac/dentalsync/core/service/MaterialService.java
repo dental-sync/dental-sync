@@ -23,10 +23,7 @@ public class MaterialService extends BaseService<Material, Long> {
         return materialRepository;
     }
 
-    @Override
-    public Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
     
     public void delete(Long id) {
         materialRepository.deleteById(id);

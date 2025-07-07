@@ -44,10 +44,7 @@ public class ServicoService extends BaseService<Servico, Long> {
         return servicoRepository;
     }
 
-    @Override
-    protected Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
 
     @Override
     @Transactional

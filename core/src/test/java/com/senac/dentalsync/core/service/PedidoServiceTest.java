@@ -6,7 +6,6 @@ import com.senac.dentalsync.core.dto.HistoricoProteticoDTO;
 import com.senac.dentalsync.core.persistency.model.*;
 import com.senac.dentalsync.core.persistency.repository.MaterialRepository;
 import com.senac.dentalsync.core.persistency.repository.PedidoRepository;
-import com.senac.dentalsync.core.persistency.repository.PedidoServicoRepository;
 import com.senac.dentalsync.core.persistency.repository.ServicoMaterialRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,9 +34,7 @@ public class PedidoServiceTest {
 
     @Mock
     private PedidoRepository pedidoRepository;
-    
-    @Mock
-    private PedidoServicoRepository pedidoServicoRepository;
+
 
     @Mock
     private MaterialService materialService;
@@ -108,8 +105,7 @@ public class PedidoServiceTest {
         pedidoTeste.setIsActive(true);
         pedidoTeste.setServicos(Arrays.asList(servicoTeste));
         
-        // Configurar mock padrão para pedidoServicoRepository usando lenient
-        lenient().when(pedidoServicoRepository.findByPedidoId(any())).thenReturn(Arrays.asList());
+
     }
 
     @Test

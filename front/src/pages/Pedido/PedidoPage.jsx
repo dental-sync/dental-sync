@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../axios-config';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useNotifications from '../../hooks/useNotifications';
 
 const PedidoPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,6 +33,7 @@ const PedidoPage = () => {
   
   const filterRef = useRef(null);
   const navigate = useNavigate();
+  const { notifications, loading: notificationLoading, refreshNotifications } = useNotifications();
   
   // Buscar dentistas e protéticos ao montar o componente
   useEffect(() => {
@@ -335,7 +337,13 @@ const PedidoPage = () => {
       />
       <div className="page-top">
         <div className="notification-container">
-          <NotificationBell count={2} />
+            <NotificationBell 
+              count={notifications.total}
+              baixoEstoque={notifications.baixoEstoque}
+              semEstoque={notifications.semEstoque}
+              loading={notificationLoading}
+              onRefresh={refreshNotifications}
+            />
         </div>
       </div>
       

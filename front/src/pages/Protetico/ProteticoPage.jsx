@@ -4,12 +4,15 @@ import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
 import ProteticoTable from '../../components/ProteticoTable/ProteticoTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import useNotifications from '../../hooks/useNotifications';
+import useInactiveFilter from '../../hooks/useInactiveFilter';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../axios-config';
 import { toast } from 'react-toastify';
 
 const ProteticoPage = () => {
+  const { notifications } = useNotifications();
   const [searchQuery, setSearchQuery] = useState('');
   const [proteticos, setProteticos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +20,7 @@ const ProteticoPage = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [filtros, setFiltros] = useState({
-    isActive: 'todos',
+    isActive: 'ATIVO',
     cargo: 'todos'
   });
   const [refreshData, setRefreshData] = useState(0);
@@ -30,61 +33,79 @@ const ProteticoPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Criando um ref para armazenar mensagens recentes e evitar duplicação de toasts
+  const {
+    loading: filterLoading,
+    error: filterError,
+    fetchActiveProteticos,
+    fetchInactiveProteticos,
+    fetchAllProteticos,
+    toggleRecordStatus
+  } = useInactiveFilter();
+  
   const recentMessages = useRef(new Set());
 
-  useEffect(() => {
-    const fetchProteticos = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get('/proteticos');
-        const proteticosFormatados = response.data.map(protetico => ({
-          id: protetico.id,
-          nome: protetico.nome,
-          cro: protetico.cro,
-          cargo: protetico.isAdmin ? 'Admin' : 'Protetico',
-          telefone: protetico.telefone || '-',
-          email: protetico.email || '-',
-          isActive: protetico.isActive ? 'ATIVO' : 'INATIVO'
-        }));
-        setProteticos(proteticosFormatados);
-      } catch (err) {
-        console.error('Erro ao buscar protéticos:', err);
-        setProteticos([]);
-        setError('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.');
-        toast.error('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.', {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: false
-        });
-      } finally {
-        setLoading(false);
+  const loadProteticos = async () => {
+    setLoading(true);
+    try {
+      let proteticosData = [];
+      
+      switch (filtros.isActive) {
+        case 'ATIVO':
+          proteticosData = await fetchActiveProteticos();
+          break;
+        case 'INATIVO':
+          proteticosData = await fetchInactiveProteticos();
+          break;
+        case 'todos':
+        default:
+          proteticosData = await fetchAllProteticos();
+          break;
       }
-    };
+      
+      const proteticosFormatados = proteticosData.map(protetico => ({
+        id: protetico.id,
+        nome: protetico.nome,
+        cro: protetico.cro,
+        cargo: protetico.isAdmin ? 'Admin' : 'Protetico',
+        telefone: protetico.telefone || '-',
+        email: protetico.email || '-',
+        isActive: protetico.isActive ? 'ATIVO' : 'INATIVO'
+      }));
+      
+      setProteticos(proteticosFormatados);
+    } catch (err) {
+      console.error('Erro ao buscar protéticos:', err);
+      setProteticos([]);
+      setError('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.');
+      toast.error('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchProteticos();
-  }, [refreshData]);
+  useEffect(() => {
+    loadProteticos();
+  }, [refreshData, filtros.isActive]);
 
   useEffect(() => {
     if (location.state && location.state.success) {
       const successMessage = location.state.success;
       const shouldRefresh = location.state.refresh;
       
-      // Limpa o state imediatamente
       window.history.replaceState({}, document.title);
       
-      // Cria uma chave única para esta mensagem
       const messageKey = `${successMessage}-${Date.now()}`;
       
-      // Verifica se esta mensagem já foi exibida recentemente (nos últimos 3 segundos)
       if (!recentMessages.current.has(messageKey)) {
-        // Adiciona a mensagem ao cache
         recentMessages.current.add(messageKey);
         
-        // Exibe o toast
         toast.success(successMessage, {
           position: "top-right",
           autoClose: 3000,
@@ -92,16 +113,13 @@ const ProteticoPage = () => {
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
-          // ID fixo para a mesma mensagem
           toastId: successMessage
         });
         
-        // Remove a mensagem do cache após 3 segundos
         setTimeout(() => {
           recentMessages.current.delete(messageKey);
         }, 3000);
         
-        // Se é necessário atualizar os dados
         if (shouldRefresh) {
           setRefreshData(prev => prev + 1);
         }
@@ -123,82 +141,76 @@ const ProteticoPage = () => {
   }, []);
 
   const handleProteticoDeleted = (proteticoId) => {
-    // Primeiro, remover o protético do estado local para atualização imediata da UI
     setProteticos(prevProteticos => 
       prevProteticos.filter(protetico => protetico.id !== proteticoId)
     );
     
-    // Forçar um refresh dos dados para sincronizar com o banco
     setRefreshData(prev => prev + 1);
     
-    // Limpa qualquer estado de navegação existente
     window.history.replaceState({}, document.title);
     
-    // Adicionamos uma mensagem de sucesso usando o padrão de state
     navigate('', { 
       state: { 
         success: "Protético excluído com sucesso!",
-        refresh: false // Não precisamos de refresh pois já fizemos acima
+        refresh: false
       },
-      replace: true // Importante usar replace para não adicionar nova entrada no histórico
+      replace: true
     });
   };
 
-  const handleStatusChange = (proteticoId, newStatus) => {
-    // Encontrar o protético atual
-    const proteticoAtual = proteticos.find(p => p.id === proteticoId);
-    
-    if (!proteticoAtual) {
-      console.error('Protético não encontrado:', proteticoId);
-      return;
-    }
-    
-    // Verificar se o status está realmente mudando
-    const statusAtual = proteticoAtual.isActive;
-    
-    // Se o status for o mesmo, não faz nada
-    if (statusAtual === newStatus) {
-      return;
-    }
-
-    // Atualizar o status do protético na lista imediatamente
-    const proteticosAtualizados = proteticos.map(protetico =>
-      protetico.id === proteticoId
-        ? { ...protetico, isActive: newStatus }
-        : protetico
-    );
-    
-    // Atualizar o estado imediatamente
-    setProteticos(proteticosAtualizados);
-    
-    // Forçar uma re-renderização para garantir que os filtros sejam aplicados corretamente
-    setRefreshData(prev => prev + 1);
-    
-    // Exibir o toast de forma padronizada
-    const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
-    
-    // Limpa qualquer estado de navegação existente
-    window.history.replaceState({}, document.title);
-    
-    // Adicionamos uma mensagem de sucesso usando o padrão de state
-    navigate('', { 
-      state: { 
-        success: `Status atualizado com sucesso para ${statusText}`,
-        refresh: false // Não precisamos de refresh pois já atualizamos localmente
-      },
-      replace: true // Importante usar replace para não adicionar nova entrada no histórico
-    });
-  };
-
-  // Função utilitária para formatar o ID
-  const formatProteticoId = (id) => `PT${String(id).padStart(4, '0')}`;
-
-  const proteticosFiltrados = proteticos
-    .filter(protetico => {
-      if (filtros.isActive !== 'todos' && protetico.isActive !== filtros.isActive) {
-        return false;
+  const handleStatusChange = async (proteticoId, newStatus) => {
+    try {
+      console.log('🔄 Iniciando mudança de status - ID:', proteticoId, 'Status:', newStatus);
+      
+      // Determinar o novo status como boolean
+      const isActive = newStatus === 'ATIVO' || newStatus === true;
+      
+      console.log('📝 Convertendo status para boolean:', isActive);
+      
+      // Usar o hook para alternar o status
+      await toggleRecordStatus('proteticos', proteticoId, isActive);
+      
+      // Atualizar o status do protético no estado local
+      setProteticos(prevProteticos => 
+        prevProteticos.map(protetico => 
+          protetico.id === proteticoId 
+            ? { ...protetico, isActive: isActive ? 'ATIVO' : 'INATIVO' } 
+            : protetico
+        )
+      );
+      
+      // Exibir mensagem de sucesso
+      const statusText = isActive ? 'ativado' : 'desativado';
+      toast.success(`Protético ${statusText} com sucesso!`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+      });
+      
+      // Recarregar dados se necessário para manter consistência
+      if (filtros.isActive === 'ATIVO' && !isActive) {
+        // Se estava mostrando apenas ativos e desativou um, recarregar para removê-lo da vista
+        loadProteticos();
+      } else if (filtros.isActive === 'INATIVO' && isActive) {
+        // Se estava mostrando apenas inativos e ativou um, recarregar para removê-lo da vista
+        loadProteticos();
       }
       
+      console.log('✅ Mudança de status concluída com sucesso');
+    } catch (error) {
+      console.error('❌ Erro ao alterar status do protético:', error);
+      toast.error('Erro ao alterar status do protético');
+    }
+  };
+
+  const formatProteticoId = (id) => `PT${String(id).padStart(4, '0')}`;
+
+  // Filtrar apenas por cargo e busca de texto, já que o filtro de status é feito no backend
+  const proteticosFiltrados = proteticos
+    .filter(protetico => {
       if (filtros.cargo !== 'todos' && protetico.cargo !== filtros.cargo) {
         return false;
       }
@@ -223,7 +235,7 @@ const ProteticoPage = () => {
 
   const toggleFiltro = () => {
     setIsFilterOpen(!isFilterOpen);
-    setIsExportOpen(false); // Fechar o outro dropdown
+    setIsExportOpen(false);
   };
 
   const handleFiltroChange = (e) => {
@@ -236,7 +248,7 @@ const ProteticoPage = () => {
 
   const handleLimparFiltros = () => {
     setFiltros({
-      isActive: 'todos',
+      isActive: 'ATIVO', // Volta ao padrão de mostrar apenas ativos
       cargo: 'todos'
     });
   };
@@ -255,7 +267,7 @@ const ProteticoPage = () => {
 
   const toggleExport = () => {
     setIsExportOpen(!isExportOpen);
-    setIsFilterOpen(false); // Fechar o outro dropdown
+    setIsFilterOpen(false);
   };
 
   const handleCloseExport = () => {
@@ -274,14 +286,12 @@ const ProteticoPage = () => {
     let sortableProteticos = [...proteticosFiltrados];
     if (sortConfig.key) {
       sortableProteticos.sort((a, b) => {
-        // Para ordenação de IDs (números)
         if (sortConfig.key === 'id') {
           return sortConfig.direction === 'ascending'
             ? a.id - b.id
             : b.id - a.id;
         }
         
-        // Para ordenação de status (ATIVO/INATIVO)
         if (sortConfig.key === 'isActive') {
           const aValue = a.isActive === 'ATIVO' ? 1 : 0;
           const bValue = b.isActive === 'ATIVO' ? 1 : 0;
@@ -290,7 +300,6 @@ const ProteticoPage = () => {
             : bValue - aValue;
         }
         
-        // Para ordenação de strings (nome)
         const aValue = String(a[sortConfig.key]).toLowerCase();
         const bValue = String(b[sortConfig.key]).toLowerCase();
         
@@ -314,7 +323,13 @@ const ProteticoPage = () => {
     <div className="protetico-page">
       <div className="page-top">
         <div className="notification-container">
-          <NotificationBell count={2} />
+            <NotificationBell 
+            count={notifications.total}
+            baixoEstoque={notifications.baixoEstoque}
+            semEstoque={notifications.semEstoque}
+            materiaisBaixoEstoque={notifications.materiaisBaixoEstoque}
+            materiaisSemEstoque={notifications.materiaisSemEstoque}
+          />
         </div>
       </div>
       
@@ -332,7 +347,7 @@ const ProteticoPage = () => {
               label="Filtrar" 
               icon="filter"
               onClick={toggleFiltro} 
-              active={isFilterOpen || filtros.isActive !== 'todos' || filtros.cargo !== 'todos'}
+              active={isFilterOpen || filtros.isActive !== 'ATIVO' || filtros.cargo !== 'todos'}
             />
             
             {isFilterOpen && (

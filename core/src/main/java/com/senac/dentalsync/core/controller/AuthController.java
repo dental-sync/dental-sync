@@ -25,6 +25,7 @@ import com.senac.dentalsync.core.service.ProteticoService;
 import com.senac.dentalsync.core.service.TrustedDeviceService;
 import com.senac.dentalsync.core.service.TwoFactorService;
 import com.senac.dentalsync.core.service.RememberMeService;
+import com.senac.dentalsync.core.util.PasswordValidator;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -677,6 +678,16 @@ public class AuthController {
             }
             
             Protetico user = userOpt.get();
+            
+            // Validar critérios de complexidade da nova senha
+            try {
+                PasswordValidator.validatePassword(newPassword);
+            } catch (Exception e) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", e.getMessage());
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
             
             // Atualizar senha
             user.setSenha(passwordEncoder.encode(newPassword));

@@ -5,6 +5,10 @@ import Dropdown from '../../components/Dropdown/Dropdown';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../../axios-config';
+import { validatePassword } from '../../utils/passwordValidator';
+import PasswordRequirements from '../../components/PasswordRequirements/PasswordRequirements';
+import PasswordStrengthIndicator from '../../components/PasswordStrengthIndicator/PasswordStrengthIndicator';
+import PasswordInput from '../../components/PasswordInput';
 
 const CadastroProtetico = () => {
   const navigate = useNavigate();
@@ -70,10 +74,12 @@ const CadastroProtetico = () => {
       newErrors.cargo = 'O cargo é obrigatório';
     }
     
-    if (!formData.senha) {
-      newErrors.senha = 'A senha é obrigatória';
-    } else if (formData.senha.length < 6) {
-      newErrors.senha = 'A senha deve ter pelo menos 6 caracteres';
+    // Validar senha com regras complexas
+    const passwordErrors = validatePassword(formData.senha);
+    if (passwordErrors.length > 0) {
+      // Mostrar apenas o primeiro erro no formulário e como toast
+      newErrors.senha = passwordErrors[0];
+      toast.error(passwordErrors[0]);
     }
     
     if (formData.senha !== formData.confirmarSenha) {
@@ -372,31 +378,31 @@ const CadastroProtetico = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="senha" className="required">Senha</label>
-            <input
-              type="password"
+            <label htmlFor="senha">Senha *</label>
+            <PasswordInput
               id="senha"
               name="senha"
               value={formData.senha}
               onChange={handleChange}
-              className={errors.senha ? 'input-error' : ''}
-              placeholder="Digite a senha (mínimo 6 caracteres)"
+              placeholder="Digite sua senha"
+              className={errors.senha ? 'error' : ''}
             />
-            {errors.senha && <span className="error-text">{errors.senha}</span>}
+            {errors.senha && <span className="error-message">{errors.senha}</span>}
+            <PasswordRequirements password={formData.senha} />
+            <PasswordStrengthIndicator password={formData.senha} />
           </div>
           
           <div className="form-group">
-            <label htmlFor="confirmarSenha" className="required">Confirmar Senha</label>
-            <input
-              type="password"
+            <label htmlFor="confirmarSenha">Confirmar Senha *</label>
+            <PasswordInput
               id="confirmarSenha"
               name="confirmarSenha"
               value={formData.confirmarSenha}
               onChange={handleChange}
-              className={errors.confirmarSenha ? 'input-error' : ''}
-              placeholder="Confirme a senha"
+              placeholder="Confirme sua senha"
+              className={errors.confirmarSenha ? 'error' : ''}
             />
-            {errors.confirmarSenha && <span className="error-text">{errors.confirmarSenha}</span>}
+            {errors.confirmarSenha && <span className="error-message">{errors.confirmarSenha}</span>}
           </div>
           
           <div className="form-actions">

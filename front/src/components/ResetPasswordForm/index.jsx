@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import PasswordInput from '../PasswordInput';
+import { validatePassword } from '../../utils/passwordValidator';
+import PasswordRequirements from '../PasswordRequirements/PasswordRequirements';
+import PasswordStrengthIndicator from '../PasswordStrengthIndicator/PasswordStrengthIndicator';
 import './styles.css';
 
 const SuccessMessage = () => (
@@ -47,12 +50,11 @@ const ResetPasswordForm = ({ onSubmit, loading, success }) => {
   };
 
   const validateForm = () => {
-    // Validar senha
-    if (!formData.password) {
-      toast.error('A nova senha é obrigatória');
-      return false;
-    } else if (formData.password.length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres');
+    // Validar senha com regras complexas
+    const passwordErrors = validatePassword(formData.password);
+    if (passwordErrors.length > 0) {
+      // Mostrar apenas o primeiro erro para evitar muitos toasts
+      toast.error(passwordErrors[0]);
       return false;
     }
     
@@ -95,6 +97,8 @@ const ResetPasswordForm = ({ onSubmit, loading, success }) => {
           placeholder="Digite sua nova senha"
           required
         />
+        <PasswordStrengthIndicator password={formData.password} />
+        <PasswordRequirements password={formData.password} />
       </div>
       
       <div className="form-group">

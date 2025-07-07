@@ -24,11 +24,9 @@ public class DentistaService extends BaseService<Dentista, Long> {
         return dentistaRepository;
     }
 
-    @Override
-    protected Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
     
+    // Métodos para buscar incluindo inativos (uso interno)
     public Optional<Dentista> findByEmail(String email) {
         return dentistaRepository.findByEmail(email);
     }
@@ -43,6 +41,31 @@ public class DentistaService extends BaseService<Dentista, Long> {
 
     public Optional<Dentista> findByTelefone(String telefone) {
         return dentistaRepository.findByTelefone(telefone);
+    }
+    
+    public List<Dentista> findByClinicaId(Long clinicaId) {
+        return dentistaRepository.findByClinicas_Id(clinicaId);
+    }
+    
+    // Métodos para buscar apenas ativos (uso público)
+    public Optional<Dentista> findByEmailActive(String email) {
+        return dentistaRepository.findByEmailAndIsActiveTrue(email);
+    }
+    
+    public Optional<Dentista> findByCroActive(String cro) {
+        return dentistaRepository.findByCroAndIsActiveTrue(cro);
+    }
+    
+    public List<Dentista> findByCroContainingActive(String cro) {
+        return dentistaRepository.findByCroContainingAndIsActiveTrue(cro);
+    }
+
+    public Optional<Dentista> findByTelefoneActive(String telefone) {
+        return dentistaRepository.findByTelefoneAndIsActiveTrue(telefone);
+    }
+    
+    public List<Dentista> findByClinicaIdActive(Long clinicaId) {
+        return dentistaRepository.findByClinicas_IdAndIsActiveTrue(clinicaId);
     }
 
     public Dentista updateStatus(Long id, Boolean status) {
@@ -64,22 +87,22 @@ public class DentistaService extends BaseService<Dentista, Long> {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O nome não pode conter números");
         }
 
-        // Verificar se já existe dentista com o mesmo CRO
-        Optional<Dentista> dentistaComCro = dentistaRepository.findByCro(entity.getCro());
+        // Verificar se já existe dentista ATIVO com o mesmo CRO
+        Optional<Dentista> dentistaComCro = dentistaRepository.findByCroAndIsActiveTrue(entity.getCro());
         if (dentistaComCro.isPresent() && !dentistaComCro.get().getId().equals(entity.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CRO já cadastrado");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CRO já cadastrado em um dentista ativo");
         }
 
-        // Verificar se já existe dentista com o mesmo email
-        Optional<Dentista> dentistaComEmail = dentistaRepository.findByEmail(entity.getEmail());
+        // Verificar se já existe dentista ATIVO com o mesmo email
+        Optional<Dentista> dentistaComEmail = dentistaRepository.findByEmailAndIsActiveTrue(entity.getEmail());
         if (dentistaComEmail.isPresent() && !dentistaComEmail.get().getId().equals(entity.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail já cadastrado");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail já cadastrado em um dentista ativo");
         }
 
-        // Verificar se já existe dentista com o mesmo telefone
-        Optional<Dentista> dentistaComTelefone = dentistaRepository.findByTelefone(entity.getTelefone());
+        // Verificar se já existe dentista ATIVO com o mesmo telefone
+        Optional<Dentista> dentistaComTelefone = dentistaRepository.findByTelefoneAndIsActiveTrue(entity.getTelefone());
         if (dentistaComTelefone.isPresent() && !dentistaComTelefone.get().getId().equals(entity.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telefone já cadastrado");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telefone já cadastrado em um dentista ativo");
         }
         
         try {

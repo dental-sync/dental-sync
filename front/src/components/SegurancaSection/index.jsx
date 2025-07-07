@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import PasswordInput from '../PasswordInput';
 import api from '../../axios-config';
 import { toast } from 'react-toastify';
+import { validatePassword } from '../../utils/passwordValidator';
+import PasswordRequirements from '../PasswordRequirements/PasswordRequirements';
+import PasswordStrengthIndicator from '../PasswordStrengthIndicator/PasswordStrengthIndicator';
 import './styles.css';
 
 const SegurancaSection = () => {
@@ -54,10 +57,10 @@ const SegurancaSection = () => {
       errors.senhaAtual = 'Senha atual é obrigatória';
     }
     
-    if (!formData.novaSenha) {
-      errors.novaSenha = 'Nova senha é obrigatória';
-    } else if (formData.novaSenha.length < 6) {
-      errors.novaSenha = 'Nova senha deve ter pelo menos 6 caracteres';
+    // Validar nova senha com regras complexas
+    const passwordErrors = validatePassword(formData.novaSenha);
+    if (passwordErrors.length > 0) {
+      errors.novaSenha = passwordErrors[0];
     }
     
     if (!formData.confirmarSenha) {
@@ -76,6 +79,10 @@ const SegurancaSection = () => {
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      // Mostrar toast para erro de senha se houver
+      if (errors.novaSenha) {
+        toast.error(errors.novaSenha);
+      }
       return;
     }
     
@@ -270,6 +277,8 @@ const SegurancaSection = () => {
               {fieldErrors.novaSenha && (
                 <span className="field-error">{fieldErrors.novaSenha}</span>
               )}
+              <PasswordStrengthIndicator password={formData.novaSenha} />
+              <PasswordRequirements password={formData.novaSenha} />
           </div>
           
           <div className="form-group">
@@ -287,9 +296,7 @@ const SegurancaSection = () => {
             </div>
           </div>
           
-          <p className="password-hint">
-            A senha deve ter pelo menos 6 caracteres.
-          </p>
+
           
           <div className="security-form-actions">
             <button type="submit" className="btn-primary" disabled={isLoading}>

@@ -7,6 +7,8 @@ import DatePicker from '../DatePicker/DatePicker';
 import { toast } from 'react-toastify';
 import './PedidoForm.css';
 
+
+
 const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
   const navigate = useNavigate();
   
@@ -261,11 +263,11 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
           proteticosResponse, 
           servicosResponse
         ] = await Promise.all([
-          api.get('/paciente'),
-          api.get('/dentistas'),
-          api.get('/clinicas'),
-          api.get('/proteticos'),
-          api.get('/servico')
+          api.get('/paciente'), // Busca apenas pacientes ativos
+          api.get('/dentistas'), // Busca apenas dentistas ativos
+          api.get('/clinicas'), // Busca apenas clínicas ativas
+          api.get('/proteticos'), // Busca apenas protéticos ativos
+          api.get('/servico') // Busca apenas serviços ativos
         ]);
         
         setClientes(clientesResponse.data);
@@ -638,21 +640,21 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
         clinica: formData.clinica ? { id: formData.clinica.id } : null,
         protetico: formData.protetico ? { id: formData.protetico.id } : null,
         servicos: servicosSelecionados.map(servico => ({ 
-          id: servico.id,
-          quantidade: servico.quantidade || 1
+          id: servico.id
         })),
         dataEntrega: formData.dataEntrega,
         prioridade: formData.prioridade,
         status: formData.status || 'PENDENTE', // Usar status selecionado ou PENDENTE como padrão
         odontograma: dentesSelecionados.join(','), // Converter array para string separada por vírgulas
-        observacao: formData.observacao
+        observacao: formData.observacao,
+        isActive: true // Garantir que o pedido permanece ativo após edição
       };
       
-      // Criar ou atualizar pedido usando o novo endpoint que suporta quantidades
+      // Criar ou atualizar pedido usando o endpoint padrão
       if (pedidoId) {
-        await api.put(`/pedidos-com-quantidade/${pedidoId}`, dadosParaEnviar);
+        await api.put(`/pedidos/${pedidoId}`, dadosParaEnviar);
       } else {
-        await api.post('/pedidos-com-quantidade', dadosParaEnviar);
+        await api.post('/pedidos', dadosParaEnviar);
       }
       
       // Notificar sucesso e redirecionar

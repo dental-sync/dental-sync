@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import ActionButton from '../../components/ActionButton/ActionButton';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import useNotifications from '../../hooks/useNotifications';
 import { useSidebar } from '../../contexts/SidebarContext';
 
 const statusLabels = {
@@ -22,6 +23,7 @@ const prioridadeColors = {
 
 function Kanban() {
   const { setActiveItem } = useSidebar();
+  const { notifications } = useNotifications();
   const [pedidos, setPedidos] = useState([]);
   const [dragged, setDragged] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
@@ -278,7 +280,13 @@ function Kanban() {
       <div className="kanban-content">
         <div className="page-top" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
           <div className="notification-container" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            <NotificationBell count={2} />
+              <NotificationBell 
+            count={notifications.total}
+            baixoEstoque={notifications.baixoEstoque}
+            semEstoque={notifications.semEstoque}
+            materiaisBaixoEstoque={notifications.materiaisBaixoEstoque}
+            materiaisSemEstoque={notifications.materiaisSemEstoque}
+          />
           </div>
         </div>
         <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>

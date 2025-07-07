@@ -47,10 +47,8 @@ const ResetPasswordPage = () => {
       return;
     }
 
-    if (password.length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres');
-      return;
-    }
+    // Validação adicional é feita no componente ResetPasswordForm
+    // Essa validação é mantida como fallback
 
     setLoading(true);
 

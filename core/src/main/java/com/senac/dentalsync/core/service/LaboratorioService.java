@@ -18,8 +18,5 @@ public class LaboratorioService extends BaseService<Laboratorio, Long> {
         return laboratorioRepository;
     }
 
-    @Override
-    protected Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
 } 

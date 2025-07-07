@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import GenericTable from '../GenericTable/GenericTable';
 import PacienteActionMenu from './PacienteActionMenu';
 import { formatNome, formatEmail, formatTelefone } from '../../utils/textUtils';
+import api from '../../axios-config';
+import { toast } from 'react-toastify';
 
 // Função utilitária para formatar o ID do paciente
 const formatPacienteId = (id) => `P${String(id).padStart(4, '0')}`;
@@ -29,19 +31,42 @@ const PacienteTable = ({ pacientes = [], onPacienteDeleted, onStatusChange, sort
     setPacientesState(pacientes);
   }, [pacientes]);
 
-  const handleStatusChange = (pacienteId, newStatus) => {
-    // Primeiro atualiza o estado local
-    setPacientesState(prevState => 
-      prevState.map(paciente => 
-        paciente.id === pacienteId 
-          ? { ...paciente, isActive: newStatus } 
-          : paciente
-      )
-    );
-    
-    // Depois notifica o componente pai
-    if (onStatusChange) {
-      onStatusChange(pacienteId, newStatus);
+  const handleStatusChange = async (pacienteId, newStatus) => {
+    try {
+      // Converter string para boolean
+      const isActiveBoolean = newStatus === 'ATIVO' || newStatus === true;
+      
+      console.log('🔄 PacienteTable - handleStatusChange:');
+      console.log('  - Paciente ID:', pacienteId);
+      console.log('  - Status recebido:', newStatus);
+      console.log('  - Boolean convertido:', isActiveBoolean);
+      
+      // Fazer a requisição diretamente aqui ao invés de delegar
+      const requestBody = { isActive: isActiveBoolean };
+      const response = await api.patch(`/paciente/${pacienteId}`, requestBody);
+      
+      if (response.status === 200) {
+        // Atualizar estado local com sucesso
+        setPacientesState(prevState => 
+          prevState.map(paciente => 
+            paciente.id === pacienteId 
+              ? { ...paciente, isActive: isActiveBoolean } 
+              : paciente
+          )
+        );
+        
+        // Notificar componente pai para possível refresh
+        if (onStatusChange) {
+          onStatusChange(pacienteId, isActiveBoolean);
+        }
+        
+        // Exibir toast de sucesso
+        const statusText = isActiveBoolean ? 'ativado' : 'desativado';
+        toast.success(`Paciente ${statusText} com sucesso!`);
+      }
+    } catch (error) {
+      console.error('Erro ao alterar status do paciente:', error);
+      toast.error('Erro ao alterar status do paciente');
     }
   };
 

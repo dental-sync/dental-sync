@@ -7,6 +7,8 @@ import DatePicker from '../DatePicker/DatePicker';
 import { toast } from 'react-toastify';
 import './PedidoForm.css';
 
+
+
 const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
   const navigate = useNavigate();
   
@@ -261,11 +263,11 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
           proteticosResponse, 
           servicosResponse
         ] = await Promise.all([
-          api.get('/paciente'),
-          api.get('/dentistas'),
-          api.get('/clinicas'),
-          api.get('/proteticos'),
-          api.get('/servico')
+          api.get('/paciente'), // Busca apenas pacientes ativos
+          api.get('/dentistas'), // Busca apenas dentistas ativos
+          api.get('/clinicas'), // Busca apenas clínicas ativas
+          api.get('/proteticos'), // Busca apenas protéticos ativos
+          api.get('/servico') // Busca apenas serviços ativos
         ]);
         
         setClientes(clientesResponse.data);

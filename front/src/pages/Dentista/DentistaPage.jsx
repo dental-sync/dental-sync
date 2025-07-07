@@ -5,6 +5,7 @@ import ActionButton from '../../components/ActionButton/ActionButton';
 import DentistaTable from '../../components/DentistaTable/DentistaTable';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import useNotifications from '../../hooks/useNotifications';
+import useInactiveFilter from '../../hooks/useInactiveFilter';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../axios-config';
@@ -19,7 +20,7 @@ const DentistaPage = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [filtros, setFiltros] = useState({
-    isActive: 'todos'
+    isActive: 'ATIVO'
   });
   const [refreshData, setRefreshData] = useState(0);
   const [toastMessage, setToastMessage] = useState(null);
@@ -31,51 +32,70 @@ const DentistaPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Criando um ref para armazenar mensagens recentes e evitar duplicação de toasts
+  const {
+    loading: filterLoading,
+    error: filterError,
+    fetchActiveDentistas,
+    fetchInactiveDentistas,
+    fetchAllDentistas,
+    toggleRecordStatus
+  } = useInactiveFilter();
+  
   const recentMessages = useRef(new Set());
 
-  useEffect(() => {
-    const fetchDentistas = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get('/dentistas');
-        const dentistasFormatados = response.data.map(dentista => ({
-          id: dentista.id,
-          nome: dentista.nome,
-          cro: dentista.cro,
-          telefone: dentista.telefone || '-',
-          email: dentista.email || '-',
-          isActive: dentista.isActive ? 'ATIVO' : 'INATIVO'
-        }));
-        setDentistas(dentistasFormatados);
-      } catch (error) {
-        console.error('Erro ao buscar dentistas:', error);
-        toast.error('Erro ao carregar dentistas');
-      } finally {
-        setLoading(false);
+  const loadDentistas = async () => {
+    setLoading(true);
+    try {
+      let dentistasData = [];
+      
+      switch (filtros.isActive) {
+        case 'ATIVO':
+          dentistasData = await fetchActiveDentistas();
+          break;
+        case 'INATIVO':
+          dentistasData = await fetchInactiveDentistas();
+          break;
+        case 'todos':
+        default:
+          dentistasData = await fetchAllDentistas();
+          break;
       }
-    };
+      
+      const dentistasFormatados = dentistasData.map(dentista => ({
+        id: dentista.id,
+        nome: dentista.nome,
+        cro: dentista.cro,
+        telefone: dentista.telefone || '-',
+        email: dentista.email || '-',
+        isActive: dentista.isActive ? 'ATIVO' : 'INATIVO'
+      }));
+      
+      setDentistas(dentistasFormatados);
+    } catch (error) {
+      console.error('Erro ao buscar dentistas:', error);
+      toast.error('Erro ao carregar dentistas');
+      setError('Erro ao carregar dentistas');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchDentistas();
-  }, [refreshData]);
+  useEffect(() => {
+    loadDentistas();
+  }, [refreshData, filtros.isActive]);
 
   useEffect(() => {
     if (location.state && location.state.success) {
       const successMessage = location.state.success;
       const shouldRefresh = location.state.refresh;
       
-      // Limpa o state imediatamente
       window.history.replaceState({}, document.title);
       
-      // Cria uma chave única para esta mensagem
       const messageKey = `${successMessage}-${Date.now()}`;
       
-      // Verifica se esta mensagem já foi exibida recentemente (nos últimos 3 segundos)
       if (!recentMessages.current.has(messageKey)) {
-        // Adiciona a mensagem ao cache
         recentMessages.current.add(messageKey);
         
-        // Exibe o toast
         toast.success(successMessage, {
           position: "top-right",
           autoClose: 3000,
@@ -83,16 +103,13 @@ const DentistaPage = () => {
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
-          // ID fixo para a mesma mensagem
           toastId: successMessage
         });
         
-        // Remove a mensagem do cache após 3 segundos
         setTimeout(() => {
           recentMessages.current.delete(messageKey);
         }, 3000);
         
-        // Se é necessário atualizar os dados
         if (shouldRefresh) {
           setRefreshData(prev => prev + 1);
         }
@@ -114,29 +131,24 @@ const DentistaPage = () => {
   }, []);
 
   const handleDentistaDeleted = (dentistaId) => {
-    // Primeiro, remover o dentista do estado local para atualização imediata da UI
     setDentistas(prevDentistas => 
       prevDentistas.filter(dentista => dentista.id !== dentistaId)
     );
     
-    // Forçar um refresh dos dados para sincronizar com o banco
     setRefreshData(prev => prev + 1);
     
-    // Limpa qualquer estado de navegação existente
     window.history.replaceState({}, document.title);
     
-    // Adicionamos uma mensagem de sucesso usando o padrão de state
     navigate('', { 
       state: { 
         success: "Dentista excluído com sucesso!",
-        refresh: false // Não precisamos de refresh pois já fizemos acima
+        refresh: false
       },
-      replace: true // Importante usar replace para não adicionar nova entrada no histórico
+      replace: true
     });
   };
 
   const handleStatusChange = (dentistaId, newStatus) => {
-    // Encontrar o dentista atual
     const dentistaAtual = dentistas.find(d => d.id === dentistaId);
     
     if (!dentistaAtual) {
@@ -144,44 +156,35 @@ const DentistaPage = () => {
       return;
     }
     
-    // Verificar se o status está realmente mudando
     const statusAtual = dentistaAtual.isActive;
     
-    // Se o status for o mesmo, não faz nada
     if (statusAtual === newStatus) {
       return;
     }
 
-    // Atualizar o status do dentista na lista imediatamente
     const dentistasAtualizados = dentistas.map(dentista =>
       dentista.id === dentistaId
         ? { ...dentista, isActive: newStatus }
         : dentista
     );
     
-    // Atualizar o estado imediatamente
     setDentistas(dentistasAtualizados);
     
-    // Forçar uma re-renderização para garantir que os filtros sejam aplicados corretamente
     setRefreshData(prev => prev + 1);
     
-    // Exibir o toast de forma padronizada
     const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
     
-    // Limpa qualquer estado de navegação existente
     window.history.replaceState({}, document.title);
     
-    // Adicionamos uma mensagem de sucesso usando o padrão de state
     navigate('', { 
       state: { 
         success: `Status atualizado com sucesso para ${statusText}`,
-        refresh: false // Não precisamos de refresh pois já atualizamos localmente
+        refresh: false
       },
-      replace: true // Importante usar replace para não adicionar nova entrada no histórico
+      replace: true
     });
   };
 
-  // Função utilitária para formatar o ID
   const formatDentistaId = (id) => `D${String(id).padStart(4, '0')}`;
 
   const dentistasFiltrados = dentistas
@@ -240,7 +243,7 @@ const DentistaPage = () => {
 
   const toggleExport = () => {
     setIsExportOpen(!isExportOpen);
-    setIsFilterOpen(false); // Fechar o outro dropdown
+    setIsFilterOpen(false);
   };
 
   const handleCloseExport = () => {
@@ -259,14 +262,12 @@ const DentistaPage = () => {
     let sortableDentistas = [...dentistasFiltrados];
     if (sortConfig.key) {
       sortableDentistas.sort((a, b) => {
-        // Para ordenação de IDs (números)
         if (sortConfig.key === 'id') {
           return sortConfig.direction === 'ascending'
             ? a.id - b.id
             : b.id - a.id;
         }
         
-        // Para ordenação de status (ATIVO/INATIVO)
         if (sortConfig.key === 'isActive') {
           const aValue = a.isActive === 'ATIVO' ? 1 : 0;
           const bValue = b.isActive === 'ATIVO' ? 1 : 0;
@@ -275,7 +276,6 @@ const DentistaPage = () => {
             : bValue - aValue;
         }
         
-        // Para ordenação de strings (nome)
         const aValue = String(a[sortConfig.key]).toLowerCase();
         const bValue = String(b[sortConfig.key]).toLowerCase();
         

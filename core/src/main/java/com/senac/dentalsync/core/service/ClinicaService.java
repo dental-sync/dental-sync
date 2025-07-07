@@ -45,10 +45,10 @@ public class ClinicaService extends BaseService<Clinica, Long> {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CNPJ inválido");
         }
         
-        // Verifica se já existe clínica com o mesmo CNPJ
-        Optional<Clinica> clinicaComCnpj = clinicaRepository.findByCnpj(entity.getCnpj());
+        // Verifica se já existe clínica ATIVA com o mesmo CNPJ
+        Optional<Clinica> clinicaComCnpj = clinicaRepository.findByCnpjAndIsActiveTrue(entity.getCnpj());
         if (clinicaComCnpj.isPresent() && !isSameEntity(entity, clinicaComCnpj.get())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CNPJ já cadastrado em outra clínica");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CNPJ já cadastrado em uma clínica ativa");
         }
         
         try {
@@ -63,6 +63,7 @@ public class ClinicaService extends BaseService<Clinica, Long> {
         return entity1.getId() != null && entity1.getId().equals(entity2.getId());
     }
     
+    // Métodos para buscar incluindo inativos (uso interno)
     public Optional<Clinica> findByNome(String nome) {
         return clinicaRepository.findByNome(nome);
     }
@@ -74,9 +75,26 @@ public class ClinicaService extends BaseService<Clinica, Long> {
     public List<Clinica> findByNomeContaining(String nome) {
         return clinicaRepository.findByNomeContaining(nome);
     }
+    
+    // Métodos para buscar apenas ativos (uso público)
+    public Optional<Clinica> findByNomeActive(String nome) {
+        return clinicaRepository.findByNomeAndIsActiveTrue(nome);
+    }
+    
+    public Optional<Clinica> findByCnpjActive(String cnpj) {
+        return clinicaRepository.findByCnpjAndIsActiveTrue(cnpj);
+    }
+    
+    public List<Clinica> findByNomeContainingActive(String nome) {
+        return clinicaRepository.findByNomeContainingAndIsActiveTrue(nome);
+    }
 
     public List<Dentista> findDentistasByClinicaId(Long clinicaId) {
         return dentistaRepository.findByClinicas_Id(clinicaId);
+    }
+    
+    public List<Dentista> findDentistasByClinicaIdActive(Long clinicaId) {
+        return dentistaRepository.findByClinicas_IdAndIsActiveTrue(clinicaId);
     }
 
     @Override

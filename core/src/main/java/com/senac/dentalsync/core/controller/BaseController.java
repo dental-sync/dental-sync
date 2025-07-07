@@ -1,14 +1,20 @@
 package com.senac.dentalsync.core.controller;
 
-import com.senac.dentalsync.core.persistency.model.BaseEntity;
-import com.senac.dentalsync.core.service.BaseService;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.List;
+import com.senac.dentalsync.core.persistency.model.BaseEntity;
+import com.senac.dentalsync.core.service.BaseService;
 
 public abstract class BaseController<T extends BaseEntity, ID> {
 
@@ -17,6 +23,16 @@ public abstract class BaseController<T extends BaseEntity, ID> {
     @GetMapping
     public ResponseEntity<List<T>> findAll() {
         return ResponseEntity.ok(getService().findAll());
+    }
+    
+    @GetMapping("/all")
+    public ResponseEntity<List<T>> findAllIncludingInactive() {
+        return ResponseEntity.ok(getService().findAllIncludingInactive());
+    }
+    
+    @GetMapping("/inactive")
+    public ResponseEntity<List<T>> findAllInactive() {
+        return ResponseEntity.ok(getService().findAllInactive());
     }
 
     @GetMapping("/paginado")

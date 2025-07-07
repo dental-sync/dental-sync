@@ -118,27 +118,27 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
     }
     
     private void verificarDuplicidade(Protetico protetico) {
-        // Verifica se já existe um protético com o mesmo CRO
+        // Verifica se já existe um protético ATIVO com o mesmo CRO
         if (protetico.getCro() != null) {
-            Optional<Protetico> proteticoPorCro = findByCro(protetico.getCro());
+            Optional<Protetico> proteticoPorCro = findByCroActive(protetico.getCro());
             if (proteticoPorCro.isPresent() && !isSameEntity(protetico, proteticoPorCro.get())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CRO já cadastrado");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CRO já cadastrado em um protético ativo");
             }
         }
         
-        // Verifica se já existe um protético com o mesmo email
+        // Verifica se já existe um protético ATIVO com o mesmo email
         if (protetico.getEmail() != null) {
-            Optional<Protetico> proteticoPorEmail = findByEmail(protetico.getEmail());
+            Optional<Protetico> proteticoPorEmail = findByEmailActive(protetico.getEmail());
             if (proteticoPorEmail.isPresent() && !isSameEntity(protetico, proteticoPorEmail.get())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email já cadastrado");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email já cadastrado em um protético ativo");
             }
         }
         
-        // Verifica se já existe um protético com o mesmo telefone
+        // Verifica se já existe um protético ATIVO com o mesmo telefone
         if (protetico.getTelefone() != null && !protetico.getTelefone().isEmpty()) {
-            Optional<Protetico> proteticoPorTelefone = findByTelefone(protetico.getTelefone());
+            Optional<Protetico> proteticoPorTelefone = findByTelefoneActive(protetico.getTelefone());
             if (proteticoPorTelefone.isPresent() && !isSameEntity(protetico, proteticoPorTelefone.get())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telefone já cadastrado");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telefone já cadastrado em um protético ativo");
             }
         }
     }
@@ -148,6 +148,7 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
         return entity1.getId() != null && entity1.getId().equals(entity2.getId());
     }
     
+    // Métodos para buscar incluindo inativos (uso interno)
     public Optional<Protetico> findByEmail(String email) {
         return proteticoRepository.findByEmail(email);
     }
@@ -169,7 +170,29 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
         return proteticoRepository.findByCroContaining(cro);
     }
     
+    // Métodos para buscar apenas ativos (uso público)
+    public Optional<Protetico> findByEmailActive(String email) {
+        return proteticoRepository.findByEmailAndIsActiveTrue(email);
+    }
+    
+    public Optional<Protetico> findByCroActive(String cro) {
+        return proteticoRepository.findFirstByCroAndIsActiveTrue(cro);
+    }
+    
+    public Optional<Protetico> findByTelefoneActive(String telefone) {
+        return proteticoRepository.findFirstByTelefoneAndIsActiveTrue(telefone);
+    }
+    
+    public List<Protetico> findByCroContainingActive(String cro) {
+        return proteticoRepository.findByCroContainingAndIsActiveTrue(cro);
+    }
+    
+    @Override
     public List<Protetico> findAll() {
+        return proteticoRepository.findAllByIsActiveTrue();
+    }
+    
+    public List<Protetico> findAllIncludingInactive() {
         return proteticoRepository.findAll();
     }
     

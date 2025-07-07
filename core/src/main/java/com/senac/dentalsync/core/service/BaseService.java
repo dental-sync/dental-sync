@@ -30,8 +30,18 @@ public abstract class BaseService<T extends BaseEntity, ID> {
     }
 
     public List<T> findAll() {
-        List<T> list = getRepository().findAll();
-        return list;
+        // Retorna apenas entidades ativas
+        return getRepository().findAllByIsActiveTrue();
+    }
+    
+    public List<T> findAllIncludingInactive() {
+        // Método para retornar todas as entidades, incluindo inativas
+        return getRepository().findAll();
+    }
+    
+    public List<T> findAllInactive() {
+        // Método para retornar apenas entidades inativas
+        return getRepository().findAllByIsActiveFalse();
     }
 
     public Page<T> findAll(Pageable pageable) {

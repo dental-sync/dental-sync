@@ -47,24 +47,25 @@ public abstract class BaseService<T extends BaseEntity, ID> {
         if (entity.isPresent()) {
             T entityToUpdate = entity.get();
             
-            // Para softdelete, descomentar o código abaixo.
+            // SOFT DELETE ATIVADO - Para os triggers de backup funcionarem
             
-            // //Garantir que todos os campos necessários estão preenchidos
-            // if (entityToUpdate.getCreatedAt() == null) {
-            //     entityToUpdate.setCreatedAt(LocalDateTime.now());
-            // }
+            // Garantir que todos os campos necessários estão preenchidos
+            if (entityToUpdate.getCreatedAt() == null) {
+                entityToUpdate.setCreatedAt(LocalDateTime.now());
+            }
             
-            // if (entityToUpdate.getCreatedBy() == null) {
-            //     entityToUpdate.setCreatedBy(getUsuarioLogado());
-            // }
+            if (entityToUpdate.getCreatedBy() == null) {
+                entityToUpdate.setCreatedBy(getUsuarioLogado());
+            }
             
-            // //Atualizar campos de exclusão lógica
-            // entityToUpdate.setIsActive(false);
-            // entityToUpdate.setUpdatedAt(LocalDateTime.now());
-            // entityToUpdate.setUpdatedBy(getUsuarioLogado());
-            // getRepository().save(entityToUpdate);
+            // Atualizar campos de exclusão lógica
+            entityToUpdate.setIsActive(false);
+            entityToUpdate.setUpdatedAt(LocalDateTime.now());
+            entityToUpdate.setUpdatedBy(getUsuarioLogado());
+            getRepository().save(entityToUpdate);
 
-            getRepository().delete(entityToUpdate);
+            // DELETE REAL comentado - agora usando SOFT DELETE
+            // getRepository().delete(entityToUpdate);
         }
     }
 } 

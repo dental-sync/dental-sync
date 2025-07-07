@@ -58,6 +58,7 @@ const EditarServico = () => {
             categoriaServico: {
               id: servicoData.categoriaServico?.id || ''
             },
+            materiais: servicoData.materiais || [],
             status: servicoData.status || 'ATIVO',
             isActive: servicoData.isActive
           });
@@ -204,16 +205,16 @@ const EditarServico = () => {
   };
 
   const handleRemoverMaterial = (id) => {
-    setMateriaisSelecionados(prev => prev.filter(mat => mat.id !== id));
+    setMateriaisSelecionados(prev => (prev || []).filter(mat => mat.id !== id));
     setFormData(prev => ({
       ...prev,
-      materiais: prev.materiais.filter(sm => sm.material.id !== id)
+      materiais: (prev.materiais || []).filter(sm => sm.material.id !== id)
     }));
   };
 
   const handleQuantidadeChange = (id, value) => {
     if (value === '') {
-      setMateriaisSelecionados(prev => prev.map(m =>
+      setMateriaisSelecionados(prev => (prev || []).map(m =>
         m.id === id
           ? { ...m, quantidadeUso: '' }
           : m
@@ -223,14 +224,14 @@ const EditarServico = () => {
     
     const quantidade = Math.max(1, Math.floor(Number(value)));
     if (!isNaN(quantidade)) {
-      setMateriaisSelecionados(prev => prev.map(m =>
+      setMateriaisSelecionados(prev => (prev || []).map(m =>
         m.id === id
           ? { ...m, quantidadeUso: quantidade }
           : m
       ));
       setFormData(prev => ({
         ...prev,
-        materiais: prev.materiais.map(sm =>
+        materiais: (prev.materiais || []).map(sm =>
           (sm.material.id === id) ? { ...sm, quantidade } : sm
         )
       }));
@@ -246,7 +247,7 @@ const EditarServico = () => {
     setLoading(true);
 
     try {
-      const materiaisValidos = materiaisSelecionados
+      const materiaisValidos = (materiaisSelecionados || [])
         .filter(m => m.id && m.quantidadeUso && m.quantidadeUso > 0)
         .map(m => ({
           material: { id: parseInt(m.id) },
@@ -431,11 +432,11 @@ const EditarServico = () => {
                 />
                 {errors.materiais && <span className="error-text">{errors.materiais}</span>}
                 <div className="materiais-selecionados-lista">
-                  {materiaisSelecionados.length === 0 ? (
+                  {(materiaisSelecionados || []).length === 0 ? (
                     <div className="empty-state">Nenhum material selecionado</div>
                   ) : (
                     <ul className="materiais-lista-quantidade">
-                      {materiaisSelecionados.map(m => (
+                      {(materiaisSelecionados || []).map(m => (
                         <li key={m.id} className="item-material-quantidade">
                           <span className="nome-material">{m.nome}</span>
                           <div className="material-acoes-direita">
@@ -501,7 +502,7 @@ const EditarServico = () => {
                 </div>
                 <div className="total-item">
                   <span className="total-label">Valor dos Materiais:</span>
-                  <span className="total-valor">R$ {materiaisSelecionados.reduce((total, material) => {
+                  <span className="total-valor">R$ {(materiaisSelecionados || []).reduce((total, material) => {
                     const preco = material.valorUnitario || 0;
                     const quantidade = material.quantidadeUso || 1;
                     return total + (preco * quantidade);

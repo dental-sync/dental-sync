@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.senac.dentalsync.core.persistency.model.Dentista;
 import com.senac.dentalsync.core.persistency.model.Paciente;
@@ -18,12 +19,21 @@ import com.senac.dentalsync.core.dto.HistoricoProteticoDTO;
 import com.senac.dentalsync.core.persistency.model.Servico;
 import com.senac.dentalsync.core.dto.HistoricoPacienteDTO;
 import com.senac.dentalsync.core.dto.HistoricoDentistaDTO;
+import com.senac.dentalsync.core.persistency.model.Material;
+import com.senac.dentalsync.core.persistency.model.ServicoMaterial;
+import com.senac.dentalsync.core.persistency.repository.ServicoMaterialRepository;
 
 @Service
 public class PedidoService extends BaseService<Pedido, Long> {
 
     @Autowired
     private PedidoRepository pedidoRepository;
+
+    @Autowired
+    private MaterialService materialService;
+
+    @Autowired
+    private ServicoMaterialRepository servicoMaterialRepository;
 
     @Override
     protected BaseRepository<Pedido, Long> getRepository() {
@@ -33,6 +43,66 @@ public class PedidoService extends BaseService<Pedido, Long> {
     @Override
     protected Protetico getUsuarioLogado() {
         return null;
+    }
+
+    @Override
+    @Transactional
+    public Pedido save(Pedido pedido) {
+        // Se é um pedido novo, desconta material do estoque
+        if (pedido.getId() == null) {
+            descontarMaterialDoEstoque(pedido);
+        }
+        
+        return super.save(pedido);
+    }
+
+    /**
+     * Desconta os materiais do estoque quando um novo pedido é criado
+     */
+    private void descontarMaterialDoEstoque(Pedido pedido) {
+        if (pedido.getServicos() == null || pedido.getServicos().isEmpty()) {
+            return; // Não há serviços, não precisa descontar material
+        }
+
+        for (Servico servico : pedido.getServicos()) {
+            // Busca todos os materiais associados ao serviço
+            List<ServicoMaterial> servicoMateriais = servicoMaterialRepository.findByServicoId(servico.getId());
+            
+            for (ServicoMaterial servicoMaterial : servicoMateriais) {
+                descontarMaterial(servicoMaterial);
+            }
+        }
+    }
+
+    /**
+     * Desconta a quantidade de um material específico do estoque
+     */
+    private void descontarMaterial(ServicoMaterial servicoMaterial) {
+        BigDecimal quantidadeNecessaria = servicoMaterial.getQuantidade();
+        
+        // Ignora materiais com quantidade zero ou nula
+        if (quantidadeNecessaria == null || quantidadeNecessaria.compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
+
+        // Busca o material atual no banco
+        Material material = materialService.getRepository()
+                .findById(servicoMaterial.getMaterial().getId())
+                .orElseThrow(() -> new RuntimeException("Material não encontrado: " + servicoMaterial.getMaterial().getId()));
+
+        // Verifica se há estoque suficiente
+        BigDecimal estoqueAtual = material.getQuantidade();
+        if (estoqueAtual == null || estoqueAtual.compareTo(quantidadeNecessaria) < 0) {
+            throw new RuntimeException("Estoque insuficiente para o material: " + material.getNome() + 
+                                     " (Disponível: " + estoqueAtual + ", Necessário: " + quantidadeNecessaria + ")");
+        }
+
+        // Desconta a quantidade do estoque
+        BigDecimal novoEstoque = estoqueAtual.subtract(quantidadeNecessaria);
+        material.setQuantidade(novoEstoque);
+        
+        // Salva o material com o novo estoque
+        materialService.save(material);
     }
 
     public List<Pedido> findByDentista(Dentista dentista) {

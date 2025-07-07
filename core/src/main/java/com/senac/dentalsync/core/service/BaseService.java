@@ -71,6 +71,11 @@ public abstract class BaseService<T extends BaseEntity, ID> {
             }
         } else {
             // Entidade existente - apenas atualizar updated_by
+            // Garantir que isActive seja true se não foi especificado explicitamente
+            if (entity.getIsActive() == null) {
+                entity.setIsActive(true);
+            }
+            
             if (usuarioLogado != null) {
                 System.out.println("📝 Atualizando entidade - updated_by: " + usuarioLogado.getNome() + " (ID: " + usuarioLogado.getId() + ")");
             } else {

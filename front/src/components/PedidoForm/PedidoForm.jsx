@@ -646,7 +646,8 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
         prioridade: formData.prioridade,
         status: formData.status || 'PENDENTE', // Usar status selecionado ou PENDENTE como padrão
         odontograma: dentesSelecionados.join(','), // Converter array para string separada por vírgulas
-        observacao: formData.observacao
+        observacao: formData.observacao,
+        isActive: true // Garantir que o pedido permanece ativo após edição
       };
       
       // Criar ou atualizar pedido usando o endpoint padrão

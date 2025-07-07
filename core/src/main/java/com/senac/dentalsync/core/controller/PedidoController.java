@@ -57,6 +57,13 @@ public class PedidoController extends BaseController<Pedido, Long> {
     }
     
     @Override
+    @GetMapping
+    public ResponseEntity<List<Pedido>> findAll() {
+        // Sobrescrever para retornar todos os pedidos, incluindo inativos
+        return ResponseEntity.ok(getService().findAllIncludingInactive());
+    }
+    
+    @Override
     @PostMapping
     public ResponseEntity<Pedido> save(@RequestBody Pedido entity) {
         processarServicos(entity);

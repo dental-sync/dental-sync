@@ -22,12 +22,9 @@ const PacientePage = () => {
 
   // Hook para gerenciar filtros de registros inativos
   const {
-    loading: filterLoading,
-    error: filterError,
     fetchActivePacientes,
     fetchInactivePacientes,
-    fetchAllPacientes,
-    toggleRecordStatus
+    fetchAllPacientes
   } = useInactiveFilter();
 
  //Mesmo formato de ordenação do DentistaPage.jsx
@@ -221,42 +218,23 @@ const PacientePage = () => {
   };
 
  
-  const handleStatusChange = async (pacienteId, newStatus) => {
-    try {
-      // Usar o hook para alternar o status
-      await toggleRecordStatus('paciente', pacienteId, newStatus);
-      
-      // Atualizar o status do paciente no estado local
-      setPacientes(prevPacientes => 
-        prevPacientes.map(paciente => 
-          paciente.id === pacienteId 
-            ? { ...paciente, isActive: newStatus } 
-            : paciente
-        )
-      );
-      
-      // Exibir mensagem de sucesso
-      const statusText = newStatus ? 'ativado' : 'desativado';
-      toast.success(`Paciente ${statusText} com sucesso!`, {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: false,
-      });
-      
-      // Recarregar dados se necessário para manter consistência
-      if (filtros.isActive === 'ATIVO' && !newStatus) {
-        // Se estava mostrando apenas ativos e desativou um, recarregar para removê-lo da vista
-        loadPacientes();
-      } else if (filtros.isActive === 'INATIVO' && newStatus) {
-        // Se estava mostrando apenas inativos e ativou um, recarregar para removê-lo da vista
-        loadPacientes();
-      }
-    } catch (error) {
-      console.error('Erro ao alterar status do paciente:', error);
-      toast.error('Erro ao alterar status do paciente');
+  const handleStatusChange = (pacienteId, newStatus) => {
+    // Atualizar o status do paciente no estado local
+    setPacientes(prevPacientes => 
+      prevPacientes.map(paciente => 
+        paciente.id === pacienteId 
+          ? { ...paciente, isActive: newStatus } 
+          : paciente
+      )
+    );
+    
+    // Recarregar dados se necessário para manter consistência com filtros
+    if (filtros.isActive === 'ATIVO' && !newStatus) {
+      // Se estava mostrando apenas ativos e desativou um, recarregar para removê-lo da vista
+      setTimeout(() => loadPacientes(), 1000);
+    } else if (filtros.isActive === 'INATIVO' && newStatus) {
+      // Se estava mostrando apenas inativos e ativou um, recarregar para removê-lo da vista
+      setTimeout(() => loadPacientes(), 1000);
     }
   };
  

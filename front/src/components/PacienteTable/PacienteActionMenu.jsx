@@ -100,7 +100,7 @@ const PacienteActionMenu = ({ pacienteId, itemId, pacienteStatus, itemStatus, on
 
   const handleDelete = async () => {
     try {
-      const response = await api.delete(`/paciente/excluir/${id}`);
+      const response = await api.delete(`/paciente/${id}`);
       
       if (response.status === 204) {
         onDeleted(id);

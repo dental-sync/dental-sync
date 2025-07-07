@@ -19,7 +19,6 @@ import com.senac.dentalsync.core.service.PedidoService;
 
 import jakarta.validation.Valid;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -92,11 +91,10 @@ public class PacienteController extends BaseController<Paciente, Long> {
         return ResponseEntity.ok(pacienteService.findAllIncludingInactive());
     }
 
-    @DeleteMapping("/excluir/{id}")
-    public ResponseEntity<Map<String, String>> excluirPaciente(@PathVariable Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         pacienteService.deletePaciente(id);
-        Map<String, String> response = new HashMap<>();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.noContent().build();
     }
     
     @PatchMapping("/{id}")

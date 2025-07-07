@@ -123,12 +123,16 @@ CREATE TABLE protetico_backup (
     backup_reason VARCHAR(255) DEFAULT 'Backup automático'
 );
 
--- Tabela de backup para SERVICOS
+-- Tabela de backup para SERVICOS (baseada na estrutura real da entidade)
 CREATE TABLE servicos_backup (
     id BIGINT PRIMARY KEY,
+    categoria_servico_id BIGINT,
     nome VARCHAR(255) NOT NULL,
-    descricao TEXT,
     preco DECIMAL(10,2),
+    valor_materiais DECIMAL(10,2),
+    valor_total DECIMAL(10,2),
+    tempo_previsto DECIMAL(10,2),
+    descricao TEXT,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -168,15 +172,15 @@ CREATE TABLE pedido_servico_backup (
     PRIMARY KEY (pedido_id, servico_id)
 );
 
--- Tabela de backup para MATERIAL
+-- Tabela de backup para MATERIAL (baseada na estrutura real da entidade)
 CREATE TABLE material_backup (
     id BIGINT PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
-    descricao TEXT,
-    quantidade DECIMAL(10,2),
-    estoque_minimo DECIMAL(10,2),
-    preco DECIMAL(10,2),
+    nome VARCHAR(255),
     categoria_material_id BIGINT,
+    quantidade DECIMAL(10,2),
+    unidade_medida VARCHAR(50),
+    valor_unitario DECIMAL(10,2),
+    estoque_minimo DECIMAL(10,2),
     status ENUM('SEM_ESTOQUE', 'BAIXO_ESTOQUE', 'EM_ESTOQUE') DEFAULT 'EM_ESTOQUE',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -329,11 +333,11 @@ BEGIN
     INNER JOIN pedidos p ON ps.pedido_id = p.id
     WHERE p.clinica_id = OLD.id;
     
-    -- TERCEIRO: Fazer backup da clinica
+    -- TERCEIRO: Fazer backup da clinica (apenas com as colunas que existem)
     INSERT IGNORE INTO clinica_backup (
-        id, nome, cnpj, telefone, email, endereco, is_active, created_at, updated_at, created_by, updated_by, backup_reason
+        id, nome, cnpj, is_active, created_at, updated_at, created_by, updated_by, backup_reason
     ) VALUES (
-        OLD.id, OLD.nome, OLD.cnpj, OLD.telefone, OLD.email, OLD.endereco, OLD.is_active, OLD.created_at, OLD.updated_at, OLD.created_by, OLD.updated_by,
+        OLD.id, OLD.nome, OLD.cnpj, OLD.is_active, OLD.created_at, OLD.updated_at, OLD.created_by, OLD.updated_by,
         'DELETE REAL - Exclusão física'
     );
 END//
@@ -375,15 +379,17 @@ BEGIN
     );
 END//
 
--- Trigger para SERVICOS (DELETE REAL)
+-- Trigger para SERVICOS (DELETE REAL) - CORRIGIDO COM TODAS AS COLUNAS
 CREATE TRIGGER trigger_servicos_backup
 BEFORE DELETE ON servicos
 FOR EACH ROW
 BEGIN
     INSERT IGNORE INTO servicos_backup (
-        id, nome, descricao, preco, is_active, created_at, updated_at, created_by, updated_by, backup_reason
+        id, categoria_servico_id, nome, preco, valor_materiais, valor_total, tempo_previsto, descricao,
+        is_active, created_at, updated_at, created_by, updated_by, backup_reason
     ) VALUES (
-        OLD.id, OLD.nome, OLD.descricao, OLD.preco, OLD.is_active, OLD.created_at, OLD.updated_at, OLD.created_by, OLD.updated_by,
+        OLD.id, OLD.categoria_servico_id, OLD.nome, OLD.preco, OLD.valor_materiais, OLD.valor_total, OLD.tempo_previsto, OLD.descricao,
+        OLD.is_active, OLD.created_at, OLD.updated_at, OLD.created_by, OLD.updated_by,
         'DELETE REAL - Exclusão física'
     );
 END//
@@ -417,16 +423,16 @@ BEGIN
     );
 END//
 
--- Trigger para MATERIAL (DELETE REAL)
+-- Trigger para MATERIAL (DELETE REAL) - CORRIGIDO SEM COLUNAS INEXISTENTES
 CREATE TRIGGER trigger_material_backup
 BEFORE DELETE ON material
 FOR EACH ROW
 BEGIN
     INSERT IGNORE INTO material_backup (
-        id, nome, descricao, quantidade, estoque_minimo, preco, categoria_material_id, status,
+        id, nome, categoria_material_id, quantidade, unidade_medida, valor_unitario, estoque_minimo, status,
         is_active, created_at, updated_at, created_by, updated_by, backup_reason
     ) VALUES (
-        OLD.id, OLD.nome, OLD.descricao, OLD.quantidade, OLD.estoque_minimo, OLD.preco, OLD.categoria_material_id, OLD.status,
+        OLD.id, OLD.nome, OLD.categoria_material_id, OLD.quantidade, OLD.unidade_medida, OLD.valor_unitario, OLD.estoque_minimo, OLD.status,
         OLD.is_active, OLD.created_at, OLD.updated_at, OLD.created_by, OLD.updated_by,
         'DELETE REAL - Exclusão física'
     );
@@ -559,11 +565,11 @@ BEGIN
         INNER JOIN pedidos p ON ps.pedido_id = p.id
         WHERE p.clinica_id = OLD.id AND p.is_active = TRUE;
         
-        -- TERCEIRO: Fazer backup da clinica
+        -- TERCEIRO: Fazer backup da clinica (apenas com as colunas que existem)
         INSERT IGNORE INTO clinica_backup (
-            id, nome, cnpj, telefone, email, endereco, is_active, created_at, updated_at, created_by, updated_by, backup_reason
+            id, nome, cnpj, is_active, created_at, updated_at, created_by, updated_by, backup_reason
         ) VALUES (
-            OLD.id, OLD.nome, OLD.cnpj, OLD.telefone, OLD.email, OLD.endereco, OLD.is_active, OLD.created_at, OLD.updated_at, OLD.created_by, OLD.updated_by,
+            OLD.id, OLD.nome, OLD.cnpj, OLD.is_active, OLD.created_at, OLD.updated_at, OLD.created_by, OLD.updated_by,
             'SOFT DELETE - Exclusão lógica'
         );
         
@@ -614,16 +620,18 @@ BEGIN
     END IF;
 END//
 
--- Trigger para SERVICOS (SOFT DELETE)
+-- Trigger para SERVICOS (SOFT DELETE) - CORRIGIDO COM TODAS AS COLUNAS
 CREATE TRIGGER trigger_servicos_soft_delete_backup
 BEFORE UPDATE ON servicos
 FOR EACH ROW
 BEGIN
     IF OLD.is_active = TRUE AND NEW.is_active = FALSE THEN
         INSERT IGNORE INTO servicos_backup (
-            id, nome, descricao, preco, is_active, created_at, updated_at, created_by, updated_by, backup_reason
+            id, categoria_servico_id, nome, preco, valor_materiais, valor_total, tempo_previsto, descricao,
+            is_active, created_at, updated_at, created_by, updated_by, backup_reason
         ) VALUES (
-            OLD.id, OLD.nome, OLD.descricao, OLD.preco, OLD.is_active, OLD.created_at, OLD.updated_at, OLD.created_by, OLD.updated_by,
+            OLD.id, OLD.categoria_servico_id, OLD.nome, OLD.preco, OLD.valor_materiais, OLD.valor_total, OLD.tempo_previsto, OLD.descricao,
+            OLD.is_active, OLD.created_at, OLD.updated_at, OLD.created_by, OLD.updated_by,
             'SOFT DELETE - Exclusão lógica'
         );
     END IF;
@@ -648,17 +656,17 @@ BEGIN
     END IF;
 END//
 
--- Trigger para MATERIAL (SOFT DELETE)
+-- Trigger para MATERIAL (SOFT DELETE) - CORRIGIDO SEM COLUNAS INEXISTENTES
 CREATE TRIGGER trigger_material_soft_delete_backup
 BEFORE UPDATE ON material
 FOR EACH ROW
 BEGIN
     IF OLD.is_active = TRUE AND NEW.is_active = FALSE THEN
         INSERT IGNORE INTO material_backup (
-            id, nome, descricao, quantidade, estoque_minimo, preco, categoria_material_id, status,
+            id, nome, categoria_material_id, quantidade, unidade_medida, valor_unitario, estoque_minimo, status,
             is_active, created_at, updated_at, created_by, updated_by, backup_reason
         ) VALUES (
-            OLD.id, OLD.nome, OLD.descricao, OLD.quantidade, OLD.estoque_minimo, OLD.preco, OLD.categoria_material_id, OLD.status,
+            OLD.id, OLD.nome, OLD.categoria_material_id, OLD.quantidade, OLD.unidade_medida, OLD.valor_unitario, OLD.estoque_minimo, OLD.status,
             OLD.is_active, OLD.created_at, OLD.updated_at, OLD.created_by, OLD.updated_by,
             'SOFT DELETE - Exclusão lógica'
         );

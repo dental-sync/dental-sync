@@ -11,6 +11,9 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class MaterialService extends BaseService<Material, Long> {
@@ -47,6 +50,19 @@ public class MaterialService extends BaseService<Material, Long> {
     public Material save(Material material) {
         atualizarStatusMaterial(material);
         return super.save(material);
+    }
+
+    public Material updateStatus(Long id, Boolean isActive) {
+        Optional<Material> materialOpt = materialRepository.findById(id);
+        
+        if (materialOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material não encontrado");
+        }
+        
+        Material material = materialOpt.get();
+        material.setIsActive(isActive);
+        
+        return materialRepository.save(material);
     }
 
     public Map<String, Object> getNotificacaoEstoque() {

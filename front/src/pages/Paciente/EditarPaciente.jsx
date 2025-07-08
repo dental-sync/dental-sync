@@ -4,6 +4,7 @@ import './EditarPaciente.css';
 
 import api from '../../axios-config';
 import { toast } from 'react-toastify';
+import DatePicker from '../../components/DatePicker/DatePicker';
 
 const EditarPaciente = () => {
   const { id } = useParams();
@@ -63,6 +64,20 @@ const EditarPaciente = () => {
 
     fetchPaciente();
   }, [id, navigate]);
+
+  const handleDateChange = (value) => {
+    setFormData({
+      ...formData,
+      dataNascimento: value
+    });
+    
+    if (errors.dataNascimento) {
+      setErrors({
+        ...errors,
+        dataNascimento: ''
+      });
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -140,24 +155,6 @@ const EditarPaciente = () => {
         delete updatedErrors[name];
         setErrors(updatedErrors);
       }
-    } else if (name === 'dataNascimento') {
-      // Permitir apenas datas com ano de até 4 dígitos
-      let partes = value.split('-');
-      if (partes.length === 3) {
-        if (partes[0].length > 4) {
-          partes[0] = partes[0].slice(0, 4);
-          const valorCorrigido = partes.join('-');
-          setFormData({
-            ...formData,
-            [name]: valorCorrigido
-          });
-          return;
-        }
-      }
-      setFormData({
-        ...formData,
-        [name]: value
-      });
     } else {
       setFormData({
         ...formData,
@@ -195,6 +192,12 @@ const EditarPaciente = () => {
       newErrors.nome = 'O nome não pode conter números';
     } else if (nomeTrimmed.length > MAX_CHARS) {
       newErrors.nome = `Limite máximo de ${MAX_CHARS} caracteres excedido`;
+    } else {
+      // Verificar se o primeiro nome tem pelo menos 2 letras
+      const partesNome = nomeTrimmed.split(' ').filter(part => part.length > 0);
+      if (partesNome.length >= 2 && partesNome[0].length < 2) {
+        newErrors.nome = 'O primeiro nome deve ter pelo menos 2 letras';
+      }
     }
     
     if (!emailTrimmed) {
@@ -212,9 +215,9 @@ const EditarPaciente = () => {
       newErrors.telefone = 'Telefone é obrigatório';
     }
     
-    //Validar data de nascimento (não pode ser no futuro)
-    if (formData.dataNascimento) {
-      // Comparar diretamente a string de data com a data atual formatada em ISO
+    if (!formData.dataNascimento) {
+      newErrors.dataNascimento = 'Data de nascimento é obrigatória';
+    } else {
       const hoje = new Date();
       const anoHoje = hoje.getFullYear();
       const mesHoje = String(hoje.getMonth() + 1).padStart(2, '0');
@@ -222,7 +225,7 @@ const EditarPaciente = () => {
       const dataHojeISO = `${anoHoje}-${mesHoje}-${diaHoje}`;
       
       if (formData.dataNascimento > dataHojeISO) {
-        newErrors.dataNascimento = 'A data de nascimento não pode ser no futuro';
+        newErrors.dataNascimento = 'A data de nascimento não pode ser maior que a data atual';
       }
     }
     
@@ -251,8 +254,30 @@ const EditarPaciente = () => {
       navigate('/paciente');
     } catch (error) {
       console.error('Erro ao atualizar paciente:', error);
-      const errorMessage = error.response?.data?.message || 'Erro ao atualizar paciente';
-      toast.error(errorMessage);
+      
+      if (error.response?.status === 400 && error.response?.data?.message) {
+        const backendMessage = error.response.data.message;
+        const newErrors = {};
+        
+        if (backendMessage.toLowerCase().includes('nome')) {
+          newErrors.nome = backendMessage;
+        } else if (backendMessage.toLowerCase().includes('email')) {
+          newErrors.email = backendMessage;
+        } else if (backendMessage.toLowerCase().includes('telefone')) {
+          newErrors.telefone = backendMessage;
+        } else if (backendMessage.toLowerCase().includes('data')) {
+          newErrors.dataNascimento = backendMessage;
+        }
+        
+        if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
+        } else {
+          toast.error(backendMessage);
+        }
+      } else {
+        const errorMessage = error.response?.data?.message || 'Erro ao atualizar paciente';
+        toast.error(errorMessage);
+      }
     } finally {
       setSaving(false);
     }
@@ -343,12 +368,17 @@ const EditarPaciente = () => {
           
           <div className="form-group">
             <label htmlFor="dataNascimento">Data de Nascimento</label>
-            <input
-              type="date"
+            <DatePicker
               id="dataNascimento"
-              name="dataNascimento"
               value={formData.dataNascimento}
-              onChange={handleChange}
+              onChange={handleDateChange}
+              maxDate={(() => {
+                const hoje = new Date();
+                const year = hoje.getFullYear();
+                const month = (hoje.getMonth() + 1).toString().padStart(2, '0');
+                const day = hoje.getDate().toString().padStart(2, '0');
+                return `${year}-${month}-${day}`;
+              })()}
               className={errors.dataNascimento ? 'input-error' : ''}
             />
             {errors.dataNascimento && <span className="error-text">{errors.dataNascimento}</span>}

@@ -134,6 +134,12 @@ const CadastroPaciente = () => {
       newErrors.nome = 'O nome não pode conter números';
     } else if (nomeTrimmed.length > MAX_CHARS) {
       newErrors.nome = `Limite máximo de ${MAX_CHARS} caracteres excedido`;
+    } else {
+      // Verificar se o primeiro nome tem pelo menos 2 letras
+      const partesNome = nomeTrimmed.split(' ').filter(part => part.length > 0);
+      if (partesNome.length >= 2 && partesNome[0].length < 2) {
+        newErrors.nome = 'O primeiro nome deve ter pelo menos 2 letras';
+      }
     }
     
     //Validação do email
@@ -202,8 +208,30 @@ const CadastroPaciente = () => {
       navigate('/paciente');
     } catch (error) {
       console.error('Erro ao cadastrar paciente:', error);
-      const errorMessage = error.response?.data?.message || 'Erro ao cadastrar paciente';
-      toast.error(errorMessage);
+      
+      if (error.response?.status === 400 && error.response?.data?.message) {
+        const backendMessage = error.response.data.message;
+        const newErrors = {};
+        
+        if (backendMessage.toLowerCase().includes('nome')) {
+          newErrors.nome = backendMessage;
+        } else if (backendMessage.toLowerCase().includes('email')) {
+          newErrors.email = backendMessage;
+        } else if (backendMessage.toLowerCase().includes('telefone')) {
+          newErrors.telefone = backendMessage;
+        } else if (backendMessage.toLowerCase().includes('data')) {
+          newErrors.dataNascimento = backendMessage;
+        }
+        
+        if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
+        } else {
+          toast.error(backendMessage);
+        }
+      } else {
+        const errorMessage = error.response?.data?.message || 'Erro ao cadastrar paciente';
+        toast.error(errorMessage);
+      }
     } finally {
       setLoading(false);
     }

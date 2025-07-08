@@ -21,6 +21,7 @@ const InformacaoSection = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [laboratorioId, setLaboratorioId] = useState(null);
+  const [enderecoId, setEnderecoId] = useState(null);
 
   useEffect(() => {
     const fetchLaboratorioData = async () => {
@@ -33,7 +34,15 @@ const InformacaoSection = () => {
           const laboratorio = response.data;
           const endereco = laboratorio.endereco || {};
           
+          console.log('🏭 Dados do laboratório:', {
+            id: laboratorio.id,
+            nome: laboratorio.nomeLaboratorio,
+            enderecoId: endereco.id
+          });
+          
           setLaboratorioId(laboratorio.id);
+          setEnderecoId(endereco.id || null); // Guardar ID do endereço para atualização
+          
           setFormData({
             nomeLaboratorio: laboratorio.nomeLaboratorio || '',
             cnpj: laboratorio.cnpj || '',
@@ -49,18 +58,25 @@ const InformacaoSection = () => {
         }
       } catch (error) {
         console.error('Erro ao buscar dados do laboratório:', error);
-        // Dados padrão caso não consiga buscar
+        
+        // Mostrar detalhes do erro
+        if (error.response) {
+          console.error('Status:', error.response.status);
+          console.error('Data:', error.response.data);
+        }
+        
+        // Deixar campos vazios para permitir cadastro
         setFormData({
-          nomeLaboratorio: 'Dental Sync Lab',
-          cnpj: '12.345.678/0001-90',
-          emailLaboratorio: 'contato@dentalsync.com',
-          telefoneLaboratorio: '(11) 98765-4321',
-          cep: '01310-100',
-          logradouro: 'Av. Paulista',
-          numero: '1000',
-          bairro: 'Bela Vista',
-          cidade: 'São Paulo',
-          estado: 'SP'
+          nomeLaboratorio: '',
+          cnpj: '',
+          emailLaboratorio: '',
+          telefoneLaboratorio: '',
+          cep: '',
+          logradouro: '',
+          numero: '',
+          bairro: '',
+          cidade: '',
+          estado: ''
         });
       } finally {
         setLoading(false);
@@ -145,20 +161,33 @@ const InformacaoSection = () => {
     
     try {
       // Preparar dados para envio
+      const enderecoData = {
+        cep: formData.cep,
+        logradouro: formData.logradouro,
+        numero: formData.numero,
+        bairro: formData.bairro,
+        cidade: formData.cidade,
+        estado: formData.estado
+      };
+      
+      // Se é atualização e há ID do endereço, inclui no payload
+      if (enderecoId) {
+        enderecoData.id = enderecoId;
+      }
+      
       const dataToSend = {
         nomeLaboratorio: formData.nomeLaboratorio,
         cnpj: formData.cnpj,
         emailLaboratorio: formData.emailLaboratorio,
         telefoneLaboratorio: formData.telefoneLaboratorio,
-        endereco: {
-          cep: formData.cep,
-          logradouro: formData.logradouro,
-          numero: formData.numero,
-          bairro: formData.bairro,
-          cidade: formData.cidade,
-          estado: formData.estado
-        }
+        endereco: enderecoData
       };
+      
+      console.log('📤 Enviando dados:', {
+        laboratorioId,
+        enderecoId,
+        payload: dataToSend
+      });
       
       if (laboratorioId) {
         await api.put(`/laboratorios/${laboratorioId}`, dataToSend);

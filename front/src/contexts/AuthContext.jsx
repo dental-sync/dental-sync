@@ -53,15 +53,15 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           // Não mostrar erro se for 401 (não autenticado é esperado)
           if (error.response?.status !== 401) {
-            console.error('Erro ao verificar autenticação:', error);
+          console.error('Erro ao verificar autenticação:', error);
           }
-          setIsAuthenticated(false);
-          setUser(null);
-          setRememberMe(false);
-          setSessionDuration('');
-        } finally {
-          setLoading(false);
-        }
+        setIsAuthenticated(false);
+        setUser(null);
+        setRememberMe(false);
+        setSessionDuration('');
+      } finally {
+      setLoading(false);
+      }
     };
 
     checkAuth();

@@ -95,7 +95,7 @@ const DentistaPage = () => {
         setRefreshData(prev => prev + 1);
       }
     }
-  }, [location, toast]);
+  }, [location]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -111,21 +111,13 @@ const DentistaPage = () => {
   }, []);
 
   const handleDentistaDeleted = (dentistaId) => {
+    // Apenas remove o dentista do estado local
     setDentistas(prevDentistas => 
       prevDentistas.filter(dentista => dentista.id !== dentistaId)
     );
     
-    setRefreshData(prev => prev + 1);
-    
-    window.history.replaceState({}, document.title);
-    
-    navigate('', { 
-      state: { 
-        success: "Dentista excluído com sucesso!",
-        refresh: false
-      },
-      replace: true
-    });
+    // Exibe sucesso direto sem navigate
+    toast.success("Dentista excluído com sucesso!");
   };
 
   const handleStatusChange = async (dentistaId, newStatus) => {

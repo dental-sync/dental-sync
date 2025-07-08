@@ -285,7 +285,7 @@ const EditarDentista = () => {
       
       if (error.response) {
         const errorMessage = extractErrorMessage(error);
-        toast.error(errorMessage);
+          toast.error(errorMessage);
       } else {
         toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
       }

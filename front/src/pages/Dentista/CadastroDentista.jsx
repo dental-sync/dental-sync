@@ -248,7 +248,7 @@ const CadastroDentista = () => {
       
       if (error.response) {
         const errorMessage = error.response.data;
-        toast.error(errorMessage);
+          toast.error(errorMessage);
       } else {
         toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
       }

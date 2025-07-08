@@ -225,25 +225,25 @@ const PacientePage = () => {
       const response = await api.patch(`/paciente/${pacienteId}`, requestBody);
       
       if (response.status === 200) {
-        // Atualizar o status do paciente no estado local
-        setPacientes(prevPacientes => 
-          prevPacientes.map(paciente => 
-            paciente.id === pacienteId 
+    // Atualizar o status do paciente no estado local
+    setPacientes(prevPacientes => 
+      prevPacientes.map(paciente => 
+        paciente.id === pacienteId 
               ? { ...paciente, isActive: newStatus === true || newStatus === 'ATIVO' } 
-              : paciente
-          )
-        );
+          : paciente
+      )
+    );
         
         const statusText = (newStatus === true || newStatus === 'ATIVO') ? 'ATIVO' : 'INATIVO';
         toast.success(`Status alterado para ${statusText} com sucesso!`);
-        
-        // Recarregar dados se necessário para manter consistência com filtros
+    
+    // Recarregar dados se necessário para manter consistência com filtros
         if (filtros.isActive === 'ATIVO' && (newStatus === false || newStatus === 'INATIVO')) {
-          // Se estava mostrando apenas ativos e desativou um, recarregar para removê-lo da vista
-          setTimeout(() => loadPacientes(), 1000);
+      // Se estava mostrando apenas ativos e desativou um, recarregar para removê-lo da vista
+      setTimeout(() => loadPacientes(), 1000);
         } else if (filtros.isActive === 'INATIVO' && (newStatus === true || newStatus === 'ATIVO')) {
-          // Se estava mostrando apenas inativos e ativou um, recarregar para removê-lo da vista
-          setTimeout(() => loadPacientes(), 1000);
+      // Se estava mostrando apenas inativos e ativou um, recarregar para removê-lo da vista
+      setTimeout(() => loadPacientes(), 1000);
         }
       }
     } catch (error) {

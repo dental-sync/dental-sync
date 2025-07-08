@@ -23,12 +23,13 @@ const ProteticoPage = () => {
     isActive: 'ATIVO',
     cargo: 'todos'
   });
-  const [refreshData, setRefreshData] = useState(0);
+
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: 'ascending'
   });
   const filterRef = useRef(null);
+  const locationStateProcessed = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
@@ -83,22 +84,30 @@ const ProteticoPage = () => {
 
   useEffect(() => {
     loadProteticos();
-  }, [refreshData, filtros.isActive]);
+  }, [filtros.isActive]);
 
   useEffect(() => {
-    if (location.state && location.state.success) {
+    if (location.state && location.state.success && !locationStateProcessed.current) {
       const successMessage = location.state.success;
       const shouldRefresh = location.state.refresh;
       
+      locationStateProcessed.current = true;
       window.history.replaceState({}, document.title);
       
       toast.success(successMessage);
       
       if (shouldRefresh) {
-        setRefreshData(prev => prev + 1);
+        loadProteticos();
       }
     }
-  }, [location, toast]);
+  }, [location.state]);
+
+  // Reset da ref quando não há mais location.state
+  useEffect(() => {
+    if (!location.state || !location.state.success) {
+      locationStateProcessed.current = false;
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -118,17 +127,7 @@ const ProteticoPage = () => {
       prevProteticos.filter(protetico => protetico.id !== proteticoId)
     );
     
-    setRefreshData(prev => prev + 1);
-    
-    window.history.replaceState({}, document.title);
-    
-    navigate('', { 
-      state: { 
-        success: "Protético excluído com sucesso!",
-        refresh: false
-      },
-      replace: true
-    });
+    toast.success("Protético excluído com sucesso!");
   };
 
   const handleStatusChange = async (proteticoId, newStatus) => {
@@ -148,9 +147,8 @@ const ProteticoPage = () => {
       const statusText = isActive ? 'ativado' : 'desativado';
       toast.success(`Protético ${statusText} com sucesso!`);
       
-      if (filtros.isActive === 'ATIVO' && !isActive) {
-        loadProteticos();
-      } else if (filtros.isActive === 'INATIVO' && isActive) {
+      // Recarregar a lista se o protético mudou de status fora do filtro atual
+      if ((filtros.isActive === 'ATIVO' && !isActive) || (filtros.isActive === 'INATIVO' && isActive)) {
         loadProteticos();
       }
       
@@ -211,7 +209,7 @@ const ProteticoPage = () => {
   };
 
   const handleRefresh = () => {
-    setRefreshData(prev => prev + 1);
+    loadProteticos();
   };
 
   const handleExportar = () => {

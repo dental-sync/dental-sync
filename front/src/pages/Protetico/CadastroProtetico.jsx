@@ -110,29 +110,66 @@ const CadastroProtetico = () => {
         formattedValue = 'CRO-' + value.replace(/^CRO-?/, '');
       }
       
-      // Remove caracteres inválidos e converte para maiúsculo
-      formattedValue = formattedValue.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+      // Converte para maiúsculo
+      formattedValue = formattedValue.toUpperCase();
       
-      // Adiciona hífen após a sigla do estado (após 6 caracteres: CRO-XX)
-      if (formattedValue.length > 6 && formattedValue.charAt(6) !== '-') {
-        formattedValue = formattedValue.substring(0, 6) + '-' + formattedValue.substring(6);
+      // Processa o valor após CRO-
+      const afterCRO = formattedValue.substring(4);
+      let processedValue = 'CRO-';
+      
+      // Primeira parte: até 2 letras para o estado
+      let stateLetters = '';
+      let remainingChars = afterCRO;
+      
+      for (let i = 0; i < remainingChars.length && stateLetters.length < 2; i++) {
+        const char = remainingChars[i];
+        if (/[A-Z]/.test(char)) {
+          stateLetters += char;
+        } else if (char === '-' && stateLetters.length === 2) {
+          break;
+        }
       }
       
-      // Limita o tamanho máximo do CRO (CRO-XX-XXXXXX = 15 caracteres)
-      if (formattedValue.length > 15) {
-        formattedValue = formattedValue.substring(0, 15);
-      }
-
-      // Limita o número após o segundo hífen para 6 dígitos
-      const parts = formattedValue.split('-');
-      if (parts.length === 3 && parts[2].length > 6) {
-        parts[2] = parts[2].substring(0, 6);
-        formattedValue = parts.join('-');
+      processedValue += stateLetters;
+      
+      // Se temos 2 letras, adiciona o hífen e processa os números
+      if (stateLetters.length === 2) {
+        processedValue += '-';
+        
+        // Encontra onde começam os números (após as 2 letras)
+        let numberStart = 0;
+        let letterCount = 0;
+        
+        for (let i = 0; i < remainingChars.length; i++) {
+          if (/[A-Z]/.test(remainingChars[i])) {
+            letterCount++;
+            if (letterCount === 2) {
+              numberStart = i + 1;
+              break;
+            }
+          }
+        }
+        
+        // Pula o hífen se existir
+        if (remainingChars[numberStart] === '-') {
+          numberStart++;
+        }
+        
+        // Pega apenas os números (máximo 6 dígitos)
+        let numbers = '';
+        for (let i = numberStart; i < remainingChars.length && numbers.length < 6; i++) {
+          const char = remainingChars[i];
+          if (/[0-9]/.test(char)) {
+            numbers += char;
+          }
+        }
+        
+        processedValue += numbers;
       }
       
       setFormData({
         ...formData,
-        [name]: formattedValue
+        [name]: processedValue
       });
       return;
     }
@@ -255,12 +292,7 @@ const CadastroProtetico = () => {
       
       // Redirecionar para a lista após sucesso
       setTimeout(() => {
-        navigate('/protetico', { 
-          state: { 
-            success: "Protético cadastrado com sucesso!",
-            refresh: true
-          }
-        });
+        navigate('/protetico');
       }, 1500);
       
     } catch (error) {

@@ -266,7 +266,7 @@ const EditarDentista = () => {
         cro: formData.cro.trim(),
         telefone: formData.telefone.trim(),
         email: formData.email.trim().toLowerCase(),
-        clinicaIds: formData.clinicasAssociadas.map(c => c.id),
+        clinicas: formData.clinicasAssociadas,
         isActive: formData.isActive
       };
 

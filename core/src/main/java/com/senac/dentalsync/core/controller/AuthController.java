@@ -25,6 +25,7 @@ import com.senac.dentalsync.core.service.ProteticoService;
 import com.senac.dentalsync.core.service.TrustedDeviceService;
 import com.senac.dentalsync.core.service.TwoFactorService;
 import com.senac.dentalsync.core.service.RememberMeService;
+import com.senac.dentalsync.core.util.PasswordValidator;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -80,6 +81,19 @@ public class AuthController {
             Protetico protetico = proteticoOpt.get();
             System.out.println("Usuário encontrado: " + protetico.getEmail());
             System.out.println("2FA ativado: " + (protetico.getTwoFactorEnabled() != null ? protetico.getTwoFactorEnabled() : "false"));
+            
+            // Verificar se o protético está ativo
+            if (protetico.getIsActive() == null || !protetico.getIsActive()) {
+                System.out.println("Protético inativo tentando fazer login: " + username);
+                
+                // Revogar cookies e sessões existentes
+                invalidateUserSessions(username, request, response);
+                
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Conta desativada. Entre em contato com o administrador do sistema.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+            }
             
             // Tentar autenticar o usuário
             Authentication authentication;
@@ -328,7 +342,7 @@ public class AuthController {
     }
     
     @GetMapping("/auth/check")
-    public ResponseEntity<Map<String, Object>> checkAuth(HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> checkAuth(HttpServletRequest request, HttpServletResponse response) {
         try {
             HttpSession session = request.getSession(false);
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -341,24 +355,44 @@ public class AuthController {
                 Boolean rememberMe = (Boolean) session.getAttribute("REMEMBER_ME");
                 
                 if (userData != null) {
-                    Map<String, Object> response = new HashMap<>();
-                    response.put("success", true);
-                    response.put("authenticated", true);
-                    response.put("user", userData);
-                    response.put("rememberMe", rememberMe != null ? rememberMe : false);
-                    response.put("sessionDuration", (rememberMe != null && rememberMe) ? "7 dias" : "30 minutos");
-                    
-                    return ResponseEntity.ok(response);
+                    // Verificar se o protético ainda está ativo e buscar dados atualizados
+                    Optional<Protetico> currentUserOpt = proteticoService.findByEmail(userData.getEmail());
+                    if (currentUserOpt.isPresent()) {
+                        Protetico currentUser = currentUserOpt.get();
+                        if (currentUser.getIsActive() == null || !currentUser.getIsActive()) {
+                            System.out.println("Protético inativo detectado em sessão ativa: " + currentUser.getEmail());
+                            invalidateUserSessions(currentUser.getEmail(), request, response);
+                            
+                            Map<String, Object> errorResponse = new HashMap<>();
+                            errorResponse.put("success", false);
+                            errorResponse.put("authenticated", false);
+                            errorResponse.put("message", "Conta desativada. Entre em contato com o administrador do sistema.");
+                            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+                        }
+                        
+                        // Atualizar dados da sessão com dados atualizados do banco
+                        // Isso garante que mudanças no isAdmin sejam refletidas
+                        session.setAttribute("USER_DATA", currentUser);
+                        
+                        Map<String, Object> authResponse = new HashMap<>();
+                        authResponse.put("success", true);
+                        authResponse.put("authenticated", true);
+                        authResponse.put("user", currentUser); // Usar dados atualizados
+                        authResponse.put("rememberMe", rememberMe != null ? rememberMe : false);
+                        authResponse.put("sessionDuration", (rememberMe != null && rememberMe) ? "7 dias" : "30 minutos");
+                        
+                        return ResponseEntity.ok(authResponse);
+                    }
                 }
             }
             
             // Se não há sessão ativa, retornar não autenticado
             // O token de "Lembrar de mim" será verificado apenas no login manual
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("authenticated", false);
+            Map<String, Object> unauthResponse = new HashMap<>();
+            unauthResponse.put("success", false);
+            unauthResponse.put("authenticated", false);
             
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(unauthResponse);
             
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -678,6 +712,16 @@ public class AuthController {
             
             Protetico user = userOpt.get();
             
+            // Validar critérios de complexidade da nova senha
+            try {
+                PasswordValidator.validatePassword(newPassword);
+            } catch (Exception e) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", e.getMessage());
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+            
             // Atualizar senha
             user.setSenha(passwordEncoder.encode(newPassword));
             proteticoService.save(user);
@@ -724,6 +768,17 @@ public class AuthController {
                         Optional<Protetico> userOpt = rememberMeService.findUserByValidRememberMeToken(rememberMeToken);
                         if (userOpt.isPresent()) {
                             Protetico user = userOpt.get();
+                            
+                            // Verificar se o protético está ativo
+                            if (user.getIsActive() == null || !user.getIsActive()) {
+                                System.out.println("Protético inativo tentando login com token: " + user.getEmail());
+                                invalidateUserSessions(user.getEmail(), request, response);
+                                
+                                Map<String, Object> errorResponse = new HashMap<>();
+                                errorResponse.put("success", false);
+                                errorResponse.put("message", "Conta desativada. Entre em contato com o administrador do sistema.");
+                                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+                            }
                             
                             // Verificar se o usuário tem 2FA ativado
                             if (user.getTwoFactorEnabled() != null && user.getTwoFactorEnabled()) {
@@ -794,6 +849,54 @@ public class AuthController {
             errorResponse.put("success", false);
             errorResponse.put("message", "Erro interno do servidor");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    /**
+     * Invalida todas as sessões e cookies associados ao usuário
+     */
+    private void invalidateUserSessions(String email, HttpServletRequest request, HttpServletResponse response) {
+        try {
+            System.out.println("🔒 Invalidando sessões para usuário: " + email);
+            
+            // Invalidar sessão atual se existir
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.invalidate();
+                System.out.println("Sessão HTTP invalidada");
+            }
+            
+            // Limpar cookies do navegador
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    // Remover cookie de sessão
+                    if ("DENTALSYNC_SESSION".equals(cookie.getName()) || "JSESSIONID".equals(cookie.getName())) {
+                        Cookie deleteCookie = new Cookie(cookie.getName(), null);
+                        deleteCookie.setMaxAge(0);
+                        deleteCookie.setPath("/");
+                        response.addCookie(deleteCookie);
+                        System.out.println("Cookie de sessão removido: " + cookie.getName());
+                    }
+                    
+                    // Remover cookie de "Lembrar de mim"
+                    if ("DENTALSYNC_REMEMBER_ME".equals(cookie.getName())) {
+                        Cookie deleteCookie = new Cookie(cookie.getName(), null);
+                        deleteCookie.setMaxAge(0);
+                        deleteCookie.setPath("/");
+                        response.addCookie(deleteCookie);
+                        System.out.println("Cookie de lembrar-me removido");
+                    }
+                }
+            }
+            
+            // Invalidar tokens de "Lembrar de mim" no banco de dados
+            rememberMeService.removeRememberMeToken(email);
+            System.out.println("Tokens de lembrar-me invalidados no banco");
+            
+        } catch (Exception e) {
+            System.err.println("Erro ao invalidar sessões: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 } 

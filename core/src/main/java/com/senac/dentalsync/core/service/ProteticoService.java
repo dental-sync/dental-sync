@@ -20,6 +20,7 @@ import com.senac.dentalsync.core.persistency.model.Laboratorio;
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.ProteticoRepository;
+import com.senac.dentalsync.core.util.PasswordValidator;
 
 @Service
 public class ProteticoService extends BaseService<Protetico, Long> implements UserDetailsService {
@@ -35,10 +36,7 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
         return proteticoRepository;
     }
 
-    @Override
-    protected Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
     
     @Override
     public Protetico save(Protetico protetico) {
@@ -91,6 +89,16 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
             System.out.println("Senha atual (primeiros 10 chars): " + (protetico.getSenha() != null ? protetico.getSenha().substring(0, Math.min(10, protetico.getSenha().length())) : "null"));
             
             if (protetico.getId() == null || senhaFoiAlterada) {
+                // Verificar se a senha não está criptografada antes de validar
+                boolean senhaJaCriptografada = protetico.getSenha().startsWith("$2a$") || protetico.getSenha().startsWith("$2b$");
+                
+                if (!senhaJaCriptografada) {
+                    // Validar critérios de complexidade da senha apenas se não estiver criptografada
+                    System.out.println("Validando critérios de complexidade da senha...");
+                    PasswordValidator.validatePassword(protetico.getSenha());
+                    System.out.println("Senha atende aos critérios de complexidade");
+                }
+                
                 System.out.println("Criptografando senha...");
                 protetico.setSenha(passwordEncoder.encode(protetico.getSenha()));
                 System.out.println("Senha criptografada (primeiros 10 chars): " + protetico.getSenha().substring(0, 10));
@@ -107,27 +115,27 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
     }
     
     private void verificarDuplicidade(Protetico protetico) {
-        // Verifica se já existe um protético com o mesmo CRO
+        // Verifica se já existe um protético ATIVO com o mesmo CRO
         if (protetico.getCro() != null) {
-            Optional<Protetico> proteticoPorCro = findByCro(protetico.getCro());
+            Optional<Protetico> proteticoPorCro = findByCroActive(protetico.getCro());
             if (proteticoPorCro.isPresent() && !isSameEntity(protetico, proteticoPorCro.get())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CRO já cadastrado");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CRO já cadastrado em um protético ativo");
             }
         }
         
-        // Verifica se já existe um protético com o mesmo email
+        // Verifica se já existe um protético ATIVO com o mesmo email
         if (protetico.getEmail() != null) {
-            Optional<Protetico> proteticoPorEmail = findByEmail(protetico.getEmail());
+            Optional<Protetico> proteticoPorEmail = findByEmailActive(protetico.getEmail());
             if (proteticoPorEmail.isPresent() && !isSameEntity(protetico, proteticoPorEmail.get())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email já cadastrado");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email já cadastrado em um protético ativo");
             }
         }
         
-        // Verifica se já existe um protético com o mesmo telefone
+        // Verifica se já existe um protético ATIVO com o mesmo telefone
         if (protetico.getTelefone() != null && !protetico.getTelefone().isEmpty()) {
-            Optional<Protetico> proteticoPorTelefone = findByTelefone(protetico.getTelefone());
+            Optional<Protetico> proteticoPorTelefone = findByTelefoneActive(protetico.getTelefone());
             if (proteticoPorTelefone.isPresent() && !isSameEntity(protetico, proteticoPorTelefone.get())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telefone já cadastrado");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telefone já cadastrado em um protético ativo");
             }
         }
     }
@@ -137,6 +145,7 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
         return entity1.getId() != null && entity1.getId().equals(entity2.getId());
     }
     
+    // Métodos para buscar incluindo inativos (uso interno)
     public Optional<Protetico> findByEmail(String email) {
         return proteticoRepository.findByEmail(email);
     }
@@ -158,7 +167,29 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
         return proteticoRepository.findByCroContaining(cro);
     }
     
+    // Métodos para buscar apenas ativos (uso público)
+    public Optional<Protetico> findByEmailActive(String email) {
+        return proteticoRepository.findByEmailAndIsActiveTrue(email);
+    }
+    
+    public Optional<Protetico> findByCroActive(String cro) {
+        return proteticoRepository.findFirstByCroAndIsActiveTrue(cro);
+    }
+    
+    public Optional<Protetico> findByTelefoneActive(String telefone) {
+        return proteticoRepository.findFirstByTelefoneAndIsActiveTrue(telefone);
+    }
+    
+    public List<Protetico> findByCroContainingActive(String cro) {
+        return proteticoRepository.findByCroContainingAndIsActiveTrue(cro);
+    }
+    
+    @Override
     public List<Protetico> findAll() {
+        return proteticoRepository.findAllByIsActiveTrue();
+    }
+    
+    public List<Protetico> findAllIncludingInactive() {
         return proteticoRepository.findAll();
     }
     
@@ -166,8 +197,15 @@ public class ProteticoService extends BaseService<Protetico, Long> implements Us
         Protetico protetico = findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Protético não encontrado"));
         
+        System.out.println("🔄 Atualizando status do protético ID: " + id + " de " + protetico.getIsActive() + " para " + isActive);
+        
         protetico.setIsActive(isActive);
-        return save(protetico);
+        
+        // Usar super.save() diretamente para evitar verificação de duplicidade e lógica de senha
+        Protetico savedProtetico = super.save(protetico);
+        
+        System.out.println("✅ Status atualizado com sucesso para: " + savedProtetico.getIsActive());
+        return savedProtetico;
     }
     
  

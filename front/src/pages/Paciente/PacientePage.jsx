@@ -4,22 +4,28 @@ import './PacientePage.css'; //estilo(style [css]) específico da página
 import SearchBar from '../../components/SearchBar/SearchBar'; //barra de busca personalizada (SearchBar [componente])
 import ActionButton from '../../components/ActionButton/ActionButton'; //botões com ícones (ActionButton [componente])
 import PacienteTable from '../../components/PacienteTable/PacienteTable'; //tabela de pacientes (PacienteTable [componente])
-import NotificationBell from '../../components/NotificationBell/NotificationBell'; //sininho de notificações (NotificationBell [componente])
+import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown'; //componente de exportação de dados
 import { useNavigate, useLocation } from 'react-router-dom'; //navegação e controle de rota (useNavigate [hook], useLocation [hook])
 import api from '../../axios-config';
 import { toast } from 'react-toastify';
+import useNotifications from '../../hooks/useNotifications';
+import useInactiveFilter from '../../hooks/useInactiveFilter'; // Importa o hook para filtros de inativos
 
 const PacientePage = () => {
   
   const [searchQuery, setSearchQuery] = useState('');
-
-  
   const [pacientes, setPacientes] = useState([]);
   const [pacientesComHistorico, setPacientesComHistorico] = useState({});
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Hook para gerenciar filtros de registros inativos
+  const {
+    fetchActivePacientes,
+    fetchInactivePacientes,
+    fetchAllPacientes
+  } = useInactiveFilter();
 
  //Mesmo formato de ordenação do DentistaPage.jsx
   const [sortConfig, setSortConfig] = useState({
@@ -31,7 +37,7 @@ const PacientePage = () => {
 
   
   const [filtros, setFiltros] = useState({
-    isActive: 'todos'
+    isActive: 'ATIVO' // Padrão para mostrar apenas ativos
   });
 
   const [refreshData, setRefreshData] = useState(0);
@@ -42,6 +48,7 @@ const PacientePage = () => {
 
   
   const location = useLocation();
+  const { notifications, loading: notificationLoading, refreshNotifications } = useNotifications();
   
   // Criando um ref para armazenar mensagens recentes e evitar duplicação de toasts
   const recentMessages = useRef(new Set());
@@ -69,54 +76,70 @@ const PacientePage = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchPacientes = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get('/paciente');
-        const pacientesData = response.data;
-        setPacientes(pacientesData);
-        
-        // Buscar histórico para cada paciente
-        const historicoPromises = pacientesData.map(async (paciente) => {
-          try {
-            const historicoResponse = await api.get(`/paciente/${paciente.id}/historico`);
-            const historico = historicoResponse.data;
-            // Ordenar por data de entrega e pegar o mais recente
-            const pedidoMaisRecente = historico.sort((a, b) => 
-              new Date(b.dataEntrega) - new Date(a.dataEntrega)
-            )[0];
-            
-            return {
-              pacienteId: paciente.id,
-              ultimoServico: pedidoMaisRecente ? pedidoMaisRecente.dataEntrega : null
-            };
-          } catch (error) {
-            console.error(`Erro ao buscar histórico do paciente ${paciente.id}:`, error);
-            return {
-              pacienteId: paciente.id,
-              ultimoServico: null
-            };
-          }
-        });
-        
-        const historicos = await Promise.all(historicoPromises);
-        const historicoMap = historicos.reduce((acc, curr) => {
-          acc[curr.pacienteId] = curr.ultimoServico;
-          return acc;
-        }, {});
-        
-        setPacientesComHistorico(historicoMap);
-      } catch (error) {
-        console.error('Erro ao buscar pacientes:', error);
-        toast.error('Erro ao carregar pacientes');
-      } finally {
-        setLoading(false);
+  // Função para carregar pacientes baseado no filtro selecionado
+  const loadPacientes = async () => {
+    setLoading(true);
+    try {
+      let pacientesData = [];
+      
+      // Usa o hook para buscar pacientes baseado no filtro
+      switch (filtros.isActive) {
+        case 'ATIVO':
+          pacientesData = await fetchActivePacientes();
+          break;
+        case 'INATIVO':
+          pacientesData = await fetchInactivePacientes();
+          break;
+        case 'todos':
+        default:
+          pacientesData = await fetchAllPacientes();
+          break;
       }
-    };
-    
-    fetchPacientes();
-  }, [refreshData]);
+      
+      setPacientes(pacientesData);
+      
+      // Buscar histórico para cada paciente
+      const historicoPromises = pacientesData.map(async (paciente) => {
+        try {
+          const historicoResponse = await api.get(`/paciente/${paciente.id}/historico`);
+          const historico = historicoResponse.data;
+          // Ordenar por data de entrega e pegar o mais recente
+          const pedidoMaisRecente = historico.sort((a, b) => 
+            new Date(b.dataEntrega) - new Date(a.dataEntrega)
+          )[0];
+          
+          return {
+            pacienteId: paciente.id,
+            ultimoServico: pedidoMaisRecente ? pedidoMaisRecente.dataEntrega : null
+          };
+        } catch (error) {
+          console.error(`Erro ao buscar histórico do paciente ${paciente.id}:`, error);
+          return {
+            pacienteId: paciente.id,
+            ultimoServico: null
+          };
+        }
+      });
+      
+      const historicos = await Promise.all(historicoPromises);
+      const historicoMap = historicos.reduce((acc, curr) => {
+        acc[curr.pacienteId] = curr.ultimoServico;
+        return acc;
+      }, {});
+      
+      setPacientesComHistorico(historicoMap);
+    } catch (error) {
+      console.error('Erro ao buscar pacientes:', error);
+      toast.error('Erro ao carregar pacientes');
+      setError('Erro ao carregar pacientes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPacientes();
+  }, [refreshData, filtros.isActive]);
   
   useEffect(() => {
     if (location.state && location.state.success) {
@@ -195,63 +218,45 @@ const PacientePage = () => {
   };
 
  
-  const handleStatusChange = (pacienteId, newStatus) => {
-    // Encontrar o paciente atual
-    const pacienteAtual = pacientes.find(p => p.id === pacienteId);
-    
-    if (!pacienteAtual) {
-      console.error('Paciente não encontrado:', pacienteId);
-      return;
-    }
-    
-    // Verificar se o status está realmente mudando
-    const statusAtual = pacienteAtual.isActive;
-    
-    // Se o status for o mesmo, não faz nada
-    if (statusAtual === newStatus) {
-      return;
-    }
-
-    // Atualizar o status do paciente na lista imediatamente
-    const pacientesAtualizados = pacientes.map(paciente =>
-      paciente.id === pacienteId
-        ? { ...paciente, isActive: newStatus }
-        : paciente
-    );
-    
-    // Atualizar o estado imediatamente
-    setPacientes(pacientesAtualizados);
-    
-    // Forçar uma re-renderização para garantir que os filtros sejam aplicados corretamente
-    setRefreshData(prev => prev + 1);
-    
-    // Exibir o toast de forma padronizada
-    const statusText = newStatus ? 'Ativo' : 'Inativo';
-    
-    // Limpa qualquer estado de navegação existente
-    window.history.replaceState({}, document.title);
-    
-    // Adicionamos uma mensagem de sucesso usando o padrão de state
-    navigate('', { 
-      state: { 
-        success: `Status atualizado com sucesso para ${statusText}`,
-        refresh: false // Não precisamos de refresh pois já atualizamos localmente
-      },
-      replace: true // Importante usar replace para não adicionar nova entrada no histórico
-    });
-  };
- 
-  const pacientesFiltrados = pacientes
-    .filter(paciente => {
+  const handleStatusChange = async (pacienteId, newStatus) => {
+    try {
+      const requestBody = newStatus === true || newStatus === 'ATIVO' ? { isActive: true } : { isActive: false };
       
-      if (filtros.isActive !== 'todos') {
-        const isAtivo = filtros.isActive === 'ATIVO';
-        if (paciente.isActive !== isAtivo) {
-          return false;
+      const response = await api.patch(`/paciente/${pacienteId}`, requestBody);
+      
+      if (response.status === 200) {
+    // Atualizar o status do paciente no estado local
+    setPacientes(prevPacientes => 
+      prevPacientes.map(paciente => 
+        paciente.id === pacienteId 
+              ? { ...paciente, isActive: newStatus === true || newStatus === 'ATIVO' } 
+          : paciente
+      )
+    );
+        
+        const statusText = (newStatus === true || newStatus === 'ATIVO') ? 'ATIVO' : 'INATIVO';
+        toast.success(`Status alterado para ${statusText} com sucesso!`);
+    
+    // Recarregar dados se necessário para manter consistência com filtros
+        if (filtros.isActive === 'ATIVO' && (newStatus === false || newStatus === 'INATIVO')) {
+      // Se estava mostrando apenas ativos e desativou um, recarregar para removê-lo da vista
+      setTimeout(() => loadPacientes(), 1000);
+        } else if (filtros.isActive === 'INATIVO' && (newStatus === true || newStatus === 'ATIVO')) {
+      // Se estava mostrando apenas inativos e ativou um, recarregar para removê-lo da vista
+      setTimeout(() => loadPacientes(), 1000);
         }
       }
-      
-      
+    } catch (error) {
+      console.error('Erro ao alterar status:', error);
+      toast.error('Erro ao alterar status do paciente');
+      // Recarregar dados em caso de erro para manter consistência
+      loadPacientes();
+    }
+  };
+ 
+  // Filtrar apenas por busca de texto, já que o filtro de status é feito no backend
+  const pacientesFiltrados = pacientes
+    .filter(paciente => {
       if (searchQuery) {
         const searchLower = searchQuery.toLowerCase();
         const idFormatado = `P${String(paciente.id).padStart(4, '0')}`;
@@ -323,7 +328,7 @@ const PacientePage = () => {
 
   const handleLimparFiltros = () => {
     setFiltros({
-      isActive: 'todos'
+      isActive: 'ATIVO' // Volta ao padrão de mostrar apenas ativos
     });
   };
 
@@ -351,7 +356,13 @@ const PacientePage = () => {
     <div className="paciente-page">
       <div className="page-top">
         <div className="notification-container">
-          <NotificationBell count={2} />
+            <NotificationBell 
+              count={notifications.total}
+              baixoEstoque={notifications.baixoEstoque}
+              semEstoque={notifications.semEstoque}
+              loading={notificationLoading}
+              onRefresh={refreshNotifications}
+            />
         </div>
       </div>
       
@@ -363,7 +374,7 @@ const PacientePage = () => {
               label="Filtrar" 
               icon="filter"
               onClick={toggleFiltro} 
-              active={isFilterOpen || filtros.isActive !== 'todos'}
+              active={isFilterOpen || filtros.isActive !== 'ATIVO'}
             />
             
             {isFilterOpen && (
@@ -412,7 +423,7 @@ const PacientePage = () => {
       
       <div className="search-container">
         <SearchBar 
-          placeholder="Buscar por ID (P0001), nome, email, telefone..."
+          placeholder="Buscar por ID, nome, email, telefone..."
           onSearch={handleSearch} 
         />
         <ActionButton
@@ -428,9 +439,9 @@ const PacientePage = () => {
             Nenhum paciente encontrado para a busca "{searchQuery}".
           </div>
         )}
-        {!searchQuery && pacientesFiltrados.length === 0 && filtros.isActive !== 'todos' ? (
+        {!searchQuery && pacientesFiltrados.length === 0 && filtros.isActive !== 'ATIVO' ? (
           <div className="filter-info">
-            Nenhum paciente encontrado com os filtros aplicados.
+            Nenhum paciente {filtros.isActive === 'INATIVO' ? 'inativo' : ''} encontrado.
           </div>
         ) : null}
         <PacienteTable 

@@ -33,9 +33,6 @@ const calcularCrescimentoDentistas = (atual, anterior) => {
   const anteriorValido = anterior || 0;
   const crescimento = atual - anteriorValido;
   
-  // Debug para entender os valores
-  console.log('🦷 DEBUG Dentistas:', { atual, anterior: anteriorValido, crescimento });
-  
   return `${crescimento > 0 ? '+' : ''}${crescimento} ${Math.abs(crescimento) === 1 ? 'novo dentista' : 'novos dentistas'} este mês`;
 };
 
@@ -140,10 +137,7 @@ const Relatorios = () => {
         const dadosBrutos = response.data;
         
         //Processa os dados brutos
-        console.log('📊 Dados recebidos do backend:', dadosBrutos);
         const dadosProcessados = processarDadosBackend(dadosBrutos);
-        console.log('📊 Dados processados para o frontend:', dadosProcessados);
-        console.log('📊 Dados pedidos por mês:', dadosProcessados?.pedidosPorMes);
         setDadosRelatorio(dadosProcessados);
       } catch (erro) {
         console.error('Erro ao carregar relatórios:', erro);

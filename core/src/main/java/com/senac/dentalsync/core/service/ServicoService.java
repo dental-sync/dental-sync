@@ -44,10 +44,7 @@ public class ServicoService extends BaseService<Servico, Long> {
         return servicoRepository;
     }
 
-    @Override
-    protected Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
 
     @Override
     @Transactional
@@ -71,8 +68,11 @@ public class ServicoService extends BaseService<Servico, Long> {
 
         logger.debug("Serviço encontrado: {}", servicoAntigo.getNome());
 
-        // Define o ID do serviço editado
+        // Preservar campos de auditoria da entidade existente
         servicoEditado.setId(idServico);
+        servicoEditado.setCreatedAt(servicoAntigo.getCreatedAt());
+        servicoEditado.setCreatedBy(servicoAntigo.getCreatedBy());
+        servicoEditado.setIsActive(servicoAntigo.getIsActive());
         
         // Processa e salva o serviço com seus materiais
         Servico servicoSalvo = processarServicoComMateriais(servicoEditado, idServico);

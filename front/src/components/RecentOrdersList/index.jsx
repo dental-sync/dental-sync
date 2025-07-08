@@ -17,8 +17,7 @@ const RecentOrdersList = ({ pedidos }) => {
       case 'cancelado':
         return 'status-cancelado';
       default:
-        console.log('Status não mapeado:', status);
-        return 'status-outros';
+      return 'N/A';
     }
   };
 

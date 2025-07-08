@@ -4,11 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../axios-config';
 import Dropdown from '../Dropdown/Dropdown';
 import DatePicker from '../DatePicker/DatePicker';
-import { toast } from 'react-toastify';
+import useToast from '../../hooks/useToast';
 import './PedidoForm.css';
+
+
 
 const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
   const navigate = useNavigate();
+  const toast = useToast();
   
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(!!pedidoId);
@@ -40,20 +43,11 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
   const [dentesSelecionados, setDentesSelecionados] = useState([]);
   const [servicosSelecionados, setServicosSelecionados] = useState([]);
   
-  // Debug para monitorar mudanças no estado servicosSelecionados
-  useEffect(() => {
-    console.log('=== ESTADO servicosSelecionados MUDOU ===');
-    console.log('Novos serviços selecionados:', servicosSelecionados);
-    servicosSelecionados.forEach(servico => {
-      console.log(`- ${servico.nome}: quantidade = ${servico.quantidade}`);
-    });
-  }, [servicosSelecionados]);
+
 
   // Método para preencher os dados via STT
   const preencherDadosSTT = React.useCallback((dadosProcessados) => {
     try {
-      console.log('Dados recebidos do STT:', dadosProcessados);
-      
       let dados;
       
       // Diferentes formatos de resposta possíveis
@@ -71,8 +65,6 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
       } else {
         dados = dadosProcessados;
       }
-      
-      console.log('Dados processados:', dados);
       const novoFormData = {};
       let camposPreenchidos = [];
       let camposNaoEncontrados = [];
@@ -201,7 +193,6 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
       }
       
     } catch (error) {
-      console.error('Erro ao processar dados STT:', error);
       toast.error('Erro ao processar os dados do reconhecimento de voz.');
     }
   }, [clientes, dentistas, proteticos, servicos]);
@@ -261,11 +252,11 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
           proteticosResponse, 
           servicosResponse
         ] = await Promise.all([
-          api.get('/paciente'),
-          api.get('/dentistas'),
-          api.get('/clinicas'),
-          api.get('/proteticos'),
-          api.get('/servico')
+          api.get('/paciente'), // Busca apenas pacientes ativos
+          api.get('/dentistas'), // Busca apenas dentistas ativos
+          api.get('/clinicas'), // Busca apenas clínicas ativas
+          api.get('/proteticos'), // Busca apenas protéticos ativos
+          api.get('/servico') // Busca apenas serviços ativos
         ]);
         
         setClientes(clientesResponse.data);
@@ -303,9 +294,6 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
           const pedido = pedidoResponse.data;
           const quantidadesServicos = quantidadesResponse.data;
           
-          console.log('Pedido carregado:', pedido);
-          console.log('Quantidades carregadas:', quantidadesServicos);
-          
           // Formatar a data para o formato esperado pelo input date (YYYY-MM-DD)
           const dataEntrega = pedido.dataEntrega ? formatDateForInput(pedido.dataEntrega) : '';
           
@@ -320,6 +308,20 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
             }
           });
 
+          // Processar odontograma corretamente - converter string para array
+          let odontogramaArray = [];
+          if (pedido.odontograma) {
+            if (typeof pedido.odontograma === 'string') {
+              // Se é string, dividir por vírgula e converter para números
+              odontogramaArray = pedido.odontograma.split(',')
+                .map(d => parseInt(d.trim()))
+                .filter(d => !isNaN(d));
+            } else if (Array.isArray(pedido.odontograma)) {
+              // Se já é array, usar como está
+              odontogramaArray = pedido.odontograma.map(d => parseInt(d)).filter(d => !isNaN(d));
+            }
+          }
+
           setFormData({
             cliente: pedido.cliente || null,
             dentista: pedido.dentista || null,
@@ -329,11 +331,11 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
             dataEntrega,
             prioridade: pedido.prioridade || 'MEDIA',
             status: pedido.status || 'PENDENTE',
-            odontograma: pedido.odontograma || [],
+            odontograma: odontogramaArray,
             observacao: pedido.observacao || ''
           });
           
-          setDentesSelecionados(pedido.odontograma || []);
+          setDentesSelecionados(odontogramaArray);
           
           // Configurar clínicas filtradas se existe dentista
           if (pedido.dentista) {
@@ -346,13 +348,8 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
           }
           
           // Mapear serviços únicos com quantidade correta da tabela pedido_servico
-          console.log('=== DEBUG CARREGAMENTO QUANTIDADES ===');
-          console.log('Serviços únicos:', servicosUnicos);
-          console.log('Quantidades do backend:', quantidadesServicos);
-          
           const servicosComQuantidade = servicosUnicos.map(servico => {
             const quantidadeEncontrada = quantidadesServicos.find(qs => {
-              console.log(`Comparando: servico.id=${servico.id} vs qs.servico.id=${qs.servico?.id}`);
               return qs.servico && qs.servico.id === servico.id;
             });
             
@@ -360,40 +357,27 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
             let quantidade = 1;
             if (quantidadeEncontrada) {
               const qtdValue = quantidadeEncontrada.quantidade;
-              console.log(`DEBUG qtdValue:`, qtdValue, `tipo:`, typeof qtdValue, `null?:`, qtdValue === null);
               
               if (qtdValue === null || qtdValue === undefined) {
-                console.log(`⚠️ QUANTIDADE NULL - Este pode ser um pedido antigo. Usando padrão 1`);
                 // Para pedidos antigos, podemos inferir a quantidade contando serviços duplicados
                 const servicosDuplicados = (pedido.servicos || []).filter(s => s.id === servico.id);
                 quantidade = servicosDuplicados.length > 1 ? servicosDuplicados.length : 1;
-                console.log(`Quantidade inferida pelos serviços duplicados: ${quantidade}`);
               } else if (typeof qtdValue === 'string') {
                 const parsed = parseInt(parseFloat(qtdValue));
-                console.log(`String parseada: ${qtdValue} -> ${parsed}`);
                 quantidade = Math.max(1, isNaN(parsed) ? 1 : parsed);
               } else if (typeof qtdValue === 'number') {
                 const floored = Math.floor(qtdValue);
-                console.log(`Number processado: ${qtdValue} -> ${floored}`);
                 quantidade = Math.max(1, floored);
               } else {
-                console.log(`Tipo não reconhecido:`, typeof qtdValue, qtdValue);
                 // Tentar conversão forçada
                 const forceConverted = Number(qtdValue);
                 if (!isNaN(forceConverted) && forceConverted > 0) {
                   quantidade = Math.max(1, Math.floor(forceConverted));
-                  console.log(`Conversão forçada: ${qtdValue} -> ${quantidade}`);
                 } else {
-                  console.log(`Conversão falhou, usando padrão 1`);
                   quantidade = 1;
                 }
               }
-            } else {
-              console.log(`quantidadeEncontrada é null/undefined`);
             }
-            console.log(`Serviço ${servico.nome} (ID: ${servico.id}) - Quantidade encontrada:`, quantidadeEncontrada);
-            console.log(`Objeto completo quantidadeEncontrada:`, JSON.stringify(quantidadeEncontrada, null, 2));
-            console.log(`Serviço ${servico.nome} (ID: ${servico.id}) - Quantidade final: ${quantidade}`);
             
             return {
               ...servico,
@@ -401,19 +385,9 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
             };
           });
           
-          console.log('Serviços com quantidade FINAL:', servicosComQuantidade);
           setServicosSelecionados(servicosComQuantidade);
-          
-          // Debug adicional após setar o estado
-          setTimeout(() => {
-            console.log('Estado servicosSelecionados após setServicosSelecionados:', servicosSelecionados);
-          }, 100);
         } catch (err) {
-          console.error('Erro ao carregar pedido:', err);
-          toast.error('Erro ao carregar dados do pedido. Verifique se o pedido existe.', {
-            position: "top-right",
-            autoClose: 5000,
-          });
+          toast.error('Erro ao carregar dados do pedido. Verifique se o pedido existe.', { autoClose: 5000 });
           setError('Não foi possível carregar os dados do pedido.');
         } finally {
           setLoadingData(false);
@@ -444,10 +418,7 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
       // Validar se a data não é anterior a 1 ano atrás
       if (inputDate < umAnoAtras) {
         const dataLimite = umAnoAtras.toLocaleDateString('pt-BR');
-        toast.error(`A data de entrega não pode ser anterior a ${dataLimite} (1 ano atrás).`, {
-          position: "top-right",
-          autoClose: 4000,
-        });
+        toast.error(`A data de entrega não pode ser anterior a ${dataLimite} (1 ano atrás).`, { autoClose: 4000 });
         setError('Por favor, insira uma data válida.');
         return;
       }
@@ -455,10 +426,7 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
       // Validar se o ano está dentro de um range razoável (futuro)
       const currentYear = new Date().getFullYear();
       if (inputDate.getFullYear() > currentYear + 50) {
-        toast.error('Ano inválido. Insira um ano até ' + (currentYear + 50) + '.', {
-          position: "top-right",
-          autoClose: 4000,
-        });
+        toast.error('Ano inválido. Insira um ano até ' + (currentYear + 50) + '.', { autoClose: 4000 });
         setError('Por favor, insira uma data válida.');
         return;
       }
@@ -480,34 +448,29 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
   };
 
   const handleDentistaChange = async (dentista) => {
-    console.log('Dentista selecionado:', dentista);
     
     let clinicaSelecionada = null;
     let clinicasFiltradas = [];
     
-    if (dentista) {
-      // Verificar as clínicas associadas ao dentista
-      const clinicasAssociadas = dentista.clinicas || [];
-      console.log('Clínicas associadas ao dentista:', clinicasAssociadas);
+    if (dentista && dentista.clinicas) {
+      const clinicasAssociadas = dentista.clinicas;
       
       if (clinicasAssociadas.length === 1) {
-        // Se há apenas uma clínica, selecioná-la automaticamente
+        // Se há apenas uma clínica, selecionar automaticamente
         clinicaSelecionada = clinicasAssociadas[0];
-        console.log('Apenas uma clínica encontrada, selecionando automaticamente:', clinicaSelecionada);
       } else if (clinicasAssociadas.length > 1) {
-        // Se há várias clínicas, filtrar para mostrar no select
+        // Se há múltiplas clínicas, mostrar no select
         clinicasFiltradas = clinicasAssociadas;
-        console.log('Múltiplas clínicas encontradas, mostrando no select:', clinicasFiltradas);
       }
     }
-    
-    setClinicasFiltradasPorDentista(clinicasFiltradas);
     
     setFormData({
       ...formData,
       dentista,
       clinica: clinicaSelecionada
     });
+    
+    setClinicasFiltradasPorDentista(clinicasFiltradas);
   };
 
   const handleClinicaChange = (clinica) => {
@@ -601,31 +564,31 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
     
     // Validações antes do envio
     if (!formData.cliente) {
-      toast.error('Selecione um cliente.', { position: "top-right", autoClose: 3000 });
+      toast.error('Selecione um cliente.');
       setLoading(false);
       return;
     }
     
     if (!formData.dentista) {
-      toast.error('Selecione um dentista.', { position: "top-right", autoClose: 3000 });
+      toast.error('Selecione um dentista.');
       setLoading(false);
       return;
     }
     
     if (!formData.protetico) {
-      toast.error('Selecione um protético.', { position: "top-right", autoClose: 3000 });
+      toast.error('Selecione um protético.');
       setLoading(false);
       return;
     }
     
     if (!formData.dataEntrega) {
-      toast.error('Selecione uma data de entrega.', { position: "top-right", autoClose: 3000 });
+      toast.error('Selecione uma data de entrega.');
       setLoading(false);
       return;
     }
     
     if (!servicosSelecionados || servicosSelecionados.length === 0) {
-      toast.error('Selecione pelo menos um serviço.', { position: "top-right", autoClose: 3000 });
+      toast.error('Selecione pelo menos um serviço.');
       setLoading(false);
       return;
     }
@@ -638,21 +601,21 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
         clinica: formData.clinica ? { id: formData.clinica.id } : null,
         protetico: formData.protetico ? { id: formData.protetico.id } : null,
         servicos: servicosSelecionados.map(servico => ({ 
-          id: servico.id,
-          quantidade: servico.quantidade || 1
+          id: servico.id
         })),
         dataEntrega: formData.dataEntrega,
         prioridade: formData.prioridade,
         status: formData.status || 'PENDENTE', // Usar status selecionado ou PENDENTE como padrão
         odontograma: dentesSelecionados.join(','), // Converter array para string separada por vírgulas
-        observacao: formData.observacao
+        observacao: formData.observacao,
+        isActive: true // Garantir que o pedido permanece ativo após edição
       };
       
-      // Criar ou atualizar pedido usando o novo endpoint que suporta quantidades
+      // Criar ou atualizar pedido usando o endpoint padrão
       if (pedidoId) {
-        await api.put(`/pedidos-com-quantidade/${pedidoId}`, dadosParaEnviar);
+        await api.put(`/pedidos/${pedidoId}`, dadosParaEnviar);
       } else {
-        await api.post('/pedidos-com-quantidade', dadosParaEnviar);
+        await api.post('/pedidos', dadosParaEnviar);
       }
       
       // Notificar sucesso e redirecionar
@@ -681,48 +644,23 @@ const PedidoForm = forwardRef(({ pedidoId = null, onSubmitSuccess }, ref) => {
             draggable: true,
           });
         } else if (errorMessage.includes('Estoque insuficiente') || errorMessage.includes('estoque')) {
-          toast.error(`${errorMessage}`, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-          });
+            toast.error(`${errorMessage}`, { autoClose: 5000 });
         } else if (errorMessage.includes('Material não encontrado')) {
-          toast.error('Material não encontrado. Verifique os serviços selecionados.', {
-            position: "top-right",
-            autoClose: 5000,
-          });
+          toast.error('Material não encontrado. Verifique os serviços selecionados.', { autoClose: 5000 });
         } else if (errorMessage.includes('obrigatório')) {
-          toast.error('Preencha todos os campos obrigatórios.', {
-            position: "top-right",
-            autoClose: 4000,
-          });
+          toast.error('Preencha todos os campos obrigatórios.', { autoClose: 4000 });
         } else {
-          toast.error(`${errorMessage}`, {
-            position: "top-right",
-            autoClose: 4000,
-          });
+          toast.error(`${errorMessage}`, { autoClose: 4000 });
         }
         setError(errorMessage);
              } else if (err.response?.status === 400) {
-         toast.error('Dados inválidos. Verifique as informações e tente novamente.', {
-           position: "top-right",
-           autoClose: 4000,
-         });
+         toast.error('Dados inválidos. Verifique as informações e tente novamente.', { autoClose: 4000 });
          setError('Dados inválidos. Verifique as informações e tente novamente.');
        } else if (err.response?.status === 500) {
-         toast.error('Erro interno do servidor. Tente novamente em alguns instantes.', {
-           position: "top-right",
-           autoClose: 5000,
-         });
+         toast.error('Erro interno do servidor. Tente novamente em alguns instantes.', { autoClose: 5000 });
          setError('Erro interno do servidor. Tente novamente em alguns instantes.');
        } else {
-         toast.error('Erro ao salvar pedido. Verifique sua conexão e tente novamente.', {
-           position: "top-right",
-           autoClose: 4000,
-         });
+         toast.error('Erro ao salvar pedido. Verifique sua conexão e tente novamente.', { autoClose: 4000 });
          setError('Erro ao salvar pedido. Verifique os dados e tente novamente.');
        }
     } finally {

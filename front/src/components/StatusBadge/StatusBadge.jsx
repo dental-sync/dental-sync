@@ -191,8 +191,7 @@ const StatusBadge = ({ status, onClick, tipo, pedidoId }) => {
   
   const handleStatusChange = (newStatus) => {
     if (onClick) {
-      const isNewActive = newStatus === 'ATIVO';
-      onClick(isNewActive);
+      onClick(newStatus);
       setIsDropdownOpen(false);
     }
   };

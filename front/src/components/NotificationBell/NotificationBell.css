@@ -10,16 +10,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #555;
+  color: #64748b;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.bell-button:hover {
+  background-color: #f1f5f9;
+  color: #374151;
+}
+
+.bell-button:active {
+  background-color: #e2e8f0;
 }
 
 .notification-count {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  background-color: #e53e3e;
+  top: 0;
+  right: 0;
+  background-color: #dc2626;
   color: white;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   height: 18px;
   min-width: 18px;
@@ -28,4 +40,248 @@
   align-items: center;
   justify-content: center;
   padding: 0 6px;
-} 
+  border: 2px solid white;
+}
+
+.notification-dropdown {
+  position: fixed !important;
+  top: 60px !important;
+  right: 20px !important;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  width: 320px;
+  max-width: 90vw;
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 999999 !important;
+  margin-top: 4px;
+}
+
+.notification-header {
+  padding: 16px 20px;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 8px 8px 0 0;
+}
+
+.notification-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Removido o ícone amarelo - agora usando SVG no JSX */
+
+.notification-content {
+  /* Removido scroll - usando apenas o scroll do dropdown */
+}
+
+.notification-empty {
+  padding: 32px 20px;
+  text-align: center;
+  color: #64748b;
+  background: #f8fafc;
+  border-radius: 0 0 8px 8px;
+}
+
+.notification-empty p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #059669;
+}
+
+.notification-empty p::before {
+  content: '✅';
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.notification-section {
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.notification-section-header {
+  padding: 12px 20px;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notification-section-header:hover {
+  background: #e2e8f0;
+}
+
+.notification-section-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.expand-icon {
+  transition: transform 0.2s ease;
+  transform: rotate(-90deg);
+}
+
+.expand-icon.expanded {
+  transform: rotate(0deg);
+}
+
+.notification-section-title.sem-estoque::before {
+  content: '🔴';
+  font-size: 12px;
+}
+
+.notification-section-title.baixo-estoque::before {
+  content: '🟡';
+  font-size: 12px;
+}
+
+.more-items-indicator {
+  background: #64748b;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: 500;
+  margin-left: 8px;
+  min-width: 16px;
+  text-align: center;
+}
+
+.material-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: white;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.2s ease;
+  cursor: pointer !important;
+  width: 100%;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.material-item:hover {
+  background: #f0f4f8 !important;
+}
+
+.material-item:active {
+  background: #e2e8f0 !important;
+}
+
+.material-item:last-child {
+  border-bottom: none;
+}
+
+.material-info {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+.material-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+  margin-bottom: 4px;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.material-details {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.material-quantity {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.material-status {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.material-status.sem-estoque {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.material-status.baixo-estoque {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fed7aa;
+}
+
+/* Removido footer - não há mais botão de reload */
+
+.material-list {
+  /* Removido scroll individual - usando apenas o scroll do content */
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar personalizada */
+.notification-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-dropdown::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.notification-dropdown::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.notification-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+ 

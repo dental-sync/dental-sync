@@ -2,7 +2,7 @@ import React from 'react';
 import './GenericTable.css';
 import { useNavigate } from 'react-router-dom';
 import  api  from '../../axios-config';
-import { toast } from 'react-toastify';
+import useToast from '../../hooks/useToast';
 import StatusBadge from '../StatusBadge/StatusBadge';
 import { limitText } from '../../utils/textUtils';
 
@@ -22,28 +22,20 @@ const GenericTable = ({
   useCustomStatusRender = false,
   url,
   hideOptions = [],
-  alwaysAllowDelete = false
+  alwaysAllowDelete = false,
+  deleteMessage
 }) => {
   const navigate = useNavigate();
+  const toast = useToast();
 
-  const handleStatusChange = async (itemId, newStatus) => {
-    try {
-      const itemAtual = data.find(item => item.id === itemId);
-      
-      const statusAtual = itemAtual[statusField];
-      if (statusAtual === newStatus) {
+  const handleStatusChange = (itemId, newStatus) => {
+    const statusAtual = data.find(item => item.id === itemId)?.[statusField];
+    
+    if (statusAtual === newStatus) {
         return;
       }
 
-      await api.patch(`${apiEndpoint}/${itemId}`, {
-        isActive: newStatus
-      });
-      
       onStatusChange(itemId, newStatus);
-    } catch (error) {
-      console.error('Erro ao alterar status:', error);
-      toast.error('Erro ao alterar status. Tente novamente.');
-    }
   };
 
   const getSortIcon = (key) => {
@@ -125,6 +117,7 @@ const GenericTable = ({
                           url={url}
                           hideOptions={hideOptions}
                           alwaysAllowDelete={alwaysAllowDelete}
+                          deleteMessage={deleteMessage}
                         />
                       </td>
                     );

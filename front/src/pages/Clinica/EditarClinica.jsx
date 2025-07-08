@@ -149,18 +149,10 @@ const EditarClinica = () => {
       console.error('Erro ao atualizar clínica:', error);
       
       if (error.response) {
-        const errorMessage = error.response.data;
-        console.log('Mensagem de erro:', errorMessage);
-        
-        if (typeof errorMessage === 'string') {
-          setErrors({ cnpj: errorMessage });
-        } else if (errorMessage.message) {
-          setErrors({ cnpj: errorMessage.message });
-        } else {
-          setErrors({ cnpj: 'Ocorreu um erro ao atualizar a clínica. Tente novamente.' });
-        }
+        const errorMessage = extractErrorMessage(error);
+        toast.error(errorMessage);
       } else {
-        setErrors({ cnpj: 'Erro de conexão. Verifique sua internet e tente novamente.' });
+        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
       }
     } finally {
       setSaving(false);

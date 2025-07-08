@@ -248,15 +248,7 @@ const CadastroDentista = () => {
       
       if (error.response) {
         const errorMessage = error.response.data;
-        console.log('Mensagem de erro:', errorMessage);
-        
-        if (typeof errorMessage === 'string') {
           toast.error(errorMessage);
-        } else if (errorMessage.message) {
-          toast.error(errorMessage.message);
-        } else {
-          toast.error('Ocorreu um erro ao cadastrar o dentista. Tente novamente.');
-        }
       } else {
         toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
       }
@@ -367,8 +359,13 @@ const CadastroDentista = () => {
               name="cro"
               value={formData.cro}
               onChange={handleChange}
+              onFocus={(e) => {
+                if (!e.target.value || e.target.value === '') {
+                  setFormData(prev => ({ ...prev, cro: 'CRO-' }));
+                }
+              }}
               className={errors.cro ? 'input-error' : ''}
-              placeholder="Digite o CRO"
+              placeholder="CRO-UF-NÚMERO"
             />
             {errors.cro && <span className="error-text">{errors.cro}</span>}
           </div>

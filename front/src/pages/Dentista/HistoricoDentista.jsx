@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './HistoricoDentista.css';
 import NotificationBell from '../../components/NotificationBell/NotificationBell';
+import useNotifications from '../../hooks/useNotifications';
 import api from '../../axios-config';
 
 const HistoricoDentista = () => {
+  const { notifications } = useNotifications();
   const { id } = useParams();
   const navigate = useNavigate();
   const [dentista, setDentista] = useState(null);
@@ -48,11 +50,17 @@ const HistoricoDentista = () => {
 
   return (
     <div className="historico-protetico-page">
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
+              <div className="page-top">
+          <div className="notification-container">
+            <NotificationBell 
+            count={notifications.total}
+            baixoEstoque={notifications.baixoEstoque}
+            semEstoque={notifications.semEstoque}
+            materiaisBaixoEstoque={notifications.materiaisBaixoEstoque}
+            materiaisSemEstoque={notifications.materiaisSemEstoque}
+          />
+          </div>
         </div>
-      </div>
       <div className="back-navigation">
         <button onClick={handleVoltar} className="back-button">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

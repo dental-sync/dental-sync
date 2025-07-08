@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../axios-config';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import useToast from '../../hooks/useToast';
 import './CadastroServico.css';
 import Dropdown from '../../components/Dropdown/Dropdown';
 import ModalCadastroCategoriaServico from '../../components/Modals/ModalCadastroCategoriaServico';
-import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal/DeleteConfirmationModal';
 
 const EditarServico = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const toast = useToast();
   const [categorias, setCategorias] = useState([]);
   const [materiais, setMateriais] = useState([]);
   const [showModalCategoria, setShowModalCategoria] = useState(false);
@@ -56,6 +55,7 @@ const EditarServico = () => {
             categoriaServico: {
               id: servicoData.categoriaServico?.id || ''
             },
+            materiais: servicoData.materiais || [],
             status: servicoData.status || 'ATIVO',
             isActive: servicoData.isActive
           });
@@ -202,16 +202,16 @@ const EditarServico = () => {
   };
 
   const handleRemoverMaterial = (id) => {
-    setMateriaisSelecionados(prev => prev.filter(mat => mat.id !== id));
+    setMateriaisSelecionados(prev => (prev || []).filter(mat => mat.id !== id));
     setFormData(prev => ({
       ...prev,
-      materiais: prev.materiais.filter(sm => sm.material.id !== id)
+      materiais: (prev.materiais || []).filter(sm => sm.material.id !== id)
     }));
   };
 
   const handleQuantidadeChange = (id, value) => {
     if (value === '') {
-      setMateriaisSelecionados(prev => prev.map(m =>
+      setMateriaisSelecionados(prev => (prev || []).map(m =>
         m.id === id
           ? { ...m, quantidadeUso: '' }
           : m
@@ -221,14 +221,14 @@ const EditarServico = () => {
     
     const quantidade = Math.max(1, Math.floor(Number(value)));
     if (!isNaN(quantidade)) {
-      setMateriaisSelecionados(prev => prev.map(m =>
+      setMateriaisSelecionados(prev => (prev || []).map(m =>
         m.id === id
           ? { ...m, quantidadeUso: quantidade }
           : m
       ));
       setFormData(prev => ({
         ...prev,
-        materiais: prev.materiais.map(sm =>
+        materiais: (prev.materiais || []).map(sm =>
           (sm.material.id === id) ? { ...sm, quantidade } : sm
         )
       }));
@@ -244,7 +244,7 @@ const EditarServico = () => {
     setLoading(true);
 
     try {
-      const materiaisValidos = materiaisSelecionados
+      const materiaisValidos = (materiaisSelecionados || [])
         .filter(m => m.id && m.quantidadeUso && m.quantidadeUso > 0)
         .map(m => ({
           material: { id: parseInt(m.id) },
@@ -279,9 +279,25 @@ const EditarServico = () => {
     navigate('/servico');
   };
 
+  const handleVoltar = () => {
+    navigate('/servico');
+  };
+
+  if (loading) {
+    return <div className="loading">Carregando dados do serviço...</div>;
+  }
+
   return (
     <div className="cadastro-servico-page">
-      <ToastContainer />
+      <div className="back-navigation">
+        <button onClick={handleVoltar} className="back-button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h1 className="page-title">Editar Serviço</h1>
+      </div>
+      
       <ModalCadastroCategoriaServico
         isOpen={showModalCategoria}
         onClose={() => {
@@ -299,22 +315,6 @@ const EditarServico = () => {
         title="Excluir Categoria"
         message={`Tem certeza que deseja excluir a categoria "${categoriaToDelete?.nome}"? Esta ação não pode ser desfeita.`}
       />
-
-      <div className="page-top">
-        <div className="notification-container">
-          <NotificationBell count={2} />
-        </div>
-      </div>
-
-      <div className="back-navigation">
-        <button className="back-button" onClick={handleCancel}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
-        </button>
-        <h1 className="page-title">Editar Serviço</h1>
-      </div>
 
       <div className="cadastro-servico-container">
         <form onSubmit={handleSubmit} className="cadastro-servico-form">
@@ -429,11 +429,11 @@ const EditarServico = () => {
                 />
                 {errors.materiais && <span className="error-text">{errors.materiais}</span>}
                 <div className="materiais-selecionados-lista">
-                  {materiaisSelecionados.length === 0 ? (
+                  {(materiaisSelecionados || []).length === 0 ? (
                     <div className="empty-state">Nenhum material selecionado</div>
                   ) : (
                     <ul className="materiais-lista-quantidade">
-                      {materiaisSelecionados.map(m => (
+                      {(materiaisSelecionados || []).map(m => (
                         <li key={m.id} className="item-material-quantidade">
                           <span className="nome-material">{m.nome}</span>
                           <div className="material-acoes-direita">
@@ -499,7 +499,7 @@ const EditarServico = () => {
                 </div>
                 <div className="total-item">
                   <span className="total-label">Valor dos Materiais:</span>
-                  <span className="total-valor">R$ {materiaisSelecionados.reduce((total, material) => {
+                  <span className="total-valor">R$ {(materiaisSelecionados || []).reduce((total, material) => {
                     const preco = material.valorUnitario || 0;
                     const quantidade = material.quantidadeUso || 1;
                     return total + (preco * quantidade);

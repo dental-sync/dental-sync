@@ -6,6 +6,16 @@ import Dropdown from '../../components/Dropdown/Dropdown';
 import ModalCadastroClinica from '../../components/ModalCadastroClinica/ModalCadastroClinica';
 import { toast } from 'react-toastify';
 
+const extractErrorMessage = (error) => {
+  if (error.response?.data?.message) {
+    return error.response.data.message;
+  }
+  if (error.response?.data?.errors?.[0]) {
+    return error.response.data.errors[0];
+  }
+  return 'Ocorreu um erro ao processar a requisição';
+};
+
 const EditarDentista = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -57,7 +67,7 @@ const EditarDentista = () => {
         
         setFormData({
           nome: dentista.nome || '',
-          cro: dentista.cro || '',
+          cro: dentista.cro || 'CRO-',
           telefone: dentista.telefone || '',
           email: dentista.email || '',
           clinicaId: '',
@@ -248,55 +258,27 @@ const EditarDentista = () => {
       return;
     }
     
-    setSaving(true);
-    
     try {
-      const errors = await checkUniqueFields();
-
-      if (Object.keys(errors).length > 0) {
-        setErrors(errors);
-        setSaving(false);
-        return;
-      }
+    setSaving(true);
 
       const dentistaData = {
-        nome: formData.nome,
-        cro: formData.cro,
-        telefone: formData.telefone,
-        email: formData.email,
-        clinicas: formData.clinicasAssociadas,
+        nome: formData.nome.trim(),
+        cro: formData.cro.trim(),
+        telefone: formData.telefone.trim(),
+        email: formData.email.trim().toLowerCase(),
+        clinicaIds: formData.clinicasAssociadas.map(c => c.id),
         isActive: formData.isActive
       };
 
       await api.put(`/dentistas/${id}`, dentistaData);
       
-      // Limpa qualquer estado de navegação existente
-      window.history.replaceState({}, document.title);
-      
-      // Navegar para a página de listagem com mensagem de sucesso e flag de refresh
-      navigate('/dentista', { 
-        state: { 
-          success: 'Dentista atualizado com sucesso!',
-          refresh: true 
-        } 
-      });
+      setSuccess(true);
+      toast.success('Dentista atualizado com sucesso!');
+      navigate('/dentista');
     } catch (error) {
       console.error('Erro ao atualizar dentista:', error);
-      
-      if (error.response) {
-        const errorMessage = error.response.data;
-        console.log('Mensagem de erro:', errorMessage);
-        
-        if (typeof errorMessage === 'string') {
+      const errorMessage = extractErrorMessage(error);
           toast.error(errorMessage);
-        } else if (errorMessage.message) {
-          toast.error(errorMessage.message);
-        } else {
-          toast.error('Ocorreu um erro ao atualizar o dentista. Tente novamente.');
-        }
-      } else {
-        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
-      }
     } finally {
       setSaving(false);
     }
@@ -408,8 +390,13 @@ const EditarDentista = () => {
               name="cro"
               value={formData.cro}
               onChange={handleChange}
+              onFocus={(e) => {
+                if (!e.target.value || e.target.value === '') {
+                  setFormData(prev => ({ ...prev, cro: 'CRO-' }));
+                }
+              }}
               className={errors.cro ? 'input-error' : ''}
-              placeholder="Digite o CRO"
+              placeholder="CRO-UF-NÚMERO"
             />
             {errors.cro && <span className="error-text">{errors.cro}</span>}
           </div>

@@ -73,7 +73,6 @@ const ActionMenuDentista = ({ dentistaId, itemId, onDentistaDeleted, onItemDelet
   const handleConfirmDelete = async () => {
     try {
       await api.delete(`/dentistas/${id}`);
-      toast.success('Dentista excluído com sucesso!');
       onDeleted(id);
     } catch (error) {
       console.error('Erro ao excluir dentista:', error);

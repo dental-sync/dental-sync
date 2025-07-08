@@ -291,13 +291,13 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
       // Só bloqueia se encontrou dados válidos
       const hasData = response.data.logradouro || response.data.bairro || response.data.localidade || response.data.uf;
       if (hasData) {
-        setFormData(prev => ({
-          ...prev,
-          endereco: response.data.logradouro || '',
-          bairro: response.data.bairro || '',
-          cidade: response.data.localidade || '',
-          estado: response.data.uf || '',
-        }));
+      setFormData(prev => ({
+        ...prev,
+        endereco: response.data.logradouro || '',
+        bairro: response.data.bairro || '',
+        cidade: response.data.localidade || '',
+        estado: response.data.uf || '',
+      }));
         setEnderecoBloqueado(true); // Bloqueia os campos de endereço após a busca bem-sucedida
       } else {
         setEnderecoBloqueado(false);

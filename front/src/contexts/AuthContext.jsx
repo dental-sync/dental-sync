@@ -26,6 +26,15 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
+    // Não verificar autenticação se estivermos em páginas públicas
+    const currentPath = window.location.pathname;
+    const publicPaths = ['/login', '/registre-se', '/forgot-password', '/reset-password', '/two-factor'];
+    
+    if (publicPaths.includes(currentPath)) {
+      setLoading(false);
+      return;
+    }
+
     const checkAuth = async () => {
       try {
         const response = await api.get('/auth/check');
@@ -42,14 +51,17 @@ export const AuthProvider = ({ children }) => {
           setSessionDuration('');
         }
         } catch (error) {
-          console.error('Erro ao verificar autenticação:', error);
-        setIsAuthenticated(false);
-        setUser(null);
-        setRememberMe(false);
-        setSessionDuration('');
-      } finally {
-      setLoading(false);
-      }
+          // Não mostrar erro se for 401 (não autenticado é esperado)
+          if (error.response?.status !== 401) {
+            console.error('Erro ao verificar autenticação:', error);
+          }
+          setIsAuthenticated(false);
+          setUser(null);
+          setRememberMe(false);
+          setSessionDuration('');
+        } finally {
+          setLoading(false);
+        }
     };
 
     checkAuth();

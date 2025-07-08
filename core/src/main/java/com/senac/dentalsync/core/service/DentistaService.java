@@ -10,10 +10,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.senac.dentalsync.core.persistency.model.Dentista;
 import com.senac.dentalsync.core.persistency.model.Clinica;
+import com.senac.dentalsync.core.persistency.model.Pedido;
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.DentistaRepository;
 import com.senac.dentalsync.core.persistency.repository.ClinicaRepository;
+import com.senac.dentalsync.core.persistency.repository.PedidoRepository;
 
 @Service
 public class DentistaService extends BaseService<Dentista, Long> {
@@ -23,6 +25,9 @@ public class DentistaService extends BaseService<Dentista, Long> {
     
     @Autowired
     private ClinicaRepository clinicaRepository;
+    
+    @Autowired
+    private PedidoRepository pedidoRepository;
 
     @Override
     protected BaseRepository<Dentista, Long> getRepository() {
@@ -74,57 +79,48 @@ public class DentistaService extends BaseService<Dentista, Long> {
     }
 
     public Dentista updateStatus(Long id, Boolean status) {
-        Dentista dentista = dentistaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Dentista não encontrado"));
-        dentista.setIsActive(status);
-        return super.save(dentista);
+        try {
+            // Buscar dentista existente
+            Optional<Dentista> dentistaOpt = dentistaRepository.findById(id);
+            
+            if (dentistaOpt.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dentista não encontrado");
+            }
+            
+            Dentista dentista = dentistaOpt.get();
+            
+            // Usar reflection para contornar problema do Lombok
+            java.lang.reflect.Field isActiveField = dentista.getClass().getSuperclass().getDeclaredField("isActive");
+            isActiveField.setAccessible(true);
+            isActiveField.set(dentista, status);
+            
+            return super.save(dentista);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao atualizar status: " + e.getMessage());
+        }
     }
 
     @Override
     public void delete(Long id) {
+        // Primeiro, buscar o dentista
+        Optional<Dentista> dentistaOpt = dentistaRepository.findById(id);
+        
+        if (dentistaOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dentista não encontrado");
+        }
+        
+        Dentista dentista = dentistaOpt.get();
+        
+        // Buscar todos os pedidos do dentista e deletá-los primeiro
+        List<Pedido> pedidos = pedidoRepository.findByDentista(dentista);
+        pedidoRepository.deleteAll(pedidos);
+        
+        // Agora pode deletar o dentista (o relacionamento com clínicas é deletado automaticamente pelo JPA)
         dentistaRepository.deleteById(id);
     }
 
     @Override
     public Dentista save(Dentista entity) {
-        // Validar se o nome contém números
-        if (entity.getNome().matches(".*\\d.*")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O nome não pode conter números");
-        }
-
-        // Verificar se já existe dentista ATIVO com o mesmo CRO
-        Optional<Dentista> dentistaComCro = dentistaRepository.findByCroAndIsActiveTrue(entity.getCro());
-        if (dentistaComCro.isPresent() && !dentistaComCro.get().getId().equals(entity.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CRO já cadastrado em um dentista ativo");
-        }
-
-        // Verificar se já existe dentista ATIVO com o mesmo email
-        Optional<Dentista> dentistaComEmail = dentistaRepository.findByEmailAndIsActiveTrue(entity.getEmail());
-        if (dentistaComEmail.isPresent() && !dentistaComEmail.get().getId().equals(entity.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail já cadastrado em um dentista ativo");
-        }
-
-        // Verificar se já existe dentista ATIVO com o mesmo telefone
-        Optional<Dentista> dentistaComTelefone = dentistaRepository.findByTelefoneAndIsActiveTrue(entity.getTelefone());
-        if (dentistaComTelefone.isPresent() && !dentistaComTelefone.get().getId().equals(entity.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telefone já cadastrado em um dentista ativo");
-        }
-        
-        // Garantir que as clínicas associadas existam e estejam ativas
-        if (entity.getClinicas() != null && !entity.getClinicas().isEmpty()) {
-            for (Clinica clinica : entity.getClinicas()) {
-                if (clinica.getId() != null) {
-                    Optional<Clinica> clinicaExistente = clinicaRepository.findById(clinica.getId());
-                    if (clinicaExistente.isEmpty()) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Clínica com ID " + clinica.getId() + " não encontrada");
-                    }
-                    if (!clinicaExistente.get().getIsActive()) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Clínica '" + clinicaExistente.get().getNome() + "' está inativa");
-                    }
-                }
-            }
-        }
-        
         try {
             return super.save(entity);
         } catch (Exception e) {

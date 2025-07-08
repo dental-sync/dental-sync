@@ -1,0 +1,45 @@
+@import '../../assets/styles/variables.css';
+
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  background-color: var(--sidebar-bg-color);
+  color: var(--sidebar-text-color);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--sidebar-border-color);
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--sidebar-border-color);
+}
+
+.theme-toggle-container {
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-menu {
+  flex: 1;
+  padding: 8px 0;
+  overflow-y: auto;
+}
+
+/* Estilização da barra de rolagem */
+.sidebar-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+  background: var(--sidebar-border-color);
+  border-radius: 4px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+} 

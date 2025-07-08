@@ -1,0 +1,276 @@
+.material-page {
+  padding: 20px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  position: relative;
+}
+
+.page-top {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 9999;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 9999;
+}
+
+.page-title {
+  font-size: 24px;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  position: relative;
+  z-index: 9999;
+}
+
+/* Estilos específicos para o botão Novo Material no header */
+.header-actions .action-button.primary {
+  background-color: #0070D6;
+  color: white;
+  border-color: #0070D6;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  z-index: 20;
+}
+
+.header-actions .action-button.primary:hover {
+  background-color: #005bb9;
+  border-color: #005bb9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-actions .action-button.primary:active {
+  background-color: #004c99;
+  border-color: #004c99;
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo para o container do filtro */
+.filter-container {
+  position: relative;
+}
+
+/* Estilo para o dropdown do filtro */
+.filter-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 250px;
+  margin-top: 8px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  z-index: 1000;
+}
+
+.filter-dropdown h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+.filter-group {
+  margin-bottom: 16px;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  background-color: white;
+  cursor: pointer;
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.clear-filter-button {
+  background: none;
+  border: none;
+  color: #0070D6;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+.clear-filter-button:hover {
+  background-color: #f0f7ff;
+}
+
+.filter-info {
+  background-color: #fff8e6;
+  border: 1px solid #ffe58f;
+  border-radius: 6px;
+  padding: 10px 16px;
+  color: #d48806;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.search-container {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 5;
+}
+
+.search-container > *:first-child {
+  flex-grow: 1;
+}
+
+.materiais-table-container {
+  background-color: var(--background-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.materiais-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.materiais-table th,
+.materiais-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.materiais-table th {
+  background-color: var(--header-background);
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.materiais-table tbody tr:hover {
+  background-color: var(--hover-color);
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.ativo {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.status-badge.inativo {
+  background-color: var(--error-color);
+  color: white;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.action-button.edit {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.action-button.edit:hover {
+  background-color: var(--primary-color-dark);
+}
+
+.action-button.delete {
+  background-color: var(--error-color);
+  color: white;
+}
+
+.action-button.delete:hover {
+  background-color: var(--error-color-dark);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--text-color);
+}
+
+.loading-more {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-color);
+}
+
+.table-container {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .search-container {
+    flex-direction: column;
+  }
+
+  .materiais-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+} 

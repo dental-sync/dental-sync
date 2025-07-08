@@ -1,0 +1,142 @@
+{
+  "info": {
+    "name": "DentalSync - Protetico API (Corrigido)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Listar todos os protéticos",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8080/proteticos",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["proteticos"]
+        }
+      }
+    },
+    {
+      "name": "Listar protéticos paginados",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8080/proteticos/paginado?page=0&size=10",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["proteticos", "paginado"],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar protético por ID",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8080/proteticos/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["proteticos", "1"]
+        }
+      }
+    },
+    {
+      "name": "Buscar protético por Email",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8080/proteticos/email/protetico@example.com",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["proteticos", "email", "protetico@example.com"]
+        }
+      }
+    },
+    {
+      "name": "Buscar protético por CRO (busca parcial)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8080/proteticos/cro/12345",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["proteticos", "cro", "12345"]
+        }
+      }
+    },
+    {
+      "name": "Criar novo protético",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/proteticos",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["proteticos"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"João Silva\",\n  \"cro\": \"12345-SP\",\n  \"isAdmin\": false,\n  \"telefone\": \"(11) 98765-4321\",\n  \"email\": \"joao.silva@example.com\",\n  \"status\": \"ATIVO\",\n  \"createdAt\": null,\n  \"updatedAt\": null,\n  \"isActive\": true,\n  \"createdBy\": null,\n  \"updatedBy\": null\n}"
+        }
+      }
+    },
+    {
+      "name": "Atualizar protético",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/proteticos/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["proteticos", "1"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"João Silva Atualizado\",\n  \"cro\": \"12345-SP\",\n  \"isAdmin\": true,\n  \"telefone\": \"(11) 98765-4321\",\n  \"email\": \"joao.silva@example.com\",\n  \"status\": \"ATIVO\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Deletar protético",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "http://localhost:8080/proteticos/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["proteticos", "1"]
+        }
+      }
+    }
+  ]
+} 

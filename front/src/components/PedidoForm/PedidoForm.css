@@ -1,0 +1,708 @@
+.pedido-form-container {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+
+
+/* Formulário principal */
+.pedido-form {
+  padding: 30px;
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Layout principal - duas colunas */
+.main-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+}
+
+/* Contêiner de Inputs - coluna esquerda */
+.inputs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 35px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.form-select,
+.form-input {
+  padding: 14px 18px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.form-select:focus,
+.form-input:focus {
+  border-color: #4361ee;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+/* Input de data com formato brasileiro */
+.form-input[type="date"] {
+  position: relative;
+}
+
+.form-input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+}
+
+.form-input[type="date"]:lang(pt-BR) {
+  text-align: left;
+}
+
+
+
+/* Coluna direita - Odontograma e Observações */
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Contêiner do Odontograma */
+.odontograma-container {
+  padding: 35px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.odontograma-container h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+/* Odontograma - apenas 2 linhas */
+.odontograma {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.dentes-row {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+.dente {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #4361ee;
+  border-radius: 50%;
+  background-color: white;
+  font-weight: 600;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #4361ee;
+  flex-shrink: 0;
+}
+
+.dente:hover {
+  background-color: #f0f4ff;
+}
+
+.dente.selecionado {
+  background-color: #4361ee;
+  color: white;
+}
+
+.dente-spacer {
+  width: 12px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+/* Contêiner de Observações */
+.observacoes-container {
+  padding: 35px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.observacoes-container h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px 0;
+}
+
+/* Observações */
+.form-textarea {
+  padding: 18px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 180px;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+.form-textarea:focus {
+  border-color: #4361ee;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.form-textarea::placeholder {
+  color: #999;
+}
+
+/* Contêiner de Serviços */
+.servicos-container {
+  padding: 35px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.servicos-container h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px 0;
+}
+
+.servicos-content {
+  min-height: 60px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+}
+
+/* Servico Item Melhorado */
+.servico-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #e0e0e0;
+  gap: 20px;
+}
+
+.servico-item:last-child {
+  border-bottom: none;
+}
+
+.servico-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.servico-nome {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quantidade-badge {
+  background-color: #4361ee;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.servico-valores {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.servico-valores small {
+  color: #666;
+  font-size: 13px;
+}
+
+.servico-valores strong {
+  color: #4361ee;
+  font-size: 14px;
+}
+
+/* Controles de Quantidade */
+.quantidade-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.quantidade-controls label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.btn-quantidade {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d0d0d0;
+  background: white;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.btn-quantidade:hover:not(:disabled) {
+  background: #f0f4ff;
+  border-color: #4361ee;
+  color: #4361ee;
+}
+
+.btn-quantidade:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quantidade-input {
+  width: 60px;
+  height: 32px;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.quantidade-input:focus {
+  border-color: #4361ee;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.nenhum-servico {
+  color: #999;
+  text-align: center;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Resumo de Valores */
+.resumo-valores {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.resumo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+
+
+.resumo-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.resumo-valor {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.resumo-total {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 2px solid #4361ee !important;
+  border-bottom: none !important;
+}
+
+.resumo-total .resumo-label {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+}
+
+.resumo-total .resumo-valor {
+  font-weight: 700;
+  color: #4361ee;
+  font-size: 18px;
+}
+
+/* Valor total dentro do container de serviços */
+.servicos-container .valor-total {
+  text-align: right;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.servicos-container .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* Botão cancelar */
+.btn-cancelar {
+  background: #f8f9fa;
+  color: #666;
+  border: 1px solid #e0e0e0;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancelar:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+/* Botão de salvar */
+.btn-salvar-pedido {
+  background: #4361ee;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(67, 97, 238, 0.3);
+  transition: all 0.2s;
+}
+
+.btn-salvar-pedido:hover {
+  background: #3a56d4;
+  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4);
+}
+
+.btn-salvar-pedido:disabled {
+  background: #a5b4fc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Mensagem de erro */
+.error-message {
+  padding: 12px 16px;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  color: #c33;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-weight: 600;
+  color: #666;
+  font-size: 16px;
+}
+
+/* Status Container do Pedido */
+.pedido-form-status-container {
+  padding: 35px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pedido-form-status-container h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px 0;
+}
+
+.status-select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.status-select:focus {
+  border-color: #4361ee;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.status-select:disabled {
+  background-color: #f8f9fa;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* Observações Expandidas */
+.observacoes-expandida {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.observacoes-expandida .form-textarea {
+  flex: 1;
+  min-height: 200px;
+  resize: vertical;
+}
+
+/* Correção das cores para azul padrão do sistema */
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: #4361ee !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1) !important;
+}
+
+/* Input de data específico */
+.date-input {
+  position: relative;
+  cursor: pointer;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  position: absolute;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+}
+
+.date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Garantir que o campo inteiro seja clicável */
+.date-input:focus {
+  cursor: text;
+}
+
+.dente {
+  border: 2px solid #4361ee !important;
+  color: #4361ee !important;
+}
+
+.dente:hover {
+  background-color: rgba(67, 97, 238, 0.1) !important;
+}
+
+.dente.selecionado {
+  background-color: #4361ee !important;
+  color: white !important;
+}
+
+.btn-quantidade:hover:not(:disabled) {
+  background: rgba(67, 97, 238, 0.1) !important;
+  border-color: #4361ee !important;
+  color: #4361ee !important;
+}
+
+.quantidade-input:focus {
+  border-color: #4361ee !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1) !important;
+}
+
+.resumo-total {
+  border-top: 2px solid #4361ee !important;
+}
+
+.resumo-total .resumo-valor {
+  color: #4361ee !important;
+}
+
+.servico-valores strong {
+  color: #4361ee !important;
+}
+
+.btn-salvar-pedido {
+  background: #4361ee !important;
+}
+
+.btn-salvar-pedido:hover {
+  background: #3a56d4 !important;
+  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4) !important;
+}
+
+/* Layout responsivo melhorado */
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  
+  .pedido-form {
+    padding: 20px;
+  }
+  
+  .right-column {
+    height: auto;
+  }
+  
+  .observacoes-expandida .form-textarea {
+    min-height: 150px;
+  }
+  
+  .servico-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .quantidade-controls {
+    align-self: flex-end;
+  }
+  
+  .resumo-valores {
+    padding: 15px;
+  }
+  
+  .resumo-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .resumo-valor {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  
+  .dentes-row {
+    gap: 3px;
+  }
+  
+  .dente {
+    width: 24px;
+    height: 24px;
+    font-size: 9px;
+  }
+  
+  .dente-spacer {
+    width: 10px;
+    height: 24px;
+  }
+  
+  .servicos-container .form-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .btn-cancelar,
+  .btn-salvar-pedido {
+    width: 100%;
+  }
+  
+  .inputs-container,
+  .odontograma-container,
+  .observacoes-container,
+  .servicos-container {
+    padding: 25px;
+  }
+  
+  .form-select,
+  .form-input {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  .form-textarea {
+    padding: 16px;
+    font-size: 14px;
+    min-height: 150px;
+  }
+}
+
+ 

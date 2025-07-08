@@ -1,0 +1,382 @@
+{
+  "options": {
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)"
+    ],
+    "summaryTimeUnit": "",
+    "noColor": false
+  },
+  "state": {
+    "isStdErrTTY": true,
+    "testRunDurationMs": 35986.3001,
+    "isStdOutTTY": true
+  },
+  "metrics": {
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0,
+        "min": 0,
+        "med": 0,
+        "max": 0,
+        "p(90)": 0,
+        "p(95)": 0
+      }
+    },
+    "vus": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 2,
+        "min": 2,
+        "max": 3
+      }
+    },
+    "busca_success_rate": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "passes": 150,
+        "fails": 100,
+        "rate": 0.6
+      }
+    },
+    "checks": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.8888888888888888,
+        "passes": 800,
+        "fails": 100
+      }
+    },
+    "total_operations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 300,
+        "rate": 8.336505813777727
+      }
+    },
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 70.0559,
+        "avg": 18.037139534883714,
+        "min": 1.5642,
+        "med": 5.2764,
+        "max": 280.567,
+        "p(90)": 66.9244
+      },
+      "thresholds": {
+        "p(95)<2000": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_sending": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 0,
+        "med": 0,
+        "max": 0.5218,
+        "p(90)": 0,
+        "p(95)": 0,
+        "avg": 0.009326910299003321
+      }
+    },
+    "http_req_waiting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 17.641795348837206,
+        "min": 0.5758,
+        "med": 5.0011,
+        "max": 278.7239,
+        "p(90)": 66.6396,
+        "p(95)": 69.4595
+      }
+    },
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "rate": 8.36429416649032,
+        "count": 301
+      }
+    },
+    "data_sent": {
+      "contains": "data",
+      "values": {
+        "count": 100380,
+        "rate": 2789.394845290027
+      },
+      "type": "counter"
+    },
+    "data_received": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 1185111,
+        "rate": 32932.28247157312
+      }
+    },
+    "login_success_rate": {
+      "values": {
+        "passes": 50,
+        "fails": 0,
+        "rate": 1
+      },
+      "thresholds": {
+        "rate>0.80": {
+          "ok": true
+        }
+      },
+      "type": "rate",
+      "contains": "default"
+    },
+    "http_req_blocked": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 0.524,
+        "p(90)": 0,
+        "p(95)": 0,
+        "avg": 0.005319269102990034,
+        "min": 0,
+        "med": 0
+      }
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.3860172757475082,
+        "min": 0,
+        "med": 0.3098,
+        "max": 8.7773,
+        "p(90)": 0.8435,
+        "p(95)": 0.9629
+      }
+    },
+    "http_req_connecting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.0034817275747508307,
+        "min": 0,
+        "med": 0,
+        "max": 0.524,
+        "p(90)": 0,
+        "p(95)": 0
+      }
+    },
+    "http_req_failed": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.33554817275747506,
+        "passes": 101,
+        "fails": 200
+      }
+    },
+    "response_time": {
+      "type": "trend",
+      "contains": "default",
+      "values": {
+        "min": 63,
+        "med": 68,
+        "max": 281,
+        "p(90)": 76.2,
+        "p(95)": 189.6499999999994,
+        "avg": 80.96
+      }
+    },
+    "vus_max": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 3,
+        "min": 3,
+        "max": 3
+      }
+    },
+    "iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 50,
+        "rate": 1.389417635629621
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "values": {
+        "avg": 24.679187499999998,
+        "min": 2.5134,
+        "med": 6.1884,
+        "max": 280.567,
+        "p(90)": 68.33325,
+        "p(95)": 71.179395
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 2240.7601149999996,
+        "avg": 2111.89587,
+        "min": 2082.6041,
+        "med": 2097.0208000000002,
+        "max": 2353.1702,
+        "p(90)": 2105.08384
+      }
+    }
+  },
+  "setup_data": {
+    "baseUrl": "http://localhost:8080"
+  },
+  "root_group": {
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": [],
+    "checks": [
+        {
+          "id": "389e911e2243ca65b3b528f66da8c44a",
+          "passes": 50,
+          "fails": 0,
+          "name": "Login: Status é 200",
+          "path": "::Login: Status é 200"
+        },
+        {
+          "fails": 0,
+          "name": "Login: Tem cookies",
+          "path": "::Login: Tem cookies",
+          "id": "5581e3c4d59e0090e0ad00bd977fc554",
+          "passes": 50
+        },
+        {
+          "name": "Login: Tempo < 1000ms",
+          "path": "::Login: Tempo < 1000ms",
+          "id": "ce8f51ff40f54538664b5040fb5cc315",
+          "passes": 50,
+          "fails": 0
+        },
+        {
+          "name": "Busca Pacientes: Status é 200",
+          "path": "::Busca Pacientes: Status é 200",
+          "id": "7926063d8b9a23d284fa860fb52ba097",
+          "passes": 0,
+          "fails": 50
+        },
+        {
+          "path": "::Busca Pacientes: Tem dados",
+          "id": "8c5a796079160844fef8de87b627bb17",
+          "passes": 50,
+          "fails": 0,
+          "name": "Busca Pacientes: Tem dados"
+        },
+        {
+          "name": "Busca Pacientes: Tempo < 500ms",
+          "path": "::Busca Pacientes: Tempo < 500ms",
+          "id": "0c364dce079ec28badb870b7ee8c9950",
+          "passes": 50,
+          "fails": 0
+        },
+        {
+          "name": "Busca Pedidos: Status é 200",
+          "path": "::Busca Pedidos: Status é 200",
+          "id": "fefd41a5b2b29975eb5fdf356fb01d86",
+          "passes": 50,
+          "fails": 0
+        },
+        {
+          "passes": 50,
+          "fails": 0,
+          "name": "Busca Pedidos: Tem dados",
+          "path": "::Busca Pedidos: Tem dados",
+          "id": "543efaa36c6f74c4402e08eac4954f73"
+        },
+        {
+          "fails": 0,
+          "name": "Busca Pedidos: Tempo < 500ms",
+          "path": "::Busca Pedidos: Tempo < 500ms",
+          "id": "f0e76d0cf48649dd2742f89a03a5be3e",
+          "passes": 50
+        },
+        {
+          "passes": 50,
+          "fails": 0,
+          "name": "Busca Dentistas: Status é 200",
+          "path": "::Busca Dentistas: Status é 200",
+          "id": "9601aa880bd25f306a9516d66476b2a1"
+        },
+        {
+          "passes": 50,
+          "fails": 0,
+          "name": "Busca Dentistas: Tem dados",
+          "path": "::Busca Dentistas: Tem dados",
+          "id": "bf9ae365f94f2251bcf864421be697c8"
+        },
+        {
+          "name": "Busca Dentistas: Tempo < 500ms",
+          "path": "::Busca Dentistas: Tempo < 500ms",
+          "id": "f58670d75cdb96aaeefc0c877ecfc681",
+          "passes": 50,
+          "fails": 0
+        },
+        {
+          "name": "Busca Serviços: Status é 200",
+          "path": "::Busca Serviços: Status é 200",
+          "id": "08dfddb68cefc72bd91485275b317233",
+          "passes": 0,
+          "fails": 50
+        },
+        {
+          "id": "1d8436900db368ae9d03519121855f3e",
+          "passes": 50,
+          "fails": 0,
+          "name": "Busca Serviços: Tem dados",
+          "path": "::Busca Serviços: Tem dados"
+        },
+        {
+          "id": "d50f64d62d18f994925417a88682277f",
+          "passes": 50,
+          "fails": 0,
+          "name": "Busca Serviços: Tempo < 500ms",
+          "path": "::Busca Serviços: Tempo < 500ms"
+        },
+        {
+          "path": "::Busca Protéticos: Status é 200",
+          "id": "8c7a80a2a56d3e1c36b94f566c9c60f2",
+          "passes": 50,
+          "fails": 0,
+          "name": "Busca Protéticos: Status é 200"
+        },
+        {
+          "name": "Busca Protéticos: Tem dados",
+          "path": "::Busca Protéticos: Tem dados",
+          "id": "0cb1ded0a589f5c506c51ec145f2b03b",
+          "passes": 50,
+          "fails": 0
+        },
+        {
+          "name": "Busca Protéticos: Tempo < 500ms",
+          "path": "::Busca Protéticos: Tempo < 500ms",
+          "id": "7d75b5a9d1dda92bb17a3223e39a656b",
+          "passes": 50,
+          "fails": 0
+        }
+      ]
+  }
+}

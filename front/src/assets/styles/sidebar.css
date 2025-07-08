@@ -1,0 +1,102 @@
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  background-color: var(--sidebar-bg-color);
+  color: var(--sidebar-text-color);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--sidebar-border-color);
+  overflow-y: auto;
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--sidebar-border-color);
+}
+
+.logo-text {
+  color: var(--primary-color);
+  font-weight: bold;
+  font-size: 18px;
+  margin-left: 8px;
+}
+
+.logo-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--primary-color);
+}
+
+.sidebar-menu {
+  flex: 1;
+  padding: 8px 0;
+}
+
+.user-section {
+  border-top: 1px solid var(--sidebar-border-color);
+  padding: 16px;
+  background-color: var(--user-section-bg-color);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #ddd;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.user-email {
+  font-size: 12px;
+  color: var(--primary-color);
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 8px 0;
+  color: var(--sidebar-text-color);
+  cursor: pointer;
+  font-size: 14px;
+  gap: 8px;
+}
+
+.logout-button:hover {
+  color: var(--primary-color);
+}
+
+/* Layout principal para ajustar o conteúdo ao lado do sidebar */
+.main-layout {
+  display: flex;
+}
+
+.main-content {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  padding: 20px;
+} 

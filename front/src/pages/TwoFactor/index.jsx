@@ -64,7 +64,7 @@ const TwoFactorPage = () => {
         if (error.response.data) {
           // Se a resposta tem uma propriedade message
           if (error.response.data.message) {
-            errorMessage = error.response.data.message;
+        errorMessage = error.response.data.message;
           }
           // Se a resposta é uma string diretamente
           else if (typeof error.response.data === 'string') {

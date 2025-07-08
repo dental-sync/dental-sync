@@ -142,7 +142,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
         
         // Cria novo timeout para busca
         const timeoutId = setTimeout(() => {
-          handleCepBusca(limitado);
+        handleCepBusca(limitado);
         }, 500);
         
         setCepSearchTimeout(timeoutId);
@@ -327,13 +327,13 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
       
       if (hasData) {
         // Atualiza os dados de uma só vez para evitar re-renders múltiplos
-        setFormData(prev => ({
-          ...prev,
+      setFormData(prev => ({
+        ...prev,
           endereco: response.data.logradouro || prev.endereco || '',
           bairro: response.data.bairro || prev.bairro || '',
           cidade: response.data.localidade || prev.cidade || '',
           estado: response.data.uf || prev.estado || '',
-        }));
+      }));
         
         // Só bloqueia após a atualização dos dados
         setTimeout(() => {

@@ -32,10 +32,10 @@ const GenericTable = ({
     const statusAtual = data.find(item => item.id === itemId)?.[statusField];
     
     if (statusAtual === newStatus) {
-      return;
-    }
+        return;
+      }
 
-    onStatusChange(itemId, newStatus);
+      onStatusChange(itemId, newStatus);
   };
 
   const getSortIcon = (key) => {

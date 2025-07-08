@@ -5,15 +5,12 @@ import useToast from '../../hooks/useToast';
 import './CadastroServico.css';
 import Dropdown from '../../components/Dropdown/Dropdown';
 import ModalCadastroCategoriaServico from '../../components/Modals/ModalCadastroCategoriaServico';
-import NotificationBell from '../../components/NotificationBell/NotificationBell';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal/DeleteConfirmationModal';
-import useNotifications from '../../hooks/useNotifications';
 
 const EditarServico = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const toast = useToast();
-  const { notifications } = useNotifications();
   const [categorias, setCategorias] = useState([]);
   const [materiais, setMateriais] = useState([]);
   const [showModalCategoria, setShowModalCategoria] = useState(false);
@@ -282,8 +279,24 @@ const EditarServico = () => {
     navigate('/servico');
   };
 
+  const handleVoltar = () => {
+    navigate('/servico');
+  };
+
+  if (loading) {
+    return <div className="loading">Carregando dados do serviço...</div>;
+  }
+
   return (
     <div className="cadastro-servico-page">
+      <div className="back-navigation">
+        <button onClick={handleVoltar} className="back-button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h1 className="page-title">Editar Serviço</h1>
+      </div>
       
       <ModalCadastroCategoriaServico
         isOpen={showModalCategoria}
@@ -302,22 +315,6 @@ const EditarServico = () => {
         title="Excluir Categoria"
         message={`Tem certeza que deseja excluir a categoria "${categoriaToDelete?.nome}"? Esta ação não pode ser desfeita.`}
       />
-
-      <div className="header">
-        <h1>Editar Serviço</h1>
-        <div className="header-actions">
-          <NotificationBell 
-            count={notifications.total}
-            baixoEstoque={notifications.baixoEstoque}
-            semEstoque={notifications.semEstoque}
-            materiaisBaixoEstoque={notifications.materiaisBaixoEstoque}
-            materiaisSemEstoque={notifications.materiaisSemEstoque}
-          />
-          <button className="btn-back" onClick={() => navigate('/servicos')}>
-            Voltar
-          </button>
-        </div>
-      </div>
 
       <div className="cadastro-servico-container">
         <form onSubmit={handleSubmit} className="cadastro-servico-form">

@@ -9,15 +9,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.senac.dentalsync.core.persistency.model.Dentista;
+import com.senac.dentalsync.core.persistency.model.Clinica;
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.persistency.repository.BaseRepository;
 import com.senac.dentalsync.core.persistency.repository.DentistaRepository;
+import com.senac.dentalsync.core.persistency.repository.ClinicaRepository;
 
 @Service
 public class DentistaService extends BaseService<Dentista, Long> {
 
     @Autowired
     private DentistaRepository dentistaRepository;
+    
+    @Autowired
+    private ClinicaRepository clinicaRepository;
 
     @Override
     protected BaseRepository<Dentista, Long> getRepository() {
@@ -103,6 +108,21 @@ public class DentistaService extends BaseService<Dentista, Long> {
         Optional<Dentista> dentistaComTelefone = dentistaRepository.findByTelefoneAndIsActiveTrue(entity.getTelefone());
         if (dentistaComTelefone.isPresent() && !dentistaComTelefone.get().getId().equals(entity.getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Telefone já cadastrado em um dentista ativo");
+        }
+        
+        // Garantir que as clínicas associadas existam e estejam ativas
+        if (entity.getClinicas() != null && !entity.getClinicas().isEmpty()) {
+            for (Clinica clinica : entity.getClinicas()) {
+                if (clinica.getId() != null) {
+                    Optional<Clinica> clinicaExistente = clinicaRepository.findById(clinica.getId());
+                    if (clinicaExistente.isEmpty()) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Clínica com ID " + clinica.getId() + " não encontrada");
+                    }
+                    if (!clinicaExistente.get().getIsActive()) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Clínica '" + clinicaExistente.get().getNome() + "' está inativa");
+                    }
+                }
+            }
         }
         
         try {

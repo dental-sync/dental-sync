@@ -5,14 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
-const MaterialActionMenu = ({ materialId, materialStatus, onDelete }) => {
+const MaterialActionMenu = ({ itemId, itemStatus, onItemDeleted }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   const navigate = useNavigate();
-  const isActive = materialStatus === 'ATIVO';
+  const isActive = itemStatus === 'ATIVO';
 
   const updateDropdownPosition = () => {
     if (buttonRef.current) {
@@ -51,7 +51,7 @@ const MaterialActionMenu = ({ materialId, materialStatus, onDelete }) => {
   }, []);
 
   const handleEditar = () => {
-    navigate(`/material/editar/${materialId}`);
+    navigate(`/material/editar/${itemId}`);
     setIsOpen(false);
   };
 
@@ -66,7 +66,7 @@ const MaterialActionMenu = ({ materialId, materialStatus, onDelete }) => {
   };
   
   const handleConfirmDelete = () => {
-    onDelete(materialId);
+    onItemDeleted(itemId);
     setIsDeleteModalOpen(false);
   };
   

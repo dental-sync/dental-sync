@@ -9,8 +9,7 @@ import Dropdown from '../../components/Dropdown/Dropdown';
 import { useNavigate } from 'react-router-dom';
 // axios removido - usando api do axios-config
 import api from '../../axios-config';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import useToast from '../../hooks/useToast';
 import useNotifications from '../../hooks/useNotifications';
 
 const PedidoPage = () => {
@@ -34,6 +33,7 @@ const PedidoPage = () => {
   const filterRef = useRef(null);
   const navigate = useNavigate();
   const { notifications, loading: notificationLoading, refreshNotifications } = useNotifications();
+  const toast = useToast();
   
   // Buscar dentistas e protéticos ao montar o componente
   useEffect(() => {
@@ -323,18 +323,6 @@ const PedidoPage = () => {
 
   return (
     <div className="pedido-page">
-      <ToastContainer 
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
       <div className="page-top">
         <div className="notification-container">
             <NotificationBell 

@@ -2,12 +2,12 @@ import React from 'react';
 import './EditarPedido.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import PedidoForm from '../../components/PedidoForm/PedidoForm';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import useToast from '../../hooks/useToast';
 
 const EditarPedido = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
   
   const handleSubmitSuccess = () => {
     toast.success('Pedido atualizado com sucesso!');
@@ -20,18 +20,6 @@ const EditarPedido = () => {
   return (
     <div className="pedido-page">
     <div className="editar-pedido-page">
-      <ToastContainer 
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
       
         <div className="back-navigation">
           <button onClick={handleVoltar} className="back-button">

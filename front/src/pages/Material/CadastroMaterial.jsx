@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../axios-config';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import useToast from '../../hooks/useToast';
 import './CadastroMaterial.css';
 
 import ModalCadastroCategoriaMaterial from '../../components/Modals/ModalCadastroCategoriaMaterial';
@@ -15,6 +14,7 @@ import useNotifications from '../../hooks/useNotifications';
 const CadastroMaterial = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const { refreshAfterStockChange } = useNotificationRefresh();
   const { notifications, loading: notificationLoading, refreshNotifications } = useNotifications();
@@ -335,18 +335,6 @@ const CadastroMaterial = () => {
 
   return (
     <div className="cadastro-material-page">
-      <ToastContainer 
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
       <div className="page-top">
         <div className="notification-container">
           <NotificationBell 

@@ -9,10 +9,11 @@ import useInactiveFilter from '../../hooks/useInactiveFilter';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../axios-config';
-import { toast } from 'react-toastify';
+import useToast from '../../hooks/useToast';
 
 const DentistaPage = () => {
   const { notifications } = useNotifications();
+  const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [dentistas, setDentistas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +24,6 @@ const DentistaPage = () => {
     isActive: 'ATIVO'
   });
   const [refreshData, setRefreshData] = useState(0);
-  const [toastMessage, setToastMessage] = useState(null);
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: 'ascending'
@@ -40,8 +40,6 @@ const DentistaPage = () => {
     fetchAllDentistas,
     toggleRecordStatus
   } = useInactiveFilter();
-  
-  const recentMessages = useRef(new Set());
 
   const loadDentistas = async () => {
     setLoading(true);
@@ -91,31 +89,13 @@ const DentistaPage = () => {
       
       window.history.replaceState({}, document.title);
       
-      const messageKey = `${successMessage}-${Date.now()}`;
+      toast.success(successMessage);
       
-      if (!recentMessages.current.has(messageKey)) {
-        recentMessages.current.add(messageKey);
-        
-        toast.success(successMessage, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          toastId: successMessage
-        });
-        
-        setTimeout(() => {
-          recentMessages.current.delete(messageKey);
-        }, 3000);
-        
-        if (shouldRefresh) {
-          setRefreshData(prev => prev + 1);
-        }
+      if (shouldRefresh) {
+        setRefreshData(prev => prev + 1);
       }
     }
-  }, [location]);
+  }, [location, toast]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -148,41 +128,45 @@ const DentistaPage = () => {
     });
   };
 
-  const handleStatusChange = (dentistaId, newStatus) => {
-    const dentistaAtual = dentistas.find(d => d.id === dentistaId);
-    
-    if (!dentistaAtual) {
-      console.error('Dentista não encontrado:', dentistaId);
-      return;
+  const handleStatusChange = async (dentistaId, newStatus) => {
+    try {
+      console.log('🔄 Iniciando mudança de status - ID:', dentistaId, 'Status:', newStatus);
+      
+      // Determinar o novo status como boolean
+      const isActive = newStatus === 'ATIVO' || newStatus === true;
+      
+      console.log('📝 Convertendo status para boolean:', isActive);
+      
+      // Usar o hook para alternar o status
+      await toggleRecordStatus('dentistas', dentistaId, isActive);
+      
+      // Atualizar o status do dentista no estado local
+      setDentistas(prevDentistas => 
+        prevDentistas.map(dentista => 
+          dentista.id === dentistaId 
+            ? { ...dentista, isActive: isActive ? 'ATIVO' : 'INATIVO' } 
+            : dentista
+        )
+      );
+      
+      // Exibir mensagem de sucesso
+      const statusText = isActive ? 'ativado' : 'desativado';
+      toast.success(`Dentista ${statusText} com sucesso!`);
+      
+      // Recarregar dados se necessário para manter consistência
+      if (filtros.isActive === 'ATIVO' && !isActive) {
+        // Se estava mostrando apenas ativos e desativou um, recarregar para removê-lo da vista
+        loadDentistas();
+      } else if (filtros.isActive === 'INATIVO' && isActive) {
+        // Se estava mostrando apenas inativos e ativou um, recarregar para removê-lo da vista
+        loadDentistas();
+      }
+      
+      console.log('✅ Mudança de status concluída com sucesso');
+    } catch (error) {
+      console.error('❌ Erro ao alterar status do dentista:', error);
+      toast.error('Erro ao alterar status do dentista');
     }
-    
-    const statusAtual = dentistaAtual.isActive;
-    
-    if (statusAtual === newStatus) {
-      return;
-    }
-
-    const dentistasAtualizados = dentistas.map(dentista =>
-      dentista.id === dentistaId
-        ? { ...dentista, isActive: newStatus }
-        : dentista
-    );
-    
-    setDentistas(dentistasAtualizados);
-    
-    setRefreshData(prev => prev + 1);
-    
-    const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
-    
-    window.history.replaceState({}, document.title);
-    
-    navigate('', { 
-      state: { 
-        success: `Status atualizado com sucesso para ${statusText}`,
-        refresh: false
-      },
-      replace: true
-    });
   };
 
   const formatDentistaId = (id) => `D${String(id).padStart(4, '0')}`;
@@ -309,11 +293,7 @@ const DentistaPage = () => {
           </div>
         </div>
       
-      {toastMessage && (
-        <div className="toast-message">
-          {toastMessage}
-        </div>
-      )}
+      
       
       <div className="page-header">
         <h1 className="page-title">Dentistas</h1>

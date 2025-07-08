@@ -7,7 +7,7 @@ import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import ActionMenu from '../../components/ActionMenu/ActionMenu';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../axios-config';
-import { toast } from 'react-toastify';
+import useToast from '../../hooks/useToast';
 import ServicoTable from '../../components/ServicoTable/ServicoTable';
 import useNotifications from '../../hooks/useNotifications';
 
@@ -27,7 +27,6 @@ const ServicoPage = () => {
     categoria: 'todas'
   });
   const [refreshData, setRefreshData] = useState(0);
-  const [toastMessage, setToastMessage] = useState(null);
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: 'ascending'
@@ -37,9 +36,7 @@ const ServicoPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { notifications, loading: notificationLoading, refreshNotifications } = useNotifications();
-  
-  // Criando um ref para armazenar mensagens recentes e evitar duplicação de toasts
-  const recentMessages = useRef(new Set());
+  const toast = useToast();
 
   useEffect(() => {
     const fetchServicos = async () => {
@@ -87,37 +84,15 @@ const ServicoPage = () => {
       // Limpa o state imediatamente
       window.history.replaceState({}, document.title);
       
-      // Cria uma chave única para esta mensagem
-      const messageKey = `${successMessage}-${Date.now()}`;
+      // Exibe o toast
+      toast.success(successMessage);
       
-      // Verifica se esta mensagem já foi exibida recentemente (nos últimos 3 segundos)
-      if (!recentMessages.current.has(messageKey)) {
-        // Adiciona a mensagem ao cache
-        recentMessages.current.add(messageKey);
-        
-        // Exibe o toast
-        toast.success(successMessage, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          toastId: successMessage
-        });
-        
-        // Remove a mensagem do cache após 3 segundos
-        setTimeout(() => {
-          recentMessages.current.delete(messageKey);
-        }, 3000);
-        
-        // Se é necessário atualizar os dados
-        if (shouldRefresh) {
-          setRefreshData(prev => prev + 1);
-        }
+      // Se é necessário atualizar os dados
+      if (shouldRefresh) {
+        setRefreshData(prev => prev + 1);
       }
     }
-  }, [location]);
+  }, [location, toast]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -324,11 +299,7 @@ const ServicoPage = () => {
         </div>
       </div>
       
-      {toastMessage && (
-        <div className="toast-message">
-          {toastMessage}
-        </div>
-      )}
+      
       
       <div className="page-header">
         <h1 className="page-title">Serviços</h1>

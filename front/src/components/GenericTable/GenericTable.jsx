@@ -2,7 +2,7 @@ import React from 'react';
 import './GenericTable.css';
 import { useNavigate } from 'react-router-dom';
 import  api  from '../../axios-config';
-import { toast } from 'react-toastify';
+import useToast from '../../hooks/useToast';
 import StatusBadge from '../StatusBadge/StatusBadge';
 import { limitText } from '../../utils/textUtils';
 
@@ -25,6 +25,7 @@ const GenericTable = ({
   alwaysAllowDelete = false
 }) => {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const handleStatusChange = async (itemId, newStatus) => {
     try {

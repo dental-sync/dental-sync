@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../axios-config';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import useToast from '../../hooks/useToast';
 import './CadastroServico.css';
 import Dropdown from '../../components/Dropdown/Dropdown';
 import ModalCadastroCategoriaServico from '../../components/Modals/ModalCadastroCategoriaServico';
@@ -13,6 +12,7 @@ import useNotifications from '../../hooks/useNotifications';
 const EditarServico = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const toast = useToast();
   const { notifications } = useNotifications();
   const [categorias, setCategorias] = useState([]);
   const [materiais, setMateriais] = useState([]);
@@ -284,7 +284,7 @@ const EditarServico = () => {
 
   return (
     <div className="cadastro-servico-page">
-      <ToastContainer />
+      
       <ModalCadastroCategoriaServico
         isOpen={showModalCategoria}
         onClose={() => {

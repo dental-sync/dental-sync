@@ -121,7 +121,19 @@ function App() {
                 <Route path="/pedidos/visualizar/:id" element={<ProtectedRoute><ProtectedLayout><VisualizarPedido /></ProtectedLayout></ProtectedRoute>} />
                 <Route path="/kanban" element={<ProtectedRoute><ProtectedLayout><Kanban /></ProtectedLayout></ProtectedRoute>} />
               </Routes>
-              <ToastContainer position="top-right" autoClose={3000} />
+              <ToastContainer 
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+                limit={5}
+              />
             </div>
           </Router>
         </NotificationProvider>

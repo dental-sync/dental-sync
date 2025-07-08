@@ -4,13 +4,14 @@ import AuthLayout from '../../components/AuthLayout';
 import TwoFactorCard from '../../components/TwoFactorCard';
 import api from '../../axios-config';
 import { useAuth } from '../../contexts/AuthContext';
-import { toast } from 'react-toastify';
+import useToast from '../../hooks/useToast';
 import './styles.css';
 
 const TwoFactorPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
+  const toast = useToast();
   
   // Verificar se há dados do login anterior
   const email = location.state?.email;
@@ -47,10 +48,7 @@ const TwoFactorPage = () => {
           successMessage += ' Dispositivo será lembrado por 10 minutos.';
         }
         
-        toast.success(successMessage, {
-          position: "top-right",
-          autoClose: 4000
-        });
+        toast.success(successMessage, { autoClose: 4000 });
         
         navigate('/protetico');
       } else {

@@ -4,11 +4,12 @@ import NotificationBell from '../../components/NotificationBell/NotificationBell
 import Dropdown from '../../components/Dropdown/Dropdown';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../axios-config';
-import { toast } from 'react-toastify';
+import useToast from '../../hooks/useToast';
 
 const EditarProtetico = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     nome: '',
     cro: 'CRO-',

@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import './styles.css';
 import api from '../../axios-config';
 import { useAuth } from '../../contexts/AuthContext';
-import { toast } from 'react-toastify';
+import useToast from '../../hooks/useToast';
 
 const InformacaoSection = () => {
   const { isAdmin } = useAuth();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     nomeLaboratorio: '',
     cnpj: '',
@@ -195,14 +196,7 @@ const InformacaoSection = () => {
         await api.post('/laboratorios', dataToSend);
       }
       
-      toast.success('Informações do laboratório atualizadas com sucesso!', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.success('Informações do laboratório atualizadas com sucesso!');
       
     } catch (error) {
       console.error('Erro ao salvar dados:', error);

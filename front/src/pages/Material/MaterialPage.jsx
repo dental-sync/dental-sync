@@ -7,8 +7,7 @@ import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import MaterialTable from '../../components/MaterialTable/MaterialTable';
 import { useNavigate } from 'react-router-dom';
 import api from '../../axios-config';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import useToast from '../../hooks/useToast';
 import useNotificationRefresh from '../../hooks/useNotificationRefresh';
 import useNotifications from '../../hooks/useNotifications';
 
@@ -32,6 +31,7 @@ const MaterialPage = () => {
   const navigate = useNavigate();
   const { refreshAfterStockChange } = useNotificationRefresh();
   const { notifications, loading: notificationLoading, refreshNotifications } = useNotifications();
+  const toast = useToast();
   
   // Função utilitária para formatar o ID
   const formatMaterialId = (id) => `M${String(id).padStart(4, '0')}`;
@@ -256,18 +256,6 @@ const MaterialPage = () => {
 
   return (
     <div className="material-page">
-      <ToastContainer 
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
       <div className="page-top">
         <div className="notification-container">
           <NotificationBell 

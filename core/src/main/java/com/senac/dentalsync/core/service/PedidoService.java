@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,6 +52,28 @@ public class PedidoService extends BaseService<Pedido, Long> {
         }
         
         return super.save(pedido);
+    }
+
+    /**
+     * OVERRIDE: Implementa DELETE REAL para pedidos
+     * Pedidos devem ser deletados fisicamente, não logicamente
+     */
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        Optional<Pedido> pedidoOpt = findById(id);
+        if (pedidoOpt.isPresent()) {
+            Pedido pedido = pedidoOpt.get();
+            
+            System.out.println("🗑️ DELETANDO PEDIDO FISICAMENTE - ID: " + id);
+            
+            // DELETE REAL - O trigger do banco fará o backup automaticamente
+            getRepository().delete(pedido);
+            
+            System.out.println("✅ PEDIDO DELETADO FISICAMENTE - ID: " + id);
+        } else {
+            System.out.println("❌ PEDIDO NÃO ENCONTRADO PARA DELETAR - ID: " + id);
+        }
     }
 
     /**

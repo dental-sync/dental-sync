@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import com.senac.dentalsync.core.persistency.model.Material;
 import com.senac.dentalsync.core.persistency.model.StatusMaterial;
 import com.senac.dentalsync.core.persistency.model.Protetico;
-import com.senac.dentalsync.core.persistency.repository.MaterialRepository;  
+import com.senac.dentalsync.core.persistency.model.ServicoMaterial;
+import com.senac.dentalsync.core.persistency.repository.MaterialRepository;
+import com.senac.dentalsync.core.persistency.repository.ServicoMaterialRepository;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +22,9 @@ public class MaterialService extends BaseService<Material, Long> {
 
     @Autowired
     private MaterialRepository materialRepository;
+    
+    @Autowired
+    private ServicoMaterialRepository servicoMaterialRepository;
 
     @Override
     public MaterialRepository getRepository() {
@@ -29,6 +34,17 @@ public class MaterialService extends BaseService<Material, Long> {
     // getUsuarioLogado() agora é implementado no BaseService
     
     public void delete(Long id) {
+        // Primeiro, buscar o material
+        Optional<Material> materialOpt = materialRepository.findById(id);
+        
+        if (materialOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material não encontrado");
+        }
+        
+        // Deletar todos os ServicoMaterial que referenciam este material
+        servicoMaterialRepository.deleteByMaterialId(id);
+        
+        // Agora pode deletar o material
         materialRepository.deleteById(id);
     }
 

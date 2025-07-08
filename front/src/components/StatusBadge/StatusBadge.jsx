@@ -191,9 +191,6 @@ const StatusBadge = ({ status, onClick, tipo, pedidoId }) => {
   
   const handleStatusChange = (newStatus) => {
     if (onClick) {
-      console.log('🔄 StatusBadge - Mudando status para:', newStatus);
-      
-      // Passar o status como string para manter consistência
       onClick(newStatus);
       setIsDropdownOpen(false);
     }

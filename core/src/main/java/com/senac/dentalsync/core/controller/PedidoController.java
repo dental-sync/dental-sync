@@ -75,7 +75,12 @@ public class PedidoController extends BaseController<Pedido, Long> {
     public ResponseEntity<Pedido> update(@PathVariable Long id, @RequestBody Pedido entity) {
         return getService().findById(id)
                 .map(existingEntity -> {
+                    // Preservar campos de auditoria da entidade existente
                     entity.setId(id);
+                    entity.setCreatedAt(existingEntity.getCreatedAt());
+                    entity.setCreatedBy(existingEntity.getCreatedBy());
+                    entity.setIsActive(existingEntity.getIsActive());
+                    
                     processarServicos(entity);
                     return ResponseEntity.ok(getService().save(entity));
                 })

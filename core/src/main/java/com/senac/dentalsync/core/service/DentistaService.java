@@ -72,7 +72,7 @@ public class DentistaService extends BaseService<Dentista, Long> {
         Dentista dentista = dentistaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Dentista não encontrado"));
         dentista.setIsActive(status);
-        return dentistaRepository.save(dentista);
+        return super.save(dentista);
     }
 
     @Override

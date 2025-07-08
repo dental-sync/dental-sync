@@ -129,40 +129,30 @@ const ServicoPage = () => {
     });
   };
 
-  const handleStatusChange = (servicoId, newStatus) => {
-    // Encontrar o serviço atual
-    const servicoAtual = servicos.find(s => s.id === servicoId);
-    
-    // Verificar se o status está realmente mudando
-    const statusAtual = servicoAtual.isActive === 'ATIVO';
-    if (statusAtual === (newStatus === 'ATIVO')) {
-      return; // Não faz nada se o status for o mesmo
-    }
-
-    // Atualizar o status do serviço na lista
-    if (newStatus !== null) {
-      setServicos(prevServicos =>
-        prevServicos.map(servico =>
-          servico.id === servicoId
-            ? { ...servico, isActive: newStatus }
-            : servico
-        )
-      );
+  const handleStatusChange = async (servicoId, newStatus) => {
+    try {
+      const requestBody = newStatus === 'ATIVO' ? { isActive: true } : { isActive: false };
       
-      // Exibir o toast de forma padronizada
-      const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
+      const response = await api.patch(`/servico/${servicoId}`, requestBody);
       
-      // Limpa qualquer estado de navegação existente
-      window.history.replaceState({}, document.title);
-      
-      // Adicionamos uma mensagem de sucesso usando o padrão de state
-      navigate('', { 
-        state: { 
-          success: `Status atualizado com sucesso para ${statusText}`,
-          refresh: false
-        },
-        replace: true
-      });
+      if (response.status === 200) {
+        // Atualizar o status do serviço na lista
+        setServicos(prevServicos =>
+          prevServicos.map(servico =>
+            servico.id === servicoId
+              ? { ...servico, isActive: newStatus }
+              : servico
+          )
+        );
+        
+        const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
+        toast.success(`Status alterado para ${statusText} com sucesso!`);
+      }
+    } catch (error) {
+      console.error('Erro ao alterar status do serviço:', error);
+      toast.error('Erro ao alterar status do serviço');
+      // Recarregar dados em caso de erro
+      setRefreshData(prev => prev + 1);
     }
   };
 

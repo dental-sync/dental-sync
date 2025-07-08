@@ -112,8 +112,6 @@ const MaterialPage = () => {
       return true;
     });
 
-  console.log('materiaisFiltrados:', materiaisFiltrados);
-
   const handleSearch = (query) => {
     setSearchQuery(query);
   };
@@ -148,7 +146,6 @@ const MaterialPage = () => {
   };
 
   const handleNovo = () => {
-    console.log('Navegando para /material/cadastro');
     navigate('/material/cadastro');
   };
 

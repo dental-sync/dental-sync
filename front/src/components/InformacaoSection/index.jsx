@@ -35,12 +35,6 @@ const InformacaoSection = () => {
           const laboratorio = response.data;
           const endereco = laboratorio.endereco || {};
           
-          console.log('🏭 Dados do laboratório:', {
-            id: laboratorio.id,
-            nome: laboratorio.nomeLaboratorio,
-            enderecoId: endereco.id
-          });
-          
           setLaboratorioId(laboratorio.id);
           setEnderecoId(endereco.id || null); // Guardar ID do endereço para atualização
           
@@ -183,12 +177,6 @@ const InformacaoSection = () => {
         telefoneLaboratorio: formData.telefoneLaboratorio,
         endereco: enderecoData
       };
-      
-      console.log('📤 Enviando dados:', {
-        laboratorioId,
-        enderecoId,
-        payload: dataToSend
-      });
       
       if (laboratorioId) {
         await api.put(`/laboratorios/${laboratorioId}`, dataToSend);

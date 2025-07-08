@@ -51,7 +51,6 @@ const LoginPage = () => {
         
         // Mostrar duração da sessão se "Lembrar de mim" estiver marcado
         if (formData.rememberMe) {
-          console.log(`Sessão configurada para: ${response.data.sessionDuration}`);
         }
         
       navigate('/kanban');

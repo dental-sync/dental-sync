@@ -56,7 +56,12 @@ public abstract class BaseController<T extends BaseEntity, ID> {
     public ResponseEntity<T> update(@PathVariable ID id, @RequestBody T entity) {
         return getService().findById(id)
                 .map(existingEntity -> {
-                    entity.setId((Long) id); // Aqui fazemos um cast para Long, já que nosso BaseEntity usa Long
+                    // Preservar campos de auditoria da entidade existente
+                    entity.setId((Long) id);
+                    entity.setCreatedAt(existingEntity.getCreatedAt());
+                    entity.setCreatedBy(existingEntity.getCreatedBy());
+                    entity.setIsActive(existingEntity.getIsActive());
+                    
                     return ResponseEntity.ok(getService().save(entity));
                 })
                 .orElse(ResponseEntity.notFound().build());

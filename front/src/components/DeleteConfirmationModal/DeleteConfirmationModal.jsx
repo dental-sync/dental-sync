@@ -54,7 +54,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, title, message })
           <h3>{title}</h3>
         </div>
         <div className="delete-modal-body">
-          <p>{message}</p>
+          <p>{message || "Tem certeza que deseja excluir este item? Esta ação não poderá ser desfeita."}</p>
         </div>
         <div className="delete-modal-footer">
           <button className="delete-modal-cancel" onClick={onClose}>

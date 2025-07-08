@@ -30,7 +30,7 @@ const STTModal = ({ isOpen, onClose, onProcessedData }) => {
         }
       }
     } catch (err) {
-      console.log('Não foi possível verificar permissões:', err);
+      setPermissionError(true);
     }
   };
 
@@ -65,12 +65,10 @@ const STTModal = ({ isOpen, onClose, onProcessedData }) => {
     }
 
     recognition.onstart = () => {
-      console.log('Speech recognition started');
       setIsListening(true);
     };
 
     recognition.onresult = (event) => {
-      console.log('Speech recognition result:', event);
       let finalTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
@@ -83,7 +81,6 @@ const STTModal = ({ isOpen, onClose, onProcessedData }) => {
     };
 
     recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event);
       let errorMessage = 'Erro no reconhecimento de voz';
       
       switch (event.error) {
@@ -131,7 +128,6 @@ const STTModal = ({ isOpen, onClose, onProcessedData }) => {
     };
 
     recognition.onend = () => {
-      console.log('Speech recognition ended');
       setIsListening(false);
       // Removido auto-restart para evitar loops de erro
     };
@@ -267,7 +263,12 @@ const STTModal = ({ isOpen, onClose, onProcessedData }) => {
         try {
           response = await api.post('/stt/test', { text: exampleText });
         } catch (testError) {
-          console.log('Endpoint de teste falhou, tentando webhook:', testError);
+          try {
+            const webhookResponse = await api.post('/webhook/test');
+            // setWebhookUrl(webhookResponse.data.webhookUrl); // This line was removed from the original file
+          } catch (webhookError) {
+            setError('Não foi possível configurar o webhook. Por favor, tente novamente mais tarde.');
+          }
           // Se o teste falhar, tentar o webhook
           response = await api.post('/stt/process', { text: exampleText });
         }

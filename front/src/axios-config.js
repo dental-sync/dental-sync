@@ -55,8 +55,6 @@ api.interceptors.response.use(
       const data = error.response.data;
       const url = error.config?.url || '';
       
-      console.error('Erro na resposta:', status, data, 'URL:', url);
-      
       // Tratar erro 403 - Conta desativada (mas não nas rotas de login)
       if (status === 403 && !isLoginRoute(url)) {
         // Só redirecionar se a mensagem for especificamente sobre conta desativada
@@ -64,8 +62,6 @@ api.interceptors.response.use(
           (data.message.includes('desativada') || data.message.includes('inativa') || data.message.includes('Conta desativada'));
         
         if (isAccountDeactivated) {
-          console.warn('🚫 Conta desativada detectada - redirecionando para login');
-          
           // Limpar qualquer dado de autenticação local
           if (typeof window !== 'undefined') {
             // Limpar localStorage se houver dados
@@ -75,28 +71,18 @@ api.interceptors.response.use(
             // Redirecionar para login imediatamente
             window.location.href = '/login';
           }
-        } else {
-          console.warn('🔒 Erro 403 - Acesso negado (mas não é conta desativada)');
         }
       }
       
       // Tratar erro 401 - Não autorizado (mas não nas rotas de login/auth)
       else if (status === 401 && !isLoginRoute(url)) {
-        console.warn('🔒 Não autorizado - possível sessão expirada para URL:', url);
         // Deixar o AuthContext gerenciar outros casos de 401
-      }
-      
-      // Log para debug - mostrar quando NÃO interferimos
-      if (isLoginRoute(url)) {
-        console.log('🔄 Não interferindo na rota de login/auth:', url);
       }
       
     } else if (error.request) {
       // A requisição foi feita mas não houve resposta
-      console.error('Sem resposta do servidor:', error.request);
     } else {
       // Erro ao configurar a requisição
-      console.error('Erro:', error.message);
     }
     
     return Promise.reject(error);

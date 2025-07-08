@@ -22,38 +22,20 @@ const GenericTable = ({
   useCustomStatusRender = false,
   url,
   hideOptions = [],
-  alwaysAllowDelete = false
+  alwaysAllowDelete = false,
+  deleteMessage
 }) => {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const handleStatusChange = async (itemId, newStatus) => {
-    try {
-      const itemAtual = data.find(item => item.id === itemId);
-      
-      const statusAtual = itemAtual[statusField];
-      
-      console.log('🔄 GenericTable - handleStatusChange:');
-      console.log('  - Item ID:', itemId);
-      console.log('  - Status atual:', statusAtual);
-      console.log('  - Novo status:', newStatus);
-      
-      // Normalizar valores para comparação
-      const statusAtualNormal = statusAtual === 'ATIVO' || statusAtual === true;
-      const newStatusNormal = newStatus === 'ATIVO' || newStatus === true;
-      
-      if (statusAtualNormal === newStatusNormal) {
-        console.log('  - Status inalterado, cancelando operação');
-        return;
-      }
-
-      // Remover a chamada duplicada da API - deixar apenas o onStatusChange
-      // para que o componente pai (ProteticoPage) faça a requisição através do hook
-      onStatusChange(itemId, newStatus);
-    } catch (error) {
-      console.error('Erro ao alterar status:', error);
-      toast.error('Erro ao alterar status. Tente novamente.');
+  const handleStatusChange = (itemId, newStatus) => {
+    const statusAtual = data.find(item => item.id === itemId)?.[statusField];
+    
+    if (statusAtual === newStatus) {
+      return;
     }
+
+    onStatusChange(itemId, newStatus);
   };
 
   const getSortIcon = (key) => {
@@ -135,6 +117,7 @@ const GenericTable = ({
                           url={url}
                           hideOptions={hideOptions}
                           alwaysAllowDelete={alwaysAllowDelete}
+                          deleteMessage={deleteMessage}
                         />
                       </td>
                     );

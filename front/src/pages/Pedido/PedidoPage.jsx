@@ -47,7 +47,6 @@ const PedidoPage = () => {
         setDentistas(dentistasResponse.data);
         setProteticos(proteticosResponse.data);
       } catch (error) {
-        console.error('Erro ao buscar dados de referência:', error);
         toast.error('Erro ao carregar dados para filtro.');
       }
     };
@@ -62,33 +61,12 @@ const PedidoPage = () => {
       try {
         const response = await api.get('/pedidos');
         
-        // Buscar quantidades para cada pedido em paralelo
-        const pedidosComQuantidades = await Promise.all(
-          response.data.map(async (pedido) => {
-            try {
-              const quantidadesResponse = await api.get(`/pedidos/${pedido.id}/quantidades-servicos`);
-              console.log(`Quantidades para pedido ${pedido.id}:`, quantidadesResponse.data);
-              return {
-                ...pedido,
-                quantidadesServicos: quantidadesResponse.data
-              };
-            } catch (err) {
-              console.warn(`Erro ao buscar quantidades para pedido ${pedido.id}:`, err);
-              return {
-                ...pedido,
-                quantidadesServicos: []
-              };
-            }
-          })
-        );
-        
-        const pedidosFormatados = pedidosComQuantidades.map(pedido => ({
+        const pedidosFormatados = response.data.map(pedido => ({
           id: pedido.id,
           paciente: pedido.cliente,
           dentista: pedido.dentista,
           protetico: pedido.protetico,
           servicos: pedido.servicos,
-          quantidadesServicos: pedido.quantidadesServicos,
           dataEntrega: pedido.dataEntrega,
           createdAt: pedido.createdAt || pedido.created_at,
           prioridade: pedido.prioridade,
@@ -96,15 +74,12 @@ const PedidoPage = () => {
           observacao: pedido.observacao,
           status: pedido.status,
           valorTotal: Array.isArray(pedido.servicos) ? pedido.servicos.reduce((acc, s) => {
-            // Calcular valor considerando as quantidades
-            const quantidade = pedido.quantidadesServicos?.find(qs => qs.servico.id === s.id)?.quantidade || 1;
-            return acc + ((s.valorTotal || s.preco || 0) * quantidade);
+            return acc + (s.valorTotal || s.preco || 0);
           }, 0) : 0
         }));
-        console.log('[LOG] pedidosFormatados:', pedidosFormatados);
+        
         setPedidos(pedidosFormatados);
       } catch (error) {
-        console.error('Não foi possível acessar a API:', error);
         toast.error('Erro ao buscar pedidos. Por favor, tente novamente.');
       } finally {
         setLoading(false);
@@ -221,7 +196,6 @@ const PedidoPage = () => {
         window.atualizarRelatorios();
       }
     } catch (error) {
-      console.error('Erro ao excluir pedido:', error);
       toast.error('Erro ao excluir pedido. Por favor, tente novamente.');
     }
   };
@@ -234,7 +208,6 @@ const PedidoPage = () => {
         p.id === pedidoId ? { ...p, status: newStatus } : p
       ));
     } catch (error) {
-      console.error('Erro ao atualizar status do pedido:', error);
       toast.error('Erro ao atualizar status. Por favor, tente novamente.');
     }
   };

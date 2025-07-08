@@ -254,9 +254,7 @@ const CadastroServico = () => {
         // valorMateriais e valorTotal serão calculados automaticamente no backend
       };
 
-      console.log('Dados sendo enviados:', servicoData); // Para debug
-
-      await api.post('/servico', servicoData);
+      const response = await api.post('/servico', servicoData);
       toast.success('Serviço cadastrado com sucesso!');
       navigate('/servico');
     } catch (error) {

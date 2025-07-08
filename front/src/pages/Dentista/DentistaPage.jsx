@@ -130,17 +130,10 @@ const DentistaPage = () => {
 
   const handleStatusChange = async (dentistaId, newStatus) => {
     try {
-      console.log('🔄 Iniciando mudança de status - ID:', dentistaId, 'Status:', newStatus);
-      
-      // Determinar o novo status como boolean
-      const isActive = newStatus === 'ATIVO' || newStatus === true;
-      
-      console.log('📝 Convertendo status para boolean:', isActive);
-      
-      // Usar o hook para alternar o status
+      const isActive = newStatus === 'ATIVO';
+
       await toggleRecordStatus('dentistas', dentistaId, isActive);
-      
-      // Atualizar o status do dentista no estado local
+
       setDentistas(prevDentistas => 
         prevDentistas.map(dentista => 
           dentista.id === dentistaId 
@@ -149,20 +142,15 @@ const DentistaPage = () => {
         )
       );
       
-      // Exibir mensagem de sucesso
       const statusText = isActive ? 'ativado' : 'desativado';
       toast.success(`Dentista ${statusText} com sucesso!`);
       
-      // Recarregar dados se necessário para manter consistência
       if (filtros.isActive === 'ATIVO' && !isActive) {
-        // Se estava mostrando apenas ativos e desativou um, recarregar para removê-lo da vista
         loadDentistas();
       } else if (filtros.isActive === 'INATIVO' && isActive) {
-        // Se estava mostrando apenas inativos e ativou um, recarregar para removê-lo da vista
         loadDentistas();
       }
       
-      console.log('✅ Mudança de status concluída com sucesso');
     } catch (error) {
       console.error('❌ Erro ao alterar status do dentista:', error);
       toast.error('Erro ao alterar status do dentista');

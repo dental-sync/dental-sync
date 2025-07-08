@@ -100,9 +100,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             "/login/remember-me",
             "/password/",
             "/proteticos/cadastro",
-            "/proteticos/", // Não interferir nas operações administrativas de protéticos
             "/laboratorios/",
-            "/relatorios/", // Não interferir nos relatórios (apenas admins podem acessar)
             "/security/reset-password-emergency",
             "/material/notificacoes/estoque"
         };

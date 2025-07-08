@@ -255,12 +255,7 @@ const CadastroProtetico = () => {
       
       // Redirecionar para a lista após sucesso
       setTimeout(() => {
-        navigate('/protetico', { 
-          state: { 
-            success: "Protético cadastrado com sucesso!",
-            refresh: true
-          }
-        });
+        navigate('/protetico');
       }, 1500);
       
     } catch (error) {

@@ -261,9 +261,7 @@ const Relatorios = () => {
         <StatCard 
           title="Total de Pedidos"
           value={dadosRelatorio.totalPedidos}
-          description={dadosRelatorio.crescimentoPedidos}
-          descriptionOriginal={dadosRelatorio.crescimentoPedidosOriginal}
-          trend={dadosRelatorio.totalPedidos > (dadosRelatorio.dadosAnteriores?.totalPedidos || 0) ? "up" : "down"}
+          trend="neutral"
         />
         <StatCard 
           title="Pedidos Concluídos"

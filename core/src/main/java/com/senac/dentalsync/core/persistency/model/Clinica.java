@@ -1,6 +1,10 @@
 package com.senac.dentalsync.core.persistency.model;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -23,4 +27,8 @@ public class Clinica extends BaseEntity {
     @NotBlank(message = "O CNPJ é obrigatório")
     @Pattern(regexp = "\\d{2}\\.\\d{3}\\.\\d{3}\\/\\d{4}-\\d{2}", message = "Formato de CNPJ inválido. Use o formato: XX.XXX.XXX/YYYY-ZZ")
     private String cnpj;
+    
+    @ManyToMany(mappedBy = "clinicas")
+    @JsonIgnore // Evita loop infinito na serialização JSON
+    private List<Dentista> dentistas;
 } 

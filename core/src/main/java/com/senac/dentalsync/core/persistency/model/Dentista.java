@@ -3,6 +3,8 @@ package com.senac.dentalsync.core.persistency.model;
 import java.util.List;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
@@ -30,6 +32,11 @@ public class Dentista extends BaseEntity {
     private String cro;
 
     @ManyToMany
+    @JoinTable(
+        name = "dentista_clinica",
+        joinColumns = @JoinColumn(name = "dentista_id"),
+        inverseJoinColumns = @JoinColumn(name = "clinica_id")
+    )
     private List<Clinica> clinicas;
 
     @NotBlank(message = "O telefone é obrigatório")

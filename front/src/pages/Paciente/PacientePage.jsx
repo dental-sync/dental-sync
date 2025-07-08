@@ -423,7 +423,7 @@ const PacientePage = () => {
       
       <div className="search-container">
         <SearchBar 
-          placeholder="Buscar por ID (P0001), nome, email, telefone..."
+          placeholder="Buscar por ID, nome, email, telefone..."
           onSearch={handleSearch} 
         />
         <ActionButton

@@ -130,6 +130,6 @@ public class PacienteService extends BaseService<Paciente, Long> {
         paciente.setIsActive(isActive);
         
     
-        return repository.save(paciente);
+        return super.save(paciente);
     }
 }

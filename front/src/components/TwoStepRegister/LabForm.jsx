@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import './TwoStepRegister.css';
 import api from '../../axios-config';
@@ -7,15 +7,38 @@ import axios from 'axios'; // Mantido apenas para busca de CEP externa
 const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
   const [formData, setFormData] = useState(initialData);
   const [cepLoading, setCepLoading] = useState(false);
+  const [enderecoBloqueado, setEnderecoBloqueado] = useState(false);
+  const [cepSearchTimeout, setCepSearchTimeout] = useState(null);
 
   useEffect(() => {
     setFormData(initialData);
   }, [initialData]);
 
-  // Chama onChange sempre que formData mudar (mas não no render inicial)
+  // Chama onChange com debounce para evitar loops
+  const debouncedOnChange = useCallback(
+    (data) => {
+      const timeoutId = setTimeout(() => {
+        if (onChange) onChange(data);
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
+    },
+    [onChange]
+  );
+
   useEffect(() => {
-    if (onChange) onChange(formData);
-  }, [formData, onChange]);
+    const cleanup = debouncedOnChange(formData);
+    return cleanup;
+  }, [formData, debouncedOnChange]);
+
+  // Cleanup timeout quando componente desmontar
+  useEffect(() => {
+    return () => {
+      if (cepSearchTimeout) {
+        clearTimeout(cepSearchTimeout);
+      }
+    };
+  }, [cepSearchTimeout]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -105,11 +128,31 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
         [name]: formattedValue
       }));
       
-      // Se for o campo CEP e ficou válido, dispara a busca
+      // Se o CEP estiver incompleto ou vazio, desbloqueia os campos
+      if (limitado.length < 8) {
+        setEnderecoBloqueado(false);
+      }
+      
+      // Se for o campo CEP e ficou válido, dispara a busca com debounce
       if (limitado.length === 8) {
+        // Limpa timeout anterior se existir
+        if (cepSearchTimeout) {
+          clearTimeout(cepSearchTimeout);
+        }
+        
+        // Cria novo timeout para busca
+        const timeoutId = setTimeout(() => {
         handleCepBusca(limitado);
+        }, 500);
+        
+        setCepSearchTimeout(timeoutId);
       }
       return;
+    }
+    
+    // Se o usuário tentar editar campos de endereço bloqueados, desbloqueia automaticamente
+    if (enderecoBloqueado && (name === 'endereco' || name === 'bairro' || name === 'cidade' || name === 'estado')) {
+      setEnderecoBloqueado(false);
     }
     
     setFormData(prev => ({
@@ -269,19 +312,39 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
   // Função separada para buscar o CEP
   const handleCepBusca = async (cep) => {
     setCepLoading(true);
+    
     try {
       // Usar axios nativo (sem withCredentials) para APIs externas como ViaCEP
       const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
-      if (response.data.erro) return;
+      
+      if (response.data.erro) {
+        setEnderecoBloqueado(false);
+        return;
+      }
+      
+      // Só bloqueia se encontrou dados válidos
+      const hasData = response.data.logradouro || response.data.bairro || response.data.localidade || response.data.uf;
+      
+      if (hasData) {
+        // Atualiza os dados de uma só vez para evitar re-renders múltiplos
       setFormData(prev => ({
         ...prev,
-        endereco: response.data.logradouro || '',
-        bairro: response.data.bairro || '',
-        cidade: response.data.localidade || '',
-        estado: response.data.uf || '',
+          endereco: response.data.logradouro || prev.endereco || '',
+          bairro: response.data.bairro || prev.bairro || '',
+          cidade: response.data.localidade || prev.cidade || '',
+          estado: response.data.uf || prev.estado || '',
       }));
+        
+        // Só bloqueia após a atualização dos dados
+        setTimeout(() => {
+          setEnderecoBloqueado(true);
+        }, 100);
+      } else {
+        setEnderecoBloqueado(false);
+      }
     } catch (e) {
       // erro silencioso
+      setEnderecoBloqueado(false);
     } finally {
       setCepLoading(false);
     }
@@ -387,6 +450,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
               onChange={handleChange}
               placeholder="Rua, Avenida, etc."
               required
+              disabled={enderecoBloqueado}
             />
           </div>
           <div className="form-group form-group-narrow">
@@ -414,6 +478,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
               onChange={handleChange}
               placeholder="Nome do bairro"
               required
+              disabled={enderecoBloqueado}
             />
           </div>
           <div className="form-group">
@@ -426,6 +491,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
               onChange={handleChange}
               placeholder="Nome da cidade"
               required
+              disabled={enderecoBloqueado}
             />
           </div>
           <div className="form-group form-group-narrow">
@@ -439,6 +505,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
               placeholder="UF"
               maxLength="2"
               required
+              disabled={enderecoBloqueado}
             />
           </div>
         </div>

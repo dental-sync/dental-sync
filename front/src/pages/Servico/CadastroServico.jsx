@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../axios-config';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import useToast from '../../hooks/useToast';
 import './CadastroServico.css';
 import Dropdown from '../../components/Dropdown/Dropdown';
 import ModalCadastroCategoriaServico from '../../components/Modals/ModalCadastroCategoriaServico';
@@ -13,6 +12,7 @@ import DeleteConfirmationModal from '../../components/DeleteConfirmationModal/De
 const CadastroServico = () => {
   const navigate = useNavigate();
   const { notifications } = useNotifications();
+  const toast = useToast();
   const [categorias, setCategorias] = useState([]);
   const [materiais, setMateriais] = useState([]);
   const [showModalCategoria, setShowModalCategoria] = useState(false);
@@ -254,9 +254,7 @@ const CadastroServico = () => {
         // valorMateriais e valorTotal serão calculados automaticamente no backend
       };
 
-      console.log('Dados sendo enviados:', servicoData); // Para debug
-
-      await api.post('/servico', servicoData);
+      const response = await api.post('/servico', servicoData);
       toast.success('Serviço cadastrado com sucesso!');
       navigate('/servico');
     } catch (error) {
@@ -274,7 +272,7 @@ const CadastroServico = () => {
 
   return (
     <div className="cadastro-servico-page">
-      <ToastContainer />
+      
       <ModalCadastroCategoriaServico
         isOpen={showModalCategoria}
         onClose={() => {

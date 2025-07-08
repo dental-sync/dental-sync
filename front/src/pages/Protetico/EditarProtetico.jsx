@@ -4,11 +4,12 @@ import NotificationBell from '../../components/NotificationBell/NotificationBell
 import Dropdown from '../../components/Dropdown/Dropdown';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../axios-config';
-import { toast } from 'react-toastify';
+import useToast from '../../hooks/useToast';
 
 const EditarProtetico = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     nome: '',
     cro: 'CRO-',
@@ -37,7 +38,7 @@ const EditarProtetico = () => {
         
         setFormData({
           nome: protetico.nome,
-          cro: protetico.cro,
+          cro: protetico.cro || 'CRO-',
           telefone: protetico.telefone,
           email: protetico.email,
           cargo: protetico.isAdmin ? 'Admin' : 'Protetico',
@@ -340,8 +341,13 @@ const EditarProtetico = () => {
               name="cro"
               value={formData.cro}
               onChange={handleChange}
+              onFocus={(e) => {
+                if (!e.target.value || e.target.value === '') {
+                  setFormData(prev => ({ ...prev, cro: 'CRO-' }));
+                }
+              }}
               className={errors.cro ? 'input-error' : ''}
-              placeholder="Digite o CRO"
+              placeholder="CRO-UF-NÚMERO"
             />
             {errors.cro && <span className="error-text">{errors.cro}</span>}
           </div>

@@ -6,18 +6,14 @@ const ConfiguracoesGeraisSection = () => {
 
   const handleThemeChange = (theme) => {
     setSelectedTheme(theme);
-    // Aqui seria a lógica para aplicar o tema selecionado
-    console.log(`Tema alterado para: ${theme}`);
   };
 
   const handleSave = () => {
-    // Aqui seria a lógica para salvar todas as configurações
-    console.log('Configurações salvas');
+    setIsSaved(true);
   };
 
   const handleCancel = () => {
-    // Aqui seria a lógica para cancelar as alterações
-    console.log('Alterações canceladas');
+    setSelectedTheme(currentTheme);
   };
 
   return (

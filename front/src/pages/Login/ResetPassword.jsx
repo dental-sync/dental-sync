@@ -79,9 +79,24 @@ const ResetPasswordPage = () => {
     } catch (error) {
       console.error('Erro ao redefinir senha:', error);
       
-      let errorMessage = 'Erro ao redefinir senha';
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
+      let errorMessage = 'Erro ao redefinir senha'; // mensagem padrão
+      
+      if (error.response) {
+        // Erro da API - tentar extrair a mensagem específica
+        if (error.response.data) {
+          // Se a resposta tem uma propriedade message
+          if (error.response.data.message) {
+            errorMessage = error.response.data.message;
+          }
+          // Se a resposta é uma string diretamente
+          else if (typeof error.response.data === 'string') {
+            errorMessage = error.response.data;
+          }
+          // Se há erro específico em outras propriedades
+          else if (error.response.data.error) {
+            errorMessage = error.response.data.error;
+          }
+        }
         
         // Se o token é inválido, redirecionar para recuperação
         if (errorMessage.includes('Token inválido') || errorMessage.includes('expirado')) {
@@ -91,6 +106,12 @@ const ResetPasswordPage = () => {
           }, 2000);
           return;
         }
+      } else if (error.request) {
+        // Erro de rede - sem resposta do servidor
+        errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
+      } else {
+        // Outros tipos de erro
+        errorMessage = 'Erro inesperado. Tente novamente.';
       }
       
       toast.error(errorMessage);

@@ -62,7 +62,7 @@ public class MaterialService extends BaseService<Material, Long> {
         Material material = materialOpt.get();
         material.setIsActive(isActive);
         
-        return materialRepository.save(material);
+        return super.save(material);
     }
 
     public Map<String, Object> getNotificacaoEstoque() {

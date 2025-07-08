@@ -9,7 +9,7 @@ import useInactiveFilter from '../../hooks/useInactiveFilter';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../axios-config';
-import { toast } from 'react-toastify';
+import useToast from '../../hooks/useToast';
 
 const ProteticoPage = () => {
   const { notifications } = useNotifications();
@@ -24,7 +24,6 @@ const ProteticoPage = () => {
     cargo: 'todos'
   });
   const [refreshData, setRefreshData] = useState(0);
-  const [toastMessage, setToastMessage] = useState(null);
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: 'ascending'
@@ -32,6 +31,7 @@ const ProteticoPage = () => {
   const filterRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const toast = useToast();
   
   const {
     loading: filterLoading,
@@ -42,8 +42,6 @@ const ProteticoPage = () => {
     toggleRecordStatus
   } = useInactiveFilter();
   
-  const recentMessages = useRef(new Set());
-
   const loadProteticos = async () => {
     setLoading(true);
     try {
@@ -77,14 +75,7 @@ const ProteticoPage = () => {
       console.error('Erro ao buscar protéticos:', err);
       setProteticos([]);
       setError('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.');
-      toast.error('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: false
-      });
+      toast.error('Não foi possível carregar os dados do servidor. Tente novamente mais tarde.');
     } finally {
       setLoading(false);
     }
@@ -101,31 +92,13 @@ const ProteticoPage = () => {
       
       window.history.replaceState({}, document.title);
       
-      const messageKey = `${successMessage}-${Date.now()}`;
+      toast.success(successMessage);
       
-      if (!recentMessages.current.has(messageKey)) {
-        recentMessages.current.add(messageKey);
-        
-        toast.success(successMessage, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          toastId: successMessage
-        });
-        
-        setTimeout(() => {
-          recentMessages.current.delete(messageKey);
-        }, 3000);
-        
-        if (shouldRefresh) {
-          setRefreshData(prev => prev + 1);
-        }
+      if (shouldRefresh) {
+        setRefreshData(prev => prev + 1);
       }
     }
-  }, [location]);
+  }, [location, toast]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -160,17 +133,10 @@ const ProteticoPage = () => {
 
   const handleStatusChange = async (proteticoId, newStatus) => {
     try {
-      console.log('🔄 Iniciando mudança de status - ID:', proteticoId, 'Status:', newStatus);
-      
-      // Determinar o novo status como boolean
-      const isActive = newStatus === 'ATIVO' || newStatus === true;
-      
-      console.log('📝 Convertendo status para boolean:', isActive);
-      
-      // Usar o hook para alternar o status
+      const isActive = newStatus === 'ATIVO';
+
       await toggleRecordStatus('proteticos', proteticoId, isActive);
-      
-      // Atualizar o status do protético no estado local
+
       setProteticos(prevProteticos => 
         prevProteticos.map(protetico => 
           protetico.id === proteticoId 
@@ -179,29 +145,16 @@ const ProteticoPage = () => {
         )
       );
       
-      // Exibir mensagem de sucesso
       const statusText = isActive ? 'ativado' : 'desativado';
-      toast.success(`Protético ${statusText} com sucesso!`, {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: false,
-      });
+      toast.success(`Protético ${statusText} com sucesso!`);
       
-      // Recarregar dados se necessário para manter consistência
       if (filtros.isActive === 'ATIVO' && !isActive) {
-        // Se estava mostrando apenas ativos e desativou um, recarregar para removê-lo da vista
         loadProteticos();
       } else if (filtros.isActive === 'INATIVO' && isActive) {
-        // Se estava mostrando apenas inativos e ativou um, recarregar para removê-lo da vista
         loadProteticos();
       }
       
-      console.log('✅ Mudança de status concluída com sucesso');
     } catch (error) {
-      console.error('❌ Erro ao alterar status do protético:', error);
       toast.error('Erro ao alterar status do protético');
     }
   };
@@ -333,11 +286,7 @@ const ProteticoPage = () => {
         </div>
       </div>
       
-      {toastMessage && (
-        <div className="toast-message">
-          {toastMessage}
-        </div>
-      )}
+      
       
       <div className="page-header">
         <h1 className="page-title">Protéticos</h1>

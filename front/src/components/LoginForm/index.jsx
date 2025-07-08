@@ -50,7 +50,7 @@ const LoginForm = ({ onSubmit, loading }) => {
   return (
     <form className="login-form" onSubmit={handleSubmit}>
       <div className="form-group">
-        <label htmlFor="email" className="required">Email</label>
+        <label htmlFor="email">Email</label>
         <EmailInput
           id="email"
           name="email"
@@ -63,7 +63,7 @@ const LoginForm = ({ onSubmit, loading }) => {
       
       <div className="form-group">
         <div className="form-label-row">
-          <label htmlFor="senha" className="required">Senha</label>
+          <label htmlFor="senha">Senha</label>
           <Link to="/forgot-password" className="forgot-password-link">
             Esqueceu a senha?
           </Link>

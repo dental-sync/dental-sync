@@ -17,9 +17,7 @@ const columns = [
   } },
   { key: 'unidadeMedida', label: 'Unidade', sortable: false, render: (unidade) => limitText(unidade, 15) },
   { key: 'valorUnitario', label: 'Preço Unitário', sortable: true, render: (valor) => {
-    console.log('valorUnitario recebido:', valor);
     const num = Number(valor);
-    console.log('valorUnitario convertido para número:', num);
     return !isNaN(num) ? num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-';
   } },
   { 

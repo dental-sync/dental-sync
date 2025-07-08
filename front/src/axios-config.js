@@ -4,6 +4,23 @@ import axios from 'axios';
 // No Docker, sempre usar proxy /api (nginx faz o roteamento para o backend)
 const baseURL = '/api';
 
+// Função para verificar se a URL é uma rota de login/autenticação
+const isLoginRoute = (url) => {
+  if (!url) return false;
+  
+  const loginRoutes = [
+    '/login',
+    '/logout',
+    '/password',
+    '/proteticos/cadastro',
+    '/laboratorios',
+    '/auth/check', // Importante: não interferir na verificação de auth
+    '/security/reset-password-emergency'
+  ];
+  
+  return loginRoutes.some(route => url.includes(route));
+};
+
 // Criar instância do axios com configurações customizadas
 const api = axios.create({
   baseURL,
@@ -32,21 +49,40 @@ api.interceptors.response.use(
     return response;
   },
   error => {
-    // Manipular erros de resposta (ex: 401, 404, 500, etc)
+        // Manipular erros de resposta (ex: 401, 403, 404, 500, etc)
     if (error.response) {
-      // O servidor respondeu com um status diferente de 2xx
-      console.error('Erro na resposta:', error.response.status, error.response.data);
+      const status = error.response.status;
+      const data = error.response.data;
+      const url = error.config?.url || '';
       
-      // Remover redirecionamento automático - deixar o AuthContext gerenciar
-      // if (error.response.status === 401) {
-      //   window.location.href = '/login';
-      // }
+      // Tratar erro 403 - Conta desativada (mas não nas rotas de login)
+      if (status === 403 && !isLoginRoute(url)) {
+        // Só redirecionar se a mensagem for especificamente sobre conta desativada
+        const isAccountDeactivated = data && data.message && 
+          (data.message.includes('desativada') || data.message.includes('inativa') || data.message.includes('Conta desativada'));
+        
+        if (isAccountDeactivated) {
+          // Limpar qualquer dado de autenticação local
+          if (typeof window !== 'undefined') {
+            // Limpar localStorage se houver dados
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            
+            // Redirecionar para login imediatamente
+            window.location.href = '/login';
+          }
+        }
+      }
+      
+      // Tratar erro 401 - Não autorizado (mas não nas rotas de login/auth)
+      else if (status === 401 && !isLoginRoute(url)) {
+        // Deixar o AuthContext gerenciar outros casos de 401
+      }
+      
     } else if (error.request) {
       // A requisição foi feita mas não houve resposta
-      console.error('Sem resposta do servidor:', error.request);
     } else {
       // Erro ao configurar a requisição
-      console.error('Erro:', error.message);
     }
     
     return Promise.reject(error);

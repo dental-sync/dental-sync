@@ -9,10 +9,11 @@ import useInactiveFilter from '../../hooks/useInactiveFilter';
 import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../axios-config';
-import { toast } from 'react-toastify';
+import useToast from '../../hooks/useToast';
 
 const DentistaPage = () => {
   const { notifications } = useNotifications();
+  const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [dentistas, setDentistas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,10 +21,9 @@ const DentistaPage = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [filtros, setFiltros] = useState({
-    isActive: 'ATIVO'
+    isActive: 'ATIVO' // Mudança: filtro padrão é ATIVO
   });
   const [refreshData, setRefreshData] = useState(0);
-  const [toastMessage, setToastMessage] = useState(null);
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: 'ascending'
@@ -40,8 +40,6 @@ const DentistaPage = () => {
     fetchAllDentistas,
     toggleRecordStatus
   } = useInactiveFilter();
-  
-  const recentMessages = useRef(new Set());
 
   const loadDentistas = async () => {
     setLoading(true);
@@ -91,28 +89,10 @@ const DentistaPage = () => {
       
       window.history.replaceState({}, document.title);
       
-      const messageKey = `${successMessage}-${Date.now()}`;
+      toast.success(successMessage);
       
-      if (!recentMessages.current.has(messageKey)) {
-        recentMessages.current.add(messageKey);
-        
-        toast.success(successMessage, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          toastId: successMessage
-        });
-        
-        setTimeout(() => {
-          recentMessages.current.delete(messageKey);
-        }, 3000);
-        
-        if (shouldRefresh) {
-          setRefreshData(prev => prev + 1);
-        }
+      if (shouldRefresh) {
+        setRefreshData(prev => prev + 1);
       }
     }
   }, [location]);
@@ -131,58 +111,42 @@ const DentistaPage = () => {
   }, []);
 
   const handleDentistaDeleted = (dentistaId) => {
+    // Apenas remove o dentista do estado local
     setDentistas(prevDentistas => 
       prevDentistas.filter(dentista => dentista.id !== dentistaId)
     );
     
-    setRefreshData(prev => prev + 1);
-    
-    window.history.replaceState({}, document.title);
-    
-    navigate('', { 
-      state: { 
-        success: "Dentista excluído com sucesso!",
-        refresh: false
-      },
-      replace: true
-    });
+    // Exibe sucesso direto sem navigate
+    toast.success("Dentista excluído com sucesso!");
   };
 
-  const handleStatusChange = (dentistaId, newStatus) => {
-    const dentistaAtual = dentistas.find(d => d.id === dentistaId);
-    
-    if (!dentistaAtual) {
-      console.error('Dentista não encontrado:', dentistaId);
-      return;
-    }
-    
-    const statusAtual = dentistaAtual.isActive;
-    
-    if (statusAtual === newStatus) {
-      return;
-    }
+  const handleStatusChange = async (dentistaId, newStatus) => {
+    try {
+      const isActive = newStatus === 'ATIVO';
 
-    const dentistasAtualizados = dentistas.map(dentista =>
-      dentista.id === dentistaId
-        ? { ...dentista, isActive: newStatus }
-        : dentista
-    );
-    
-    setDentistas(dentistasAtualizados);
-    
-    setRefreshData(prev => prev + 1);
-    
-    const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
-    
-    window.history.replaceState({}, document.title);
-    
-    navigate('', { 
-      state: { 
-        success: `Status atualizado com sucesso para ${statusText}`,
-        refresh: false
-      },
-      replace: true
-    });
+      await toggleRecordStatus('dentistas', dentistaId, isActive);
+
+      setDentistas(prevDentistas => 
+        prevDentistas.map(dentista => 
+          dentista.id === dentistaId 
+            ? { ...dentista, isActive: isActive ? 'ATIVO' : 'INATIVO' } 
+            : dentista
+        )
+      );
+      
+      const statusText = isActive ? 'ativado' : 'desativado';
+      toast.success(`Dentista ${statusText} com sucesso!`);
+      
+      if (filtros.isActive === 'ATIVO' && !isActive) {
+        loadDentistas();
+      } else if (filtros.isActive === 'INATIVO' && isActive) {
+        loadDentistas();
+      }
+      
+    } catch (error) {
+      console.error('❌ Erro ao alterar status do dentista:', error);
+      toast.error('Erro ao alterar status do dentista');
+    }
   };
 
   const formatDentistaId = (id) => `D${String(id).padStart(4, '0')}`;
@@ -225,7 +189,7 @@ const DentistaPage = () => {
 
   const handleLimparFiltros = () => {
     setFiltros({
-      isActive: 'todos'
+      isActive: 'ATIVO' // Volta ao padrão de mostrar apenas ativos
     });
   };
 
@@ -309,11 +273,7 @@ const DentistaPage = () => {
           </div>
         </div>
       
-      {toastMessage && (
-        <div className="toast-message">
-          {toastMessage}
-        </div>
-      )}
+      
       
       <div className="page-header">
         <h1 className="page-title">Dentistas</h1>
@@ -323,7 +283,7 @@ const DentistaPage = () => {
               label="Filtrar" 
               icon="filter"
               onClick={toggleFiltro} 
-              active={isFilterOpen || filtros.isActive !== 'todos'}
+              active={isFilterOpen || filtros.isActive !== 'ATIVO'}
             />
             
             {isFilterOpen && (
@@ -388,9 +348,9 @@ const DentistaPage = () => {
             Nenhum dentista encontrado para a busca "{searchQuery}".
           </div>
         )}
-        {!searchQuery && dentistasFiltrados.length === 0 && filtros.isActive !== 'todos' ? (
+        {!searchQuery && dentistasFiltrados.length === 0 && filtros.isActive !== 'ATIVO' ? (
           <div className="filter-info">
-            Nenhum dentista encontrado com os filtros aplicados.
+            Nenhum dentista {filtros.isActive === 'INATIVO' ? 'inativo' : ''} encontrado.
           </div>
         ) : null}
         <DentistaTable 
@@ -399,7 +359,7 @@ const DentistaPage = () => {
           onStatusChange={handleStatusChange}
           sortConfig={sortConfig}
           onSort={handleSort}
-          isEmpty={!searchQuery && dentistasFiltrados.length === 0 && filtros.isActive === 'todos'}
+          isEmpty={dentistasFiltrados.length === 0}
         />
       </div>
     </div>

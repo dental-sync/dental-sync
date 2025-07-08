@@ -132,7 +132,7 @@ const ActionMenu = ({ proteticoId, itemId, onProteticoDeleted, onItemDeleted, pr
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleConfirmDelete}
         title="Confirmar Exclusão"
-        message={deleteMessage}
+        message={deleteMessage || "Tem certeza que deseja excluir este item? Esta ação não poderá ser desfeita."}
       />
     </>
   );

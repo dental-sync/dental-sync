@@ -4,7 +4,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.senac.dentalsync.core.persistency.model.Paciente;
 import com.senac.dentalsync.core.persistency.repository.PacienteRepository;
+import com.senac.dentalsync.core.persistency.repository.PedidoRepository;
 import com.senac.dentalsync.core.persistency.model.Protetico;
+import com.senac.dentalsync.core.persistency.model.Pedido;
 import java.util.Optional;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,9 @@ public class PacienteService extends BaseService<Paciente, Long> {
     
     @Autowired
     private PacienteRepository repository;
+    
+    @Autowired
+    private PedidoRepository pedidoRepository;
 
     @Override
     protected PacienteRepository getRepository() {
@@ -112,7 +117,11 @@ public class PacienteService extends BaseService<Paciente, Long> {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível excluir um paciente ativo. Desative-o primeiro.");
         }
         
-       
+        // Deleta todos os pedidos associados ao paciente primeiro
+        List<Pedido> pedidos = pedidoRepository.findByCliente(paciente);
+        pedidoRepository.deleteAll(pedidos);
+        
+        // Agora pode deletar o paciente
         repository.deleteById(id);
     }
     

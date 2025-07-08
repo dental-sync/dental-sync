@@ -367,8 +367,13 @@ const CadastroDentista = () => {
               name="cro"
               value={formData.cro}
               onChange={handleChange}
+              onFocus={(e) => {
+                if (!e.target.value || e.target.value === '') {
+                  setFormData(prev => ({ ...prev, cro: 'CRO-' }));
+                }
+              }}
               className={errors.cro ? 'input-error' : ''}
-              placeholder="Digite o CRO"
+              placeholder="CRO-UF-NÚMERO"
             />
             {errors.cro && <span className="error-text">{errors.cro}</span>}
           </div>

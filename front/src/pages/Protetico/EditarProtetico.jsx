@@ -37,7 +37,7 @@ const EditarProtetico = () => {
         
         setFormData({
           nome: protetico.nome,
-          cro: protetico.cro,
+          cro: protetico.cro || 'CRO-',
           telefone: protetico.telefone,
           email: protetico.email,
           cargo: protetico.isAdmin ? 'Admin' : 'Protetico',
@@ -340,8 +340,13 @@ const EditarProtetico = () => {
               name="cro"
               value={formData.cro}
               onChange={handleChange}
+              onFocus={(e) => {
+                if (!e.target.value || e.target.value === '') {
+                  setFormData(prev => ({ ...prev, cro: 'CRO-' }));
+                }
+              }}
               className={errors.cro ? 'input-error' : ''}
-              placeholder="Digite o CRO"
+              placeholder="CRO-UF-NÚMERO"
             />
             {errors.cro && <span className="error-text">{errors.cro}</span>}
           </div>

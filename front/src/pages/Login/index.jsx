@@ -62,12 +62,31 @@ const LoginPage = () => {
       console.error('Erro no login:', error);
       
       if (error.response) {
-        // Erro da API
-        const errorMessage = error.response.data?.message || 'Usuário ou senha inválidos!';
+        // Erro da API - tentar extrair a mensagem específica
+        let errorMessage = 'Usuário ou senha inválidos!'; // mensagem padrão
+        
+        if (error.response.data) {
+          // Se a resposta tem uma propriedade message
+          if (error.response.data.message) {
+            errorMessage = error.response.data.message;
+          }
+          // Se a resposta é uma string diretamente
+          else if (typeof error.response.data === 'string') {
+            errorMessage = error.response.data;
+          }
+          // Se há erro específico em outras propriedades
+          else if (error.response.data.error) {
+            errorMessage = error.response.data.error;
+          }
+        }
+        
         toast.error(errorMessage);
+      } else if (error.request) {
+        // Erro de rede - sem resposta do servidor
+        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
       } else {
-        // Erro de rede ou outro
-        toast.error('Erro de conexão. Tente novamente.');
+        // Outros tipos de erro
+        toast.error('Erro inesperado. Tente novamente.');
       }
     } finally {
       setLoading(false);

@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import './TwoStepRegister.css';
 import { useNavigate } from 'react-router-dom';
-import { validatePassword, isValidPassword } from '../../utils/passwordValidator';
+import { validatePassword } from '../../utils/passwordValidator';
 import PasswordRequirements from '../PasswordRequirements/PasswordRequirements';
-import PasswordStrengthIndicator from '../PasswordStrengthIndicator/PasswordStrengthIndicator';
 
 const UserForm = ({ initialData, onSubmit }) => {
   const navigate = useNavigate();
@@ -259,6 +258,11 @@ const UserForm = ({ initialData, onSubmit }) => {
             name="cro"
             value={formData.cro}
             onChange={handleChange}
+            onFocus={(e) => {
+              if (!e.target.value || e.target.value === '') {
+                setFormData(prev => ({ ...prev, cro: 'CRO-' }));
+              }
+            }}
             placeholder="CRO-UF-NÚMERO"
             required
           />
@@ -335,7 +339,6 @@ const UserForm = ({ initialData, onSubmit }) => {
             )}
           </button>
         </div>
-        <PasswordStrengthIndicator password={formData.senha} />
         <PasswordRequirements password={formData.senha} />
       </div>
       

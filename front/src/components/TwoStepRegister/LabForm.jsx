@@ -7,6 +7,7 @@ import axios from 'axios'; // Mantido apenas para busca de CEP externa
 const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
   const [formData, setFormData] = useState(initialData);
   const [cepLoading, setCepLoading] = useState(false);
+  const [enderecoBloqueado, setEnderecoBloqueado] = useState(false);
 
   useEffect(() => {
     setFormData(initialData);
@@ -105,11 +106,21 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
         [name]: formattedValue
       }));
       
+      // Se o CEP estiver incompleto ou vazio, desbloqueia os campos
+      if (limitado.length < 8) {
+        setEnderecoBloqueado(false);
+      }
+      
       // Se for o campo CEP e ficou válido, dispara a busca
       if (limitado.length === 8) {
         handleCepBusca(limitado);
       }
       return;
+    }
+    
+    // Se o usuário tentar editar campos de endereço bloqueados, desbloqueia automaticamente
+    if (enderecoBloqueado && (name === 'endereco' || name === 'bairro' || name === 'cidade' || name === 'estado')) {
+      setEnderecoBloqueado(false);
     }
     
     setFormData(prev => ({
@@ -272,16 +283,28 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
     try {
       // Usar axios nativo (sem withCredentials) para APIs externas como ViaCEP
       const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
-      if (response.data.erro) return;
-      setFormData(prev => ({
-        ...prev,
-        endereco: response.data.logradouro || '',
-        bairro: response.data.bairro || '',
-        cidade: response.data.localidade || '',
-        estado: response.data.uf || '',
-      }));
+      if (response.data.erro) {
+        setEnderecoBloqueado(false);
+        return;
+      }
+      
+      // Só bloqueia se encontrou dados válidos
+      const hasData = response.data.logradouro || response.data.bairro || response.data.localidade || response.data.uf;
+      if (hasData) {
+        setFormData(prev => ({
+          ...prev,
+          endereco: response.data.logradouro || '',
+          bairro: response.data.bairro || '',
+          cidade: response.data.localidade || '',
+          estado: response.data.uf || '',
+        }));
+        setEnderecoBloqueado(true); // Bloqueia os campos de endereço após a busca bem-sucedida
+      } else {
+        setEnderecoBloqueado(false);
+      }
     } catch (e) {
       // erro silencioso
+      setEnderecoBloqueado(false);
     } finally {
       setCepLoading(false);
     }
@@ -387,6 +410,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
               onChange={handleChange}
               placeholder="Rua, Avenida, etc."
               required
+              disabled={enderecoBloqueado}
             />
           </div>
           <div className="form-group form-group-narrow">
@@ -414,6 +438,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
               onChange={handleChange}
               placeholder="Nome do bairro"
               required
+              disabled={enderecoBloqueado}
             />
           </div>
           <div className="form-group">
@@ -426,6 +451,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
               onChange={handleChange}
               placeholder="Nome da cidade"
               required
+              disabled={enderecoBloqueado}
             />
           </div>
           <div className="form-group form-group-narrow">
@@ -439,6 +465,7 @@ const LabForm = ({ initialData, onSubmit, onBack, loading, onChange }) => {
               placeholder="UF"
               maxLength="2"
               required
+              disabled={enderecoBloqueado}
             />
           </div>
         </div>

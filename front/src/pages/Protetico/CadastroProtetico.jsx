@@ -7,7 +7,6 @@ import { toast } from 'react-toastify';
 import api from '../../axios-config';
 import { validatePassword } from '../../utils/passwordValidator';
 import PasswordRequirements from '../../components/PasswordRequirements/PasswordRequirements';
-import PasswordStrengthIndicator from '../../components/PasswordStrengthIndicator/PasswordStrengthIndicator';
 import PasswordInput from '../../components/PasswordInput';
 
 const CadastroProtetico = () => {
@@ -327,8 +326,13 @@ const CadastroProtetico = () => {
               name="cro"
               value={formData.cro}
               onChange={handleChange}
+              onFocus={(e) => {
+                if (!e.target.value || e.target.value === '') {
+                  setFormData(prev => ({ ...prev, cro: 'CRO-' }));
+                }
+              }}
               className={errors.cro ? 'input-error' : ''}
-              placeholder="Digite o CRO"
+              placeholder="CRO-UF-NÚMERO"
             />
             {errors.cro && <span className="error-text">{errors.cro}</span>}
           </div>
@@ -389,7 +393,6 @@ const CadastroProtetico = () => {
             />
             {errors.senha && <span className="error-message">{errors.senha}</span>}
             <PasswordRequirements password={formData.senha} />
-            <PasswordStrengthIndicator password={formData.senha} />
           </div>
           
           <div className="form-group">

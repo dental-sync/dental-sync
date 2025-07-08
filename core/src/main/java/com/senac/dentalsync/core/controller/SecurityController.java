@@ -4,6 +4,7 @@ import com.senac.dentalsync.core.persistency.model.Protetico;
 import com.senac.dentalsync.core.service.ProteticoService;
 import com.senac.dentalsync.core.service.TrustedDeviceService;
 import com.senac.dentalsync.core.service.TwoFactorService;
+import com.senac.dentalsync.core.util.PasswordValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,10 +79,12 @@ public class SecurityController {
                 return ResponseEntity.badRequest().body(response);
             }
 
-            // Verificar se a nova senha tem pelo menos 6 caracteres
-            if (newPassword.length() < 6) {
+            // Validar critérios de complexidade da nova senha
+            try {
+                PasswordValidator.validatePassword(newPassword);
+            } catch (Exception e) {
                 response.put("success", false);
-                response.put("message", "Nova senha deve ter pelo menos 6 caracteres");
+                response.put("message", e.getMessage());
                 return ResponseEntity.badRequest().body(response);
             }
 

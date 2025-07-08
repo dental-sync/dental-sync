@@ -2,12 +2,12 @@ import React, { useState, useRef } from 'react';
 import './CadastroPedido.css';
 import PedidoForm from '../../components/PedidoForm/PedidoForm';
 import STTModal from '../../components/STTModal/STTModal';
-import { toast, ToastContainer } from 'react-toastify';
+import useToast from '../../hooks/useToast';
 import { useNavigate } from 'react-router-dom';
-import 'react-toastify/dist/ReactToastify.css';
 
 const CadastroPedido = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [showSTTModal, setShowSTTModal] = useState(false);
   const pedidoFormRef = useRef(null);
   
@@ -36,18 +36,6 @@ const CadastroPedido = () => {
   return (
     <div className="pedido-page">
     <div className="cadastro-pedido-page">
-      <ToastContainer 
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
       
         <div className="back-navigation">
           <button onClick={handleVoltar} className="back-button">

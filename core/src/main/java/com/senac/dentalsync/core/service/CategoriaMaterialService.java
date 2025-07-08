@@ -19,9 +19,6 @@ public class CategoriaMaterialService extends BaseService<CategoriaMaterial, Lon
         return categoriaMaterialRepository;
     }
 
-    @Override
-    protected Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
 
 }

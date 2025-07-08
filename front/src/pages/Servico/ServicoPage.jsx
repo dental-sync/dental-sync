@@ -7,8 +7,9 @@ import ExportDropdown from '../../components/ExportDropdown/ExportDropdown';
 import ActionMenu from '../../components/ActionMenu/ActionMenu';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../axios-config';
-import { toast } from 'react-toastify';
+import useToast from '../../hooks/useToast';
 import ServicoTable from '../../components/ServicoTable/ServicoTable';
+import useNotifications from '../../hooks/useNotifications';
 
 
 // Função utilitária para formatar o ID
@@ -26,7 +27,6 @@ const ServicoPage = () => {
     categoria: 'todas'
   });
   const [refreshData, setRefreshData] = useState(0);
-  const [toastMessage, setToastMessage] = useState(null);
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: 'ascending'
@@ -35,9 +35,8 @@ const ServicoPage = () => {
   const filterRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Criando um ref para armazenar mensagens recentes e evitar duplicação de toasts
-  const recentMessages = useRef(new Set());
+  const { notifications, loading: notificationLoading, refreshNotifications } = useNotifications();
+  const toast = useToast();
 
   useEffect(() => {
     const fetchServicos = async () => {
@@ -85,37 +84,15 @@ const ServicoPage = () => {
       // Limpa o state imediatamente
       window.history.replaceState({}, document.title);
       
-      // Cria uma chave única para esta mensagem
-      const messageKey = `${successMessage}-${Date.now()}`;
+      // Exibe o toast
+      toast.success(successMessage);
       
-      // Verifica se esta mensagem já foi exibida recentemente (nos últimos 3 segundos)
-      if (!recentMessages.current.has(messageKey)) {
-        // Adiciona a mensagem ao cache
-        recentMessages.current.add(messageKey);
-        
-        // Exibe o toast
-        toast.success(successMessage, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          toastId: successMessage
-        });
-        
-        // Remove a mensagem do cache após 3 segundos
-        setTimeout(() => {
-          recentMessages.current.delete(messageKey);
-        }, 3000);
-        
-        // Se é necessário atualizar os dados
-        if (shouldRefresh) {
-          setRefreshData(prev => prev + 1);
-        }
+      // Se é necessário atualizar os dados
+      if (shouldRefresh) {
+        setRefreshData(prev => prev + 1);
       }
     }
-  }, [location]);
+  }, [location, toast]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -152,40 +129,30 @@ const ServicoPage = () => {
     });
   };
 
-  const handleStatusChange = (servicoId, newStatus) => {
-    // Encontrar o serviço atual
-    const servicoAtual = servicos.find(s => s.id === servicoId);
-    
-    // Verificar se o status está realmente mudando
-    const statusAtual = servicoAtual.isActive === 'ATIVO';
-    if (statusAtual === (newStatus === 'ATIVO')) {
-      return; // Não faz nada se o status for o mesmo
-    }
-
-    // Atualizar o status do serviço na lista
-    if (newStatus !== null) {
-      setServicos(prevServicos =>
-        prevServicos.map(servico =>
-          servico.id === servicoId
-            ? { ...servico, isActive: newStatus }
-            : servico
-        )
-      );
+  const handleStatusChange = async (servicoId, newStatus) => {
+    try {
+      const requestBody = newStatus === 'ATIVO' ? { isActive: true } : { isActive: false };
       
-      // Exibir o toast de forma padronizada
-      const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
+      const response = await api.patch(`/servico/${servicoId}`, requestBody);
       
-      // Limpa qualquer estado de navegação existente
-      window.history.replaceState({}, document.title);
-      
-      // Adicionamos uma mensagem de sucesso usando o padrão de state
-      navigate('', { 
-        state: { 
-          success: `Status atualizado com sucesso para ${statusText}`,
-          refresh: false
-        },
-        replace: true
-      });
+      if (response.status === 200) {
+        // Atualizar o status do serviço na lista
+        setServicos(prevServicos =>
+          prevServicos.map(servico =>
+            servico.id === servicoId
+              ? { ...servico, isActive: newStatus }
+              : servico
+          )
+        );
+        
+        const statusText = newStatus === 'ATIVO' ? 'Ativo' : 'Inativo';
+        toast.success(`Status alterado para ${statusText} com sucesso!`);
+      }
+    } catch (error) {
+      console.error('Erro ao alterar status do serviço:', error);
+      toast.error('Erro ao alterar status do serviço');
+      // Recarregar dados em caso de erro
+      setRefreshData(prev => prev + 1);
     }
   };
 
@@ -312,15 +279,17 @@ const ServicoPage = () => {
     <div className="servico-page">
       <div className="page-top">
         <div className="notification-container">
-          <NotificationBell count={2} />
+            <NotificationBell 
+              count={notifications.total}
+              baixoEstoque={notifications.baixoEstoque}
+              semEstoque={notifications.semEstoque}
+              loading={notificationLoading}
+              onRefresh={refreshNotifications}
+            />
         </div>
       </div>
       
-      {toastMessage && (
-        <div className="toast-message">
-          {toastMessage}
-        </div>
-      )}
+      
       
       <div className="page-header">
         <h1 className="page-title">Serviços</h1>

@@ -19,9 +19,6 @@ public class CategoriaServicoService extends BaseService<CategoriaServico, Long>
         return categoriaServicoRepository;
     }
 
-    @Override
-    protected Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
     
 }

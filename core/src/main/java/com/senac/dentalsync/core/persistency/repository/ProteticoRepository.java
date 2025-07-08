@@ -13,4 +13,16 @@ public interface ProteticoRepository extends BaseRepository<Protetico, Long> {
     Optional<Protetico> findFirstByCro(String cro);
     Optional<Protetico> findFirstByTelefone(String telefone);
     List<Protetico> findByCroContaining(String cro);
+    
+    // Métodos para buscar apenas protéticos ativos
+    Optional<Protetico> findByEmailAndIsActiveTrue(String email);
+    Optional<Protetico> findFirstByCroAndIsActiveTrue(String cro);
+    Optional<Protetico> findFirstByTelefoneAndIsActiveTrue(String telefone);
+    List<Protetico> findByCroContainingAndIsActiveTrue(String cro);
+    
+    // Métodos para buscar apenas protéticos inativos
+    Optional<Protetico> findByEmailAndIsActiveFalse(String email);
+    Optional<Protetico> findFirstByCroAndIsActiveFalse(String cro);
+    Optional<Protetico> findFirstByTelefoneAndIsActiveFalse(String telefone);
+    List<Protetico> findByCroContainingAndIsActiveFalse(String cro);
 }

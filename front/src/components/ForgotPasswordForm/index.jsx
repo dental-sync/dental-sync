@@ -53,7 +53,25 @@ const TwoFactorStep = ({ email, recoveryToken, onSuccess, onBack, onRequestEmail
       }
     } catch (error) {
       console.error('Erro na verificação 2FA:', error);
-      setError(error.response?.data?.message || 'Código inválido. Tente novamente.');
+      
+      let errorMessage = 'Código inválido. Tente novamente.'; // mensagem padrão
+      
+      if (error.response && error.response.data) {
+        // Se a resposta tem uma propriedade message
+        if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+        // Se a resposta é uma string diretamente
+        else if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        }
+        // Se há erro específico em outras propriedades
+        else if (error.response.data.error) {
+          errorMessage = error.response.data.error;
+        }
+      }
+      
+      setError(errorMessage);
       setCode(['', '', '', '', '', '']);
       document.querySelector('input[name="code-0"]')?.focus();
     } finally {
@@ -194,7 +212,31 @@ const ForgotPasswordForm = () => {
       }
     } catch (error) {
       console.error('Erro na recuperação de senha:', error);
-      toast.error('Erro ao processar solicitação. Tente novamente.');
+      
+      let errorMessage = 'Erro ao processar solicitação. Tente novamente.'; // mensagem padrão
+      
+      if (error.response) {
+        // Erro da API - tentar extrair a mensagem específica
+        if (error.response.data) {
+          // Se a resposta tem uma propriedade message
+          if (error.response.data.message) {
+            errorMessage = error.response.data.message;
+          }
+          // Se a resposta é uma string diretamente
+          else if (typeof error.response.data === 'string') {
+            errorMessage = error.response.data;
+          }
+          // Se há erro específico em outras propriedades
+          else if (error.response.data.error) {
+            errorMessage = error.response.data.error;
+          }
+        }
+      } else if (error.request) {
+        // Erro de rede - sem resposta do servidor
+        errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -234,7 +276,31 @@ const ForgotPasswordForm = () => {
       }
     } catch (error) {
       console.error('Erro ao solicitar link por email:', error);
-      toast.error('Erro ao enviar email. Tente novamente.');
+      
+      let errorMessage = 'Erro ao enviar email. Tente novamente.'; // mensagem padrão
+      
+      if (error.response) {
+        // Erro da API - tentar extrair a mensagem específica
+        if (error.response.data) {
+          // Se a resposta tem uma propriedade message
+          if (error.response.data.message) {
+            errorMessage = error.response.data.message;
+          }
+          // Se a resposta é uma string diretamente
+          else if (typeof error.response.data === 'string') {
+            errorMessage = error.response.data;
+          }
+          // Se há erro específico em outras propriedades
+          else if (error.response.data.error) {
+            errorMessage = error.response.data.error;
+          }
+        }
+      } else if (error.request) {
+        // Erro de rede - sem resposta do servidor
+        errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

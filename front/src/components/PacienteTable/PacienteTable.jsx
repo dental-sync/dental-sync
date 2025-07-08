@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import GenericTable from '../GenericTable/GenericTable';
 import PacienteActionMenu from './PacienteActionMenu';
 import { formatNome, formatEmail, formatTelefone } from '../../utils/textUtils';
+import api from '../../axios-config';
+import { toast } from 'react-toastify';
 
 // Função utilitária para formatar o ID do paciente
 const formatPacienteId = (id) => `P${String(id).padStart(4, '0')}`;
@@ -30,19 +32,8 @@ const PacienteTable = ({ pacientes = [], onPacienteDeleted, onStatusChange, sort
   }, [pacientes]);
 
   const handleStatusChange = (pacienteId, newStatus) => {
-    // Primeiro atualiza o estado local
-    setPacientesState(prevState => 
-      prevState.map(paciente => 
-        paciente.id === pacienteId 
-          ? { ...paciente, isActive: newStatus } 
-          : paciente
-      )
-    );
-    
-    // Depois notifica o componente pai
-    if (onStatusChange) {
-      onStatusChange(pacienteId, newStatus);
-    }
+    const isActiveBoolean = newStatus === 'ATIVO';
+    onStatusChange(pacienteId, isActiveBoolean);
   };
 
   return (

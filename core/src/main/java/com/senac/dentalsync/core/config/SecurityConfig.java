@@ -41,6 +41,7 @@ public class SecurityConfig {
                         "/password/forgot", "/password/verify-2fa", "/password/request-email-link", "/password/reset").permitAll() // endpoints de autenticação e recuperação
                 .requestMatchers("/proteticos/**", "/laboratorios/**").permitAll() // permitir cadastro e operações
                 .requestMatchers("/security/reset-password-emergency").permitAll() // endpoint temporário de reset
+                .requestMatchers("/material/notificacoes/estoque").permitAll() // endpoint de notificações de estoque
                 .requestMatchers("/security/**").authenticated() // outros endpoints de segurança requerem autenticação
                 .anyRequest().authenticated()
             .and()

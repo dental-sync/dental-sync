@@ -6,6 +6,7 @@ import com.senac.dentalsync.core.persistency.model.Paciente;
 import com.senac.dentalsync.core.persistency.repository.PacienteRepository;
 import com.senac.dentalsync.core.persistency.model.Protetico;
 import java.util.Optional;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,10 +20,7 @@ public class PacienteService extends BaseService<Paciente, Long> {
     protected PacienteRepository getRepository() {
         return repository;
     }
-    @Override
-    protected Protetico getUsuarioLogado() {
-        return null;
-    }
+    // getUsuarioLogado() agora é implementado no BaseService
     
     public Optional<Paciente> findByEmail(String email) {
         return repository.findByEmail(email);
@@ -36,6 +34,39 @@ public class PacienteService extends BaseService<Paciente, Long> {
         return repository.findByTelefone(telefone);
     }
 
+    // Métodos para buscar apenas pacientes ativos
+    public Optional<Paciente> findByEmailActive(String email) {
+        return repository.findByEmailAndIsActiveTrue(email);
+    }
+    
+    public Optional<Paciente> findByNomeActive(String nome) {
+        return repository.findByNomeAndIsActiveTrue(nome);
+    }
+
+    public Optional<Paciente> findByTelefoneActive(String telefone) {
+        return repository.findByTelefoneAndIsActiveTrue(telefone);
+    }
+
+    public List<Paciente> findByNomeContainingActive(String nome) {
+        return repository.findByNomeContainingAndIsActiveTrue(nome);
+    }
+
+    // Métodos para buscar apenas pacientes inativos
+    public Optional<Paciente> findByEmailInactive(String email) {
+        return repository.findByEmailAndIsActiveFalse(email);
+    }
+    
+    public Optional<Paciente> findByNomeInactive(String nome) {
+        return repository.findByNomeAndIsActiveFalse(nome);
+    }
+
+    public Optional<Paciente> findByTelefoneInactive(String telefone) {
+        return repository.findByTelefoneAndIsActiveFalse(telefone);
+    }
+
+    public List<Paciente> findByNomeContainingInactive(String nome) {
+        return repository.findByNomeContainingAndIsActiveFalse(nome);
+    }
 
     //Para salvar um paciente, é preciso validar se ele ja existe no banco, pesquisando no banco de dados pelo email e telefone. 
     //Se ele existir, vai retornar um erro.
@@ -99,6 +130,6 @@ public class PacienteService extends BaseService<Paciente, Long> {
         paciente.setIsActive(isActive);
         
     
-        return repository.save(paciente);
+        return super.save(paciente);
     }
 }

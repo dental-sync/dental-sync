@@ -96,6 +96,7 @@ const columns = [
       url="pedidos"
       alwaysAllowDelete={true}
       hideOptions={['historico']}
+      deleteMessage="Tem certeza que deseja excluir este pedido? Esta ação não poderá ser desfeita e todos os dados relacionados serão perdidos."
     />
   );
 };

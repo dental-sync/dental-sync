@@ -21,7 +21,7 @@ const DentistaPage = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [filtros, setFiltros] = useState({
-    isActive: 'ATIVO'
+    isActive: 'ATIVO' // Mudança: filtro padrão é ATIVO
   });
   const [refreshData, setRefreshData] = useState(0);
   const [sortConfig, setSortConfig] = useState({
@@ -189,7 +189,7 @@ const DentistaPage = () => {
 
   const handleLimparFiltros = () => {
     setFiltros({
-      isActive: 'todos'
+      isActive: 'ATIVO' // Volta ao padrão de mostrar apenas ativos
     });
   };
 
@@ -283,7 +283,7 @@ const DentistaPage = () => {
               label="Filtrar" 
               icon="filter"
               onClick={toggleFiltro} 
-              active={isFilterOpen || filtros.isActive !== 'todos'}
+              active={isFilterOpen || filtros.isActive !== 'ATIVO'}
             />
             
             {isFilterOpen && (
@@ -348,9 +348,9 @@ const DentistaPage = () => {
             Nenhum dentista encontrado para a busca "{searchQuery}".
           </div>
         )}
-        {!searchQuery && dentistasFiltrados.length === 0 && filtros.isActive !== 'todos' ? (
+        {!searchQuery && dentistasFiltrados.length === 0 && filtros.isActive !== 'ATIVO' ? (
           <div className="filter-info">
-            Nenhum dentista encontrado com os filtros aplicados.
+            Nenhum dentista {filtros.isActive === 'INATIVO' ? 'inativo' : ''} encontrado.
           </div>
         ) : null}
         <DentistaTable 
@@ -359,7 +359,7 @@ const DentistaPage = () => {
           onStatusChange={handleStatusChange}
           sortConfig={sortConfig}
           onSort={handleSort}
-          isEmpty={!searchQuery && dentistasFiltrados.length === 0 && filtros.isActive === 'todos'}
+          isEmpty={dentistasFiltrados.length === 0}
         />
       </div>
     </div>

@@ -8,8 +8,6 @@ const STTModal = ({ isOpen, onClose, onProcessedData }) => {
   const [transcript, setTranscript] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
-  const [retryCount, setRetryCount] = useState(0);
-  const [showManualInput, setShowManualInput] = useState(false);
   const recognitionRef = useRef(null);
 
   useEffect(() => {
@@ -85,20 +83,7 @@ const STTModal = ({ isOpen, onClose, onProcessedData }) => {
       
       switch (event.error) {
         case 'network':
-          errorMessage = `❌ Erro de rede da Web Speech API (problema conhecido do Chrome)
-          
-🔧 SOLUÇÕES IMEDIATAS:
-• Use o botão "Inserir Exemplo" abaixo para testar o sistema
-• Digite o texto manualmente na área de texto
-• Tente recarregar a página (Ctrl+F5)
-
-🌐 CAUSAS COMUNS:
-• Bloqueio de conexão com serviços Google
-• Firewall/Proxy corporativo
-• VPN ativa
-• Página não está em HTTPS (necessário para produção)
-
-➡️ Para testar: clique em "Inserir Exemplo" e depois "Processar Pedido"`;
+          errorMessage = `Erro de rede da Web Speech API.\n\nEste problema é comum no navegador Google Chrome.\nTente usar outro navegador.`;
           break;
         case 'not-allowed':
           errorMessage = 'Acesso ao microfone negado. Por favor, permita o acesso ao microfone.';
@@ -119,12 +104,8 @@ const STTModal = ({ isOpen, onClose, onProcessedData }) => {
       setError(errorMessage);
       setIsListening(false);
       
-      // Para erro de network, ativar entrada manual imediatamente
-      if (event.error === 'network') {
-        setShowManualInput(true);
-        // Desabilitar tentativas de retry para erro de rede, pois raramente resolve
-        setRetryCount(3);
-      }
+      // Para erro de network, nota para o usuário
+   
     };
 
     recognition.onend = () => {
@@ -220,93 +201,6 @@ const STTModal = ({ isOpen, onClose, onProcessedData }) => {
   const clearTranscript = () => {
     setTranscript('');
     setError('');
-    setRetryCount(0);
-    setShowManualInput(false);
-  };
-
-  const retryRecognition = () => {
-    setError('');
-    startListening();
-  };
-
-  const enableManualInput = () => {
-    setShowManualInput(true);
-    setError('');
-  };
-
-  const insertExampleText = () => {
-    const examples = [
-      "Cliente Maria Santos, dentista Dr. Carlos Pereira, protético João Silva, dentes 11 e 12, data entrega 15/01/2025, prioridade alta",
-      "Cliente Pedro Costa, dentista Dra. Ana Oliveira, protético Roberto Lima, fazer coroa dente 21, data entrega 22/02/2025, prioridade média",
-      "Cliente Luiza Ferreira, dentista Dr. Marcos Souza, protético Helena Rodrigues, fazer ponte dentes 14 15 16, data entrega 10/03/2025, prioridade baixa",
-      "Cliente José Mendes, dentista Dra. Paula Santos, protético Miguel Torres, fazer prótese parcial superior, data entrega 28/01/2025, prioridade alta",
-      "Cliente Carmen Silva, dentista Dr. Ricardo Alves, protético Sofia Martins, fazer canal dente 36, data entrega 05/02/2025, prioridade média",
-      "Cliente Bruno Oliveira, dentista Dra. Fernanda Costa, protético Gabriel Rocha, fazer coroa nos dentes 46 e 47, data entrega 18/02/2025, prioridade baixa"
-    ];
-    
-    const randomExample = examples[Math.floor(Math.random() * examples.length)];
-    setTranscript(randomExample);
-    setError('');
-  };
-
-  const insertExampleAndProcess = async () => {
-    const exampleText = "Cliente Fernanda Silva, data entrega 25/02/2025, dentista Dr. Roberto Santos, protético Marina Costa, fazer coroa nos dentes 15 e 16, prioridade alta";
-    setTranscript(exampleText);
-    setError('');
-    
-    // Processar automaticamente após um breve delay
-    setTimeout(async () => {
-      setIsProcessing(true);
-      try {
-        // Primeiro tentar o endpoint de teste
-        let response;
-        try {
-          response = await api.post('/stt/test', { text: exampleText });
-        } catch (testError) {
-          try {
-            const webhookResponse = await api.post('/webhook/test');
-            // setWebhookUrl(webhookResponse.data.webhookUrl); // This line was removed from the original file
-          } catch (webhookError) {
-            setError('Não foi possível configurar o webhook. Por favor, tente novamente mais tarde.');
-          }
-          // Se o teste falhar, tentar o webhook
-          response = await api.post('/stt/process', { text: exampleText });
-        }
-        
-        onProcessedData(response.data);
-        onClose();
-      } catch (err) {
-        console.error('Erro ao processar texto:', err);
-        let errorMsg = 'Erro ao processar o texto.';
-        if (err.response) {
-          errorMsg += ` Status: ${err.response.status}`;
-          if (err.response.data?.error) {
-            errorMsg += ` - ${err.response.data.error}`;
-          }
-        } else if (err.request) {
-          errorMsg += ' Sem resposta do servidor. Verifique se o backend está rodando.';
-        } else {
-          errorMsg += ` ${err.message}`;
-        }
-        setError(errorMsg);
-      } finally {
-        setIsProcessing(false);
-      }
-    }, 500);
-  };
-
-  const testMicrophone = async () => {
-    try {
-      setError('');
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      // Parar o stream imediatamente após testar
-      stream.getTracks().forEach(track => track.stop());
-      
-      setError('');
-    } catch (err) {
-      setError('Erro ao testar microfone: ' + err.message);
-    }
   };
 
   const renderError = () => {
@@ -414,33 +308,7 @@ const STTModal = ({ isOpen, onClose, onProcessedData }) => {
                 {/* Todos os botões em uma linha */}
                 <div className="all-buttons-container">
                   <div className="left-buttons">
-                    <button 
-                      className="btn-icon" 
-                      onClick={testMicrophone}
-                      disabled={isProcessing || isListening}
-                      data-tooltip="Testar Microfone"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                        <line x1="12" y1="19" x2="12" y2="23"/>
-                        <line x1="8" y1="23" x2="16" y2="23"/>
-                      </svg>
-                    </button>
-                    <button 
-                      className="btn-icon" 
-                      onClick={insertExampleText}
-                      disabled={isProcessing || isListening}
-                      data-tooltip="Inserir Exemplo"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14,2 14,8 20,8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                        <polyline points="10,9 9,9 8,9"/>
-                      </svg>
-                    </button>
+                    {/* Botões de ação removidos */}
                   </div>
                   
                   <div className="right-buttons">
